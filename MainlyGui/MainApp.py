@@ -14,10 +14,15 @@ from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QL
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel,
                                QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView)
 
+from Strategy.MainStrategy import Strategy
 from Utils.CssUtils import (BtnCss)
 from Utils.FileUtils import FileOper
 import pyautogui
 import os
+import cv2
+import subprocess
+import time
+import keyboard
 
 # 系统信息
 systemInfo = FileOper.load_file("system_info.json")
@@ -61,17 +66,19 @@ class MainApp(object):
         self.openFileBtn.setGeometry(QRect(530, 10, 80, 40))
         self.openFileBtn.clicked.connect(self.open_file)
 
-        # 启动
-        self.startGameBtn = QPushButton(self.centralWidget)
-        self.startGameBtn.setObjectName(u"startGameBtn")
-        self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
-        self.startGameBtn.clicked.connect(self.runGame)
-
         # 路径框
         self.gamePathText = QTextEdit(self.centralWidget)
         self.gamePathText.setObjectName(u"gamePathText")
         self.gamePathText.setGeometry(QRect(10, 10, 500, 40))
         self.gamePathText.setReadOnly(True)
+
+        # 启动
+        self.startGameBtn = QPushButton(self.centralWidget)
+        self.startGameBtn.setObjectName(u"startGameBtn")
+        self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
+        self.startGameBtn.clicked.connect(lambda:
+                                          Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
+
         # 下拉菜单
         self.menubar.addAction(self.menu.menuAction())
         self.menu.addAction(self.openAction)
@@ -141,8 +148,9 @@ class MainApp(object):
 
         self.retranslateUi(MainWindow)
         # 快捷键绑定
-        shortcut = QShortcut(QKeySequence("Ctrl+O"), self.centralWidget)
-        shortcut.activated.connect(lambda: self.runGame())
+        # shortcut = QShortcut(QKeySequence("Ctrl+r"), self.centralWidget)
+        # shortcut.activated.connect(lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
+        keyboard.add_hotkey('ctrl+r', self.on_hotkey)
 
         # 加载设置
         game_path = settings.value("game_path", None)
@@ -150,25 +158,6 @@ class MainApp(object):
             self.gamePathText.setText(game_path)
 
         QMetaObject.connectSlotsByName(MainWindow)
-
-    def runGame(self):
-        game_path = self.gamePathText.toPlainText()
-        if len(game_path) <= 0:
-            QMessageBox.information(self.centralWidget, '提示', '未设置游戏启动路径', QMessageBox.Ok)
-            return
-
-        #
-        # 获取项目根目录的绝对路径
-        # root_dir = os.path.dirname(os.path.abspath(__file__))
-        # # 构建图像文件的绝对路径
-        # image_path = os.path.join(root_dir, "Resource", "img", "StartBtn.png")
-        img = open("../Resource/img/StartBtn.png").read()
-        button_x, button_y = pyautogui.locateCenterOnScreen(img)
-        print(button_x, button_y)
-        # 移动鼠标到按钮位置并点击
-        # pyautogui.moveTo(button_x / 2, (button_y / 2), duration=0.25)
-        # pyautogui.click()
-        print("运行脚本")
 
     def retranslateUi(self, MainWindow):
         # 面板元素布局
@@ -192,6 +181,9 @@ class MainApp(object):
         BtnCss.orange(self.settingItemBtn)
         BtnCss.red(self.removeItemBtn)
         BtnCss.blue(self.startGameBtn)
+
+    def on_hotkey(self):
+        Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText())
 
     # 打开游戏文件
     def open_file(self):
