@@ -4,8 +4,8 @@
 import sys
 
 from PySide6.QtCore import (QSettings)
-from PySide6.QtWidgets import *
 from PySide6.QtGui import (QIcon)
+from PySide6.QtWidgets import *
 
 # Import UI developed in Qt Creator
 from MainlyGui.MainApp import MainApp  # 导入界面
@@ -30,7 +30,27 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication()  # 初始化QApplication
-    app.setWindowIcon(QIcon("./MainlyGui/icon.png"))
+    app.setWindowIcon(QIcon("MainlyGui/icon.png"))
+    app.setStyleSheet(
+        """
+        /* 全局样式表，设置窗体背景为白色 */
+        QMainWindow {
+            background-color: #ffffff;
+        }
+        
+        /* 全局样式表，应用于所有 QTextEdit */
+        QTextEdit {
+            background-color: #f5f7fa;
+            border: 1px solid #c0ccda;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        QTextEdit:focus {
+            border: 1px solid #409EFF;
+        }
+        """
+    )
 
     # 初始化界面并显示界面
     window = MainWindow()
