@@ -9,13 +9,15 @@
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, QStringListModel, Qt)
-from PySide6.QtGui import (QAction, QIcon)
+from PySide6.QtGui import (QAction, QIcon, QShortcut, QKeySequence)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel,
-                               QTableWidgetItem, QInputDialog, QHeaderView)
+                               QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView)
 
 from Utils.CssUtils import (BtnCss)
 from Utils.FileUtils import FileOper
+import pyautogui
+import os
 
 # 系统信息
 systemInfo = FileOper.load_file("system_info.json")
@@ -28,7 +30,7 @@ class MainApp(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setFixedSize(640, 480)
-        MainWindow.setWindowIcon(QIcon("icon.png"))
+        MainWindow.setWindowIcon(QIcon("../Resource/img/icon.png"))
         self.settings = settings
 
         # 打开
@@ -59,6 +61,12 @@ class MainApp(object):
         self.openFileBtn.setGeometry(QRect(530, 10, 80, 40))
         self.openFileBtn.clicked.connect(self.open_file)
 
+        # 启动
+        self.startGameBtn = QPushButton(self.centralWidget)
+        self.startGameBtn.setObjectName(u"startGameBtn")
+        self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
+        self.startGameBtn.clicked.connect(self.runGame)
+
         # 路径框
         self.gamePathText = QTextEdit(self.centralWidget)
         self.gamePathText.setObjectName(u"gamePathText")
@@ -76,7 +84,7 @@ class MainApp(object):
         # 列表选项框
         self.listView = QListView(self.groupBox)
         self.listView.setObjectName(u"listView")
-        self.listView.setEnabled(True)
+        self.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.listView.setGeometry(QRect(15, 50, 141, 240))
         model = QStringListModel()
         # 列表数据
@@ -132,6 +140,9 @@ class MainApp(object):
         self.runListLabel.setGeometry(QRect(180, 25, 161, 16))
 
         self.retranslateUi(MainWindow)
+        # 快捷键绑定
+        shortcut = QShortcut(QKeySequence("Ctrl+O"), self.centralWidget)
+        shortcut.activated.connect(lambda: self.runGame())
 
         # 加载设置
         game_path = settings.value("game_path", None)
@@ -139,6 +150,25 @@ class MainApp(object):
             self.gamePathText.setText(game_path)
 
         QMetaObject.connectSlotsByName(MainWindow)
+
+    def runGame(self):
+        game_path = self.gamePathText.toPlainText()
+        if len(game_path) <= 0:
+            QMessageBox.information(self.centralWidget, '提示', '未设置游戏启动路径', QMessageBox.Ok)
+            return
+
+        #
+        # 获取项目根目录的绝对路径
+        # root_dir = os.path.dirname(os.path.abspath(__file__))
+        # # 构建图像文件的绝对路径
+        # image_path = os.path.join(root_dir, "Resource", "img", "StartBtn.png")
+        img = open("../Resource/img/StartBtn.png").read()
+        button_x, button_y = pyautogui.locateCenterOnScreen(img)
+        print(button_x, button_y)
+        # 移动鼠标到按钮位置并点击
+        # pyautogui.moveTo(button_x / 2, (button_y / 2), duration=0.25)
+        # pyautogui.click()
+        print("运行脚本")
 
     def retranslateUi(self, MainWindow):
         # 面板元素布局
@@ -148,6 +178,7 @@ class MainApp(object):
         self.aboutAction.setText(QCoreApplication.translate("MainWindow", "关于", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", "文件", None))
         self.openFileBtn.setText(QCoreApplication.translate("MainWindow", "打开", None))
+        self.startGameBtn.setText(QCoreApplication.translate("MainWindow", "启动游戏", None))
         self.gamePathText.setPlaceholderText(QCoreApplication.translate("MainWindow", "游戏启动路径", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", "设置", None))
         self.selectListLabel.setText(QCoreApplication.translate("MainWindow", "副本列表", None))
@@ -160,6 +191,7 @@ class MainApp(object):
         BtnCss.blue(self.addItemBtn)
         BtnCss.orange(self.settingItemBtn)
         BtnCss.red(self.removeItemBtn)
+        BtnCss.blue(self.startGameBtn)
 
     # 打开游戏文件
     def open_file(self):

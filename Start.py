@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication()  # 初始化QApplication
-    app.setWindowIcon(QIcon("MainlyGui/icon.png"))
+    app.setWindowIcon(QIcon("Resource/img/icon.png"))
     app.setStyleSheet(
         """
         /* 全局样式表，设置窗体背景为白色 */
