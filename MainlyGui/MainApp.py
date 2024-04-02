@@ -8,21 +8,19 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
+import platform
+
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, QStringListModel, Qt)
-from PySide6.QtGui import (QAction, QIcon, QShortcut, QKeySequence)
+from PySide6.QtGui import (QAction, QIcon)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel,
                                QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView)
 
+if platform.system() == 'Windows':
+    from Moudles.KeyboardModule import KeyboardModule
 from Strategy.MainStrategy import Strategy
 from Utils.CssUtils import (BtnCss)
 from Utils.FileUtils import FileOper
-import pyautogui
-import os
-import cv2
-import subprocess
-import time
-import keyboard
 
 # 系统信息
 systemInfo = FileOper.load_file("system_info.json")
@@ -150,7 +148,9 @@ class MainApp(object):
         # 快捷键绑定
         # shortcut = QShortcut(QKeySequence("Ctrl+r"), self.centralWidget)
         # shortcut.activated.connect(lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
-        keyboard.add_hotkey('ctrl+r', self.on_hotkey)
+        if platform.system() == 'Windows':
+            KeyboardModule.bind_start_game(
+                lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
 
         # 加载设置
         game_path = settings.value("game_path", None)

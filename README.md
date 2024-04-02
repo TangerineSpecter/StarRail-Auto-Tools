@@ -20,6 +20,10 @@
     </a>
 </p>
 
+<div align="center">
+  <img  width="92%" style="border-radius:10px;margin-top:20px;margin-bottom:20px;box-shadow: 2px 0 6px gray;" src="Resource/docs/demo.png" />
+</div>
+<br>
 
 ## 项目介绍
 > 星穹铁道自动化工具。
