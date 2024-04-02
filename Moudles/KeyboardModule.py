@@ -7,6 +7,9 @@ from Strategy.MainStrategy import Strategy
 
 class KeyboardModule:
 
-    @staticmethod
-    def bind_start_game(QWidget, game_path):
-        keyboard.add_hotkey('ctrl+r', lambda: Strategy.run_game(QWidget, game_path))
+    def __init__(self, QWidget, game_path):
+        self.QWidget = QWidget
+        self.game_path = game_path
+
+    def bind_start_game(self):
+        keyboard.add_hotkey('ctrl+r', lambda: Strategy(self.QWidget, self.game_path).run_game())

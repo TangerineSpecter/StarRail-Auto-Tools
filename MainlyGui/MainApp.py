@@ -74,8 +74,8 @@ class MainApp(object):
         self.startGameBtn = QPushButton(self.centralWidget)
         self.startGameBtn.setObjectName(u"startGameBtn")
         self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
-        self.startGameBtn.clicked.connect(lambda:
-                                          Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
+        self.startGameBtn.clicked.connect(
+            lambda: Strategy(self.centralWidget, self.gamePathText.toPlainText()).run_game())
 
         # 下拉菜单
         self.menubar.addAction(self.menu.menuAction())
@@ -149,8 +149,7 @@ class MainApp(object):
         # shortcut = QShortcut(QKeySequence("Ctrl+r"), self.centralWidget)
         # shortcut.activated.connect(lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
         if platform.system() == 'Windows':
-            KeyboardModule.bind_start_game(
-                lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
+            KeyboardModule(self.centralWidget, self.gamePathText.toPlainText()).bind_start_game()
 
         # 加载设置
         game_path = settings.value("game_path", None)
@@ -183,7 +182,7 @@ class MainApp(object):
         BtnCss.blue(self.startGameBtn)
 
     def on_hotkey(self):
-        Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText())
+        Strategy(self.centralWidget, self.gamePathText.toPlainText()).run_game()
 
     # 打开游戏文件
     def open_file(self):
