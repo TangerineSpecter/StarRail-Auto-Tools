@@ -12,4 +12,4 @@ class KeyboardModule:
         self.game_path = game_path
 
     def bind_start_game(self):
-        keyboard.add_hotkey('ctrl+r', lambda: Strategy(self.QWidget, self.game_path).run_game())
+        keyboard.add_hotkey('shift+r', lambda: Strategy(self.QWidget, self.game_path).run_game())

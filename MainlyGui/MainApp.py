@@ -145,16 +145,17 @@ class MainApp(object):
         self.runListLabel.setGeometry(QRect(180, 25, 161, 16))
 
         self.retranslateUi(MainWindow)
-        # 快捷键绑定
-        # shortcut = QShortcut(QKeySequence("Ctrl+r"), self.centralWidget)
-        # shortcut.activated.connect(lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
-        if platform.system() == 'Windows':
-            KeyboardModule(self.centralWidget, self.gamePathText.toPlainText()).bind_start_game()
 
         # 加载设置
         game_path = settings.value("game_path", None)
         if game_path is not None:
             self.gamePathText.setText(game_path)
+
+        # 快捷键绑定
+        # shortcut = QShortcut(QKeySequence("Ctrl+r"), self.centralWidget)
+        # shortcut.activated.connect(lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
+        if platform.system() == 'Windows':
+            KeyboardModule(self.centralWidget, self.gamePathText.toPlainText()).bind_start_game()
 
         QMetaObject.connectSlotsByName(MainWindow)
 
@@ -180,9 +181,6 @@ class MainApp(object):
         BtnCss.orange(self.settingItemBtn)
         BtnCss.red(self.removeItemBtn)
         BtnCss.blue(self.startGameBtn)
-
-    def on_hotkey(self):
-        Strategy(self.centralWidget, self.gamePathText.toPlainText()).run_game()
 
     # 打开游戏文件
     def open_file(self):

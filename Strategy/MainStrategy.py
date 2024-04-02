@@ -1,11 +1,10 @@
+import time
+
 import cv2
 import psutil
 import pyautogui
-from PySide6.QtWidgets import (QMessageBox)
 
 import Utils.Constant as Constant
-from Strategy.ProcessStrategy import Context, ExpStrategy
-from Utils.AudioUtils import AudioFactory
 
 
 class Strategy:
@@ -24,7 +23,7 @@ class Strategy:
             print("执行主策略：开始比对")
             if check_process_exists(Constant.app_name):
                 print("已运行")
-                AudioFactory.play_audio(Constant.Audio.running)
+                # AudioFactory.play_audio(Constant.Audio.running)
                 self.__init_window()
             else:
                 self.__join_game()
@@ -39,11 +38,11 @@ class Strategy:
         """
         print("未运行，开始加入游戏")
         if len(self.game_path) <= 0:
-            QMessageBox.information(self.QWidget, '提示', '未设置游戏启动路径', QMessageBox.Ok)
+            # QMessageBox.information(self.QWidget, '提示', '未设置游戏启动路径', QMessageBox.Ok)
             return
 
-        context = Context(ExpStrategy())
-        context.execute_strategy()
+        # context = Context(ExpStrategy())
+        # context.execute_strategy()
         '''找到启动按钮'''
         # 获取项目根目录的绝对路径
         img = cv2.imread("./Resource/img/StartBtn.png")
@@ -62,9 +61,24 @@ class Strategy:
         """
         # 先esc三次看是否回到最初界面，检测是否存在右侧状态栏
         # TODO
-        pyautogui.press('esc')
-        pyautogui.press('esc')
-        pyautogui.press('esc')
+        print("初始化窗口")
+        # 获取屏幕分辨率
+        screen_width, screen_height = pyautogui.size()
+        pyautogui.moveTo(screen_width * 0.976, screen_height * 0.035, duration=0.25)
+        for _ in range(3):
+            pyautogui.click()
+
+        # 判断是否挑战成功
+        while True:
+            try:
+                img = cv2.imread("./Resource/img/BattleOver.png")
+                button_x, button_y = pyautogui.locateCenterOnScreen(img)
+                print(button_x, button_y)
+                time.sleep(1)
+            except pyautogui.ImageNotFoundException:
+                print("未挑战完毕")
+
+    print("初始化结束")
 
 
 def check_process_exists(process_name):
