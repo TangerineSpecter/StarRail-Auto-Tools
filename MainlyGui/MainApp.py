@@ -23,9 +23,9 @@ from Utils.CssUtils import (BtnCss)
 from Utils.FileUtils import FileOper
 
 # 系统信息
-systemInfo = FileOper.load_file("system_info.json")
+systemInfo = FileOper.load_config_file("system_info.json")
 # 副本映射
-dungeonMap = {item['parent_name']: item['children'] for item in FileOper.load_file("dungeon_list.json")}
+dungeonMap = {item['parent_name']: item['children'] for item in FileOper.load_config_file("dungeon_list.json")}
 
 
 class MainApp(object):
@@ -75,7 +75,7 @@ class MainApp(object):
         self.startGameBtn.setObjectName(u"startGameBtn")
         self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
         self.startGameBtn.clicked.connect(
-            lambda: Strategy(self.centralWidget, self.gamePathText.toPlainText()).run_game())
+            lambda: Strategy(self).run_game())
 
         # 下拉菜单
         self.menubar.addAction(self.menu.menuAction())
@@ -112,13 +112,12 @@ class MainApp(object):
         self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
 
         # 数据
-        # data = ['经验副本', '城郊雪原', '1', '晋级材料', '炼型者雷枝', '2']
-        data = settings.value("table_data", None)
+        self.tableData = settings.value("table_data", None)
         headers = ['类型', '副本', '执行次数']
         self.tableWidget.setColumnCount(len(headers))
         self.tableWidget.setHorizontalHeaderLabels(headers)
-        if data is not None:
-            self.addTableItem(data, rowCount=(len(data) // len(headers)))
+        if self.tableData is not None:
+            self.addTableItem(self.tableData, rowCount=(len(self.tableData) // len(headers)))
 
         # 添加内容按钮
         self.addItemBtn = QPushButton(self.groupBox)
@@ -155,7 +154,8 @@ class MainApp(object):
         # shortcut = QShortcut(QKeySequence("Ctrl+r"), self.centralWidget)
         # shortcut.activated.connect(lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
         if platform.system() == 'Windows':
-            KeyboardModule(self.centralWidget, self.gamePathText.toPlainText()).bind_start_game()
+            KeyboardModule(self).bind_start_game()
+            KeyboardModule(self).bind_position()
 
         QMetaObject.connectSlotsByName(MainWindow)
 
@@ -293,6 +293,7 @@ class MainApp(object):
                 all_data.append(item.text())
 
         self.settings.setValue("table_data", all_data)
+        self.tableData = all_data
         pass
 
 
