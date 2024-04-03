@@ -3,6 +3,7 @@ import time
 import pyautogui
 
 from Utils.FileUtils import FileOper
+import Utils.DataUtils as Data
 
 
 class ProcessStrategy:
@@ -26,8 +27,8 @@ class DistributeStrategy(ProcessStrategy):
                          FileOper.load_config_file("dungeon_list.json")}
 
         strategy_class = globals()[strategy_dict[main_name]]
-        context = Context(strategy_class(), None)
-        context.execute_strategy()
+        context = Context(strategy_class())
+        context.execute_strategy(row_data)
         print("策略调度完毕")
         pass
 
@@ -38,40 +39,42 @@ class ExpStrategy(ProcessStrategy):
     """
 
     def doJob(self, row_data):
+        """
+        :param row_data:  行数据【主名称、子集名称、次数】
+        """
         print("执行经验副本策略")
         screen_width, screen_height = pyautogui.size()
 
         # 选择刷金副本
-        pyautogui.moveTo(screen_width * 0.23, screen_height * 0.43, duration=0.25)
+        pyautogui.moveTo(screen_width * 0.286, screen_height * 0.451, duration=Data.duration)
         pyautogui.click()
 
         # 选择匹诺康尼
-        pyautogui.moveTo(screen_width * 0.55, screen_height * 0.3, duration=0.25)
+        pyautogui.moveTo(screen_width * 0.553, screen_height * 0.306, duration=Data.duration)
         pyautogui.click()
 
         # 传送
-        pyautogui.moveTo(screen_width * 0.8, screen_height * 0.48, duration=0.25)
+        pyautogui.moveTo(screen_width * 0.793, screen_height * 0.459, duration=Data.duration)
         pyautogui.click()
 
         time.sleep(3)
 
         # 选择
-        pyautogui.moveTo(screen_width * 0.95, screen_height * 0.83, duration=0.25)
-        for _ in range(row_data['count']):
+        pyautogui.moveTo(screen_width * 0.95, screen_height * 0.83, duration=Data.duration)
+        for _ in range(int(row_data['count']) - 1):
             pyautogui.click()
             time.sleep(0.2)
         pass
 
 
 class Context:
-    def __init__(self, strategy, row_data):
+    def __init__(self, strategy):
         """
         策略接口
         :param strategy: 调度策略
-        :param row_data: 行数据【主名称、子集名称、次数】
+        :param
         """
         self.strategy = strategy
-        self.row_data = row_data
 
-    def execute_strategy(self):
-        return self.strategy.doJob(self.row_data)
+    def execute_strategy(self, row_data):
+        return self.strategy.doJob(row_data)

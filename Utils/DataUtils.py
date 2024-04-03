@@ -10,7 +10,7 @@ from Utils.FileUtils import FileOper
 screen_width, screen_height = pyautogui.size()
 
 # 默认点间隔
-duration = 0.25
+duration = 0.3
 
 # 位置坐标信息
 positionInfo = FileOper.load_config_file("coordinate_info.json")

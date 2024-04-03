@@ -72,6 +72,7 @@ class Strategy:
         """
         for index in range(len(self.tableData)):
             # 设置当前读取列索引
+            print(f"开始执行第{index}行逻辑")
             self.row_index = index
             self.__init_window()
 
@@ -92,17 +93,23 @@ class Strategy:
         pyautogui.click()
         pyautogui.keyUp('alt')
 
+        # 等待1秒 界面弹出
+        time.sleep(1)
+
         # 选择副本
         pyautogui.moveTo(Data.getPosition("dungeon_main"), duration=Data.duration)
         pyautogui.click()
 
         # 策略分发
-        context = Context(DistributeStrategy(), self.tableData[self.row_index])
-        context.execute_strategy()
+        context = Context(DistributeStrategy())
+        context.execute_strategy(self.tableData[self.row_index])
 
         # 统一执行挑战
         pyautogui.moveTo(Data.getPosition("action_btn"), duration=Data.duration)
         pyautogui.click()
+
+        # 等待2秒 界面弹出
+        time.sleep(2)
 
         # 开始
         pyautogui.click()
@@ -110,14 +117,17 @@ class Strategy:
         # 判断是否挑战成功
         while True:
             try:
+                time.sleep(1)
                 img = cv2.imread("./Resource/img/BattleOver.png")
                 button_x, button_y = pyautogui.locateCenterOnScreen(img)
                 print(button_x, button_y)
-                time.sleep(1)
+                pyautogui.moveTo(Data.getPosition("dungeon_exit"), duration=Data.duration)
+                pyautogui.click()
+                # 等待界面切换
+                time.sleep(3)
+                break
             except pyautogui.ImageNotFoundException:
                 print("未挑战完毕")
-
-        self.__init_window()
 
     print("初始化结束")
 

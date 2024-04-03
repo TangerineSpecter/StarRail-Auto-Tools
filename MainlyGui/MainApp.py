@@ -275,7 +275,7 @@ class MainApp(object):
         item, ok = QInputDialog.getItem(self.centralWidget, "副本内容", "选择一个副本:", items, 0, False)
 
         if ok:
-            number, ok = QInputDialog.getInt(self.centralWidget, "执行次数", "输入一个执行次数:", 1, 0, 99, 1)
+            number, ok = QInputDialog.getInt(self.centralWidget, "执行次数", "输入一个执行次数:", 1, 0, 6, 1)
             if ok:
                 self.updateTableItem([parent_name, item, number], rowCount=row_count)
 
