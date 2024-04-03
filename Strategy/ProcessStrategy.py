@@ -28,29 +28,37 @@ class DistributeStrategy(ProcessStrategy):
 
         strategy_class = globals()[strategy_dict[main_name]]
         context = Context(strategy_class())
-        context.execute_strategy(row_data)
-        print("策略调度完毕")
-        pass
+        return context.execute_strategy(row_data)
 
 
 class ExpStrategy(ProcessStrategy):
     """
-    经验副本策略
+    角色经验副本策略
     """
 
     def doJob(self, row_data):
         """
         :param row_data:  行数据【主名称、子集名称、次数】
         """
-        print("执行经验副本策略")
+        print("执行角色经验副本策略")
         screen_width, screen_height = pyautogui.size()
+        process_name = row_data['process_name']
+        count = int(row_data['count']) - 1
 
         # 选择刷金副本
         pyautogui.moveTo(screen_width * 0.286, screen_height * 0.451, duration=Data.duration)
         pyautogui.click()
 
-        # 选择匹诺康尼
-        pyautogui.moveTo(screen_width * 0.553, screen_height * 0.306, duration=Data.duration)
+        if process_name == '雅利洛':
+            pyautogui.moveTo(screen_width * 0.4125, screen_height * 0.3131, duration=Data.duration)
+        elif process_name == '仙舟':
+            pyautogui.moveTo(screen_width * 0.486, screen_height * 0.315, duration=Data.duration)
+        elif process_name == '匹诺康尼':
+            pyautogui.moveTo(screen_width * 0.553, screen_height * 0.306, duration=Data.duration)
+        else:
+            print('未知副本')
+            return False
+
         pyautogui.click()
 
         # 传送
@@ -61,10 +69,100 @@ class ExpStrategy(ProcessStrategy):
 
         # 选择
         pyautogui.moveTo(screen_width * 0.95, screen_height * 0.83, duration=Data.duration)
-        for _ in range(int(row_data['count']) - 1):
+        for _ in range(count):
             pyautogui.click()
             time.sleep(0.2)
-        pass
+        return True
+
+
+class WeaponStrategy(ProcessStrategy):
+    """
+    武器经验策略
+    """
+
+    def doJob(self, row_data):
+        """
+        :param row_data:  行数据【主名称、子集名称、次数】
+        :return True执行成功
+        """
+        print("执行武器经验副本策略")
+        screen_width, screen_height = pyautogui.size()
+        process_name = row_data['process_name']
+        count = int(row_data['count']) - 1
+
+        # 选择刷金副本
+        pyautogui.moveTo(screen_width * 0.286, screen_height * 0.451, duration=Data.duration)
+        pyautogui.click()
+
+        if process_name == '雅利洛':
+            pyautogui.moveTo(screen_width * 0.412, screen_height * 0.313, duration=Data.duration)
+        elif process_name == '仙舟':
+            pyautogui.moveTo(screen_width * 0.486, screen_height * 0.315, duration=Data.duration)
+        elif process_name == '匹诺康尼':
+            pyautogui.moveTo(screen_width * 0.553, screen_height * 0.306, duration=Data.duration)
+        else:
+            print('未知副本')
+            return False
+
+        pyautogui.click()
+
+        # 传送
+        pyautogui.moveTo(screen_width * 0.787, screen_height * 0.641, duration=Data.duration)
+        pyautogui.click()
+
+        time.sleep(3)
+
+        # 选择
+        pyautogui.moveTo(screen_width * 0.95, screen_height * 0.83, duration=Data.duration)
+        for _ in range(count):
+            pyautogui.click()
+            time.sleep(0.2)
+        return True
+
+
+class MoneyStrategy(ProcessStrategy):
+    """
+    信用点副本策略
+    """
+
+    def doJob(self, row_data):
+        """
+        :param row_data:  行数据【主名称、子集名称、次数】
+        :return True执行成功
+        """
+        print("执行武器经验副本策略")
+        screen_width, screen_height = pyautogui.size()
+        process_name = row_data['process_name']
+        count = int(row_data['count']) - 1
+
+        # 选择刷金副本
+        pyautogui.moveTo(screen_width * 0.286, screen_height * 0.451, duration=Data.duration)
+        pyautogui.click()
+
+        if process_name == '雅利洛':
+            pyautogui.moveTo(screen_width * 0.412, screen_height * 0.313, duration=Data.duration)
+        elif process_name == '仙舟':
+            pyautogui.moveTo(screen_width * 0.486, screen_height * 0.315, duration=Data.duration)
+        elif process_name == '匹诺康尼':
+            pyautogui.moveTo(screen_width * 0.553, screen_height * 0.306, duration=Data.duration)
+        else:
+            print('未知副本')
+            return False
+
+        pyautogui.click()
+
+        # 传送
+        pyautogui.moveTo(screen_width * 0.801, screen_height * 0.828, duration=Data.duration)
+        pyautogui.click()
+
+        time.sleep(3)
+
+        # 选择
+        pyautogui.moveTo(screen_width * 0.95, screen_height * 0.83, duration=Data.duration)
+        for _ in range(count):
+            pyautogui.click()
+            time.sleep(0.2)
+        return True
 
 
 class Context:

@@ -102,7 +102,11 @@ class Strategy:
 
         # 策略分发
         context = Context(DistributeStrategy())
-        context.execute_strategy(self.tableData[self.row_index])
+        result = context.execute_strategy(self.tableData[self.row_index])
+
+        if not result:
+            print("策略执行失败，跳过此次执行")
+            return
 
         # 统一执行挑战
         pyautogui.moveTo(Data.getPosition("action_btn"), duration=Data.duration)
@@ -124,7 +128,7 @@ class Strategy:
                 pyautogui.moveTo(Data.getPosition("dungeon_exit"), duration=Data.duration)
                 pyautogui.click()
                 # 等待界面切换
-                time.sleep(3)
+                time.sleep(5)
                 break
             except pyautogui.ImageNotFoundException:
                 print("未挑战完毕")

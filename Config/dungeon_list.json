@@ -11,7 +11,7 @@
   },
   {
     "parent_name": "武器经验",
-    "strategy_class": "",
+    "strategy_class": "WeaponStrategy",
     "children": [
       "雅利洛",
       "仙舟",
@@ -20,7 +20,7 @@
   },
   {
     "parent_name": "信用点",
-    "strategy_class": "",
+    "strategy_class": "MoneyStrategy",
     "children": [
       "雅利洛",
       "仙舟",
