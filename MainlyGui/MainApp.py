@@ -20,12 +20,13 @@ if platform.system() == 'Windows':
     from Moudles.KeyboardModule import KeyboardModule
 from Strategy.MainStrategy import Strategy
 from Utils.CssUtils import (BtnCss)
-from Utils.FileUtils import FileOper
+import Config.DungeonConfig as DungeonConfig
+import Config.SystemInfo as SystemInfo
 
 # 系统信息
-systemInfo = FileOper.load_config_file("system_info.json")
+systemInfo = SystemInfo.base_info
 # 副本映射
-dungeonMap = {item['parent_name']: item['children'] for item in FileOper.load_config_file("dungeon_list.json")}
+dungeonMap = {item['parent_name']: item['children'] for item in DungeonConfig.dungeon_list}
 
 
 class MainApp(object):

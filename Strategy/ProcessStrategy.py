@@ -4,6 +4,7 @@ import pyautogui
 
 from Utils.FileUtils import FileOper
 import Utils.DataUtils as Data
+import Config.DungeonConfig as DungeonConfig
 
 
 class ProcessStrategy:
@@ -24,7 +25,7 @@ class DistributeStrategy(ProcessStrategy):
         main_name = row_data['main_name']
 
         strategy_dict = {item['parent_name']: item['strategy_class'] for item in
-                         FileOper.load_config_file("dungeon_list.json")}
+                         DungeonConfig.dungeon_list}
 
         strategy_class = globals()[strategy_dict[main_name]]
         context = Context(strategy_class())

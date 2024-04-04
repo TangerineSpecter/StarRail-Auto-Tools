@@ -5,6 +5,7 @@
 import pyautogui
 
 from Utils.FileUtils import FileOper
+import Config.CoordinateConfig as CoordinateConfig
 
 # 获取屏幕分辨率
 screen_width, screen_height = pyautogui.size()
@@ -13,7 +14,7 @@ screen_width, screen_height = pyautogui.size()
 duration = 0.3
 
 # 位置坐标信息
-positionInfo = FileOper.load_config_file("coordinate_info.json")
+positionInfo = CoordinateConfig.coordinate_info
 
 
 def getPosition(position_name):
