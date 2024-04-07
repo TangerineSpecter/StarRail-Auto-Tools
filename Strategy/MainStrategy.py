@@ -89,7 +89,7 @@ class Strategy:
 
         # 打开副本界面
         pyautogui.keyDown('alt')
-        pyautogui.moveTo(Data.getPosition("dungeon_open"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition("dungeon_main"), duration=Data.duration)
         pyautogui.click()
         pyautogui.keyUp('alt')
 
@@ -97,7 +97,7 @@ class Strategy:
         time.sleep(1)
 
         # 选择副本
-        pyautogui.moveTo(Data.getPosition("dungeon_main"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition("dungeon_tab"), duration=Data.duration)
         pyautogui.click()
 
         # 策略分发

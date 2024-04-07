@@ -2,9 +2,8 @@ import time
 
 import pyautogui
 
-from Utils.FileUtils import FileOper
-import Utils.DataUtils as Data
 import Config.DungeonConfig as DungeonConfig
+import Utils.DataUtils as Data
 
 
 class ProcessStrategy:
