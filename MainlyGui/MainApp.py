@@ -11,7 +11,7 @@
 import platform
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, QStringListModel, Qt)
-from PySide6.QtGui import (QAction, QIcon)
+from PySide6.QtGui import (QAction, QIcon, QShortcut, QKeySequence)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel,
                                QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView)
@@ -22,6 +22,7 @@ from Strategy.MainStrategy import Strategy
 from Utils.CssUtils import (BtnCss)
 import Config.DungeonConfig as DungeonConfig
 import Config.SystemInfo as SystemInfo
+from Moudles.Worker import Worker
 
 # 系统信息
 systemInfo = SystemInfo.base_info
@@ -151,9 +152,17 @@ class MainApp(object):
         if game_path is not None:
             self.gamePathText.setText(game_path)
 
+        # 线程初始化和槽绑定
+        self.r = Worker()
+        self.r.sinOut.connect(self.showMsg)
+
         # 快捷键绑定
-        # shortcut = QShortcut(QKeySequence("Ctrl+r"), self.centralWidget)
-        # shortcut.activated.connect(lambda: Strategy.run_game(self.centralWidget, self.gamePathText.toPlainText()))
+        shortcut = QShortcut(QKeySequence("shift+q"), self.centralWidget)
+        shortcut.activated.connect(lambda: self.run_thread())
+
+        shortcut = QShortcut(QKeySequence("shift+a"), self.centralWidget)
+        shortcut.activated.connect(lambda: self.stop_thread())
+
         if platform.system() == 'Windows':
             KeyboardModule(self).bind_start_game()
             KeyboardModule(self).bind_position()
@@ -296,6 +305,18 @@ class MainApp(object):
         self.settings.setValue("table_data", all_data)
         self.tableData = all_data
         pass
+
+    def run_thread(self):
+        self.r.start()
+        pass
+
+    def stop_thread(self):
+        print("中断线程")
+        self.r.stop()
+
+    def showMsg(self, text):
+        QMessageBox.information(self.centralWidget, '提示', text, QMessageBox.Ok)
+        return
 
 
 class AboutDialog(QMessageBox):
