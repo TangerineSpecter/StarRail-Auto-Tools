@@ -9,11 +9,10 @@ class Worker(QThread):
         super(Worker, self).__init__()
 
     def run(self):
+        self.sinOut.emit("脚本执行启动")
         while True:
             print("test")
             time.sleep(1)
-
-        # self.sinOut.emit("任务消息")
 
     @Slot()
     def stop(self):
@@ -21,3 +20,4 @@ class Worker(QThread):
         # self.wait()
         self.finished.emit()
         print("中断完毕")
+        self.sinOut.emit("脚本执行中断")

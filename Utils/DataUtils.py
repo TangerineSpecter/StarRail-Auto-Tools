@@ -4,7 +4,6 @@
 
 import pyautogui
 
-from Utils.FileUtils import FileOper
 import Config.CoordinateConfig as CoordinateConfig
 
 # 获取屏幕分辨率

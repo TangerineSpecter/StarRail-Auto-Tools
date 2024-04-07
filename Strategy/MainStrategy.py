@@ -108,31 +108,6 @@ class Strategy:
             print("策略执行失败，跳过此次执行")
             return
 
-        # 统一执行挑战
-        pyautogui.moveTo(Data.getPosition("action_btn"), duration=Data.duration)
-        pyautogui.click()
-
-        # 等待2秒 界面弹出
-        time.sleep(2)
-
-        # 开始
-        pyautogui.click()
-
-        # 判断是否挑战成功
-        while True:
-            try:
-                time.sleep(1)
-                img = cv2.imread("./Resource/img/BattleOver.png")
-                button_x, button_y = pyautogui.locateCenterOnScreen(img)
-                print(button_x, button_y)
-                pyautogui.moveTo(Data.getPosition("dungeon_exit"), duration=Data.duration)
-                pyautogui.click()
-                # 等待界面切换
-                time.sleep(5)
-                break
-            except pyautogui.ImageNotFoundException:
-                print("未挑战完毕")
-
     print("初始化结束")
 
 

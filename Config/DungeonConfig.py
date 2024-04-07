@@ -1,10 +1,11 @@
 """
 副本列表配置
 """
-dungeon_list = [
-    {
+dungeon_dict = {
+    "角色经验": {
         "parent_name": "角色经验",
-        "strategy_class": "ExpStrategy",
+        "simple_name": "exp",
+        "strategy_class": "BaseStrategy",
         "max_count": 6,
         "children": [
             "雅利洛",
@@ -12,50 +13,63 @@ dungeon_list = [
             "匹诺康尼"
         ]
     },
-    {
+    "武器经验": {
         "parent_name": "武器经验",
-        "strategy_class": "WeaponStrategy",
+        "simple_name": "weapon",
+        "strategy_class": "BaseStrategy",
+        "max_count": 6,
         "children": [
             "雅利洛",
             "仙舟",
             "匹诺康尼"
         ]
     },
-    {
+    "信用点": {
         "parent_name": "信用点",
-        "strategy_class": "MoneyStrategy",
+        "simple_name": "money",
+        "strategy_class": "BaseStrategy",
+        "max_count": 6,
         "children": [
             "雅利洛",
             "仙舟",
             "匹诺康尼"
         ]
     },
-    {
+    "行迹材料": {
         "parent_name": "行迹材料",
-        "strategy_class": "",
-        "children": [
-            "开发中"
-        ]
+        "simple_name": "skill",
+        "strategy_class": "AdvanceStrategy",
+        "max_count": 6,
+        "children": {
+            # 副本对应识别图片名称
+            "雅利洛": "BattleOver"
+        }
     },
-    {
+    "晋级材料": {
         "parent_name": "晋级材料",
-        "strategy_class": "",
+        "simple_name": "rank",
+        "strategy_class": "AdvanceStrategy",
+        "max_count": 99,
         "children": [
             "开发中"
         ]
     },
-    {
+    "遗器": {
         "parent_name": "遗器",
-        "strategy_class": "",
+        "simple_name": "equip",
+        "strategy_class": "AdvanceStrategy",
+        "max_count": 99,
         "children": [
             "开发中"
         ]
     },
-    {
+    "历战余响": {
         "parent_name": "历战余响",
-        "strategy_class": "",
+        "simple_name": "weekend",
+        "strategy_class": "AdvanceStrategy",
+        "max_count": 3,
         "children": [
             "开发中"
         ]
     }
-]
+}

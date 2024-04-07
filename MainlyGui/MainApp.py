@@ -14,7 +14,7 @@ from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, QStringListMod
 from PySide6.QtGui import (QAction, QIcon, QShortcut, QKeySequence)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel,
-                               QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView)
+                               QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView, QStatusBar)
 
 if platform.system() == 'Windows':
     from Moudles.KeyboardModule import KeyboardModule
@@ -26,8 +26,6 @@ from Moudles.Worker import Worker
 
 # 系统信息
 systemInfo = SystemInfo.base_info
-# 副本映射
-dungeonMap = {item['parent_name']: item['children'] for item in DungeonConfig.dungeon_list}
 
 
 class MainApp(object):
@@ -95,7 +93,7 @@ class MainApp(object):
         self.listView.setGeometry(QRect(15, 50, 141, 240))
         model = QStringListModel()
         # 列表数据
-        model.setStringList(dungeonMap.keys())
+        model.setStringList(DungeonConfig.dungeon_dict.keys())
         self.listView.setModel(model)
 
         # 执行表格
@@ -145,6 +143,14 @@ class MainApp(object):
         self.runListLabel.setObjectName(u"runListLabel")
         self.runListLabel.setGeometry(QRect(180, 25, 161, 16))
 
+        # 状态栏
+        self.statusBar = QStatusBar(self.centralWidget)
+        self.statusBar.setObjectName("statusBar")
+        MainWindow.setStatusBar(self.statusBar)
+        self.runStatusLabel = QLabel()
+        self.setStatusText("待机")
+        self.statusBar.addPermanentWidget(self.runStatusLabel)
+
         self.retranslateUi(MainWindow)
 
         # 加载设置
@@ -153,8 +159,8 @@ class MainApp(object):
             self.gamePathText.setText(game_path)
 
         # 线程初始化和槽绑定
-        self.r = Worker()
-        self.r.sinOut.connect(self.showMsg)
+        self.worker = Worker()
+        self.worker.sinOut.connect(self.showMsg)
 
         # 快捷键绑定
         shortcut = QShortcut(QKeySequence("shift+q"), self.centralWidget)
@@ -281,11 +287,13 @@ class MainApp(object):
         self.refreshTableCache()
 
     def show_input_dialog(self, row_count, parent_name):
-        items = dungeonMap.get(parent_name)
+        max_count = DungeonConfig.dungeon_dict[parent_name]['max_count']
+        items = DungeonConfig.dungeon_dict[parent_name]['children']
         item, ok = QInputDialog.getItem(self.centralWidget, "副本内容", "选择一个副本:", items, 0, False)
 
         if ok:
-            number, ok = QInputDialog.getInt(self.centralWidget, "执行次数", "输入一个执行次数:", 1, 0, 6, 1)
+            number, ok = QInputDialog.getInt(self.centralWidget, "执行次数", "输入一个执行次数:",
+                                             1, 0, int(max_count), 1)
             if ok:
                 self.updateTableItem([parent_name, item, number], rowCount=row_count)
 
@@ -306,13 +314,18 @@ class MainApp(object):
         self.tableData = all_data
         pass
 
+    def setStatusText(self, text):
+        self.runStatusLabel.setText(f"当前状态：{text}")
+
     def run_thread(self):
-        self.r.start()
+        self.setStatusText("执行脚本")
+        self.worker.start()
         pass
 
     def stop_thread(self):
+        self.setStatusText("脚本中断")
         print("中断线程")
-        self.r.stop()
+        self.worker.stop()
 
     def showMsg(self, text):
         QMessageBox.information(self.centralWidget, '提示', text, QMessageBox.Ok)
