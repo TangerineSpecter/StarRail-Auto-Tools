@@ -101,28 +101,29 @@ class AdvanceStrategy(ProcessStrategy):
         pyautogui.click()
 
         # 平移到内容区域，鼠标不要遮挡识别图片
-        pyautogui.moveRel(screen_width * 0.2, 0, duration=Data.duration)
+        pyautogui.moveRel(screen_width * 0.3, 0, duration=Data.duration)
 
         # TODO 选择对应技能 图像识别
         start_time = int(time.time())
         while True:
             try:
-                # 最大识别7秒
-                if int(time.time()) - start_time > 7:
+                # 最大识别20秒
+                if int(time.time()) - start_time > 20:
                     print("识别超时")
                     return
-                time.sleep(1)
-                img = cv2.imread(f"../Resource/img/{cv_img}.png")
-                button_x, button_y = pyautogui.locateCenterOnScreen(img)
+                time.sleep(2)
+                img = cv2.imread(f"./Resource/img/{cv_img}.png")
+                button_x, button_y = pyautogui.locateCenterOnScreen(img, confidence=0.85)
                 # 先将鼠标移动到图标位置
                 pyautogui.moveTo(button_x, button_y, duration=Data.duration)
                 # 相对图标进行平移点击传送
-                pyautogui.moveRel(1, button_y, duration=Data.duration)
+                pyautogui.moveRel(screen_width * 0.38, screen_height * 0.02, duration=Data.duration)
                 pyautogui.click()
                 break
             except Exception:
                 print("未识别到副本")
-                pyautogui.scroll(200)
+                pyautogui.dragRel(0, -500, duration=0.5, button='left')
+                pyautogui.moveRel(0, 500, duration=0.5)
 
         time.sleep(3)
 

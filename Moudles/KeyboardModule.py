@@ -17,6 +17,7 @@ class KeyboardModule:
         启动游戏快捷键
         """
         keyboard.add_hotkey('shift+r', lambda: Strategy(self.MainWindow).run_game())
+        # keyboard.add_hotkey('shift+r', lambda: self.MainWindow.run_thread())
 
     def bind_position(self):
         """
