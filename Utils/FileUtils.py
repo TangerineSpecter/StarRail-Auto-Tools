@@ -24,12 +24,15 @@ class FileOper:
         return para_dict
 
     @staticmethod
-    def load_file(filename):
+    def load_file(filename, reverse=False):
         """
         读取文件
         :param filename:  文件名
+        :param reverse：是否反向读取
         :return: 文件内容
         """
         with open(filename, 'r', encoding='utf-8') as file:
-            content = file.read()
-        return content
+            content = file.readlines()
+        if reverse:
+            content.reverse()
+        return "".join(content)

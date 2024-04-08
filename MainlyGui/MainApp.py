@@ -31,7 +31,7 @@ systemInfo = SystemInfo.base_info
 
 class MainApp(object):
     def __init__(self, MainWindow, settings):
-        Logging.info("\n=====(^_^)======应用程序初始化=====(^_^)======")
+        Logging.info("=====(^_^)======应用程序初始化=====(^_^)======")
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setFixedSize(640, 480)
@@ -369,7 +369,7 @@ class SubWindow(QDialog):
         layout = QVBoxLayout()
 
         self.textEdit = QTextEdit()
-        self.textEdit.setPlainText(FileOper.load_file("app.log"))
+        self.textEdit.setPlainText(FileOper.load_file("app.log", True))
         self.textEdit.setFixedSize(600, 800)
         # 设置为不可编辑
         self.textEdit.setReadOnly(True)

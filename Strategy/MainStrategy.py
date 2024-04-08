@@ -116,7 +116,7 @@ class Strategy(QThread):
             Logging.error("策略执行失败，跳过此次执行")
             return
 
-    Logging.info("主界面初始化结束")
+    # Logging.info("主界面初始化结束")
 
 
 def check_process_exists(process_name):
