@@ -110,7 +110,7 @@ class AdvanceStrategy(ProcessStrategy):
                 Logging.info("开始识别副本")
                 # 最大识别30秒
                 if int(time.time()) - start_time > 30:
-                    Logging.info(f"{process_name}执行超时")
+                    Logging.info(f"[{process_name}]执行超时")
                     return
                 time.sleep(2)
                 img = cv2.imread(f"./Resource/img/{cv_img}.png")

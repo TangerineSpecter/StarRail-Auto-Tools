@@ -11,7 +11,7 @@
 import platform
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, QStringListModel, Qt)
-from PySide6.QtGui import (QAction, QIcon, QShortcut, QKeySequence)
+from PySide6.QtGui import (QAction, QIcon)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel, QVBoxLayout,
                                QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView, QStatusBar, QDialog)
@@ -31,7 +31,7 @@ systemInfo = SystemInfo.base_info
 
 class MainApp(object):
     def __init__(self, MainWindow, settings):
-        Logging.info("=====(^_^)======应用程序初始化=====(^_^)======")
+        Logging.info("[应用程序初始化]")
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setFixedSize(640, 480)
@@ -51,7 +51,7 @@ class MainApp(object):
         # 日志
         self.logAction = QAction(MainWindow)
         self.logAction.setObjectName(u"logAction")
-        self.logAction.triggered.connect(self.show_log)
+        self.logAction.triggered.connect(show_log)
 
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
@@ -88,7 +88,7 @@ class MainApp(object):
         self.logBtn = QPushButton(self.centralWidget)
         self.logBtn.setObjectName(u"logBtn")
         self.logBtn.setGeometry(QRect(530, 150, 80, 40))
-        self.logBtn.clicked.connect(self.show_log)
+        self.logBtn.clicked.connect(show_log)
 
         # 下拉菜单
         self.menubar.addAction(self.menu.menuAction())
@@ -172,17 +172,6 @@ class MainApp(object):
         if game_path is not None:
             self.gamePathText.setText(game_path)
 
-        # 线程初始化和槽绑定
-        # self.worker = Worker()
-        # self.worker.sinOut.connect(self.showMsg)
-
-        # 快捷键绑定
-        shortcut = QShortcut(QKeySequence("shift+q"), self.centralWidget)
-        shortcut.activated.connect(lambda: self.run_thread())
-
-        shortcut = QShortcut(QKeySequence("shift+a"), self.centralWidget)
-        shortcut.activated.connect(lambda: self.stop_thread())
-
         if platform.system() == 'Windows':
             KeyboardModule(self).bind_start_game()
             KeyboardModule(self).bind_position()
@@ -226,15 +215,6 @@ class MainApp(object):
             self.gamePathText.setText(file_path)
             # 保存设置
             self.settings.setValue("game_path", file_path)
-
-    def show_log(self):
-        """
-        打开日志
-        """
-        sub_window = SubWindow()
-        # 设置为模态对话框
-        sub_window.setModal(True)
-        sub_window.exec()
 
     def addTableItem(self, data, columnCount=3, rowCount=1):
         """
@@ -324,6 +304,9 @@ class MainApp(object):
                 self.updateTableItem([parent_name, item, number], rowCount=row_count)
 
     def refreshTableCache(self):
+        """
+        刷新表格缓存数据
+        """
         # 获取表格的行数和列数
         rows = self.tableWidget.rowCount()
         cols = self.tableWidget.columnCount()
@@ -352,13 +335,25 @@ class AboutDialog(QMessageBox):
     def __init__(self, parent=None):
         super(AboutDialog, self).__init__(parent)
         self.setWindowTitle("关于")
-        self.setText(f"版本号：{systemInfo['version']}\n作者：丢失的橘子\nBug反馈邮箱：993033472@qq.com")
+        self.setText(f"版本号：{systemInfo['version']}\n"
+                     f"作者：{systemInfo['author']}\n"
+                     f"Bug反馈邮箱：{systemInfo['email']}")
         self.exec()
 
 
 # 关于对话框
 def show_about_dialog():
     AboutDialog()
+
+
+def show_log():
+    """
+    打开日志
+    """
+    sub_window = SubWindow()
+    # 设置为模态对话框
+    sub_window.setModal(True)
+    sub_window.exec()
 
 
 class SubWindow(QDialog):

@@ -3,6 +3,7 @@ import time
 import cv2
 import psutil
 import pyautogui
+import subprocess
 from PySide6.QtCore import QThread, Signal
 
 import Config.LoggingConfig as Logging
@@ -33,16 +34,11 @@ class Strategy(QThread):
         self.run_game()
 
     def run_game(self):
-        # process = subprocess.Popen(game_path, stderr=subprocess.PIPE)
-        # time.sleep(2)
-        # 等待程序执行完成
-        # process.communicate()
-
         try:
             Logging.info("执行主策略：开始比对")
             if check_process_exists(Constant.app_name):
                 print("已运行")
-                # AudioFactory.play_audio(Constant.Audio.running)
+                AudioFactory.play_audio(Constant.Audio.running)
                 self.__run_table_data()
             else:
                 # self.__join_game()
@@ -58,11 +54,14 @@ class Strategy(QThread):
         """
         Logging.info("未运行，开始加入游戏")
         if len(self.game_path) <= 0:
-            # QMessageBox.information(self.QWidget, '提示', '未设置游戏启动路径', QMessageBox.Ok)
+            self.sinOut.emit("未设置游戏启动路径")
             return
 
-        # context = Context(ExpStrategy())
-        # context.execute_strategy()
+        process = subprocess.Popen(self.game_path, stderr=subprocess.PIPE)
+        time.sleep(2)
+        # TODO 等待程序执行完成 可能有问题
+        process.communicate()
+
         '''找到启动按钮'''
         # 获取项目根目录的绝对路径
         img = cv2.imread("./Resource/img/StartBtn.png")
@@ -71,8 +70,10 @@ class Strategy(QThread):
         # 移动鼠标到按钮位置并点击
         pyautogui.moveTo(button_x, button_y, duration=0.25)
         pyautogui.click()
+        # TODO 等待游戏开始画面点击 图像识别会准确一些
+        time.sleep(10)
+        pyautogui.click()
         self.__run_table_data()
-        Logging.info("游戏正常")
 
     def __run_table_data(self):
         """
