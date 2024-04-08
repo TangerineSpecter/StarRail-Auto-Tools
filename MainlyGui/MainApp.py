@@ -213,7 +213,7 @@ class MainApp(object):
         BtnCss.orange(self.settingItemBtn)
         BtnCss.red(self.removeItemBtn)
         BtnCss.blue(self.startGameBtn)
-        BtnCss.blue(self.logBtn)
+        BtnCss.purple(self.logBtn)
 
     # 打开游戏文件
     def open_file(self):

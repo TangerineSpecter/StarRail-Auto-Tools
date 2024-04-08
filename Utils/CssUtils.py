@@ -16,6 +16,7 @@ class BtnCss:
             }
             QPushButton:hover {
                 background-color: #66b1ff;
+                border: 1px solid #66b1ff;
             }
             """
         )
@@ -35,7 +36,8 @@ class BtnCss:
                 border-radius: 5px;
             }
             QPushButton:hover {
-                background-color: #ff7f00;
+                background-color: #ffa64d;
+                border: 1px solid #ffa64d;
             }
             """
         )
@@ -55,7 +57,29 @@ class BtnCss:
                 border-radius: 5px;
             }
             QPushButton:hover {
-                background-color: #e6a8ad;
+                background-color: #d1616a;
+                border: 1px solid #d1616a;
+            }
+            """
+        )
+
+    @staticmethod
+    def purple(btnObj):
+        """紫色按钮样式
+        :param btnObj 按钮对象
+        """
+        btnObj.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #7d54de;
+                border: 1px solid #7d54de;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #A488E8;
+                border: 1px solid #A488E8;
             }
             """
         )
