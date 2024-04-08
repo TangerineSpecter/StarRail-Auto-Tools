@@ -22,3 +22,14 @@ class FileOper:
         with open(os.path.join(FileOper.rel_path, filename), 'r', encoding='utf-8') as load_f:
             para_dict = json.load(load_f)
         return para_dict
+
+    @staticmethod
+    def load_file(filename):
+        """
+        读取文件
+        :param filename:  文件名
+        :return: 文件内容
+        """
+        with open(filename, 'r', encoding='utf-8') as file:
+            content = file.read()
+        return content

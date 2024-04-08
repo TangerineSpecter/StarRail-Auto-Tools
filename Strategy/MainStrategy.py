@@ -5,6 +5,7 @@ import psutil
 import pyautogui
 from PySide6.QtCore import QThread, Signal
 
+import Config.LoggingConfig as Logging
 import Utils.Constant as Constant
 import Utils.DataUtils as Data
 from Strategy.ProcessStrategy import Context, DistributeStrategy
@@ -38,7 +39,7 @@ class Strategy(QThread):
         # process.communicate()
 
         try:
-            print("执行主策略：开始比对")
+            Logging.info("执行主策略：开始比对")
             if check_process_exists(Constant.app_name):
                 print("已运行")
                 # AudioFactory.play_audio(Constant.Audio.running)
@@ -47,15 +48,15 @@ class Strategy(QThread):
                 # self.__join_game()
                 self.sinOut.emit("游戏未运行")
         except Exception as e:
-            print("未识别到图像")
+            Logging.error(f"未识别到图像，异常信息{e.__cause__}")
 
-        print("结束")
+        Logging.info("脚本运行结束")
 
     def __join_game(self):
         """
         未运行，开始加入游戏策略
         """
-        print("未运行，开始加入游戏")
+        Logging.info("未运行，开始加入游戏")
         if len(self.game_path) <= 0:
             # QMessageBox.information(self.QWidget, '提示', '未设置游戏启动路径', QMessageBox.Ok)
             return
@@ -71,7 +72,7 @@ class Strategy(QThread):
         pyautogui.moveTo(button_x, button_y, duration=0.25)
         pyautogui.click()
         self.__run_table_data()
-        print("运行游戏")
+        Logging.info("游戏正常")
 
     def __run_table_data(self):
         """
@@ -79,7 +80,7 @@ class Strategy(QThread):
         """
         for index in range(len(self.tableData)):
             # 设置当前读取列索引
-            print(f"开始执行第{index}行逻辑")
+            Logging.info(f"开始执行第{index}行数据")
             self.row_index = index
             self.__init_window()
 
@@ -89,7 +90,7 @@ class Strategy(QThread):
         :return:
         """
         # 点击三次右上角的x回到原始界面
-        print("初始化窗口")
+        Logging.info("初始化游戏主窗口")
         pyautogui.moveTo(Data.getPosition("close_btn"), duration=Data.duration)
         for _ in range(3):
             pyautogui.click()
@@ -112,10 +113,10 @@ class Strategy(QThread):
         result = context.execute_strategy(self.tableData[self.row_index])
 
         if not result:
-            print("策略执行失败，跳过此次执行")
+            Logging.error("策略执行失败，跳过此次执行")
             return
 
-    print("初始化结束")
+    Logging.info("主界面初始化结束")
 
 
 def check_process_exists(process_name):

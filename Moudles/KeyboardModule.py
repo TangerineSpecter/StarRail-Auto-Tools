@@ -4,6 +4,7 @@
 import keyboard
 import pyautogui
 
+import Config.LoggingConfig as Logging
 from Strategy.MainStrategy import Strategy
 
 
@@ -25,7 +26,7 @@ class KeyboardModule:
         """
         停止脚本运行快捷键
         """
-        print("中断线程")
+        Logging.info("中断脚本运行")
         keyboard.add_hotkey('shift+f', lambda: self.worker.terminate())
 
     def bind_position(self):

@@ -13,15 +13,17 @@ import platform
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, QStringListModel, Qt)
 from PySide6.QtGui import (QAction, QIcon, QShortcut, QKeySequence)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
-                               QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel,
-                               QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView, QStatusBar)
+                               QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel, QVBoxLayout,
+                               QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView, QStatusBar, QDialog)
 
 if platform.system() == 'Windows':
     from Moudles.KeyboardModule import KeyboardModule
 from Strategy.MainStrategy import Strategy
 from Utils.CssUtils import (BtnCss)
+from Utils.FileUtils import FileOper
 import Config.DungeonConfig as DungeonConfig
 import Config.SystemInfo as SystemInfo
+import Config.LoggingConfig as Logging
 
 # 系统信息
 systemInfo = SystemInfo.base_info
@@ -29,6 +31,7 @@ systemInfo = SystemInfo.base_info
 
 class MainApp(object):
     def __init__(self, MainWindow, settings):
+        Logging.info("\n=====(^_^)======应用程序初始化=====(^_^)======")
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setFixedSize(640, 480)
@@ -44,6 +47,11 @@ class MainApp(object):
         self.aboutAction = QAction(MainWindow)
         self.aboutAction.setObjectName(u"aboutAction")
         self.aboutAction.triggered.connect(show_about_dialog)
+
+        # 日志
+        self.logAction = QAction(MainWindow)
+        self.logAction.setObjectName(u"logAction")
+        self.logAction.triggered.connect(self.show_log)
 
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
@@ -76,9 +84,16 @@ class MainApp(object):
         self.startGameBtn.clicked.connect(
             lambda: Strategy(self).run_game())
 
+        # 日志
+        self.logBtn = QPushButton(self.centralWidget)
+        self.logBtn.setObjectName(u"logBtn")
+        self.logBtn.setGeometry(QRect(530, 150, 80, 40))
+        self.logBtn.clicked.connect(self.show_log)
+
         # 下拉菜单
         self.menubar.addAction(self.menu.menuAction())
         self.menu.addAction(self.openAction)
+        self.menu.addAction(self.logAction)
         self.menu.addAction(self.aboutAction)
 
         # 设置相关
@@ -180,9 +195,11 @@ class MainApp(object):
             QCoreApplication.translate("MainWindow", f"{systemInfo['title']} v{systemInfo['version']}", None))
         self.openAction.setText(QCoreApplication.translate("MainWindow", "打开", None))
         self.aboutAction.setText(QCoreApplication.translate("MainWindow", "关于", None))
+        self.logAction.setText(QCoreApplication.translate("MainWindow", "日志", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", "文件", None))
         self.openFileBtn.setText(QCoreApplication.translate("MainWindow", "打开", None))
         self.startGameBtn.setText(QCoreApplication.translate("MainWindow", "启动游戏", None))
+        self.logBtn.setText(QCoreApplication.translate("MainWindow", "日志", None))
         self.gamePathText.setPlaceholderText(QCoreApplication.translate("MainWindow", "游戏启动路径", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", "设置", None))
         self.selectListLabel.setText(QCoreApplication.translate("MainWindow", "副本列表", None))
@@ -196,6 +213,7 @@ class MainApp(object):
         BtnCss.orange(self.settingItemBtn)
         BtnCss.red(self.removeItemBtn)
         BtnCss.blue(self.startGameBtn)
+        BtnCss.blue(self.logBtn)
 
     # 打开游戏文件
     def open_file(self):
@@ -208,6 +226,15 @@ class MainApp(object):
             self.gamePathText.setText(file_path)
             # 保存设置
             self.settings.setValue("game_path", file_path)
+
+    def show_log(self):
+        """
+        打开日志
+        """
+        sub_window = SubWindow()
+        sub_window.setModal(True)  # 设置为模态对话框
+        sub_window.exec()
+        print("新窗口")
 
     def addTableItem(self, data, columnCount=3, rowCount=1):
         """
@@ -332,3 +359,20 @@ class AboutDialog(QMessageBox):
 # 关于对话框
 def show_about_dialog():
     AboutDialog()
+
+
+class SubWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("查看日志")
+
+        layout = QVBoxLayout()
+
+        self.textEdit = QTextEdit()
+        self.textEdit.setPlainText(FileOper.load_file("app.log"))
+        self.textEdit.setFixedSize(600, 800)
+        # 设置为不可编辑
+        self.textEdit.setReadOnly(True)
+        layout.addWidget(self.textEdit)
+
+        self.setLayout(layout)

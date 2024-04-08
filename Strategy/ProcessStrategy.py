@@ -4,6 +4,7 @@ import cv2
 import pyautogui
 
 import Config.DungeonConfig as DungeonConfig
+import Config.LoggingConfig as Logging
 import Utils.DataUtils as Data
 
 screen_width, screen_height = pyautogui.size()
@@ -57,7 +58,7 @@ class BaseStrategy(ProcessStrategy):
         elif process_name == '匹诺康尼':
             pyautogui.moveTo(screen_width * 0.553, screen_height * 0.306, duration=Data.duration)
         else:
-            print('未知副本')
+            Logging.info(f'未知副本，副本名称：{process_name}')
             return False
         pyautogui.click()
 
@@ -103,13 +104,13 @@ class AdvanceStrategy(ProcessStrategy):
         # 平移到内容区域，鼠标不要遮挡识别图片
         pyautogui.moveRel(screen_width * 0.3, 0, duration=Data.duration)
 
-        # TODO 选择对应技能 图像识别
         start_time = int(time.time())
         while True:
             try:
-                # 最大识别20秒
-                if int(time.time()) - start_time > 20:
-                    print("识别超时")
+                Logging.info("开始识别副本")
+                # 最大识别30秒
+                if int(time.time()) - start_time > 30:
+                    Logging.info(f"{process_name}执行超时")
                     return
                 time.sleep(2)
                 img = cv2.imread(f"./Resource/img/{cv_img}.png")
@@ -121,7 +122,7 @@ class AdvanceStrategy(ProcessStrategy):
                 pyautogui.click()
                 break
             except Exception:
-                print("未识别到副本")
+                Logging.info("未识别到副本，滚动界面继续识别")
                 pyautogui.dragRel(0, -500, duration=0.5, button='left')
                 pyautogui.moveRel(0, 500, duration=0.5)
 
@@ -169,19 +170,19 @@ def BattleOver(retry=False, count=1):
             print(button_x, button_y)
             # 重试，并且拥有重试次数
             if retry and count > 0:
-                print("再次挑战")
                 pyautogui.moveTo(Data.getPosition("dungeon_retry"), duration=Data.duration)
                 count = count - 1
+                Logging.info(f"再次挑战副本，剩余次数：{count}")
                 continue
             # 退出
             pyautogui.moveTo(Data.getPosition("dungeon_exit"), duration=Data.duration)
             pyautogui.click()
-            print("退出界面")
+            Logging.info("副本挑战结束，返回界面")
             # 等待界面切换
             time.sleep(5)
             return True
         except pyautogui.ImageNotFoundException:
-            print("未挑战完毕")
+            Logging.info("未挑战完毕，继续识别")
 
 
 if __name__ == '__main__':
