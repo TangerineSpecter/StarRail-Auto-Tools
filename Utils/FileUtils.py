@@ -36,3 +36,25 @@ class FileOper:
         if reverse:
             content.reverse()
         return "".join(content)
+
+    @staticmethod
+    def load_log_file(filename):
+        """
+        读取文件
+        :param filename:  文件名
+        :return: 文件内容
+        """
+        with open(filename, 'r', encoding='utf-8') as file:
+            content = file.readlines()
+        content.reverse()
+        result = []
+        for c in content:
+            c_list = c.split(" - ")
+            time = c_list[0]
+            level = c_list[1]
+            content = c_list[2]
+            template = f"<span style='color: rgb(255, 255, 255);font-size:14px;'>{time}</span> " \
+                       f"<span style='color: rgb(180, 86, 142);font-size:14px;'> - {level} - </span> " \
+                       f"<span style='color: rgb(86, 177, 110);white-space: pre-line;font-size:14px;'>{content}</span>"
+            result.append(template)
+        return "".join(result)

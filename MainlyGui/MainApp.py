@@ -232,9 +232,9 @@ class MainApp(object):
         打开日志
         """
         sub_window = SubWindow()
-        sub_window.setModal(True)  # 设置为模态对话框
+        # 设置为模态对话框
+        sub_window.setModal(True)
         sub_window.exec()
-        print("新窗口")
 
     def addTableItem(self, data, columnCount=3, rowCount=1):
         """
@@ -367,10 +367,12 @@ class SubWindow(QDialog):
         self.setWindowTitle("查看日志")
 
         layout = QVBoxLayout()
-
+        # 86 177 110
         self.textEdit = QTextEdit()
-        self.textEdit.setPlainText(FileOper.load_file("app.log", True))
-        self.textEdit.setFixedSize(600, 800)
+        self.textEdit.setStyleSheet("background-color: rgb(20, 23, 40);")
+        log_content = FileOper.load_log_file("app.log")
+        self.textEdit.setHtml(log_content)
+        self.textEdit.setFixedSize(1000, 400)
         # 设置为不可编辑
         self.textEdit.setReadOnly(True)
         layout.addWidget(self.textEdit)

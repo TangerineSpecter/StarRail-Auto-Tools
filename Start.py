@@ -29,7 +29,8 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    app = QApplication()  # 初始化QApplication
+    # 初始化QApplication
+    app = QApplication()
     app.setWindowIcon(QIcon("Resource/img/icon.png"))
     app.setStyleSheet(
         """
