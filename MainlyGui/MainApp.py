@@ -22,7 +22,6 @@ from Strategy.MainStrategy import Strategy
 from Utils.CssUtils import (BtnCss)
 import Config.DungeonConfig as DungeonConfig
 import Config.SystemInfo as SystemInfo
-from Moudles.Worker import Worker
 
 # 系统信息
 systemInfo = SystemInfo.base_info
@@ -159,8 +158,8 @@ class MainApp(object):
             self.gamePathText.setText(game_path)
 
         # 线程初始化和槽绑定
-        self.worker = Worker()
-        self.worker.sinOut.connect(self.showMsg)
+        # self.worker = Worker()
+        # self.worker.sinOut.connect(self.showMsg)
 
         # 快捷键绑定
         shortcut = QShortcut(QKeySequence("shift+q"), self.centralWidget)
@@ -316,16 +315,6 @@ class MainApp(object):
 
     def setStatusText(self, text):
         self.runStatusLabel.setText(f"当前状态：{text}")
-
-    def run_thread(self):
-        self.setStatusText("执行脚本")
-        self.worker.start()
-        pass
-
-    def stop_thread(self):
-        self.setStatusText("脚本中断")
-        print("中断线程")
-        self.worker.stop()
 
     def showMsg(self, text):
         QMessageBox.information(self.centralWidget, '提示', text, QMessageBox.Ok)

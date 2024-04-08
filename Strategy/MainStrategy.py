@@ -3,15 +3,18 @@ import time
 import cv2
 import psutil
 import pyautogui
+from PySide6.QtCore import QThread, Signal
 
 import Utils.Constant as Constant
 import Utils.DataUtils as Data
 from Strategy.ProcessStrategy import Context, DistributeStrategy
 
 
-class Strategy:
+class Strategy(QThread):
+    sinOut = Signal(str)
 
     def __init__(self, MainWindow):
+        super(Strategy, self).__init__()
         self.QWidget = MainWindow.centralWidget
         self.game_path = MainWindow.gamePathText.toPlainText()
         # 执行行数，每次主策略调度初始化
@@ -24,6 +27,9 @@ class Strategy:
                 "count": MainWindow.tableData[i + 2]
             }
             self.tableData.append(obj)
+
+    def run(self):
+        self.run_game()
 
     def run_game(self):
         # process = subprocess.Popen(game_path, stderr=subprocess.PIPE)
@@ -38,7 +44,8 @@ class Strategy:
                 # AudioFactory.play_audio(Constant.Audio.running)
                 self.__run_table_data()
             else:
-                self.__join_game()
+                # self.__join_game()
+                self.sinOut.emit("游戏未运行")
         except Exception as e:
             print("未识别到图像")
 
