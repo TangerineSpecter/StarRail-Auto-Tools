@@ -21,13 +21,7 @@ class KeyboardModule:
         启动游戏快捷键
         """
         keyboard.add_hotkey('shift+r', lambda: self.worker.start())
-
-    def bind_stop_game(self):
-        """
-        停止脚本运行快捷键
-        """
-        Logging.info("中断脚本运行")
-        keyboard.add_hotkey('shift+f', lambda: self.worker.terminate())
+        keyboard.add_hotkey('shift+f', lambda: self.worker.stop())
 
     def bind_position(self):
         """

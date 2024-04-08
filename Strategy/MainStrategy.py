@@ -10,6 +10,7 @@ import Config.LoggingConfig as Logging
 import Utils.Constant as Constant
 import Utils.DataUtils as Data
 from Strategy.ProcessStrategy import Context, DistributeStrategy
+from Utils.AudioUtils import AudioFactory
 
 
 class Strategy(QThread):
@@ -32,6 +33,10 @@ class Strategy(QThread):
 
     def run(self):
         self.run_game()
+
+    def stop(self):
+        Logging.warn("终止脚本运行")
+        self.terminate()
 
     def run_game(self):
         try:
