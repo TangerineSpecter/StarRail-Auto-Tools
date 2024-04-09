@@ -62,8 +62,10 @@ class FileOper:
             time = c_list[0]
             level = c_list[1]
             content = c_list[2]
-            template = f"<span style='color: rgb(255, 255, 255);font-size:14px;'>{time}</span> " \
-                       f"<span style='color: {level_color_dict.get(level, 'white')};font-size:14px;'> - {level} - </span> " \
-                       f"<span style='color: rgb(86, 177, 110);white-space: pre-line;font-size:14px;'>{content}</span>"
+            template = "<span style='font-size:14px;font-family:Courier;'>" \
+                       f"<span style='color: rgb(255, 255, 255);'>{time} |</span> " \
+                       f"<span style='color: {level_color_dict.get(level, 'white')};'>{level.ljust(7, ' ').replace(' ', '&nbsp;')}</span> " \
+                       f"<span style='color: rgb(86, 177, 110);white-space: pre-line;'>| {content}</span>" \
+                       f"</span>"
             result.append(template)
         return "".join(result)
