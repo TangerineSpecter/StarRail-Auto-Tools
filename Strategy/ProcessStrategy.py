@@ -6,6 +6,8 @@ import pyautogui
 import Config.DungeonConfig as DungeonConfig
 import Config.LoggingConfig as Logging
 import Utils.DataUtils as Data
+from Config.CoordinateConfig import BtnKey
+import Config.CoordinateConfig as CoordinateConfig
 
 screen_width, screen_height = pyautogui.size()
 
@@ -49,7 +51,7 @@ class BaseStrategy(ProcessStrategy):
         Logging.info(f"开始执行 [{main_name}({process_name})] 自动化，总共执行次数{count}次")
 
         # 选择基础副本栏目
-        pyautogui.moveTo(Data.getPosition("base_row"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(BtnKey.base_row), duration=Data.duration)
         pyautogui.click()
 
         # 选择地区
@@ -65,19 +67,19 @@ class BaseStrategy(ProcessStrategy):
         pyautogui.click()
 
         # 传送
-        pyautogui.moveTo(Data.getPosition(f"{simple_name}_run_btn"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(CoordinateConfig.get_base_run(simple_name)), duration=Data.duration)
         pyautogui.click()
 
         time.sleep(3)
 
         # 选择次数
-        pyautogui.moveTo(Data.getPosition("action_count_btn"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(BtnKey.action_count_btn), duration=Data.duration)
         for _ in range(count):
             pyautogui.click()
             time.sleep(0.2)
 
         # 统一执行挑战
-        pyautogui.moveTo(Data.getPosition("action_btn"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
 
         # 等待2秒 界面弹出
@@ -103,7 +105,7 @@ class AdvanceStrategy(ProcessStrategy):
         Logging.info(f"开始执行 [{main_name}({process_name})] 自动化，总共执行次数{count}次")
 
         # 选择技能副本栏目
-        pyautogui.moveTo(Data.getPosition(f"{simple_name}_row"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(CoordinateConfig.get_dungeon_row(simple_name)), duration=Data.duration)
         pyautogui.click()
 
         # 平移到内容区域，鼠标不要遮挡识别图片
@@ -134,7 +136,7 @@ class AdvanceStrategy(ProcessStrategy):
         time.sleep(3)
 
         # 统一执行挑战
-        pyautogui.moveTo(Data.getPosition("action_btn"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
 
         # 等待2秒 界面弹出
@@ -175,12 +177,12 @@ def BattleOver(retry=False, count=1):
             print(button_x, button_y)
             # 重试，并且拥有重试次数
             if retry and count > 0:
-                pyautogui.moveTo(Data.getPosition("dungeon_retry"), duration=Data.duration)
+                pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_retry), duration=Data.duration)
                 count = count - 1
                 Logging.info(f"再次挑战副本，剩余次数：{count}")
                 continue
             # 退出
-            pyautogui.moveTo(Data.getPosition("dungeon_exit"), duration=Data.duration)
+            pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_exit), duration=Data.duration)
             pyautogui.click()
             Logging.info("副本挑战结束，返回界面")
             # 等待界面切换

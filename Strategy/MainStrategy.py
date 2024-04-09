@@ -11,7 +11,7 @@ import Utils.Constant as Constant
 import Utils.DataUtils as Data
 from Strategy.ProcessStrategy import Context, DistributeStrategy
 from Utils.AudioUtils import AudioFactory
-from playsound import playsound
+from Config.CoordinateConfig import BtnKey
 
 
 class Strategy(QThread):
@@ -100,14 +100,14 @@ class Strategy(QThread):
         """
         # 点击三次右上角的x回到原始界面
         Logging.info("初始化游戏主窗口")
-        pyautogui.moveTo(Data.getPosition("close_btn"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(BtnKey.close_btn), duration=Data.duration)
         for _ in range(3):
             pyautogui.click()
 
         # 打开副本界面
         Logging.info("开始打开副本界面")
         pyautogui.keyDown('alt')
-        pyautogui.moveTo(Data.getPosition("dungeon_main"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_main), duration=Data.duration)
         pyautogui.click()
         pyautogui.keyUp('alt')
 
@@ -115,7 +115,7 @@ class Strategy(QThread):
         time.sleep(1)
 
         # 选择副本
-        pyautogui.moveTo(Data.getPosition("dungeon_tab"), duration=Data.duration)
+        pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_tab), duration=Data.duration)
         pyautogui.click()
 
         # 策略分发

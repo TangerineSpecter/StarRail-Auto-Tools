@@ -5,6 +5,7 @@
 import pyautogui
 from PySide6.QtCore import QSettings
 
+import Config.CoordinateConfig
 import Config.CoordinateConfig as CoordinateConfig
 
 # 创建 QSettings 对象，将 parent 参数设置为 None
@@ -20,7 +21,7 @@ duration = 0.3
 positionInfo = CoordinateConfig.coordinate_info
 
 
-def getPosition(position_name):
+def getPosition(position_name: Config.CoordinateConfig.BtnKey):
     """
     获取指定的坐标位置
     :param position_name: 坐标名称
