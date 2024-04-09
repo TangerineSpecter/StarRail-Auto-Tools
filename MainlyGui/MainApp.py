@@ -33,7 +33,7 @@ systemInfo = SystemInfo.base_info
 
 class MainApp(object):
     def __init__(self, MainWindow):
-        Logging.info("[应用程序初始化]")
+        Logging.info("应用程序初始化")
         # 初始化窗体基本信息
         MainWindow.setObjectName(u"MainWindow")
         MainWindow.setFixedSize(640, 480)

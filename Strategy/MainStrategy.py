@@ -40,9 +40,9 @@ class Strategy(QThread):
 
     def run_game(self):
         try:
-            Logging.info("执行主策略：开始比对")
+            Logging.info("开始检测游戏运行状态")
             if check_process_exists(Constant.app_name):
-                print("已运行")
+                Logging.info("游戏已运行，执行下一步")
                 AudioFactory.play_audio(Constant.Audio.running)
                 self.__run_table_data()
             else:
@@ -51,7 +51,7 @@ class Strategy(QThread):
                 self.sinOut.emit("游戏未运行")
                 Logging.info("游戏未运行，终止")
         except Exception as e:
-            Logging.error(f"未识别到图像，异常信息{e.__cause__}")
+            Logging.error(f"脚本运行异常，异常信息：{e.__cause__}")
 
         Logging.info("脚本运行结束")
 
@@ -59,8 +59,9 @@ class Strategy(QThread):
         """
         未运行，开始加入游戏策略
         """
-        Logging.info("未运行，开始加入游戏")
+        Logging.info("游戏未运行，开始尝试进入游戏")
         if len(self.game_path) <= 0:
+            Logging.warn("游戏启动路径未设置，终止")
             self.sinOut.emit("未设置游戏启动路径")
             return
 
@@ -104,6 +105,7 @@ class Strategy(QThread):
             pyautogui.click()
 
         # 打开副本界面
+        Logging.info("开始打开副本界面")
         pyautogui.keyDown('alt')
         pyautogui.moveTo(Data.getPosition("dungeon_main"), duration=Data.duration)
         pyautogui.click()

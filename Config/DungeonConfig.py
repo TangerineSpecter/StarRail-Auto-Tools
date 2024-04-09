@@ -92,7 +92,7 @@ dungeon_dict = {
         "parent_name": "历战余响",
         "simple_name": "weekend",
         "strategy_class": "AdvanceStrategy",
-        "max_count": 1,
+        "max_count": 3,
         "children": {
             "毁灭的开端": "",
             "寒潮的落幕": "",

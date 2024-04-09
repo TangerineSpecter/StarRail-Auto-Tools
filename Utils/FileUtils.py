@@ -1,6 +1,15 @@
-import os
 import json
+import os
 import sys
+
+# 日志级别字典
+level_color_dict = {
+    "DEBUG": "rgb(64, 126, 210)",
+    "INFO": "rgb(64, 126, 210)",
+    "WARNING": "rgb(232, 232, 86)",
+    "ERROR": "rgb(180, 86, 142)",
+    "FATAL": "rgb(201, 83, 81)"
+}
 
 
 class FileOper:
@@ -54,7 +63,7 @@ class FileOper:
             level = c_list[1]
             content = c_list[2]
             template = f"<span style='color: rgb(255, 255, 255);font-size:14px;'>{time}</span> " \
-                       f"<span style='color: rgb(180, 86, 142);font-size:14px;'> - {level} - </span> " \
+                       f"<span style='color: {level_color_dict.get(level, 'white')};font-size:14px;'> - {level} - </span> " \
                        f"<span style='color: rgb(86, 177, 110);white-space: pre-line;font-size:14px;'>{content}</span>"
             result.append(template)
         return "".join(result)

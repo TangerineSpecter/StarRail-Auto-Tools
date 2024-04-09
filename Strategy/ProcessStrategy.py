@@ -42,9 +42,11 @@ class BaseStrategy(ProcessStrategy):
     """
 
     def doJob(self, row_data):
+        main_name = row_data['main_name']
         process_name = row_data['process_name']
-        count = int(row_data['count']) - 1
+        count = int(row_data['count'])
         simple_name = row_data['simple_name']
+        Logging.info(f"开始执行 [{main_name}({process_name})] 自动化，总共执行次数{count}次")
 
         # 选择基础副本栏目
         pyautogui.moveTo(Data.getPosition("base_row"), duration=Data.duration)
@@ -58,7 +60,7 @@ class BaseStrategy(ProcessStrategy):
         elif process_name == '匹诺康尼':
             pyautogui.moveTo(screen_width * 0.553, screen_height * 0.306, duration=Data.duration)
         else:
-            Logging.info(f'未知副本，副本名称：{process_name}')
+            Logging.warn(f'未知副本，副本名称：{process_name}')
             return False
         pyautogui.click()
 
@@ -83,6 +85,7 @@ class BaseStrategy(ProcessStrategy):
 
         # 开始
         pyautogui.click()
+        # 此逻辑可设置次数，则直接无重试退出
         BattleOver()
 
 
@@ -92,10 +95,12 @@ class AdvanceStrategy(ProcessStrategy):
     """
 
     def doJob(self, row_data):
+        main_name = row_data['main_name']
         process_name = row_data['process_name']
         cv_img = row_data['children'][process_name]
-        count = int(row_data['count']) - 1
+        count = int(row_data['count'])
         simple_name = row_data['simple_name']
+        Logging.info(f"开始执行 [{main_name}({process_name})] 自动化，总共执行次数{count}次")
 
         # 选择技能副本栏目
         pyautogui.moveTo(Data.getPosition(f"{simple_name}_row"), duration=Data.duration)
@@ -107,10 +112,10 @@ class AdvanceStrategy(ProcessStrategy):
         start_time = int(time.time())
         while True:
             try:
-                Logging.info("开始识别副本")
+                Logging.info("开始识别副本中...")
                 # 最大识别30秒
                 if int(time.time()) - start_time > 30:
-                    Logging.info(f"[{process_name}]执行超时")
+                    Logging.warn(f"[{process_name}]执行超时")
                     return
                 time.sleep(2)
                 img = cv2.imread(f"./Resource/img/{cv_img}.png")
@@ -122,7 +127,7 @@ class AdvanceStrategy(ProcessStrategy):
                 pyautogui.click()
                 break
             except Exception:
-                Logging.info("未识别到副本，滚动界面继续识别")
+                Logging.info("未识别到副本，滚动界面继续识别...")
                 pyautogui.dragRel(0, -500, duration=0.5, button='left')
                 pyautogui.moveRel(0, 500, duration=0.5)
 
@@ -182,7 +187,7 @@ def BattleOver(retry=False, count=1):
             time.sleep(5)
             return True
         except pyautogui.ImageNotFoundException:
-            Logging.info("未挑战完毕，继续识别")
+            Logging.info("战斗未结束，等待中...")
 
 
 if __name__ == '__main__':
