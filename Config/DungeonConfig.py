@@ -94,10 +94,10 @@ dungeon_dict = {
         "strategy_class": "AdvanceStrategy",
         "max_count": 3,
         "children": {
-            "毁灭的开端": "",
-            "寒潮的落幕": "",
-            "不死的神实": "",
-            "蛀星的旧靥": ""
+            "毁灭的开端": "Destruction",
+            "寒潮的落幕": "ColdWave",
+            "不死的神实": "Immortal",
+            "蛀星的旧靥": "DecayStar"
         }
     }
 }

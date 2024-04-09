@@ -17,22 +17,32 @@ from Utils.AudioUtils import AudioFactory
 class Strategy(QThread):
     sinOut = Signal(str)
 
-    def __init__(self, game_path, tableData):
+    def __init__(self):
         super(Strategy, self).__init__()
-        self.game_path = game_path
         # 执行行数，每次主策略调度初始化
         self.row_index = 0
         self.tableData = []
-        for i in range(0, len(tableData), 3):
-            obj = {
-                "main_name": tableData[i],
-                "process_name": tableData[i + 1],
-                "count": tableData[i + 2]
-            }
-            self.tableData.append(obj)
+        self.game_path = None
 
     def run(self):
+        self.__init_data()
         self.run_game()
+
+    def __init_data(self):
+        """
+        重载数据，避免线程初始化之后数据未刷新
+        """
+        # 重置
+        self.tableData.clear()
+        self.game_path = Data.settings.value("game_path", None)
+        data = Data.settings.value("table_data", None)
+        for i in range(0, len(data), 3):
+            obj = {
+                "main_name": data[i],
+                "process_name": data[i + 1],
+                "count": data[i + 2]
+            }
+            self.tableData.append(obj)
 
     def stop(self):
         Logging.warn("终止脚本运行")
@@ -43,11 +53,11 @@ class Strategy(QThread):
             Logging.info("开始检测游戏运行状态")
             if check_process_exists():
                 Logging.info("游戏已运行，执行下一步")
-                AudioFactory.play_audio(Constant.Audio.running)
+                # AudioFactory.play_audio(Constant.Audio.running)
                 self.__run_table_data()
             else:
                 # self.__join_game()
-                AudioFactory.play_audio(Constant.Audio.not_running)
+                # AudioFactory.play_audio(Constant.Audio.not_running)
                 self.sinOut.emit("游戏未运行")
                 Logging.info("游戏未运行，终止")
         except Exception as e:

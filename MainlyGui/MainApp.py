@@ -343,7 +343,6 @@ class MainApp(object):
 
         Data.settings.setValue("table_data", all_data)
         self.tableData = all_data
-        pass
 
     def setStatusText(self, text):
         self.runStatusLabel.setText(f"当前状态：{text}")
@@ -394,7 +393,7 @@ class MainApp(object):
             self.gamePathText.setText(game_path)
 
         # 线程创建
-        self.worker = Strategy(game_path, self.tableData)
+        self.worker = Strategy()
         self.worker.sinOut.connect(self.showMsg)
 
 

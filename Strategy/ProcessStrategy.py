@@ -108,6 +108,10 @@ class AdvanceStrategy(ProcessStrategy):
         simple_name = row_data['simple_name']
         Logging.info(f"开始执行 [{main_name}({process_name})] 自动化，总共执行次数{count}次")
 
+        if simple_name == "equip" or simple_name == "weekend":
+            pyautogui.moveRel(0, 500, duration=Data.duration)
+            pyautogui.dragRel(0, -500, duration=0.5, button='left')
+
         # 选择技能副本栏目
         pyautogui.moveTo(Data.getPosition(CoordinateConfig.get_dungeon_row(simple_name)), duration=Data.duration)
         pyautogui.click()
