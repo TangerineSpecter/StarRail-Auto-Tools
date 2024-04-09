@@ -103,8 +103,8 @@ coordinate_info = {
 
     # 副本结束重试按钮
     BtnKey.dungeon_retry: {
-        "x": -1,
-        "y": -1
+        "x": 0.618,
+        "y": 0.877
     },
     # 副本结束退出按钮
     BtnKey.dungeon_exit: {

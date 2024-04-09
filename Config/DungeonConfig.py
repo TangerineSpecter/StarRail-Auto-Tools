@@ -77,15 +77,15 @@ dungeon_dict = {
         "strategy_class": "AdvanceStrategy",
         "max_count": 99,
         "children": {
-            "霜风之径": "",
-            "迅拳之径": "",
-            "漂泊之径": "",
-            "睿治之径": "",
-            "圣颂之径": "",
-            "野焰之径": "",
-            "药使之径": "",
-            "幽冥之径": "",
-            "梦潜之径": ""
+            "霜风之径": "FrostWind",
+            "迅拳之径": "SwiftPunch",
+            "漂泊之径": "Wander",
+            "睿治之径": "Smart",
+            "圣颂之径": "Troparia",
+            "野焰之径": "WildFlames",
+            "药使之径": "MedicineEnvoy",
+            "幽冥之径": "Nether",
+            "梦潜之径": "DreamDiving"
         }
     },
     "历战余响": {

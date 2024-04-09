@@ -153,8 +153,8 @@ class AdvanceStrategy(ProcessStrategy):
 
         # 开始
         pyautogui.click()
-
-        BattleOver(True, count)
+        # 由于已战斗1次，则重试次数少1
+        BattleOver(True, count - 1)
 
 
 class Context:
@@ -180,7 +180,7 @@ def BattleOver(retry=False, count=1):
     """
     while True:
         try:
-            time.sleep(1)
+            time.sleep(2)
             img = cv2.imread("./Resource/img/BattleOver.png")
             button_x, button_y = pyautogui.locateCenterOnScreen(img)
             print(button_x, button_y)
@@ -188,6 +188,7 @@ def BattleOver(retry=False, count=1):
             if retry and count > 0:
                 # TODO 体力不够检测终止
                 pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_retry), duration=Data.duration)
+                pyautogui.click()
                 count = count - 1
                 Logging.info(f"再次挑战副本，剩余次数：{count}")
                 continue
