@@ -3,11 +3,11 @@ import time
 import cv2
 import pyautogui
 
+import Config.CoordinateConfig as CoordinateConfig
 import Config.DungeonConfig as DungeonConfig
 import Config.LoggingConfig as Logging
 import Utils.DataUtils as Data
 from Config.CoordinateConfig import BtnKey
-import Config.CoordinateConfig as CoordinateConfig
 
 screen_width, screen_height = pyautogui.size()
 
@@ -66,6 +66,8 @@ class BaseStrategy(ProcessStrategy):
             return False
         pyautogui.click()
 
+        # TODO 副本未开放检测
+
         # 传送
         pyautogui.moveTo(Data.getPosition(CoordinateConfig.get_base_run(simple_name)), duration=Data.duration)
         pyautogui.click()
@@ -81,6 +83,8 @@ class BaseStrategy(ProcessStrategy):
         # 统一执行挑战
         pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
+
+        # TODO 体力不够检测终止
 
         # 等待2秒 界面弹出
         time.sleep(2)
@@ -127,6 +131,7 @@ class AdvanceStrategy(ProcessStrategy):
                 # 相对图标进行平移点击传送
                 pyautogui.moveRel(screen_width * 0.38, screen_height * 0.02, duration=Data.duration)
                 pyautogui.click()
+                # TODO 副本未开放检测
                 break
             except Exception:
                 Logging.info("未识别到副本，滚动界面继续识别...")
@@ -177,6 +182,7 @@ def BattleOver(retry=False, count=1):
             print(button_x, button_y)
             # 重试，并且拥有重试次数
             if retry and count > 0:
+                # TODO 体力不够检测终止
                 pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_retry), duration=Data.duration)
                 count = count - 1
                 Logging.info(f"再次挑战副本，剩余次数：{count}")

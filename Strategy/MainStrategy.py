@@ -1,17 +1,17 @@
+import subprocess
 import time
 
 import cv2
 import psutil
 import pyautogui
-import subprocess
 from PySide6.QtCore import QThread, Signal
 
 import Config.LoggingConfig as Logging
 import Utils.Constant as Constant
 import Utils.DataUtils as Data
+from Config.CoordinateConfig import BtnKey
 from Strategy.ProcessStrategy import Context, DistributeStrategy
 from Utils.AudioUtils import AudioFactory
-from Config.CoordinateConfig import BtnKey
 
 
 class Strategy(QThread):
@@ -41,7 +41,7 @@ class Strategy(QThread):
     def run_game(self):
         try:
             Logging.info("开始检测游戏运行状态")
-            if check_process_exists(Constant.app_name):
+            if check_process_exists():
                 Logging.info("游戏已运行，执行下一步")
                 AudioFactory.play_audio(Constant.Audio.running)
                 self.__run_table_data()
@@ -129,8 +129,12 @@ class Strategy(QThread):
     # Logging.info("主界面初始化结束")
 
 
-def check_process_exists(process_name):
+def check_process_exists():
+    """
+    检测进程是否存在
+    :return: True:存在
+    """
     for proc in psutil.process_iter(['name']):
-        if proc.info['name'] == process_name:
+        if proc.info['name'] == Constant.app_name:
             return True
     return False

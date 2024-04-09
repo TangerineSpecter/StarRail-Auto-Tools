@@ -4,6 +4,7 @@ app_name = 'StarRail.exe'
 # 图标位置
 icon = "../Resource/img/icon.png"
 
+# 全局快捷键
 start_keyboard = "shift + r"
 stop_keyboard = "shift + f"
 

@@ -134,6 +134,7 @@ class MainApp(object):
         self.runKeyboardLabel = QLabel(self.groupBox)
         self.runKeyboardLabel.setObjectName(u"runKeyboardLabel")
         self.runKeyboardLabel.setGeometry(QRect(20, 310, 158, 16))
+        self.runKeyboardLabel.setStyleSheet("color: red;font-weight:bold;")
         self.runKeyboardLabel.setText(
             QCoreApplication.translate("MainWindow", f"启动快捷键：{Constant.start_keyboard}", None))
 
@@ -141,6 +142,7 @@ class MainApp(object):
         self.stopKeyboardLabel = QLabel(self.groupBox)
         self.stopKeyboardLabel.setObjectName(u"stopKeyboardLabel")
         self.stopKeyboardLabel.setGeometry(QRect(20, 330, 158, 16))
+        self.stopKeyboardLabel.setStyleSheet("color: red;font-weight:bold;")
         self.stopKeyboardLabel.setText(
             QCoreApplication.translate("MainWindow", f"停止快捷键：{Constant.stop_keyboard}", None))
         pass
