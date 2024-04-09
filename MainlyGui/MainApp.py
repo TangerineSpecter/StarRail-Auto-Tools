@@ -24,138 +24,149 @@ from Utils.FileUtils import FileOper
 import Config.DungeonConfig as DungeonConfig
 import Config.SystemInfo as SystemInfo
 import Config.LoggingConfig as Logging
+import Utils.DataUtils as Data
+import Utils.Constant as Constant
 
 # 系统信息
 systemInfo = SystemInfo.base_info
 
 
 class MainApp(object):
-    def __init__(self, MainWindow, settings):
+    def __init__(self, MainWindow):
         Logging.info("[应用程序初始化]")
-        if not MainWindow.objectName():
-            MainWindow.setObjectName(u"MainWindow")
+        # 初始化窗体基本信息
+        MainWindow.setObjectName(u"MainWindow")
         MainWindow.setFixedSize(640, 480)
-        MainWindow.setWindowIcon(QIcon("../Resource/img/icon.png"))
-        self.settings = settings
+        MainWindow.setWindowIcon(QIcon(Constant.icon))
+        MainWindow.setWindowTitle(
+            QCoreApplication.translate("MainWindow", f"{systemInfo['title']} v{systemInfo['version']}", None))
 
+        # 初始化布局
+        self.__initLayout(MainWindow)
+
+        # 初始化数据
+        self.__initData()
+
+        # 初始化菜单栏
+        self.__initMenubar(MainWindow)
+
+        # 初始化按钮部分
+        self.__initButton()
+
+        # 初始化说明部分
+        self.__initLabel()
+
+        # 初始化样式
+        self.__initStyle()
+
+        # 快捷键绑定
+        if platform.system() == 'Windows':
+            KeyboardModule(self.worker).bind_start_game()
+            KeyboardModule(self.worker).bind_position()
+
+        QMetaObject.connectSlotsByName(MainWindow)
+
+    def __initButton(self):
+        """
+        初始化按钮
+        """
         # 打开
-        self.openAction = QAction(MainWindow)
-        self.openAction.setObjectName(u"openAction")
-        self.openAction.triggered.connect(self.open_file)
-
-        # 关于
-        self.aboutAction = QAction(MainWindow)
-        self.aboutAction.setObjectName(u"aboutAction")
-        self.aboutAction.triggered.connect(show_about_dialog)
-
-        # 日志
-        self.logAction = QAction(MainWindow)
-        self.logAction.setObjectName(u"logAction")
-        self.logAction.triggered.connect(show_log)
-
-        self.centralWidget = QWidget(MainWindow)
-        self.centralWidget.setObjectName(u"centralWidget")
-        self.gridLayout = QGridLayout(self.centralWidget)
-        self.gridLayout.setObjectName(u"gridLayout")
-        MainWindow.setCentralWidget(self.centralWidget)
-        self.menubar = QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 269, 37))
-        self.menu = QMenu(self.menubar)
-        self.menu.setObjectName(u"menu")
-        MainWindow.setMenuBar(self.menubar)
-
-        # 按钮
         self.openFileBtn = QPushButton(self.centralWidget)
         self.openFileBtn.setObjectName(u"openFileBtn")
         self.openFileBtn.setGeometry(QRect(530, 10, 80, 40))
         self.openFileBtn.clicked.connect(self.open_file)
-
-        # 路径框
-        self.gamePathText = QTextEdit(self.centralWidget)
-        self.gamePathText.setObjectName(u"gamePathText")
-        self.gamePathText.setGeometry(QRect(10, 10, 500, 40))
-        self.gamePathText.setReadOnly(True)
+        self.openFileBtn.setText(QCoreApplication.translate("MainWindow", "打开", None))
 
         # 启动
         self.startGameBtn = QPushButton(self.centralWidget)
         self.startGameBtn.setObjectName(u"startGameBtn")
         self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
         self.startGameBtn.clicked.connect(
-            lambda: Strategy(self).run_game())
+            lambda: self.worker.start())
+        self.startGameBtn.setText(QCoreApplication.translate("MainWindow", "启动游戏", None))
 
         # 日志
         self.logBtn = QPushButton(self.centralWidget)
         self.logBtn.setObjectName(u"logBtn")
         self.logBtn.setGeometry(QRect(530, 150, 80, 40))
         self.logBtn.clicked.connect(show_log)
-
-        # 下拉菜单
-        self.menubar.addAction(self.menu.menuAction())
-        self.menu.addAction(self.openAction)
-        self.menu.addAction(self.logAction)
-        self.menu.addAction(self.aboutAction)
-
-        # 设置相关
-        self.groupBox = QGroupBox(self.centralWidget)
-        self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setGeometry(QRect(20, 70, 500, 360))
-        # 列表选项框
-        self.listView = QListView(self.groupBox)
-        self.listView.setObjectName(u"listView")
-        self.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.listView.setGeometry(QRect(15, 50, 141, 240))
-        model = QStringListModel()
-        # 列表数据
-        model.setStringList(DungeonConfig.dungeon_dict.keys())
-        self.listView.setModel(model)
-
-        # 执行表格
-        self.tableWidget = QTableWidget(self.groupBox)
-        self.tableWidget.setObjectName(u"tableView")
-        self.tableWidget.setGeometry(QRect(180, 50, 300, 240))
-        # self.tableWidget.verticalHeader().setVisible(False)
-        # 禁止编辑单元格
-        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        # 单元格自适应
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        # 最后一列铺满
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        # 选中整行
-        self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
-        self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
-
-        # 数据
-        self.tableData = settings.value("table_data", None)
-        headers = ['类型', '副本', '执行次数']
-        self.tableWidget.setColumnCount(len(headers))
-        self.tableWidget.setHorizontalHeaderLabels(headers)
-        if self.tableData is not None:
-            self.addTableItem(self.tableData, rowCount=(len(self.tableData) // len(headers)))
+        self.logBtn.setText(QCoreApplication.translate("MainWindow", "日志", None))
 
         # 添加内容按钮
         self.addItemBtn = QPushButton(self.groupBox)
         self.addItemBtn.setObjectName(u"addItemBtn")
         self.addItemBtn.setGeometry(QRect(180, 310, 80, 40))
         self.addItemBtn.clicked.connect(self.addListViewItem)
+        self.addItemBtn.setText(QCoreApplication.translate("MainWindow", "添加", None))
+
         # 设置内容按钮
         self.settingItemBtn = QPushButton(self.groupBox)
         self.settingItemBtn.setObjectName(u"settingItemBtn")
         self.settingItemBtn.setGeometry(QRect(290, 310, 80, 40))
         self.settingItemBtn.clicked.connect(self.settingTableItem)
+        self.settingItemBtn.setText(QCoreApplication.translate("MainWindow", "设置", None))
+
         # 移除内容按钮
         self.removeItemBtn = QPushButton(self.groupBox)
         self.removeItemBtn.setObjectName(u"removeItemBtn")
         self.removeItemBtn.setGeometry(QRect(400, 310, 80, 40))
         self.removeItemBtn.clicked.connect(self.removeTableItem)
+        self.removeItemBtn.setText(QCoreApplication.translate("MainWindow", "移除", None))
+        pass
 
-        # 说明部分
+    def __initLabel(self):
+        """
+        初始化说明标签
+        """
+        # 列表选择
         self.selectListLabel = QLabel(self.groupBox)
         self.selectListLabel.setObjectName(u"selectListLabel")
         self.selectListLabel.setGeometry(QRect(20, 25, 58, 16))
+        self.selectListLabel.setText(QCoreApplication.translate("MainWindow", "副本列表", None))
+
+        # 运行表格
         self.runListLabel = QLabel(self.groupBox)
         self.runListLabel.setObjectName(u"runListLabel")
         self.runListLabel.setGeometry(QRect(180, 25, 161, 16))
+        self.runListLabel.setText(QCoreApplication.translate("MainWindow", "运行列表（按照顺序执行）", None))
+
+        # 启动快捷键
+        self.runKeyboardLabel = QLabel(self.groupBox)
+        self.runKeyboardLabel.setObjectName(u"runKeyboardLabel")
+        self.runKeyboardLabel.setGeometry(QRect(20, 310, 158, 16))
+        self.runKeyboardLabel.setText(
+            QCoreApplication.translate("MainWindow", f"启动快捷键：{Constant.start_keyboard}", None))
+
+        # 停止快捷键
+        self.stopKeyboardLabel = QLabel(self.groupBox)
+        self.stopKeyboardLabel.setObjectName(u"stopKeyboardLabel")
+        self.stopKeyboardLabel.setGeometry(QRect(20, 330, 158, 16))
+        self.stopKeyboardLabel.setText(
+            QCoreApplication.translate("MainWindow", f"停止快捷键：{Constant.stop_keyboard}", None))
+        pass
+
+    def __initLayout(self, MainWindow):
+        """
+        初始化布局
+        """
+        self.centralWidget = QWidget(MainWindow)
+        self.centralWidget.setObjectName(u"centralWidget")
+        self.gridLayout = QGridLayout(self.centralWidget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        MainWindow.setCentralWidget(self.centralWidget)
+
+        # 路径框
+        self.gamePathText = QTextEdit(self.centralWidget)
+        self.gamePathText.setObjectName(u"gamePathText")
+        self.gamePathText.setGeometry(QRect(10, 10, 500, 40))
+        self.gamePathText.setReadOnly(True)
+        self.gamePathText.setPlaceholderText(QCoreApplication.translate("MainWindow", "游戏启动路径", None))
+
+        # 设置部分窗体
+        self.groupBox = QGroupBox(self.centralWidget)
+        self.groupBox.setObjectName(u"groupBox")
+        self.groupBox.setGeometry(QRect(20, 70, 500, 360))
+        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", "设置", None))
 
         # 状态栏
         self.statusBar = QStatusBar(self.centralWidget)
@@ -165,38 +176,47 @@ class MainApp(object):
         self.setStatusText("待机")
         self.statusBar.addPermanentWidget(self.runStatusLabel)
 
-        self.retranslateUi(MainWindow)
-
-        # 加载设置
-        game_path = settings.value("game_path", None)
-        if game_path is not None:
-            self.gamePathText.setText(game_path)
-
-        if platform.system() == 'Windows':
-            KeyboardModule(self).bind_start_game()
-            KeyboardModule(self).bind_position()
-
-        QMetaObject.connectSlotsByName(MainWindow)
-
-    def retranslateUi(self, MainWindow):
-        # 面板元素布局
-        MainWindow.setWindowTitle(
-            QCoreApplication.translate("MainWindow", f"{systemInfo['title']} v{systemInfo['version']}", None))
+    def __initMenubar(self, MainWindow):
+        """
+        初始化菜单栏
+        """
+        # 打开
+        self.openAction = QAction(MainWindow)
+        self.openAction.setObjectName(u"openAction")
+        self.openAction.triggered.connect(self.open_file)
         self.openAction.setText(QCoreApplication.translate("MainWindow", "打开", None))
+
+        # 关于
+        self.aboutAction = QAction(MainWindow)
+        self.aboutAction.setObjectName(u"aboutAction")
+        self.aboutAction.triggered.connect(show_about_dialog)
         self.aboutAction.setText(QCoreApplication.translate("MainWindow", "关于", None))
+
+        # 日志
+        self.logAction = QAction(MainWindow)
+        self.logAction.setObjectName(u"logAction")
+        self.logAction.triggered.connect(show_log)
         self.logAction.setText(QCoreApplication.translate("MainWindow", "日志", None))
+
+        # 下拉菜单
+        self.menubar = QMenuBar(MainWindow)
+        self.menubar.setObjectName(u"menubar")
+        self.menubar.setGeometry(QRect(0, 0, 269, 37))
+        # 菜单栏 1
+        self.menu = QMenu(self.menubar)
+        self.menu.setObjectName(u"menu")
+        MainWindow.setMenuBar(self.menubar)
+
+        self.menubar.addAction(self.menu.menuAction())
+        self.menu.addAction(self.openAction)
+        self.menu.addAction(self.logAction)
+        self.menu.addAction(self.aboutAction)
         self.menu.setTitle(QCoreApplication.translate("MainWindow", "文件", None))
-        self.openFileBtn.setText(QCoreApplication.translate("MainWindow", "打开", None))
-        self.startGameBtn.setText(QCoreApplication.translate("MainWindow", "启动游戏", None))
-        self.logBtn.setText(QCoreApplication.translate("MainWindow", "日志", None))
-        self.gamePathText.setPlaceholderText(QCoreApplication.translate("MainWindow", "游戏启动路径", None))
-        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", "设置", None))
-        self.selectListLabel.setText(QCoreApplication.translate("MainWindow", "副本列表", None))
-        self.runListLabel.setText(QCoreApplication.translate("MainWindow", "运行列表（按照顺序执行）", None))
-        self.addItemBtn.setText(QCoreApplication.translate("MainWindow", "添加", None))
-        self.settingItemBtn.setText(QCoreApplication.translate("MainWindow", "设置", None))
-        self.removeItemBtn.setText(QCoreApplication.translate("MainWindow", "移除", None))
-        # 样式设置
+
+    def __initStyle(self):
+        """
+        样式设置
+        """
         BtnCss.blue(self.openFileBtn)
         BtnCss.blue(self.addItemBtn)
         BtnCss.orange(self.settingItemBtn)
@@ -214,7 +234,7 @@ class MainApp(object):
             file_path = file_dialog.selectedFiles()[0]
             self.gamePathText.setText(file_path)
             # 保存设置
-            self.settings.setValue("game_path", file_path)
+            Data.settings.setValue("game_path", file_path)
 
     def addTableItem(self, data, columnCount=3, rowCount=1):
         """
@@ -233,7 +253,7 @@ class MainApp(object):
                 item.setTextAlignment(Qt.AlignCenter)
                 # 拼接到上一次行数后面
                 self.tableWidget.setItem(start_row_count + rowIndex, columnIndex, item)
-        self.refreshTableCache()
+        self.__refreshTableCache()
 
     def updateTableItem(self, data, columnCount=3, rowCount=1):
         """
@@ -248,7 +268,7 @@ class MainApp(object):
             item.setTextAlignment(Qt.AlignCenter)
             # 拼接到上一次行数后面
             self.tableWidget.setItem(rowCount, columnIndex, item)
-        self.refreshTableCache()
+        self.__refreshTableCache()
 
     def addListViewItem(self):
         """
@@ -290,7 +310,7 @@ class MainApp(object):
         #                              QMessageBox.No)
         # if reply == QMessageBox.Yes:
         self.tableWidget.removeRow(select_item[0].row())
-        self.refreshTableCache()
+        self.__refreshTableCache()
 
     def show_input_dialog(self, row_count, parent_name):
         max_count = DungeonConfig.dungeon_dict[parent_name]['max_count']
@@ -303,7 +323,7 @@ class MainApp(object):
             if ok:
                 self.updateTableItem([parent_name, item, number], rowCount=row_count)
 
-    def refreshTableCache(self):
+    def __refreshTableCache(self):
         """
         刷新表格缓存数据
         """
@@ -319,7 +339,7 @@ class MainApp(object):
                 item = self.tableWidget.item(row, col)
                 all_data.append(item.text())
 
-        self.settings.setValue("table_data", all_data)
+        Data.settings.setValue("table_data", all_data)
         self.tableData = all_data
         pass
 
@@ -329,6 +349,51 @@ class MainApp(object):
     def showMsg(self, text):
         QMessageBox.information(self.centralWidget, '提示', text, QMessageBox.Ok)
         return
+
+    def __initData(self):
+        """
+        初始化面板数据部分
+        """
+        # 列表选项框
+        self.listView = QListView(self.groupBox)
+        self.listView.setObjectName(u"listView")
+        self.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.listView.setGeometry(QRect(15, 50, 141, 240))
+        model = QStringListModel()
+        # 列表数据
+        model.setStringList(DungeonConfig.dungeon_dict.keys())
+        self.listView.setModel(model)
+
+        # 执行表格
+        self.tableWidget = QTableWidget(self.groupBox)
+        self.tableWidget.setObjectName(u"tableView")
+        self.tableWidget.setGeometry(QRect(180, 50, 300, 240))
+        # 禁止编辑单元格
+        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
+        # 单元格自适应
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # 最后一列铺满
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # 选中整行
+        self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
+        self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
+
+        # 数据
+        self.tableData = Data.settings.value("table_data", None)
+        headers = ['类型', '副本', '执行次数']
+        self.tableWidget.setColumnCount(len(headers))
+        self.tableWidget.setHorizontalHeaderLabels(headers)
+        if self.tableData is not None:
+            self.addTableItem(self.tableData, rowCount=(len(self.tableData) // len(headers)))
+
+        # 加载设置
+        game_path = Data.settings.value("game_path", None)
+        if game_path is not None:
+            self.gamePathText.setText(game_path)
+
+        # 线程创建
+        self.worker = Strategy(game_path, self.tableData)
+        self.worker.sinOut.connect(self.showMsg)
 
 
 class AboutDialog(QMessageBox):

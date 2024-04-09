@@ -1,6 +1,12 @@
 # 星穹铁道应用程序名称
 app_name = 'StarRail.exe'
 
+# 图标位置
+icon = "../Resource/img/icon.png"
+
+start_keyboard = "shift + r"
+stop_keyboard = "shift + f"
+
 
 class Audio:
     """

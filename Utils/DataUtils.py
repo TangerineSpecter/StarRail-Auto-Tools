@@ -3,8 +3,12 @@
 """
 
 import pyautogui
+from PySide6.QtCore import QSettings
 
 import Config.CoordinateConfig as CoordinateConfig
+
+# 创建 QSettings 对象，将 parent 参数设置为 None
+settings = QSettings("MyCompany", "MyApp", parent=None)
 
 # 获取屏幕分辨率
 screen_width, screen_height = pyautogui.size()

@@ -11,23 +11,23 @@ import Utils.Constant as Constant
 import Utils.DataUtils as Data
 from Strategy.ProcessStrategy import Context, DistributeStrategy
 from Utils.AudioUtils import AudioFactory
+from playsound import playsound
 
 
 class Strategy(QThread):
     sinOut = Signal(str)
 
-    def __init__(self, MainWindow):
+    def __init__(self, game_path, tableData):
         super(Strategy, self).__init__()
-        self.QWidget = MainWindow.centralWidget
-        self.game_path = MainWindow.gamePathText.toPlainText()
+        self.game_path = game_path
         # 执行行数，每次主策略调度初始化
         self.row_index = 0
         self.tableData = []
-        for i in range(0, len(MainWindow.tableData), 3):
+        for i in range(0, len(tableData), 3):
             obj = {
-                "main_name": MainWindow.tableData[i],
-                "process_name": MainWindow.tableData[i + 1],
-                "count": MainWindow.tableData[i + 2]
+                "main_name": tableData[i],
+                "process_name": tableData[i + 1],
+                "count": tableData[i + 2]
             }
             self.tableData.append(obj)
 
@@ -47,7 +47,9 @@ class Strategy(QThread):
                 self.__run_table_data()
             else:
                 # self.__join_game()
+                AudioFactory.play_audio(Constant.Audio.not_running)
                 self.sinOut.emit("游戏未运行")
+                Logging.info("游戏未运行，终止")
         except Exception as e:
             Logging.error(f"未识别到图像，异常信息{e.__cause__}")
 

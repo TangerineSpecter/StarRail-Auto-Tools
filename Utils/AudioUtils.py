@@ -21,7 +21,6 @@ class PlayAudio(QThread):
 
     def run(self):
         playsound(self.audio_path)
-
         # 创建 QMediaPlayer 对象
         # player = QMediaPlayer()
         # audio_output = QAudioOutput()  # 不能实例化为临时变量，否则被自动回收导致无法播放

@@ -6,12 +6,10 @@ import sys
 from PySide6.QtCore import (QSettings)
 from PySide6.QtGui import (QIcon)
 from PySide6.QtWidgets import *
+import Utils.DataUtils as Data
 
 # Import UI developed in Qt Creator
 from MainlyGui.MainApp import MainApp  # 导入界面
-
-# 创建 QSettings 对象，将 parent 参数设置为 None
-settings = QSettings("MyCompany", "MyApp", parent=None)
 
 
 # Create and start the Qt application
@@ -20,11 +18,11 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(None)
 
         # 设置界面为用户设计的界面
-        self.ui = MainApp(self, settings)
+        self.ui = MainApp(self)
         # self.ui.setupUi(self)
 
     def closeAndExit(self):
-        settings.sync()
+        Data.settings.sync()
         sys.exit()
 
 

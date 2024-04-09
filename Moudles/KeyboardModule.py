@@ -3,25 +3,21 @@
 """
 import keyboard
 import pyautogui
-
-import Config.LoggingConfig as Logging
-from Strategy.MainStrategy import Strategy
+import Utils.Constant as Constant
 
 
 class KeyboardModule:
 
-    def __init__(self, MainWindow):
-        self.MainWindow = MainWindow
+    def __init__(self, worker):
         # 线程初始化和槽绑定
-        self.worker = Strategy(MainWindow)
-        self.worker.sinOut.connect(self.MainWindow.showMsg)
+        self.worker = worker
 
     def bind_start_game(self):
         """
         启动游戏快捷键
         """
-        keyboard.add_hotkey('shift+r', lambda: self.worker.start())
-        keyboard.add_hotkey('shift+f', lambda: self.worker.stop())
+        keyboard.add_hotkey(Constant.start_keyboard, lambda: self.worker.start())
+        keyboard.add_hotkey(Constant.stop_keyboard, lambda: self.worker.stop())
 
     def bind_position(self):
         """
