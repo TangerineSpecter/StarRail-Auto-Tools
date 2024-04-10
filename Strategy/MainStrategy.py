@@ -61,9 +61,10 @@ class Strategy(QThread):
                 self.sinOut.emit("游戏未运行")
                 Logging.info("游戏未运行，终止")
         except Exception as e:
-            Logging.error(f"脚本运行异常，异常信息：{e.__cause__}")
+            Logging.error(f"脚本运行异常，异常信息：{e}")
 
         Logging.info("脚本运行结束")
+        self.sinOut.emit("脚本运行结束")
 
     def __join_game(self):
         """
