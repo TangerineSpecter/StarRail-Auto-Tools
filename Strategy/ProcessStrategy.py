@@ -130,8 +130,8 @@ class AdvanceStrategy(ProcessStrategy):
                     Logging.warn(f"[{process_name}]执行超时")
                     return
                 time.sleep(2)
-                img = cv2.imread(f"./Resource/img/{cv_img}.png")
                 button_x, button_y = ImageUtils.cv(f"./Resource/img/{cv_img}.png")
+                Logging.info("识别到副本开始挑战")
                 # 先将鼠标移动到图标位置
                 pyautogui.moveTo(button_x, button_y, duration=Data.duration)
                 # 相对图标进行平移点击传送
@@ -150,7 +150,11 @@ class AdvanceStrategy(ProcessStrategy):
         pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
 
-        # 等待2秒 界面弹出
+        # 点击重试后提示弹窗
+        if energy_lack():
+            return
+
+            # 等待2秒 界面弹出
         time.sleep(2)
 
         # 开始
@@ -212,9 +216,17 @@ def energy_lack():
     :return: True：识别到界面弹出体力不足提示
     """
     try:
+        # 等1秒界面弹出
+        time.sleep(1)
         ImageUtils.cv("./Resource/img/Money.png")
         Logging.warn("体力不足，终止")
+        # 关闭界面
+        pyautogui.moveTo(Data.getPosition(BtnKey.not_energy_cancel_btn), duration=Data.duration)
+        pyautogui.click()
+        pyautogui.moveTo(Data.getPosition(BtnKey.close_btn), duration=Data.duration)
+        pyautogui.click()
         return True
     except pyautogui.ImageNotFoundException:
         # 未识别到弹窗，则无体力问题
+        print("未识别到体力不足")
         return False

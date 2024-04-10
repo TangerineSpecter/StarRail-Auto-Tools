@@ -19,11 +19,11 @@ def cv(image_path):
     cv_type = Data.settings.value("cv_type")
     # 1:默认，2：特征，3：等比
     if cv_type == 2:
-        cv_flann(image_path)
+        return cv_flann(image_path)
     if cv_type == 3:
-        cv_resize(image_path)
+        return cv_resize(image_path)
     else:
-        cv_default(image_path)
+        return cv_default(image_path)
 
 
 def cv_default(image_path):
@@ -33,8 +33,9 @@ def cv_default(image_path):
     :return: 返回图片中心坐标
     """
     img = cv2.imread(image_path)
-    button_x, button_y = pyautogui.locateCenterOnScreen(img, confidence=0.8)
-    print(f"识别到图像：{button_x}, {button_y}")
+    x, y = pyautogui.locateCenterOnScreen(img, confidence=0.8)
+    print(f"识别到图像：{x}, {y}")
+    return x, y
 
 
 def cv_resize(image_path, percent=None):
@@ -54,8 +55,9 @@ def cv_resize(image_path, percent=None):
     new_height = int(height * scale_percent)
     # 调整图像大小
     img = cv2.resize(img, (new_width, new_height))
-    button_x, button_y = pyautogui.locateCenterOnScreen(img, confidence=0.8)
-    print(f"识别到图像：{button_x}, {button_y}")
+    x, y = pyautogui.locateCenterOnScreen(img, confidence=0.8)
+    print(f"识别到图像：{x}, {y}")
+    return x, y
 
 
 def cv_flann(image_path):
@@ -98,7 +100,7 @@ def cv_flann(image_path):
         for other_point in src_pts:
             if np.linalg.norm(point - other_point) < 150 and not np.array_equal(point, other_point):
                 count += 1
-        if count > 40:
+        if count > 250:
             x, y = point[0]
             x1, y1 = max(0, int(x - 75)), max(0, int(y - 75))
             x2, y2 = min(screenImg.shape[1], int(x + 75)), min(screenImg.shape[0], int(y + 75))
@@ -111,6 +113,7 @@ def cv_flann(image_path):
             y2 = min(screenImg.shape[0], int(y2 + 0.1 * height))
             rectangles.append((x1, y1, x2, y2))
 
+    print("长度", len(rectangles))
     # 计算所有矩形框的交集
     if rectangles:
         x1 = max(rect[0] for rect in rectangles)

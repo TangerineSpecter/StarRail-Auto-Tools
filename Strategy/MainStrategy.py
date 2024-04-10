@@ -53,13 +53,13 @@ class Strategy(QThread):
             Logging.info("开始检测游戏运行状态")
             if check_process_exists():
                 Logging.info("游戏已运行，执行下一步")
-                playsound(Constant.Audio.running, block=False)
+                # playsound(Constant.Audio.running, block=False)
                 self.__run_table_data()
             else:
                 # self.__join_game()
-                playsound(Constant.Audio.not_running, block=False)
                 self.sinOut.emit("游戏未运行")
                 Logging.info("游戏未运行，终止")
+                # playsound(Constant.Audio.not_running, block=False)
                 return
         except Exception as e:
             Logging.error(f"脚本运行异常，异常信息：{e}")

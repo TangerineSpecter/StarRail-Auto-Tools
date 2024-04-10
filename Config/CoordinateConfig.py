@@ -40,6 +40,8 @@ class BtnKey:
     '''战斗界面-挑战开始'''
     action_count_btn = "action_count_btn"
     '''战斗界面-挑战次数设置'''
+    not_energy_cancel_btn = "not_energy_cancel_btn"
+    '''战斗界面-挑战体力不足取消'''
 
 
 def get_dungeon_row(row_name):
@@ -120,6 +122,11 @@ coordinate_info = {
     BtnKey.action_count_btn: {
         "x": 0.95,
         "y": 0.83
+    },
+    # 挑战体力不足取消
+    BtnKey.not_energy_cancel_btn: {
+        "x": 0.401,
+        "y": 0.679
     },
 
     # 角色经验-传送
