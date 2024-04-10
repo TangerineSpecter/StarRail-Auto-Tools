@@ -86,7 +86,7 @@ class Strategy(QThread):
         button_x, button_y = pyautogui.locateCenterOnScreen(img)
         print(button_x, button_y)
         # 移动鼠标到按钮位置并点击
-        pyautogui.moveTo(button_x, button_y, duration=0.25)
+        pyautogui.moveTo(button_x, button_y, duration=Data.duration)
         pyautogui.click()
         # TODO 等待游戏开始画面点击 图像识别会准确一些
         time.sleep(10)

@@ -59,13 +59,21 @@ class FileOper:
         result = []
         for c in content:
             c_list = c.split(" - ")
-            time = c_list[0]
-            level = c_list[1]
-            content = c_list[2]
-            template = "<span style='font-size:14px;font-family:Courier;'>" \
-                       f"<span style='color: rgb(255, 255, 255);'>{time} |</span> " \
-                       f"<span style='color: {level_color_dict.get(level, 'white')};'>{level.ljust(7, ' ').replace(' ', '&nbsp;')}</span> " \
-                       f"<span style='color: rgb(86, 177, 110);white-space: pre-line;'>| {content}</span>" \
-                       f"</span>"
+            if len(c_list) < 3:
+                log = f"<span style='color: rgb(180, 86, 142);'>{c}</span><br>"
+            else:
+                time = c_list[0]
+                level = c_list[1]
+                text = c_list[2]
+                log = f"<span style='color: rgb(255, 255, 255);'>{time} |</span> " \
+                      f"<span style='color: {level_color_dict.get(level, 'white')};'>{level.ljust(7, ' ').replace(' ', '&nbsp;')}</span> " \
+                      f"<span style='color: rgb(86, 177, 110);white-space: pre-line;'>| {text}</span>"
+            template = f"<span style='font-size:14px;font-family:Courier;'>{log}</span>"
             result.append(template)
         return "".join(result)
+
+
+if __name__ == '__main__':
+    with open("../app.log", 'r', encoding='utf-8') as file:
+        content = file.read()
+    print(content)
