@@ -84,7 +84,8 @@ class BaseStrategy(ProcessStrategy):
         pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
 
-        # TODO 体力不够检测终止
+        if energy_lack():
+            return
 
         # 等待2秒 界面弹出
         time.sleep(2)
@@ -186,9 +187,11 @@ def BattleOver(retry=False, count=1):
             print(button_x, button_y)
             # 重试，并且拥有重试次数
             if retry and count > 0:
-                # TODO 体力不够检测终止
                 pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_retry), duration=Data.duration)
                 pyautogui.click()
+                # 点击重试后提示弹窗
+                if energy_lack():
+                    break
                 count = count - 1
                 Logging.info(f"再次挑战副本，剩余次数：{count}")
                 continue
@@ -203,6 +206,16 @@ def BattleOver(retry=False, count=1):
             Logging.info("战斗未结束，等待中...")
 
 
-if __name__ == '__main__':
-    context = Context(DistributeStrategy())
-    result = context.execute_strategy({'count': '1', 'main_name': '行迹材料', 'process_name': '雅利洛'})
+def energy_lack():
+    """
+    检测体力是否足够
+    :return: True：识别到界面弹出体力不足提示
+    """
+    try:
+        img = cv2.imread("./Resource/img/Money.png")
+        pyautogui.locateCenterOnScreen(img)
+        Logging.warn("体力不足，终止")
+        return True
+    except pyautogui.ImageNotFoundException:
+        # 未识别到弹窗，则无体力问题
+        return False
