@@ -7,6 +7,7 @@ import Config.CoordinateConfig as CoordinateConfig
 import Config.DungeonConfig as DungeonConfig
 import Config.LoggingConfig as Logging
 import Utils.DataUtils as Data
+import Utils.ImageUtils as ImageUtils
 from Config.CoordinateConfig import BtnKey
 
 screen_width, screen_height = pyautogui.size()
@@ -130,7 +131,7 @@ class AdvanceStrategy(ProcessStrategy):
                     return
                 time.sleep(2)
                 img = cv2.imread(f"./Resource/img/{cv_img}.png")
-                button_x, button_y = pyautogui.locateCenterOnScreen(img, confidence=0.85)
+                button_x, button_y = ImageUtils.cv(f"./Resource/img/{cv_img}.png")
                 # 先将鼠标移动到图标位置
                 pyautogui.moveTo(button_x, button_y, duration=Data.duration)
                 # 相对图标进行平移点击传送
@@ -182,8 +183,7 @@ def BattleOver(retry=False, count=1):
     while True:
         try:
             time.sleep(2)
-            img = cv2.imread("./Resource/img/BattleOver.png")
-            button_x, button_y = pyautogui.locateCenterOnScreen(img)
+            button_x, button_y = ImageUtils.cv("./Resource/img/BattleOver.png")
             print(button_x, button_y)
             # 重试，并且拥有重试次数
             if retry and count > 0:
@@ -212,8 +212,7 @@ def energy_lack():
     :return: True：识别到界面弹出体力不足提示
     """
     try:
-        img = cv2.imread("./Resource/img/Money.png")
-        pyautogui.locateCenterOnScreen(img)
+        ImageUtils.cv("./Resource/img/Money.png")
         Logging.warn("体力不足，终止")
         return True
     except pyautogui.ImageNotFoundException:

@@ -1,7 +1,6 @@
 import subprocess
 import time
 
-import cv2
 import psutil
 import pyautogui
 from PySide6.QtCore import QThread, Signal
@@ -10,6 +9,7 @@ from playsound import playsound
 import Config.LoggingConfig as Logging
 import Utils.Constant as Constant
 import Utils.DataUtils as Data
+import Utils.ImageUtils as ImageUtils
 from Config.CoordinateConfig import BtnKey
 from Strategy.ProcessStrategy import Context, DistributeStrategy
 
@@ -60,6 +60,7 @@ class Strategy(QThread):
                 playsound(Constant.Audio.not_running, block=False)
                 self.sinOut.emit("游戏未运行")
                 Logging.info("游戏未运行，终止")
+                return
         except Exception as e:
             Logging.error(f"脚本运行异常，异常信息：{e}")
 
@@ -83,8 +84,7 @@ class Strategy(QThread):
 
         '''找到启动按钮'''
         # 获取项目根目录的绝对路径
-        img = cv2.imread("./Resource/img/StartBtn.png")
-        button_x, button_y = pyautogui.locateCenterOnScreen(img)
+        button_x, button_y = ImageUtils.cv("./Resource/img/StartBtn.png")
         print(button_x, button_y)
         # 移动鼠标到按钮位置并点击
         pyautogui.moveTo(button_x, button_y, duration=Data.duration)

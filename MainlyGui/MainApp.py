@@ -14,7 +14,8 @@ from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, QStringListMod
 from PySide6.QtGui import (QAction, QIcon)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel, QVBoxLayout,
-                               QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView, QStatusBar, QDialog)
+                               QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView, QStatusBar, QDialog,
+                               QRadioButton)
 
 if platform.system() == 'Windows':
     from Moudles.KeyboardModule import KeyboardModule
@@ -112,6 +113,35 @@ class MainApp(object):
         self.removeItemBtn.setGeometry(QRect(400, 310, 80, 40))
         self.removeItemBtn.clicked.connect(self.removeTableItem)
         self.removeItemBtn.setText(QCoreApplication.translate("MainWindow", "移除", None))
+
+        cv_type = Data.settings.value("cv_type")
+        # 默认单选
+        self.radioDefaultBtn = QRadioButton(self.centralWidget)
+        self.radioDefaultBtn.setObjectName(u"radioDefaultBtn")
+        self.radioDefaultBtn.setGeometry(QRect(540, 360, 100, 40))
+        self.radioDefaultBtn.clicked.connect(lambda: setting_cv_type(1))
+        self.radioDefaultBtn.setText(QCoreApplication.translate("MainWindow", "默认方式", None))
+        if cv_type is None or cv_type == 1:
+            self.radioDefaultBtn.setChecked(True)
+        # 特征单选
+        self.radioTraitBtn = QRadioButton(self.centralWidget)
+        self.radioTraitBtn.setObjectName(u"radioTraitBtn")
+        self.radioTraitBtn.setGeometry(QRect(540, 380, 100, 40))
+        self.radioTraitBtn.clicked.connect(lambda: setting_cv_type(2))
+        self.radioTraitBtn.setText(QCoreApplication.translate("MainWindow", "特征(较慢)", None))
+        if cv_type == 2:
+            self.radioTraitBtn.setChecked(True)
+        # 等比单选
+        self.radioResizeBtn = QRadioButton(self.centralWidget)
+        self.radioResizeBtn.setObjectName(u"radioResizeBtn")
+        self.radioResizeBtn.setGeometry(QRect(540, 400, 100, 40))
+        self.radioResizeBtn.clicked.connect(lambda: setting_cv_type(3))
+        self.radioResizeBtn.setText(QCoreApplication.translate("MainWindow", "等比", None))
+        if cv_type == 3:
+            self.radioResizeBtn.setChecked(True)
+
+        # layout.addWidget(radio_btn1)
+        # layout.addWidget(radio_btn2)
         pass
 
     def __initLabel(self):
@@ -129,6 +159,12 @@ class MainApp(object):
         self.runListLabel.setObjectName(u"runListLabel")
         self.runListLabel.setGeometry(QRect(180, 25, 161, 16))
         self.runListLabel.setText(QCoreApplication.translate("MainWindow", "运行列表（按照顺序执行）", None))
+
+        # 图像识别设置
+        self.cvLabel = QLabel(self.centralWidget)
+        self.cvLabel.setObjectName(u"cvLabel")
+        self.cvLabel.setGeometry(QRect(530, 350, 161, 16))
+        self.cvLabel.setText(QCoreApplication.translate("MainWindow", "识别方式：", None))
 
         # 启动快捷键
         self.runKeyboardLabel = QLabel(self.groupBox)
@@ -405,6 +441,16 @@ class AboutDialog(QMessageBox):
                      f"作者：{systemInfo['author']}\n"
                      f"Bug反馈邮箱：{systemInfo['email']}")
         self.exec()
+
+
+def setting_cv_type(cv_type):
+    """
+    设置识别方式
+    :param cv_type:
+    :return:
+    """
+    print(f"设置识别方式{cv_type}")
+    Data.settings.setValue("cv_type", cv_type)
 
 
 # 关于对话框
