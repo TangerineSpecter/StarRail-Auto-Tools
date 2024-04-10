@@ -3,11 +3,11 @@
 # Import system tools and datetime
 import sys
 
-from PySide6.QtCore import (QSettings)
 from PySide6.QtGui import (QIcon)
 from PySide6.QtWidgets import *
-import Utils.DataUtils as Data
 
+import Utils.DataUtils as Data
+import Config.LoggingConfig as Logging
 # Import UI developed in Qt Creator
 from MainlyGui.MainApp import MainApp  # 导入界面
 
@@ -24,6 +24,9 @@ class MainWindow(QMainWindow):
     def closeAndExit(self):
         Data.settings.sync()
         sys.exit()
+
+    def closeEvent(self, event):
+        Logging.info("关闭应用程序")
 
 
 if __name__ == "__main__":
