@@ -5,13 +5,13 @@ import cv2
 import psutil
 import pyautogui
 from PySide6.QtCore import QThread, Signal
+from playsound import playsound
 
 import Config.LoggingConfig as Logging
 import Utils.Constant as Constant
 import Utils.DataUtils as Data
 from Config.CoordinateConfig import BtnKey
 from Strategy.ProcessStrategy import Context, DistributeStrategy
-from Utils.AudioUtils import AudioFactory
 
 
 class Strategy(QThread):
@@ -53,11 +53,11 @@ class Strategy(QThread):
             Logging.info("开始检测游戏运行状态")
             if check_process_exists():
                 Logging.info("游戏已运行，执行下一步")
-                # AudioFactory.play_audio(Constant.Audio.running)
+                playsound(Constant.Audio.running, block=False)
                 self.__run_table_data()
             else:
                 # self.__join_game()
-                # AudioFactory.play_audio(Constant.Audio.not_running)
+                playsound(Constant.Audio.not_running, block=False)
                 self.sinOut.emit("游戏未运行")
                 Logging.info("游戏未运行，终止")
         except Exception as e:
