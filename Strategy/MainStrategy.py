@@ -89,7 +89,7 @@ class Strategy(QThread):
 
         '''找到启动按钮'''
         # 获取项目根目录的绝对路径
-        button_x, button_y = ImageUtils.cv("./Resource/img/StartBtn.png")
+        button_x, button_y = ImageUtils.cv(Data.getResourcePath("Resource/img/StartBtn.png"))
         print(button_x, button_y)
         # 移动鼠标到按钮位置并点击
         pyautogui.moveTo(button_x, button_y, duration=Data.duration)

@@ -41,7 +41,7 @@ class MainApp(object):
         # 初始化窗体基本信息
         MainWindow.setObjectName(u"MainWindow")
         MainWindow.setFixedSize(640, 500)
-        MainWindow.setWindowIcon(QIcon(Constant.icon))
+        MainWindow.setWindowIcon(QIcon(Data.getResourcePath(Constant.icon)))
         MainWindow.setWindowTitle(
             QCoreApplication.translate("MainWindow", f"{systemInfo['title']} v{systemInfo['version']}", None))
 
@@ -290,12 +290,12 @@ class MainApp(object):
         BtnCss.blue(self.startGameBtn)
         BtnCss.purple(self.logBtn)
         # icon设置
-        self.addItemBtn.setIcon(QIcon("Resource/icon/add.png"))
-        self.settingItemBtn.setIcon(QIcon("Resource/icon/setting.png"))
-        self.removeItemBtn.setIcon(QIcon("Resource/icon/remove.png"))
-        self.openFileBtn.setIcon(QIcon("Resource/icon/file.png"))
-        self.logBtn.setIcon(QIcon("Resource/icon/log.png"))
-        self.startGameBtn.setIcon(QIcon("Resource/icon/start.png"))
+        self.addItemBtn.setIcon(QIcon(Data.getResourcePath("Resource/icon/add.png")))
+        self.settingItemBtn.setIcon(QIcon(Data.getResourcePath("Resource/icon/setting.png")))
+        self.removeItemBtn.setIcon(QIcon(Data.getResourcePath("Resource/icon/remove.png")))
+        self.openFileBtn.setIcon(QIcon(Data.getResourcePath("Resource/icon/file.png")))
+        self.logBtn.setIcon(QIcon(Data.getResourcePath("Resource/icon/log.png")))
+        self.startGameBtn.setIcon(QIcon(Data.getResourcePath("Resource/icon/start.png")))
 
     def __init_tips(self):
         """

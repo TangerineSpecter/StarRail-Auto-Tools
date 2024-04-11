@@ -57,7 +57,7 @@ class StatusLabel(QLabel):
 if __name__ == "__main__":
     # 初始化QApplication
     app = QApplication()
-    app.setWindowIcon(QIcon("Resource/img/icon.png"))
+    app.setWindowIcon(QIcon(Data.getResourcePath("Resource/img/icon.png")))
     app.setStyleSheet(
         """
         /* 全局样式表，设置窗体背景为白色 */

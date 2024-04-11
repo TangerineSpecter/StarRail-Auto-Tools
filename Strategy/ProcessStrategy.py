@@ -86,14 +86,16 @@ class BaseStrategy(ProcessStrategy):
         pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
 
-        if energy_lack():
-            return
-
         # 等待2秒 界面弹出
         time.sleep(2)
 
         # 开始
         pyautogui.click()
+
+        if energy_lack():
+            self.signal.emit("体力不足，脚本终止")
+            return
+
         # 此逻辑可设置次数，则直接无重试退出
         BattleOver(signal=self.signal)
 
@@ -134,7 +136,7 @@ class AdvanceStrategy(ProcessStrategy):
                     Logging.warn(f"[{process_name}]执行超时")
                     return
                 time.sleep(2)
-                button_x, button_y = ImageUtils.cv(f"./Resource/img/{cv_img}.png")
+                button_x, button_y = ImageUtils.cv(Data.getResourcePath(f"Resource/img/{cv_img}.png"))
                 Logging.info("识别到副本开始挑战")
                 self.signal.emit("识别到副本开始挑战")
                 # 先将鼠标移动到图标位置
@@ -151,21 +153,23 @@ class AdvanceStrategy(ProcessStrategy):
                 pyautogui.moveRel(0, 500, duration=0.5)
 
         time.sleep(3)
-
+        print("开始挑战")
         # 统一执行挑战
         pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
 
+        # 等待2秒 界面弹出
+        time.sleep(2)
+
+        # 开始
+        pyautogui.click()
+
+        print("检测体力")
         # 点击重试后提示弹窗
         if energy_lack():
             self.signal.emit("体力不足，脚本终止")
             return
 
-            # 等待2秒 界面弹出
-        time.sleep(2)
-
-        # 开始
-        pyautogui.click()
         # 由于已战斗1次，则重试次数少1
         BattleOver(True, count - 1, self.signal)
 
@@ -193,8 +197,9 @@ def BattleOver(retry=False, count=1, signal=None):
     """
     while True:
         try:
+            print("开始等待战斗结束")
             time.sleep(2)
-            button_x, button_y = ImageUtils.cv("./Resource/img/BattleOver.png")
+            button_x, button_y = ImageUtils.cv(Data.getResourcePath("Resource/img/BattleOver.png"))
             print(button_x, button_y)
             # 重试，并且拥有重试次数
             if retry and count > 0:
@@ -228,7 +233,8 @@ def energy_lack():
     try:
         # 等1秒界面弹出
         time.sleep(1)
-        ImageUtils.cv("./Resource/img/Money.png")
+        # TODO 此处才用默认，特征存在不稳定
+        ImageUtils.cv_default(Data.getResourcePath("Resource/img/Money.png"))
         Logging.warn("体力不足，终止")
         # 关闭界面
         pyautogui.moveTo(Data.getPosition(BtnKey.not_energy_cancel_btn), duration=Data.duration)

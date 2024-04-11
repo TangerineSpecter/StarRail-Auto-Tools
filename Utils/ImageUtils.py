@@ -135,3 +135,5 @@ def cv_flann(image_path):
         else:
             return x, y
     print("未识别到图像特征")
+    # 此处和pyautogui异常对齐
+    raise pyautogui.ImageNotFoundException
