@@ -2,7 +2,7 @@
 app_name = 'StarRail.exe'
 
 # 图标位置
-icon = "../Resource/img/icon.png"
+icon = "./Resource/icon/main.ico"
 
 # 全局快捷键
 start_keyboard = "shift + r"
