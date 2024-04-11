@@ -16,6 +16,7 @@ from Strategy.ProcessStrategy import Context, DistributeStrategy
 
 class Strategy(QThread):
     sinOut = Signal(str)
+    statusOut = Signal(str)
 
     def __init__(self):
         super(Strategy, self).__init__()
@@ -58,6 +59,7 @@ class Strategy(QThread):
             else:
                 # self.__join_game()
                 self.sinOut.emit("游戏未运行")
+                self.statusOut.emit("游戏未运行")
                 Logging.info("游戏未运行，终止")
                 # playsound(Constant.Audio.not_running, block=False)
                 return
@@ -66,6 +68,7 @@ class Strategy(QThread):
 
         Logging.info("脚本运行结束")
         self.sinOut.emit("脚本运行结束")
+        self.statusOut.emit("脚本运行结束")
 
     def __join_game(self):
         """

@@ -34,7 +34,9 @@ systemInfo = SystemInfo.base_info
 
 
 class MainApp(object):
+
     def __init__(self, MainWindow):
+        self.changeOut = MainWindow.changeOut
         Logging.info("启动应用程序")
         # 初始化窗体基本信息
         MainWindow.setObjectName(u"MainWindow")
@@ -86,8 +88,7 @@ class MainApp(object):
         self.startGameBtn = QPushButton(self.centralWidget)
         self.startGameBtn.setObjectName(u"startGameBtn")
         self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
-        self.startGameBtn.clicked.connect(
-            lambda: self.worker.start())
+        self.startGameBtn.clicked.connect(lambda: self.worker.start())
         self.startGameBtn.setText(QCoreApplication.translate("MainWindow", "启动", None))
 
         # 日志
@@ -434,6 +435,10 @@ class MainApp(object):
         QMessageBox.information(self.centralWidget, '提示', text, QMessageBox.Ok)
         return
 
+    def changeStatusLabel(self, text):
+        self.changeOut.emit(text)
+        return
+
     def __initData(self):
         """
         初始化面板数据部分
@@ -478,6 +483,7 @@ class MainApp(object):
         # 线程创建
         self.worker = Strategy()
         self.worker.sinOut.connect(self.showMsg)
+        self.worker.statusOut.connect(self.changeStatusLabel)
 
 
 class AboutDialog(QMessageBox):
