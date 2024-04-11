@@ -86,15 +86,15 @@ class BaseStrategy(ProcessStrategy):
         pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
         pyautogui.click()
 
+        if energy_lack():
+            self.signal.emit("体力不足，脚本终止")
+            return
+
         # 等待2秒 界面弹出
         time.sleep(2)
 
         # 开始
         pyautogui.click()
-
-        if energy_lack():
-            self.signal.emit("体力不足，脚本终止")
-            return
 
         # 此逻辑可设置次数，则直接无重试退出
         BattleOver(signal=self.signal)
@@ -161,14 +161,14 @@ class AdvanceStrategy(ProcessStrategy):
         # 等待2秒 界面弹出
         time.sleep(2)
 
-        # 开始
-        pyautogui.click()
-
         print("检测体力")
         # 点击重试后提示弹窗
         if energy_lack():
             self.signal.emit("体力不足，脚本终止")
             return
+
+        # 开始
+        pyautogui.click()
 
         # 由于已战斗1次，则重试次数少1
         BattleOver(True, count - 1, self.signal)
