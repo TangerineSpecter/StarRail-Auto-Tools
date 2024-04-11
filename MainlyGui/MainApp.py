@@ -61,6 +61,9 @@ class MainApp(object):
         # 初始化样式
         self.__initStyle()
 
+        # 初始化提示
+        self.__init_tips()
+
         # 快捷键绑定
         if platform.system() == 'Windows':
             KeyboardModule(self.worker).bind_start_game()
@@ -85,7 +88,7 @@ class MainApp(object):
         self.startGameBtn.setGeometry(QRect(530, 80, 80, 40))
         self.startGameBtn.clicked.connect(
             lambda: self.worker.start())
-        self.startGameBtn.setText(QCoreApplication.translate("MainWindow", "启动游戏", None))
+        self.startGameBtn.setText(QCoreApplication.translate("MainWindow", "启动", None))
 
         # 日志
         self.logBtn = QPushButton(self.centralWidget)
@@ -171,7 +174,7 @@ class MainApp(object):
         self.runKeyboardLabel = QLabel(self.groupBox)
         self.runKeyboardLabel.setObjectName(u"runKeyboardLabel")
         self.runKeyboardLabel.setGeometry(QRect(20, 310, 158, 16))
-        self.runKeyboardLabel.setStyleSheet("color: red;font-weight:bold;")
+        # self.runKeyboardLabel.setStyleSheet("color: red;")
         self.runKeyboardLabel.setText(
             QCoreApplication.translate("MainWindow", f"启动快捷键：{Constant.start_keyboard}", None))
 
@@ -179,9 +182,18 @@ class MainApp(object):
         self.stopKeyboardLabel = QLabel(self.groupBox)
         self.stopKeyboardLabel.setObjectName(u"stopKeyboardLabel")
         self.stopKeyboardLabel.setGeometry(QRect(20, 330, 158, 16))
-        self.stopKeyboardLabel.setStyleSheet("color: red;font-weight:bold;")
+        # self.stopKeyboardLabel.setStyleSheet("color: red;")
         self.stopKeyboardLabel.setText(
             QCoreApplication.translate("MainWindow", f"停止快捷键：{Constant.stop_keyboard}", None))
+
+        # 注意事项
+        self.textLabel = QLabel(self.centralWidget)
+        self.textLabel.setObjectName(u"textLabel")
+        self.textLabel.setGeometry(QRect(20, 432, 558, 16))
+        self.textLabel.setStyleSheet("color: red;")
+        self.textLabel.setText(
+            QCoreApplication.translate("MainWindow",
+                                       f"说明：当前版本暂不支持启动游戏运行，请在进入游戏后通过快捷键运行脚本。^_^", None))
         pass
 
     def __initLayout(self, MainWindow):
@@ -276,9 +288,29 @@ class MainApp(object):
         BtnCss.red(self.removeItemBtn)
         BtnCss.blue(self.startGameBtn)
         BtnCss.purple(self.logBtn)
+        # icon设置
+        self.addItemBtn.setIcon(QIcon("Resource/icon/add.png"))
+        self.settingItemBtn.setIcon(QIcon("Resource/icon/setting.png"))
+        self.removeItemBtn.setIcon(QIcon("Resource/icon/remove.png"))
+        self.openFileBtn.setIcon(QIcon("Resource/icon/file.png"))
+        self.logBtn.setIcon(QIcon("Resource/icon/log.png"))
+        self.startGameBtn.setIcon(QIcon("Resource/icon/start.png"))
 
-    # 打开游戏文件
+    def __init_tips(self):
+        """
+        初始化提示
+        """
+        self.openFileBtn.setToolTip("添加游戏启动目录，当前暂不支持直接启动游戏")
+        self.startGameBtn.setToolTip("当前版本建议使用快捷键执行，后续版本支持启动游戏")
+        self.addItemBtn.setToolTip("添加列表需要执行的任务")
+        self.settingItemBtn.setToolTip("修改选中任务内容以及次数")
+        self.removeItemBtn.setToolTip("对选中任务进行移除")
+        self.logBtn.setToolTip("脚本执行记录")
+
     def open_file(self):
+        """
+        打开游戏文件
+        """
         file_dialog = QFileDialog()
         file_dialog.setFileMode(QFileDialog.ExistingFile)
         file_dialog.setNameFilter("Executable Files (*.exe)")
