@@ -25,6 +25,7 @@ from Utils.FileUtils import FileOper
 import Config.DungeonConfig as DungeonConfig
 import Config.SystemInfo as SystemInfo
 import Config.LoggingConfig as Logging
+import Config.UpdateLog as UpdateInfo
 import Utils.DataUtils as Data
 import Utils.Constant as Constant
 
@@ -230,6 +231,12 @@ class MainApp(object):
         self.aboutAction.triggered.connect(show_about_dialog)
         self.aboutAction.setText(QCoreApplication.translate("MainWindow", "关于", None))
 
+        # 更新记录
+        self.updateLogAction = QAction(MainWindow)
+        self.updateLogAction.setObjectName(u"updateLogAction")
+        self.updateLogAction.triggered.connect(show_update_log)
+        self.updateLogAction.setText(QCoreApplication.translate("MainWindow", "更新记录", None))
+
         # 日志
         self.logAction = QAction(MainWindow)
         self.logAction.setObjectName(u"logAction")
@@ -241,15 +248,23 @@ class MainApp(object):
         self.menubar.setObjectName(u"menubar")
         self.menubar.setGeometry(QRect(0, 0, 269, 37))
         # 菜单栏 1
-        self.menu = QMenu(self.menubar)
-        self.menu.setObjectName(u"menu")
+        self.menu1 = QMenu(self.menubar)
+        self.menu1.setObjectName(u"menu1")
+        MainWindow.setMenuBar(self.menubar)
+        # 菜单栏 2
+        self.menu2 = QMenu(self.menubar)
+        self.menu2.setObjectName(u"menu2")
         MainWindow.setMenuBar(self.menubar)
 
-        self.menubar.addAction(self.menu.menuAction())
-        self.menu.addAction(self.openAction)
-        self.menu.addAction(self.logAction)
-        self.menu.addAction(self.aboutAction)
-        self.menu.setTitle(QCoreApplication.translate("MainWindow", "文件", None))
+        self.menubar.addAction(self.menu1.menuAction())
+        self.menubar.addAction(self.menu2.menuAction())
+        # 绑定下拉
+        self.menu1.addAction(self.openAction)
+        self.menu1.addAction(self.aboutAction)
+        self.menu1.setTitle(QCoreApplication.translate("MainWindow", "文件", None))
+        self.menu2.addAction(self.logAction)
+        self.menu2.addAction(self.updateLogAction)
+        self.menu2.setTitle(QCoreApplication.translate("MainWindow", "帮助", None))
 
     def __initStyle(self):
         """
@@ -462,24 +477,58 @@ def show_log():
     """
     打开日志
     """
-    sub_window = SubWindow()
+    sub_window = SubLogWindow()
     # 设置为模态对话框
     sub_window.setModal(True)
     sub_window.exec()
 
 
-class SubWindow(QDialog):
+class SubLogWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("查看日志")
 
         layout = QVBoxLayout()
-        # 86 177 110
         self.textEdit = QTextEdit()
         self.textEdit.setStyleSheet("background-color: rgb(20, 23, 40);")
         log_content = FileOper.load_log_file("app.log")
         self.textEdit.setHtml(log_content)
         self.textEdit.setFixedSize(1000, 400)
+        # 设置为不可编辑
+        self.textEdit.setReadOnly(True)
+        layout.addWidget(self.textEdit)
+
+        self.setLayout(layout)
+
+
+def show_update_log():
+    """
+    更新记录
+    """
+    sub_window = SubUpdateWindow()
+    # 设置为模态对话框
+    sub_window.setModal(True)
+    sub_window.exec()
+
+
+class SubUpdateWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("更新记录")
+
+        layout = QVBoxLayout()
+        self.textEdit = QTextEdit()
+        update_log = UpdateInfo.update_log
+        dialog_content = []
+        for info in update_log:
+            c = f"<h3 style='text-align: center;'>更新版本：{info['version']}</h3>" \
+                f"<ul>"
+            for text in info['content']:
+                c += f"<li>{text}</li>"
+            c += "</ul>"
+            dialog_content.append(c)
+        self.textEdit.setHtml("<br>".join(dialog_content))
+        self.textEdit.setFixedSize(500, 600)
         # 设置为不可编辑
         self.textEdit.setReadOnly(True)
         layout.addWidget(self.textEdit)
