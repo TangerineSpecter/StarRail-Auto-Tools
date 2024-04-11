@@ -1,6 +1,5 @@
 import time
 
-import cv2
 import pyautogui
 
 import Config.CoordinateConfig as CoordinateConfig
@@ -26,6 +25,7 @@ class DistributeStrategy(ProcessStrategy):
     """
     分发策略
     """
+    signal = None
 
     def doJob(self, row_data):
         main_name = row_data['main_name']
@@ -35,7 +35,7 @@ class DistributeStrategy(ProcessStrategy):
         strategy_class = globals()[dungeon_dict['strategy_class']]
 
         # 独立的策略调度
-        context = Context(strategy_class())
+        context = Context(strategy_class(), self.signal)
         return context.execute_strategy(row_data)
 
 
@@ -43,6 +43,7 @@ class BaseStrategy(ProcessStrategy):
     """
     基础副本策略（经验、信用点）
     """
+    signal = None
 
     def doJob(self, row_data):
         main_name = row_data['main_name']
@@ -94,13 +95,14 @@ class BaseStrategy(ProcessStrategy):
         # 开始
         pyautogui.click()
         # 此逻辑可设置次数，则直接无重试退出
-        BattleOver()
+        BattleOver(signal=self.signal)
 
 
 class AdvanceStrategy(ProcessStrategy):
     """
     图像识别副本策略（技能材料、晋级材料、遗器、周本）
     """
+    signal = None
 
     def doJob(self, row_data):
         main_name = row_data['main_name']
@@ -109,6 +111,7 @@ class AdvanceStrategy(ProcessStrategy):
         count = int(row_data['count'])
         simple_name = row_data['simple_name']
         Logging.info(f"开始执行 [{main_name}({process_name})] 自动化，总共执行次数{count}次")
+        self.signal.emit(f"开始执行 [{main_name}({process_name})] 任务")
 
         if simple_name == "equip" or simple_name == "weekend":
             pyautogui.moveRel(0, 500, duration=Data.duration)
@@ -125,6 +128,7 @@ class AdvanceStrategy(ProcessStrategy):
         while True:
             try:
                 Logging.info("开始识别副本中...")
+                self.signal.emit("开始识别副本中...")
                 # 最大识别30秒
                 if int(time.time()) - start_time > 30:
                     Logging.warn(f"[{process_name}]执行超时")
@@ -132,6 +136,7 @@ class AdvanceStrategy(ProcessStrategy):
                 time.sleep(2)
                 button_x, button_y = ImageUtils.cv(f"./Resource/img/{cv_img}.png")
                 Logging.info("识别到副本开始挑战")
+                self.signal.emit("识别到副本开始挑战")
                 # 先将鼠标移动到图标位置
                 pyautogui.moveTo(button_x, button_y, duration=Data.duration)
                 # 相对图标进行平移点击传送
@@ -141,6 +146,7 @@ class AdvanceStrategy(ProcessStrategy):
                 break
             except Exception:
                 Logging.info("未识别到副本，滚动界面继续识别...")
+                self.signal.emit("未识别到副本，滚动界面继续识别...")
                 pyautogui.dragRel(0, -500, duration=0.5, button='left')
                 pyautogui.moveRel(0, 500, duration=0.5)
 
@@ -152,6 +158,7 @@ class AdvanceStrategy(ProcessStrategy):
 
         # 点击重试后提示弹窗
         if energy_lack():
+            self.signal.emit("体力不足，脚本终止")
             return
 
             # 等待2秒 界面弹出
@@ -160,24 +167,24 @@ class AdvanceStrategy(ProcessStrategy):
         # 开始
         pyautogui.click()
         # 由于已战斗1次，则重试次数少1
-        BattleOver(True, count - 1)
+        BattleOver(True, count - 1, self.signal)
 
 
 class Context:
-    def __init__(self, strategy):
+    def __init__(self, strategy, signal):
         """
         策略接口
         :param strategy: 调度策略
         :param
         """
         self.strategy = strategy
-        self.test = 1
+        strategy.signal = signal
 
     def execute_strategy(self, row_data):
         return self.strategy.doJob(row_data)
 
 
-def BattleOver(retry=False, count=1):
+def BattleOver(retry=False, count=1, signal=None):
     """
     判断战斗是否结束
     :param retry 是否继续,True：继续；默认结束
@@ -198,16 +205,19 @@ def BattleOver(retry=False, count=1):
                     break
                 count = count - 1
                 Logging.info(f"再次挑战副本，剩余次数：{count}")
+                signal.emit(f"再次挑战副本，剩余次数：{count}")
                 continue
             # 退出
             pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_exit), duration=Data.duration)
             pyautogui.click()
             Logging.info("副本挑战结束，返回界面")
+            signal.emit("副本挑战结束，返回界面")
             # 等待界面切换
             time.sleep(5)
             return True
         except pyautogui.ImageNotFoundException:
             Logging.info("战斗未结束，等待中...")
+            signal.emit("战斗进行中...")
 
 
 def energy_lack():

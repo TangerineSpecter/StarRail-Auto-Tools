@@ -47,10 +47,12 @@ class Strategy(QThread):
 
     def stop(self):
         Logging.warn("终止脚本运行")
+        self.statusOut.emit("手动停止脚本")
         self.terminate()
 
     def run_game(self):
         try:
+            self.statusOut.emit("开始检测游戏运行状态")
             Logging.info("开始检测游戏运行状态")
             if check_process_exists():
                 Logging.info("游戏已运行，执行下一步")
@@ -59,7 +61,7 @@ class Strategy(QThread):
             else:
                 # self.__join_game()
                 self.sinOut.emit("游戏未运行")
-                self.statusOut.emit("游戏未运行")
+                self.statusOut.emit("脚本运行结束")
                 Logging.info("游戏未运行，终止")
                 # playsound(Constant.Audio.not_running, block=False)
                 return
@@ -133,7 +135,8 @@ class Strategy(QThread):
         pyautogui.click()
 
         # 策略分发
-        context = Context(DistributeStrategy())
+        dis = DistributeStrategy()
+        context = Context(dis, self.statusOut)
         result = context.execute_strategy(self.tableData[self.row_index])
 
         if not result:

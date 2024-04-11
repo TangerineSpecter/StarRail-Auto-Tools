@@ -5,7 +5,7 @@ import sys
 
 import pyautogui
 from PySide6.QtCore import Qt, Signal, QRect
-from PySide6.QtGui import (QIcon)
+from PySide6.QtGui import (QIcon, QFont)
 from PySide6.QtWidgets import *
 
 import Config.LoggingConfig as Logging
@@ -41,8 +41,13 @@ class StatusLabel(QLabel):
         self.setStyleSheet("color: red; background-color: white; padding: 5px;")
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setGeometry(QRect(20, 25, 200, 50))
+        self.setGeometry(QRect(0, 0, 800, 80))
+        self.setWindowFlag(Qt.Tool)
+        font = QFont()
+        font.setPointSize(18)
+        self.setFont(font)
         self.setText("待机中")
+        self.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.show()
 
     def update_text(self, text):

@@ -40,7 +40,7 @@ class MainApp(object):
         Logging.info("启动应用程序")
         # 初始化窗体基本信息
         MainWindow.setObjectName(u"MainWindow")
-        MainWindow.setFixedSize(640, 480)
+        MainWindow.setFixedSize(640, 500)
         MainWindow.setWindowIcon(QIcon(Constant.icon))
         MainWindow.setWindowTitle(
             QCoreApplication.translate("MainWindow", f"{systemInfo['title']} v{systemInfo['version']}", None))
