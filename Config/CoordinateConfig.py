@@ -49,6 +49,15 @@ class BtnKey:
     '''战斗界面-挑战体力不足取消'''
 
 
+class OcrKey:
+    # 体力不足图片
+    energy_img = "energy_img"
+    # 一键派遣图片
+    all_dispatch = "all_dispatch"
+    # 每日领取 - 最左边
+    every_job = "every_job"
+
+
 def get_dungeon_row(row_name):
     """
     获取副本栏目key
@@ -67,6 +76,7 @@ def get_base_run(run_name):
     return getattr(BtnKey, f"{run_name}_run_btn", None)
 
 
+# 按钮坐标位置
 coordinate_info = {
     BtnKey.close_btn: {
         "x": 0.9734,
@@ -158,5 +168,28 @@ coordinate_info = {
     BtnKey.money_run_btn: {
         "x": 0.787,
         "y": 0.828
+    }
+}
+
+# ocr图片坐标位置，左上角(x,y)，宽w，高h
+ocr_coordinate_info = {
+
+    OcrKey.energy_img: {
+        "x": -1,
+        "y": -1,
+        "w": -1,
+        "h": -1
+    },
+    OcrKey.all_dispatch: {
+        "x": -1,
+        "y": -1,
+        "w": -1,
+        "h": -1
+    },
+    OcrKey.every_job: {
+        "x": -1,
+        "y": -1,
+        "w": -1,
+        "h": -1
     }
 }

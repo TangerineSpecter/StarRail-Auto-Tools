@@ -2,13 +2,13 @@
 数据处理工具类
 """
 
+import os
+import sys
+
 import pyautogui
 from PySide6.QtCore import QSettings
 
-import Config.CoordinateConfig
 import Config.CoordinateConfig as CoordinateConfig
-import os
-import sys
 
 # 创建 QSettings 对象，将 parent 参数设置为 None
 settings = QSettings("MyCompany", "MyApp", parent=None)
@@ -23,13 +23,20 @@ duration = 0.3
 positionInfo = CoordinateConfig.coordinate_info
 
 
-def getPosition(position_name: Config.CoordinateConfig.BtnKey):
+def getPosition(position_name: CoordinateConfig.BtnKey):
     """
     获取指定的坐标位置
     :param position_name: 坐标名称
     :return: x轴坐标，y轴坐标
     """
-    return screen_width * positionInfo[position_name]['x'], screen_height * positionInfo[position_name]['y']
+    position_info = positionInfo[position_name]
+    if position_info is None:
+        return None
+
+    x = position_info['x']
+    y = position_info['y']
+
+    return screen_width * x, screen_height * y
 
 
 def getResourcePath(file_path):

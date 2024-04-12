@@ -4,10 +4,12 @@ import cv2
 import numpy as np
 import pyautogui
 
+import Config.CoordinateConfig as CoordinateConfig
 import Utils.DataUtils as Data
 
 # 获取屏幕分辨率
 screen_width, screen_height = pyautogui.size()
+ocrPositionInfo = CoordinateConfig.ocr_coordinate_info
 
 
 def cv(image_path):
@@ -139,17 +141,24 @@ def cv_flann(image_path):
     raise pyautogui.ImageNotFoundException
 
 
-def cut_img_screenshot(x_position, y_position, width, height):
+def cut_img_screenshot(position_name: CoordinateConfig.BtnKey):
     """
     裁剪当前画面，并返回局部截图
-    :param x_position: 左上角x坐标
-    :param y_position: 左上角y坐标
-    :param width: 宽
-    :param height: 高
+    :param position_name: 坐标名称
     :return: 画面截图
     """
     screen_shot = np.array(pyautogui.screenshot())  # 转换为 NumPy 数组
     screen_shot = cv2.cvtColor(screen_shot, cv2.COLOR_RGB2BGR)  # 转换颜色空间
+
+    position_info = ocrPositionInfo[position_name]
+    if position_info is None:
+        return None
+
+    # 初始化数据
+    x_position = position_info['x']
+    y_position = position_info['y']
+    width = position_info['w']
+    height = position_info['h']
 
     # 截取指定区域
     return screen_shot[y_position:y_position + height, x_position:x_position + width]
