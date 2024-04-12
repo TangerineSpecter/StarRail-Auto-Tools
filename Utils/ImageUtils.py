@@ -153,10 +153,3 @@ def cut_img_screenshot(x_position, y_position, width, height):
 
     # 截取指定区域
     return screen_shot[y_position:y_position + height, x_position:x_position + width]
-
-
-if __name__ == '__main__':
-    # # 显示截取的区域
-    cv2.imshow('Region', cut_img_screenshot(0, 0, 2234, 2234))
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()

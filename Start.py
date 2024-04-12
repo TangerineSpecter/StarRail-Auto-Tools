@@ -12,6 +12,7 @@ import Config.LoggingConfig as Logging
 import Utils.DataUtils as Data
 # Import UI developed in Qt Creator
 from MainlyGui.MainApp import MainApp  # 导入界面
+import time
 
 
 # Create and start the Qt application
@@ -55,6 +56,7 @@ class StatusLabel(QLabel):
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     # 初始化QApplication
     app = QApplication()
     app.setWindowIcon(QIcon(Data.getResourcePath("Resource/img/icon.png")))
@@ -91,4 +93,5 @@ if __name__ == "__main__":
 
     # 设置label的位置为屏幕的右上角
     label_window.move((screen_width - label_window.width()) / 2, 0)
+    print(f"初始化完毕，耗时{time.time() - start_time}秒")
     sys.exit(app.exec())

@@ -28,6 +28,7 @@ import Config.LoggingConfig as Logging
 import Config.UpdateLog as UpdateInfo
 import Utils.DataUtils as Data
 import Utils.Constant as Constant
+from Utils.OcrUtils import InitOcrThread
 
 # 系统信息
 systemInfo = SystemInfo.base_info
@@ -36,6 +37,9 @@ systemInfo = SystemInfo.base_info
 class MainApp(object):
 
     def __init__(self, MainWindow):
+        # 初始化ocr
+        InitOcrThread().start()
+
         self.changeOut = MainWindow.changeOut
         Logging.info("启动应用程序")
         # 初始化窗体基本信息
@@ -72,6 +76,7 @@ class MainApp(object):
             KeyboardModule(self.worker).bind_position()
 
         QMetaObject.connectSlotsByName(MainWindow)
+        print("初始化窗口完毕")
 
     def __initButton(self):
         """
