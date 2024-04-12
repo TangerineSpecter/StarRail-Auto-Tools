@@ -3,6 +3,7 @@
 """
 import keyboard
 import pyautogui
+
 import Utils.Constant as Constant
 
 
@@ -31,3 +32,4 @@ def printPosition():
     print(f"鼠标当前坐标：{position}")
     x, y = pyautogui.size()
     print(f"坐标百分比：x={position.x / x}，y={position.y / y}")
+

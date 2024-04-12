@@ -175,21 +175,15 @@ coordinate_info = {
 ocr_coordinate_info = {
 
     OcrKey.energy_img: {
-        "x": -1,
-        "y": -1,
-        "w": -1,
-        "h": -1
+        "left_position": (0.0885, 0.5601),
+        "right_position": (0.1765, 0.5953)
     },
     OcrKey.all_dispatch: {
-        "x": -1,
-        "y": -1,
-        "w": -1,
-        "h": -1
+        "left_position": (-1, -1),
+        "right_position": (-1, -1)
     },
     OcrKey.every_job: {
-        "x": -1,
-        "y": -1,
-        "w": -1,
-        "h": -1
+        "left_position": (-1, -1),
+        "right_position": (-1, -1)
     }
 }

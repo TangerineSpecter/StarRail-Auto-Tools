@@ -70,7 +70,6 @@ class MainApp(object):
         # 初始化提示
         self.__init_tips()
 
-        # 快捷键绑定
         if platform.system() == 'Windows':
             KeyboardModule(self.worker).bind_start_game()
             KeyboardModule(self.worker).bind_position()

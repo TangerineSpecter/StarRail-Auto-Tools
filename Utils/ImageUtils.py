@@ -140,8 +140,8 @@ def cv_flann(image_path):
     # 此处和pyautogui异常对齐
     raise pyautogui.ImageNotFoundException
 
-
-def cut_img_screenshot(position_name: CoordinateConfig.BtnKey):
+# : CoordinateConfig.OcrKey
+def cut_img_screenshot(position_name):
     """
     裁剪当前画面，并返回局部截图
     :param position_name: 坐标名称
@@ -155,10 +155,22 @@ def cut_img_screenshot(position_name: CoordinateConfig.BtnKey):
         return None
 
     # 初始化数据
-    x_position = position_info['x']
-    y_position = position_info['y']
+    left_position = ocr_info['left_position']
+    right_position = ocr_info['right_position']
+
+    x_position = screen_width * left_position[0]
+    y_position = screen_width * left_position[1]
     width = position_info['w']
     height = position_info['h']
 
     # 截取指定区域
     return screen_shot[y_position:y_position + height, x_position:x_position + width]
+
+
+if __name__ == '__main__':
+    position = pyautogui.position()
+    print(f"鼠标当前坐标：{position}")
+    x, y = pyautogui.size()
+    print(f"坐标百分比：x={position.x / x}，y={position.y / y}")
+
+    ocr_info = cut_img_screenshot("energy_img")
