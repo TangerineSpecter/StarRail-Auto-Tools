@@ -1,4 +1,5 @@
 import platform
+import time
 
 import cv2
 import numpy as np
@@ -140,31 +141,37 @@ def cv_flann(image_path):
     # 此处和pyautogui异常对齐
     raise pyautogui.ImageNotFoundException
 
+
 # : CoordinateConfig.OcrKey
-def cut_img_screenshot(position_name):
+def cut_img_screenshot(position_name: CoordinateConfig.OcrKey):
     """
     裁剪当前画面，并返回局部截图
     :param position_name: 坐标名称
-    :return: 画面截图
+    :return: 画面截图，x,y中心
     """
     screen_shot = np.array(pyautogui.screenshot())  # 转换为 NumPy 数组
     screen_shot = cv2.cvtColor(screen_shot, cv2.COLOR_RGB2BGR)  # 转换颜色空间
 
-    position_info = ocrPositionInfo[position_name]
-    if position_info is None:
+    ocrInfo = ocrPositionInfo[position_name]
+    if ocrInfo is None:
         return None
 
     # 初始化数据
-    left_position = ocr_info['left_position']
-    right_position = ocr_info['right_position']
+    left_position = ocrInfo['left_position']
+    right_position = ocrInfo['right_position']
 
-    x_position = screen_width * left_position[0]
-    y_position = screen_width * left_position[1]
-    width = position_info['w']
-    height = position_info['h']
+    left_x = int(screen_width * left_position[0])
+    left_y = int(screen_height * left_position[1])
+    right_x = int(screen_width * right_position[0])
+    right_y = int(screen_height * right_position[1])
+
+    x_center = (left_x + right_x) / 2
+    y_center = (left_y + right_y) / 2
+
+    print(f"ocr坐标，({left_x}, {left_y}), ({right_x}, {right_y})")
 
     # 截取指定区域
-    return screen_shot[y_position:y_position + height, x_position:x_position + width]
+    return screen_shot[left_y:right_y, left_x:right_x], x_center, y_center
 
 
 if __name__ == '__main__':
@@ -173,4 +180,16 @@ if __name__ == '__main__':
     x, y = pyautogui.size()
     print(f"坐标百分比：x={position.x / x}，y={position.y / y}")
 
-    ocr_info = cut_img_screenshot("energy_img")
+    time.sleep(3)
+
+    ocr_info = cut_img_screenshot("all_dispatch")
+    cv2.imshow('windows', ocr_info)
+    from Utils.OcrUtils import ocr_img, InitOcrThread
+
+    InitOcrThread().run()
+
+    # ocr_info = cv2.imread("../test/img_4.png")
+    cv2.imshow('window', ocr_info)
+    text = ocr_img(ocr_info)
+    print(text)
+    cv2.waitKey(0)

@@ -9,7 +9,8 @@ import Config.LoggingConfig as Logging
 import Utils.Constant as Constant
 import Utils.DataUtils as Data
 import Utils.ImageUtils as ImageUtils
-from Config.CoordinateConfig import BtnKey
+from Utils.OcrUtils import ocr_img
+from Config.CoordinateConfig import BtnKey, OcrKey
 from Strategy.ProcessStrategy import Context, DistributeStrategy
 
 
@@ -154,30 +155,108 @@ class Strategy(QThread):
         """
         dispatch = Data.settings.value("dispatch")
         if dispatch:
-            self.statusOut.emit("开始自动派遣")
-            # TODO 识别执行
+            try:
+                self.statusOut.emit("开始自动派遣")
+                # TODO 识别执行
+                pyautogui.moveTo(Data.getPosition(BtnKey.close_btn), duration=Data.duration)
+                for _ in range(3):
+                    pyautogui.click()
 
-            pyautogui.press("esc")
+                # 等待两秒界面打开
+                time.sleep(1)
 
-            # 识别对应坐标，点击一键派遣
-            pyautogui.moveTo(Data.getPosition(BtnKey.dispatch_main), duration=Data.duration)
-            pyautogui.click()
+                pyautogui.press("esc")
 
-            # 等待两秒界面打开
-            time.sleep(2)
+                # 等待两秒界面打开
+                time.sleep(2)
 
-            # 判断是否可派遣
+                # 识别对应坐标，点击一键派遣
+                pyautogui.moveTo(Data.getPosition(BtnKey.dispatch_main), duration=Data.duration)
+                pyautogui.click()
 
-            # 派遣
-            pyautogui.moveTo(Data.getPosition(BtnKey.dispatch_all_retry), duration=Data.duration)
-            pyautogui.click()
+                # 等待两秒界面打开
+                time.sleep(2)
+
+                # 判断是否可派遣
+                ocr_info, img_x, img_y = ImageUtils.cut_img_screenshot("all_dispatch")
+                ocr_text = ocr_img(ocr_info)
+                print(ocr_text)
+                if ocr_text == "一键领取":
+                    self.statusOut.emit("委托派遣完毕")
+                    Logging.info("委托派遣完毕")
+                    print(img_x, img_y)
+                    pyautogui.moveTo(img_x, img_y, duration=Data.duration)
+                    pyautogui.click()
+                else:
+                    self.statusOut.emit("不可派遣，步骤结束")
+                    Logging.info("不可派遣，步骤结束")
+                    time.sleep(1)
+            except Exception as e:
+                self.statusOut.emit("每日任务缴纳异常，终止")
+                time.sleep(1)
 
     def __run_everyday_job(self):
         """
         自动交每日任务
         """
         # TODO 打开每日任务界面
-        self.statusOut.emit("开始交纳每日任务")
+        everyday_job = Data.settings.value("everyday_job")
+        if everyday_job:
+            try:
+                self.statusOut.emit("开始交纳每日任务")
+
+                pyautogui.moveTo(Data.getPosition(BtnKey.close_btn), duration=Data.duration)
+                for _ in range(3):
+                    pyautogui.click()
+
+                # 打开副本界面
+                Logging.info("开始打开副本界面")
+                pyautogui.keyDown('alt')
+                pyautogui.moveTo(Data.getPosition(BtnKey.dungeon_main), duration=Data.duration)
+                pyautogui.click()
+                pyautogui.keyUp('alt')
+
+                time.sleep(2)
+
+                # 打开每日任务界面
+                pyautogui.moveTo(Data.getPosition(BtnKey.job_tab), duration=Data.duration)
+                pyautogui.click()
+
+                time.sleep(2)
+
+                every_job_point_img, _, _ = ImageUtils.cut_img_screenshot(OcrKey.every_job_point)
+                ocr_text = ocr_img(every_job_point_img)
+                print(ocr_text)
+                job_point = int(ocr_img(every_job_point_img))
+                # 每日任务点数，未到500则可继续领取
+                if job_point < 500:
+                    remaining_count = int((500 - job_point) / 100)
+                    print(f"次数{remaining_count}")
+                    self.statusOut.emit(f"开始缴纳每日任务，剩余缴纳次数：{remaining_count}")
+                    for count in range(remaining_count):
+                        time.sleep(1)
+                        # 识别任务按钮
+                        print("识别")
+                        every_job_img, x, y = ImageUtils.cut_img_screenshot(OcrKey.every_job)
+                        ocr_text = ocr_img(every_job_img)
+                        if ocr_text != "领取":
+                            print("无法领取")
+                            break
+                        self.statusOut.emit(f"任务领取中{count + 1}")
+                        pyautogui.moveTo(x, y, duration=Data.duration)
+                        pyautogui.click()
+                        # 领取完之后，挪动鼠标避免遮挡
+                        pyautogui.moveRel(100, 0, duration=Data.duration)
+                self.statusOut.emit("无可缴纳任务终止")
+                pyautogui.moveTo(Data.getPosition(BtnKey.job_complete_btn5), duration=Data.duration)
+                pyautogui.click()
+                # 等待一会退出界面
+                time.sleep(0.5)
+                pyautogui.click()
+                pyautogui.press("esc")
+            except Exception as e:
+                self.statusOut.emit("每日任务缴纳异常，终止")
+            time.sleep(1)
 
 
 def check_process_exists():

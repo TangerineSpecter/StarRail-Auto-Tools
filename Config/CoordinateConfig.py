@@ -17,6 +17,10 @@ class BtnKey:
     dispatch_all_retry = "dispatch_all_retry"
     '''派遣界面-一键派遣按钮'''
 
+    job_tab = "job_tab"
+    '''任务界面-tab按钮'''
+    job_complete_btn5 = "job_complete_btn5"
+    '''任务界面-缴纳任务5'''
     dungeon_tab = "dungeon_tab"
     '''副本界面-tab按钮'''
     base_row = "base_row"
@@ -54,6 +58,8 @@ class OcrKey:
     energy_img = "energy_img"
     # 一键派遣图片
     all_dispatch = "all_dispatch"
+    # 每日任务-点数
+    every_job_point = "every_job_point"
     # 每日领取 - 最左边
     every_job = "every_job"
 
@@ -89,8 +95,8 @@ coordinate_info = {
     },
     # 派遣进入按钮
     BtnKey.dispatch_main: {
-        "x": -1,
-        "y": -1
+        "x": 0.9027,
+        "y": 0.3402
     },
     # 一键派遣
     BtnKey.dispatch_all_retry: {
@@ -128,6 +134,15 @@ coordinate_info = {
         "y": 0.755
     },
 
+    # 弹窗任务tab页
+    BtnKey.job_tab: {
+        "x": 0.2507,
+        "y": 0.2034
+    },
+    BtnKey.job_complete_btn5: {
+        "x": 0.8417,
+        "y": 0.2881
+    },
     # 副本结束重试按钮
     BtnKey.dungeon_retry: {
         "x": 0.618,
@@ -179,11 +194,15 @@ ocr_coordinate_info = {
         "right_position": (0.1765, 0.5953)
     },
     OcrKey.all_dispatch: {
-        "left_position": (-1, -1),
-        "right_position": (-1, -1)
+        "left_position": (0.1843, 0.8159),
+        "right_position": (0.3082, 0.8666)
+    },
+    OcrKey.every_job_point: {
+        "left_position": (0.1481, 0.2902),
+        "right_position": (0.2051, 0.3465)
     },
     OcrKey.every_job: {
-        "left_position": (-1, -1),
-        "right_position": (-1, -1)
+        "left_position": (0.172, 0.743),
+        "right_position": (0.2648, 0.7875)
     }
 }
