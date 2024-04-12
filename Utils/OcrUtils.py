@@ -17,6 +17,7 @@ def ocr_img(img):
     """
     try:
         text_arr = OcrUtils.ocr(img, cls=True)
+        print(f"ocr识别结果：{text_arr}")
         ocr_all_text = text_arr[1]
         # 识别文本内容为空，则说明无内容
         if len(ocr_all_text) == 0:

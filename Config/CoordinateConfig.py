@@ -190,8 +190,8 @@ coordinate_info = {
 ocr_coordinate_info = {
 
     OcrKey.energy_img: {
-        "left_position": (0.0885, 0.5601),
-        "right_position": (0.1765, 0.5953)
+        "left_position": (0.4519, 0.2993),
+        "right_position": (0.5519, 0.3465)
     },
     OcrKey.all_dispatch: {
         "left_position": (0.1843, 0.8159),

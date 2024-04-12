@@ -7,7 +7,8 @@ import Config.DungeonConfig as DungeonConfig
 import Config.LoggingConfig as Logging
 import Utils.DataUtils as Data
 import Utils.ImageUtils as ImageUtils
-from Config.CoordinateConfig import BtnKey
+from Utils.OcrUtils import ocr_img
+from Config.CoordinateConfig import BtnKey, OcrKey
 
 screen_width, screen_height = pyautogui.size()
 
@@ -87,7 +88,8 @@ class BaseStrategy(ProcessStrategy):
         pyautogui.click()
 
         if energy_lack():
-            self.signal.emit("体力不足，脚本终止")
+            self.signal.emit("体力不足，跳过执行")
+            time.sleep(1)
             return
 
         # 等待2秒 界面弹出
@@ -164,7 +166,8 @@ class AdvanceStrategy(ProcessStrategy):
         print("检测体力")
         # 点击重试后提示弹窗
         if energy_lack():
-            self.signal.emit("体力不足，脚本终止")
+            self.signal.emit("体力不足，跳过执行")
+            time.sleep(1)
             return
 
         # 开始
@@ -191,6 +194,7 @@ class Context:
 def BattleOver(retry=False, count=1, signal=None):
     """
     判断战斗是否结束
+    :param signal: 信号
     :param retry 是否继续,True：继续；默认结束
     :param count 继续次数，默认1次
     :return: True:结束
@@ -234,14 +238,19 @@ def energy_lack():
         # 等1秒界面弹出
         time.sleep(1)
         # TODO 此处才用默认，特征存在不稳定
-        ImageUtils.cv_default(Data.getResourcePath("Resource/img/Money.png"))
-        Logging.warn("体力不足，终止")
-        # 关闭界面
-        pyautogui.moveTo(Data.getPosition(BtnKey.not_energy_cancel_btn), duration=Data.duration)
-        pyautogui.click()
-        pyautogui.moveTo(Data.getPosition(BtnKey.close_btn), duration=Data.duration)
-        pyautogui.click()
-        return True
+        # ImageUtils.cv_default(Data.getResourcePath("Resource/img/Money.png"))
+        # Logging.warn("体力不足，终止")
+        every_job_point_img, _, _ = ImageUtils.cut_img_screenshot(OcrKey.energy_img)
+        ocr_text = ocr_img(every_job_point_img)
+        if ocr_text == "开拓力补充":
+            # 关闭界面
+            pyautogui.moveTo(Data.getPosition(BtnKey.not_energy_cancel_btn), duration=Data.duration)
+            pyautogui.click()
+            pyautogui.moveTo(Data.getPosition(BtnKey.close_btn), duration=Data.duration)
+            pyautogui.click()
+            return True
+        print("未识别到体力不足")
+        return False
     except pyautogui.ImageNotFoundException:
         # 未识别到弹窗，则无体力问题
         print("未识别到体力不足")
