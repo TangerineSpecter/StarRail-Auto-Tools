@@ -11,6 +11,11 @@ class BtnKey:
     '''关闭按钮'''
     dungeon_main = "dungeon_main"
     '''主界面-副本按钮'''
+    dispatch_main = "dispatch_main"
+    '''主界面-派遣按钮'''
+
+    dispatch_all_retry = "dispatch_all_retry"
+    '''派遣界面-一键派遣按钮'''
 
     dungeon_tab = "dungeon_tab"
     '''副本界面-tab按钮'''
@@ -71,6 +76,16 @@ coordinate_info = {
     BtnKey.dungeon_main: {
         "x": 0.834,
         "y": 0.045
+    },
+    # 派遣进入按钮
+    BtnKey.dispatch_main: {
+        "x": -1,
+        "y": -1
+    },
+    # 一键派遣
+    BtnKey.dispatch_all_retry: {
+        "x": -1,
+        "y": -1
     },
     # 弹窗副本tab页
     BtnKey.dungeon_tab: {

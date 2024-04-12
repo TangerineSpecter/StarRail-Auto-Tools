@@ -4,7 +4,7 @@
 
 base_info = {
     "title": "星穹铁道自动工具",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": "丢失的橘子",
     "email": "993033472@qq.com"
 }

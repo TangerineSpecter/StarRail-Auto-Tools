@@ -15,7 +15,7 @@ from PySide6.QtGui import (QAction, QIcon)
 from PySide6.QtWidgets import (QGridLayout, QMenu, QFileDialog, QTableWidget, QListView, QGroupBox,
                                QMenuBar, QWidget, QMessageBox, QPushButton, QTextEdit, QLabel, QVBoxLayout,
                                QTableWidgetItem, QInputDialog, QHeaderView, QAbstractItemView, QStatusBar, QDialog,
-                               QRadioButton)
+                               QRadioButton, QCheckBox)
 
 if platform.system() == 'Windows':
     from Moudles.KeyboardModule import KeyboardModule
@@ -97,6 +97,14 @@ class MainApp(object):
         self.logBtn.setGeometry(QRect(530, 150, 80, 40))
         self.logBtn.clicked.connect(show_log)
         self.logBtn.setText(QCoreApplication.translate("MainWindow", "日志", None))
+
+        # 自动派遣
+        self.dispatchCheck = QCheckBox(self.centralWidget)
+        self.dispatchCheck.setObjectName(u"dispatchCheck")
+        self.dispatchCheck.setGeometry(QRect(530, 200, 80, 40))
+        self.dispatchCheck.setChecked(Data.settings.value("dispatch"))
+        self.dispatchCheck.clicked.connect(lambda: self.set_dispatch)
+        self.dispatchCheck.setText(QCoreApplication.translate("MainWindow", "自动派遣", None))
 
         # 添加内容按钮
         self.addItemBtn = QPushButton(self.groupBox)
@@ -321,6 +329,12 @@ class MainApp(object):
             self.gamePathText.setText(file_path)
             # 保存设置
             Data.settings.setValue("game_path", file_path)
+
+    def set_dispatch(self):
+        """
+        设置派遣
+        """
+        Data.settings.setValue("dispatch", self.dispatchCheck.isChecked())
 
     def addTableItem(self, data, columnCount=3, rowCount=1):
         """

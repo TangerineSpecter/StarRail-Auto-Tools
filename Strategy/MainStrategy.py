@@ -4,7 +4,6 @@ import time
 import psutil
 import pyautogui
 from PySide6.QtCore import QThread, Signal
-from playsound import playsound
 
 import Config.LoggingConfig as Logging
 import Utils.Constant as Constant
@@ -109,6 +108,9 @@ class Strategy(QThread):
             self.row_index = index
             self.__init_window()
 
+        # 执行自动派遣
+        self.__run_dispatch()
+
     def __init_window(self):
         """
         初始化界面
@@ -144,6 +146,29 @@ class Strategy(QThread):
             return
 
     # Logging.info("主界面初始化结束")
+    def __run_dispatch(self):
+        """
+        自动派遣
+        """
+        dispatch = Data.settings.value("dispatch")
+        if dispatch:
+            self.statusOut.emit("开始自动派遣")
+            # TODO 识别执行
+
+            pyautogui.press("esc")
+
+            # 识别对应坐标，点击一键派遣
+            pyautogui.moveTo(Data.getPosition(BtnKey.dispatch_main), duration=Data.duration)
+            pyautogui.click()
+
+            # 等待两秒界面打开
+            time.sleep(2)
+
+            # 判断是否可派遣
+
+            # 派遣
+            pyautogui.moveTo(Data.getPosition(BtnKey.dispatch_all_retry), duration=Data.duration)
+            pyautogui.click()
 
 
 def check_process_exists():

@@ -3,6 +3,12 @@
 """
 update_log = [
     {
+        "version": "v0.0.2",
+        "content": [
+            "新增：自动派遣"
+        ]
+    },
+    {
         "version": "v0.0.1",
         "content": [
             "新增：副本相关自动化功能",
