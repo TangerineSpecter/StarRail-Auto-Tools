@@ -102,9 +102,17 @@ class MainApp(object):
         self.dispatchCheck = QCheckBox(self.centralWidget)
         self.dispatchCheck.setObjectName(u"dispatchCheck")
         self.dispatchCheck.setGeometry(QRect(530, 200, 80, 40))
-        self.dispatchCheck.setChecked(Data.settings.value("dispatch"))
+        self.dispatchCheck.setChecked(Data.settings.value("dispatch", False))
         self.dispatchCheck.clicked.connect(lambda: self.set_dispatch)
         self.dispatchCheck.setText(QCoreApplication.translate("MainWindow", "自动派遣", None))
+
+        # 自动交任务
+        self.everyDayJobCheck = QCheckBox(self.centralWidget)
+        self.everyDayJobCheck.setObjectName(u"everyDayJobCheck")
+        self.everyDayJobCheck.setGeometry(QRect(530, 230, 120, 40))
+        self.everyDayJobCheck.setChecked(Data.settings.value("everyday_job", False))
+        self.everyDayJobCheck.clicked.connect(lambda: self.set_everyday_job)
+        self.everyDayJobCheck.setText(QCoreApplication.translate("MainWindow", "自动交任务", None))
 
         # 添加内容按钮
         self.addItemBtn = QPushButton(self.groupBox)
@@ -335,6 +343,12 @@ class MainApp(object):
         设置派遣
         """
         Data.settings.setValue("dispatch", self.dispatchCheck.isChecked())
+
+    def set_everyday_job(self):
+        """
+        自动交每日
+        """
+        Data.settings.setValue("everyday_job", self.dispatchCheck.isChecked())
 
     def addTableItem(self, data, columnCount=3, rowCount=1):
         """

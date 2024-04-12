@@ -110,6 +110,8 @@ class Strategy(QThread):
 
         # 执行自动派遣
         self.__run_dispatch()
+        # 自动交每日任务
+        self.__run_everyday_job()
 
     def __init_window(self):
         """
@@ -169,6 +171,13 @@ class Strategy(QThread):
             # 派遣
             pyautogui.moveTo(Data.getPosition(BtnKey.dispatch_all_retry), duration=Data.duration)
             pyautogui.click()
+
+    def __run_everyday_job(self):
+        """
+        自动交每日任务
+        """
+        # TODO 打开每日任务界面
+        self.statusOut.emit("开始交纳每日任务")
 
 
 def check_process_exists():

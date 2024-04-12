@@ -137,3 +137,26 @@ def cv_flann(image_path):
     print("未识别到图像特征")
     # 此处和pyautogui异常对齐
     raise pyautogui.ImageNotFoundException
+
+
+def cut_img_screenshot(x_position, y_position, width, height):
+    """
+    裁剪当前画面，并返回局部截图
+    :param x_position: 左上角x坐标
+    :param y_position: 左上角y坐标
+    :param width: 宽
+    :param height: 高
+    :return: 画面截图
+    """
+    screen_shot = np.array(pyautogui.screenshot())  # 转换为 NumPy 数组
+    screen_shot = cv2.cvtColor(screen_shot, cv2.COLOR_RGB2BGR)  # 转换颜色空间
+
+    # 截取指定区域
+    return screen_shot[y_position:y_position + height, x_position:x_position + width]
+
+
+if __name__ == '__main__':
+    # # 显示截取的区域
+    cv2.imshow('Region', cut_img_screenshot(0, 0, 2234, 2234))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
