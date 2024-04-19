@@ -175,21 +175,32 @@ def cut_img_screenshot(position_name: CoordinateConfig.OcrKey):
 
 
 if __name__ == '__main__':
-    position = pyautogui.position()
-    print(f"鼠标当前坐标：{position}")
-    x, y = pyautogui.size()
-    print(f"坐标百分比：x={position.x / x}，y={position.y / y}")
+    # from Utils.OcrUtils import ocr_img, InitOcrThread
+    #
+    # InitOcrThread().run()
+    # start = time.time()
+    # ocr_info = cv2.imread("../test/test-img.png")
+    #
+    # # ocr_info = cv_resize("../test/test-img.png", 50)
+    # for index in range(100):
+    #     # cv2.imshow('window', ocr_info)
+    #     text = ocr_img(ocr_info)
+    #     print(f"识别次数{index}，文本：{text}")
+    # print("总共用时：", time.time() - start)
+    # cv2.waitKey(0)
 
-    time.sleep(3)
+    top_left_x = 100
+    top_left_y = 100
+    bottom_right_x = 500
+    bottom_right_y = 500
+    # screen_capture = cv2.VideoCapture(0)
+    from PIL import ImageGrab
+    for index in range(3):
 
-    ocr_info = cut_img_screenshot("all_dispatch")
-    cv2.imshow('windows', ocr_info)
-    from Utils.OcrUtils import ocr_img, InitOcrThread
 
-    InitOcrThread().run()
+        screenshot = ImageGrab.grab(bbox=(top_left_x, top_left_y, bottom_right_x, bottom_right_y))
 
-    # ocr_info = cv2.imread("../test/img_4.png")
-    cv2.imshow('window', ocr_info)
-    text = ocr_img(ocr_info)
-    print(text)
-    cv2.waitKey(0)
+        screenshot.show()
+        # 显示截取的图像
+        # cv2.imshow("Cropped Frame", screenshot)
+        # time.sleep(3)

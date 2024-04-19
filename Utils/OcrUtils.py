@@ -17,7 +17,7 @@ def ocr_img(img):
     """
     try:
         text_arr = OcrUtils.ocr(img, cls=True)
-        print(f"ocr识别结果：{text_arr}")
+        # print(f"ocr识别结果：{text_arr}")
         ocr_all_text = text_arr[1]
         # 识别文本内容为空，则说明无内容
         if len(ocr_all_text) == 0:
@@ -32,5 +32,14 @@ class InitOcrThread(QThread):
 
     def run(self):
         if not OcrUtils.ocr:
-            OcrUtils.ocr = PaddleOCR(use_angle_cls=True, use_gpu=True, ocr_version='PP-OCRv4')
+            OcrUtils.ocr = PaddleOCR(
+                use_angle_cls=False,  # 关闭角度分类
+                use_gpu=False,  # 不使用 GPU 加速
+                use_gpu_mem_opt=False,  # 不使用 GPU 内存优化
+                det=False,  # 不进行文本检测
+                rec=True,  # 进行文字内容识别
+                rec_model_dir='ch',  # 选择中文识别模型
+                lang='ch',  # 设置识别语言为中文
+                use_space_char=True,  # 使用空格字符分隔识别结果
+                ocr_version='PP-OCRv4')
             print("OCR 初始化完成")

@@ -154,7 +154,7 @@ class AdvanceStrategy(ProcessStrategy):
                 pyautogui.dragRel(0, -500, duration=0.5, button='left')
                 pyautogui.moveRel(0, 500, duration=0.5)
 
-        time.sleep(3)
+        time.sleep(5)
         print("开始挑战")
         # 统一执行挑战
         pyautogui.moveTo(Data.getPosition(BtnKey.action_btn), duration=Data.duration)
@@ -244,8 +244,12 @@ def energy_lack():
         ocr_text = ocr_img(every_job_point_img)
         if ocr_text == "开拓力补充":
             # 关闭界面
-            pyautogui.moveTo(Data.getPosition(BtnKey.not_energy_cancel_btn), duration=Data.duration)
-            pyautogui.click()
+            # pyautogui.moveTo(Data.getPosition(BtnKey.not_energy_cancel_btn), duration=Data.duration)
+            # pyautogui.click()
+            pyautogui.press("esc")
+            time.sleep(0.5)
+            pyautogui.press("esc")
+            time.sleep(0.5)
             pyautogui.moveTo(Data.getPosition(BtnKey.close_btn), duration=Data.duration)
             pyautogui.click()
             return True
