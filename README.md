@@ -64,7 +64,7 @@ python -m pip install playsound
 python -m pip python-opencv==4.6.0.66
 python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
 python -m pip install paddleocr -i https://mirror.baidu.com/pypi/simple
-python -m pip install pyautogui
+python -m pip install pyautogui 
 ~~~
 
 2. 报错问题
