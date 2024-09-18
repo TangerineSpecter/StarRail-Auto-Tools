@@ -3,8 +3,8 @@
 """
 
 base_info = {
-    "title": "星穹铁道自动工具",
-    "version": "0.0.1",
+    "title": "网络切换工具",
+    "version": "1.0.0",
     "author": "丢失的橘子",
     "email": "993033472@qq.com"
 }

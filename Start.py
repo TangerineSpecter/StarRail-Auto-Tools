@@ -79,16 +79,16 @@ if __name__ == "__main__":
         """
     )
 
-    label_window = StatusLabel()
+    # label_window = StatusLabel()
 
     # 初始化界面并显示界面
     window = MainWindow()
-    window.changeOut.connect(label_window.update_text)
+    # window.changeOut.connect(label_window.update_text)
     window.show()
 
     # 获取屏幕的宽度和高度
     screen_width, screen_height = pyautogui.size()
 
     # 设置label的位置为屏幕的右上角
-    label_window.move((screen_width - label_window.width()) / 2, 0)
+    # label_window.move((screen_width - label_window.width()) / 2, 0)
     sys.exit(app.exec())
