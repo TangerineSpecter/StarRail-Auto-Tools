@@ -277,15 +277,15 @@ class MainApp(object):
                         first_dns = self.firstDnsText.toPlainText()
 
                         # 检测
-                        self.check_ip(ip_address)
-                        self.check_ip(subnet_mask)
-                        self.check_ip(gate_way)
-                        self.check_ip(first_dns)
+                        valid_pass = self.check_ip(ip_address, subnet_mask, gate_way, first_dns)
+                        if not valid_pass:
+                            return
 
                         # 启用Ipv4网络设置
-                        result = adapter.SetIPConnectionEnabled(Enabled=True)
+                        # result = adapter.SetIPConnectionEnabled(Enabled=True)
                         # 禁用DHCP自动获取
-                        result = adapter.SetDHCPEnabled(Index=adapter.Index, Enabled=False)
+                        # result = adapter.SetDHCPEnabled(Index=adapter.Index, Enabled=False)
+                        adapter.EnableDHCP(False)
                         # 设置静态 IP 地址、子网掩码、网关和 DNS 服务器
                         result = adapter.EnableStatic(IPAddress=[ip_address], SubnetMask=[subnet_mask])
                         result = adapter.SetGateways(DefaultIPGateway=[gate_way])
@@ -297,6 +297,7 @@ class MainApp(object):
                         self.showMsg("启用配置失败")
                         self.gamePathText.setText("启用配置异常，检查日志")
                         Logging.error("启用异常：" + str(e))
+                        print(e)
                 else:
                     self.showMsg("此网络连接不是以太网连接，不进行修改")
                     self.gamePathText.setText("此网络连接不是以太网连接，不进行修改")
@@ -320,7 +321,7 @@ class MainApp(object):
                 if "Ethernet" in adapter.Description:
                     try:
                         # 启用DHCP自动获取
-                        result = adapter.SetDHCPEnabled(Index=adapter.Index, Enabled=False)
+                        adapter.EnableDHCP(True)
                         self.showMsg("关闭成功")
                         self.gamePathText.setText("关闭成功，当前模式：自动获取")
                         self.setStatusText("待机中")
@@ -335,27 +336,29 @@ class MainApp(object):
             self.showMsg("仅支持window使用")
             self.gamePathText.setText("系统不支持")
 
-    def check_ip(self, ip):
+    def check_ip(self, *ipArr):
         """
         ip格式校验
         :return:
         """
-        if len(ip) <= 0:
-            self.showMsg("配置信息缺失")
-            return
+        for ip in ipArr:
+            if len(ip) <= 0:
+                self.showMsg("配置信息缺失")
+                return False
 
-        parts = ip.split(".")
-        if len(parts) != 4:
-            self.showMsg("网络配置格式错误")
-            return
-        for part in parts:
-            if not part.isdigit():
+            parts = ip.split(".")
+            if len(parts) != 4:
                 self.showMsg("网络配置格式错误")
-                return
-            i = int(part)
-            if i < 0 or i > 255 or (len(part) > 1 and part[0] == '0'):
-                self.showMsg("网络配置数值非0~255之间")
-                return
+                return False
+            for part in parts:
+                if not part.isdigit():
+                    self.showMsg("网络配置格式错误")
+                    return False
+                i = int(part)
+                if i < 0 or i > 255 or (len(part) > 1 and part[0] == '0'):
+                    self.showMsg("网络配置数值非0~255之间")
+                    return False
+        return True
 
     def setStatusText(self, text):
         self.runStatusLabel.setText(f"当前状态：{text}")
