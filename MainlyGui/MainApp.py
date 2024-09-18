@@ -270,10 +270,17 @@ class MainApp(object):
                 # 判断是否为以太网连接
                 if "Ethernet" in adapter.Description:
                     try:
+                        # 数据初始化
                         ip_address = self.ipAddressText.toPlainText()
                         subnet_mask = self.subnetMaskText.toPlainText()
                         gate_way = self.gatewayText.toPlainText()
                         first_dns = self.firstDnsText.toPlainText()
+
+                        # 检测
+                        self.check_ip(ip_address)
+                        self.check_ip(subnet_mask)
+                        self.check_ip(gate_way)
+                        self.check_ip(first_dns)
 
                         # 启用Ipv4网络设置
                         result = adapter.SetIPConnectionEnabled(Enabled=True)
@@ -284,12 +291,18 @@ class MainApp(object):
                         result = adapter.SetGateways(DefaultIPGateway=[gate_way])
                         result = adapter.SetDNSServerSearchOrder(DNSServerSearchOrder=[first_dns])
                         self.showMsg("启用成功")
+                        self.gamePathText.setText("启用成功，当前模式：手动获取")
+                        self.setStatusText("运行中")
                     except Exception as e:
                         self.showMsg("启用配置失败")
+                        self.gamePathText.setText("启用配置异常，检查日志")
+                        Logging.error("启用异常：" + str(e))
                 else:
                     self.showMsg("此网络连接不是以太网连接，不进行修改")
+                    self.gamePathText.setText("此网络连接不是以太网连接，不进行修改")
         else:
             self.showMsg("仅支持window使用")
+            self.gamePathText.setText("系统不支持")
 
     def stop_net(self):
         """
@@ -309,18 +322,28 @@ class MainApp(object):
                         # 启用DHCP自动获取
                         result = adapter.SetDHCPEnabled(Index=adapter.Index, Enabled=False)
                         self.showMsg("关闭成功")
+                        self.gamePathText.setText("关闭成功，当前模式：自动获取")
+                        self.setStatusText("待机中")
                     except Exception as e:
                         self.showMsg("关闭配置失败")
+                        self.gamePathText.setText("关闭配置异常，检查日志")
+                        Logging.error("关闭异常：" + str(e))
                 else:
                     self.showMsg("此网络连接不是以太网连接，不进行修改")
+                    self.gamePathText.setText("此网络连接不是以太网连接，不进行修改")
         else:
             self.showMsg("仅支持window使用")
+            self.gamePathText.setText("系统不支持")
 
     def check_ip(self, ip):
         """
         ip格式校验
         :return:
         """
+        if len(ip) <= 0:
+            self.showMsg("配置信息缺失")
+            return
+
         parts = ip.split(".")
         if len(parts) != 4:
             self.showMsg("网络配置格式错误")
@@ -331,7 +354,7 @@ class MainApp(object):
                 return
             i = int(part)
             if i < 0 or i > 255 or (len(part) > 1 and part[0] == '0'):
-                self.showMsg("网络配置格式错误")
+                self.showMsg("网络配置数值非0~255之间")
                 return
 
     def setStatusText(self, text):
