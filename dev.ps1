@@ -8,6 +8,9 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
+# nvm-windows is more reliable with a full version than with a major-version alias.
+$NodeVersion = '22.14.0'
+
 function Refresh-Path {
     $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
     $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
@@ -70,11 +73,13 @@ function Install-Toolchain {
     }
 
     if (-not (Test-Node22)) {
-        Write-Host 'Installing and selecting Node.js 22 via nvm-windows ...' -ForegroundColor Cyan
-        & nvm install 22
-        if ($LASTEXITCODE -ne 0) { throw "nvm could not install Node.js 22 (exit code $LASTEXITCODE)." }
-        & nvm use 22
-        if ($LASTEXITCODE -ne 0) { throw "nvm could not select Node.js 22 (exit code $LASTEXITCODE)." }
+        Write-Host "Installing and selecting Node.js $NodeVersion via nvm-windows ..." -ForegroundColor Cyan
+        & nvm install $NodeVersion
+        if ($LASTEXITCODE -ne 0) {
+            throw "nvm could not install Node.js $NodeVersion (exit code $LASTEXITCODE). Check the nvm output immediately above for proxy, TLS, or download errors."
+        }
+        & nvm use $NodeVersion
+        if ($LASTEXITCODE -ne 0) { throw "nvm could not select Node.js $NodeVersion (exit code $LASTEXITCODE)." }
         Refresh-Path
     }
 
