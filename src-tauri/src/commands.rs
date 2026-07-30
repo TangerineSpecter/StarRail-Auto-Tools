@@ -9,17 +9,19 @@ use crate::{
         InventoryStore, InventorySummary, LightConeFilter, LightConeListItem, PagedResult,
         RelicFilter, RelicListItem,
     },
-    ocr,
     scanner::ScannerState,
     screenshot,
 };
+
+#[cfg(feature = "ocr")]
+use crate::ocr;
 
 #[tauri::command]
 pub fn get_system_capabilities() -> SystemCapabilities {
     SystemCapabilities {
         platform: std::env::consts::OS.to_owned(),
         window_capture: cfg!(windows),
-        local_ocr: true,
+        local_ocr: cfg!(feature = "ocr"),
         note: if cfg!(windows) {
             "Windows Packet Monitor 游戏数据直读与本地 OCR 均已启用。".to_owned()
         } else {
@@ -51,9 +53,18 @@ pub async fn recognize_image(
     image_path: String,
     models: OcrModelConfig,
 ) -> Result<OcrImageResult, AppError> {
-    tauri::async_runtime::spawn_blocking(move || ocr::recognize_image(image_path, models))
-        .await
-        .map_err(|error| AppError::Ocr(error.to_string()))?
+    #[cfg(feature = "ocr")]
+    {
+        return tauri::async_runtime::spawn_blocking(move || ocr::recognize_image(image_path, models))
+            .await
+            .map_err(|error| AppError::Ocr(error.to_string()))?;
+    }
+
+    #[cfg(not(feature = "ocr"))]
+    {
+        let _ = (image_path, models);
+        Err(AppError::Ocr("OCR 功能未启用。请使用 --features ocr 重新构建。".to_owned()))
+    }
 }
 
 #[tauri::command]
@@ -61,9 +72,18 @@ pub async fn recognize_screenshot(
     image_bytes: Vec<u8>,
     models: OcrModelConfig,
 ) -> Result<OcrImageResult, AppError> {
-    tauri::async_runtime::spawn_blocking(move || ocr::recognize_screenshot(image_bytes, models))
-        .await
-        .map_err(|error| AppError::Ocr(error.to_string()))?
+    #[cfg(feature = "ocr")]
+    {
+        return tauri::async_runtime::spawn_blocking(move || ocr::recognize_screenshot(image_bytes, models))
+            .await
+            .map_err(|error| AppError::Ocr(error.to_string()))?;
+    }
+
+    #[cfg(not(feature = "ocr"))]
+    {
+        let _ = (image_bytes, models);
+        Err(AppError::Ocr("OCR 功能未启用。请使用 --features ocr 重新构建。".to_owned()))
+    }
 }
 
 #[tauri::command]

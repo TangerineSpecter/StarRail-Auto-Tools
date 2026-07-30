@@ -2,7 +2,8 @@
 # It can bootstrap the required toolchain on a clean Windows 10/11 machine.
 [CmdletBinding()]
 param(
-    [switch]$BootstrapOnly
+    [switch]$BootstrapOnly,
+    [switch]$InstallBuildToolsOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,8 +51,7 @@ function Test-RustToolchain {
 
 function Test-ToolchainReady {
     Refresh-Path
-    return (Get-Command nvm -ErrorAction SilentlyContinue) -and
-        (Test-Node22) -and
+    return (Test-Node22) -and
         (Test-RustToolchain) -and
         (Test-VcBuildTools)
 }
@@ -102,12 +102,68 @@ function Install-Toolchain {
 }
 
 Refresh-Path
-if (-not (Test-ToolchainReady)) {
-    if (-not $BootstrapOnly -and -not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Write-Host 'Missing Windows development prerequisites. Requesting administrator permission to install them...' -ForegroundColor Yellow
-        $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-BootstrapOnly')
+
+# nvm-windows and rustup are normally installed per user.  Running their setup
+# in an elevated PowerShell changes USERPROFILE, so the administrator process
+# cannot see the current user's nvm/rustup installation and exits before Node
+# is installed.  Bootstrap those tools in this process; elevate only the VS
+# Build Tools installer when it is genuinely needed.
+if ($InstallBuildToolsOnly) {
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        throw 'Windows Package Manager (winget) is required for automatic setup. Install/update App Installer, then run .\\dev.ps1 again.'
+    }
+    if (-not (Test-VcBuildTools)) {
+        Install-WithWinget 'Microsoft.VisualStudio.2022.BuildTools' @(
+            '--override', '--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'
+        )
+    }
+    exit 0
+}
+
+if (-not (Test-Node22)) {
+    if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
+        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            throw 'Node.js 22.12 or newer is required, but neither nvm nor winget is available. Install nvm-windows, then run .\\dev.ps1 again.'
+        }
+        Install-WithWinget 'CoreyButler.NVMforWindows'
+    }
+
+    Write-Host "Installing and selecting Node.js $NodeVersion via nvm-windows ..." -ForegroundColor Cyan
+    & nvm install $NodeVersion
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "nvm could not download Node.js $NodeVersion (exit code $LASTEXITCODE). Trying the Windows Package Manager fallback..."
+        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            throw "nvm could not install Node.js $NodeVersion (exit code $LASTEXITCODE). Check your network, proxy, TLS settings, or nvm output immediately above."
+        }
+        Install-WithWinget 'OpenJS.NodeJS.22'
+        Refresh-Path
+    }
+    if (-not (Test-Node22)) {
+        & nvm use $NodeVersion
+        if ($LASTEXITCODE -ne 0) { throw "nvm could not select Node.js $NodeVersion (exit code $LASTEXITCODE)." }
+    }
+    Refresh-Path
+}
+
+if (-not (Test-RustToolchain)) {
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        throw 'Rust is required, but winget is unavailable. Install rustup, then run .\\dev.ps1 again.'
+    }
+    if (-not (Get-Command rustup -ErrorAction SilentlyContinue)) {
+        Install-WithWinget 'Rustlang.Rustup'
+    }
+    Write-Host 'Installing the Rust MSVC toolchain ...' -ForegroundColor Cyan
+    & rustup default stable-x86_64-pc-windows-msvc
+    if ($LASTEXITCODE -ne 0) { throw "rustup could not install the Rust MSVC toolchain (exit code $LASTEXITCODE)." }
+    Refresh-Path
+}
+
+if (-not (Test-VcBuildTools)) {
+    if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        Write-Host 'C++ Build Tools are missing. Requesting administrator permission to install them...' -ForegroundColor Yellow
+        $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-InstallBuildToolsOnly')
         $process = Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $arguments -Wait -PassThru
-        if ($process.ExitCode -ne 0) { throw "Prerequisite installation failed (exit code $($process.ExitCode))." }
+        if ($process.ExitCode -ne 0) { throw "C++ Build Tools installation failed (exit code $($process.ExitCode))." }
         Refresh-Path
     } else {
         Install-Toolchain
@@ -124,7 +180,7 @@ if (-not (Test-Node22)) {
     throw "Node.js 22.12 or newer is required (current: $(& node --version))."
 }
 
-if (-not (Test-Path 'node_modules')) {
+if (-not (Test-Path 'node_modules/@tauri-apps/cli/package.json')) {
     Write-Host 'Installing frontend dependencies...' -ForegroundColor Cyan
     npm ci
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

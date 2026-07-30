@@ -3,6 +3,7 @@ mod direct_read;
 mod domain;
 mod error;
 mod inventory;
+#[cfg(feature = "ocr")]
 mod ocr;
 mod scanner;
 mod screenshot;
