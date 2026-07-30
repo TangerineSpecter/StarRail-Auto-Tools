@@ -18,6 +18,8 @@
   --paper: rgba(252, 253, 255, 0.95);
   --line: rgba(48, 75, 117, 0.16);
   --shadow: 0 22px 55px rgba(42, 63, 96, 0.12);
+  --control-radius: 5px;
+  --control-height: 34px;
 }
 
 * {
@@ -45,6 +47,7 @@ select {
 }
 
 button {
+  border-radius: var(--control-radius);
   border: 0;
   color: inherit;
   cursor: pointer;
@@ -760,7 +763,7 @@ h2 {
   color: #fff;
   background: linear-gradient(100deg, var(--blue-deep), var(--blue));
   box-shadow: 0 12px 24px rgba(33, 76, 145, 0.18);
-  clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 13px, 100% 100%, 0 100%);
+  border-radius: var(--control-radius);
 }
 
 .primary-action:hover:not(:disabled) {
@@ -862,7 +865,7 @@ select {
   height: 37px;
   padding: 0 11px;
   border: 1px solid rgba(46, 78, 119, 0.14);
-  border-radius: 0;
+  border-radius: var(--control-radius);
   outline: none;
   color: var(--ink);
   background: #f6f9fc;
@@ -927,6 +930,7 @@ summary i {
   background: #f1f6fc;
   font-size: 10px;
   font-weight: 600;
+  border-radius: var(--control-radius);
 }
 
 .secondary-action:hover:not(:disabled) {
@@ -1093,7 +1097,7 @@ summary i {
 
 .danger-action,
 .ghost-action {
-  height: 32px;
+  height: var(--control-height);
   padding: 0 11px;
   font-size: 9px;
 }
@@ -1119,6 +1123,7 @@ summary i {
   padding: 7px;
   border: 1px solid var(--line);
   background: rgba(236, 242, 248, 0.52);
+  border-radius: calc(var(--control-radius) + 1px);
 }
 
 .quick-search {
@@ -1128,6 +1133,53 @@ summary i {
 .quick-search input {
   height: 32px;
   background: rgba(255, 255, 255, 0.7);
+}
+
+/* PrimeVue is themed with the same tokens as the hand-crafted shell. These
+   rules only align density and geometry; colour and interaction states come
+   from the preset in src/theme.ts. */
+.p-inputtext,
+.p-select {
+  width: 100%;
+  border-color: rgba(46, 78, 119, 0.17);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: none;
+  font-size: 10px;
+}
+
+.p-inputtext {
+  min-height: 32px;
+}
+
+.p-select {
+  min-height: 33px;
+}
+
+.p-select-label {
+  padding-block: 0.45rem;
+}
+
+.p-select-overlay {
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(30, 49, 79, 0.16);
+}
+
+.p-select-option {
+  font-size: 10px;
+}
+
+.p-button {
+  box-shadow: none;
+  font-family: var(--font-ui);
+}
+
+.p-button:focus-visible,
+.p-inputtext:focus-visible,
+.p-select:focus-visible {
+  outline: 2px solid rgba(36, 86, 166, 0.3);
+  outline-offset: 2px;
 }
 
 .filter-toggle,
@@ -1142,6 +1194,7 @@ summary i {
   background: #fff;
   font-size: 9px;
   font-weight: 600;
+  border-radius: var(--control-radius);
 }
 
 .filter-toggle b {
@@ -1173,24 +1226,27 @@ summary i {
   font-size: 8px;
 }
 
-.filter-layer {
-  position: absolute;
-  z-index: 6;
-  inset: 0;
-  display: flex;
-  justify-content: flex-end;
-  background: rgba(23, 38, 67, 0.14);
-  backdrop-filter: blur(2px);
-}
-
-.filter-drawer {
-  display: grid;
-  width: min(520px, 100%);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+.filter-drawer.p-drawer {
+  width: min(520px, 100vw);
   border-left: 1px solid rgba(42, 72, 113, 0.18);
   background: linear-gradient(145deg, rgba(253, 254, 255, 0.99), rgba(239, 245, 251, 0.99));
-  box-shadow: -20px 0 45px rgba(30, 49, 79, 0.13);
-  animation: drawer-in 190ms ease-out;
+  box-shadow: -20px 0 45px rgba(30, 49, 79, 0.18);
+}
+
+.filter-drawer .p-drawer-header {
+  display: none;
+}
+
+.filter-drawer .p-drawer-content {
+  display: grid;
+  min-height: 0;
+  padding: 0;
+}
+
+.filter-drawer form {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .filter-drawer-heading {
@@ -1221,6 +1277,7 @@ summary i {
   color: var(--blue);
   background: #fff;
   font-size: 18px;
+  border-radius: var(--control-radius);
 }
 
 .filter-scroll {
@@ -1347,7 +1404,7 @@ summary i {
 
 .filter-submit,
 .filter-reset {
-  height: 34px;
+  height: var(--control-height);
   padding: 0 15px;
   font-size: 9px;
   white-space: nowrap;
@@ -1419,6 +1476,7 @@ summary i {
   overflow: auto;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
+  border-radius: calc(var(--control-radius) + 1px);
 }
 
 table {
@@ -1776,4 +1834,189 @@ input[type="checkbox"] {
     grid-template-columns: 190px minmax(0, 1fr);
   }
 
+}
+
+/* Desktop readability scale: this is a data tool, so body content needs to be
+   comfortable at a normal desktop viewing distance rather than UI-microscopic. */
+body { font-size: 14px; }
+h1 { font-size: 27px; }
+h2 { font-size: 24px; }
+.eyebrow { font-size: 11px; letter-spacing: 0.16em; }
+.sidebar-copy, .panel-description, .direct-message strong, .sync-ledger span, .sync-ledger strong, .archive-meta strong, .archive-meta span { font-size: 13px; }
+.kind-switcher span { font-size: 16px; }
+.kind-switcher small, .archive-meta span { font-size: 10px; }
+.kind-switcher b { font-size: 26px; }
+
+.secondary-action, .danger-action, .ghost-action, .filter-toggle, .clear-filter, .filter-submit, .filter-reset { min-height: 42px; font-size: 13px; }
+.secondary-action { height: 46px; padding-inline: 15px; }
+.archive-actions { gap: 12px; }
+.archive-actions .p-button { min-width: 98px; }
+.archive-sidebar .secondary-action + .secondary-action { margin-top: 10px; }
+.sidebar-clear { margin-top: 12px; }
+
+.filter-toolbar { height: 62px; gap: 12px; padding: 9px; }
+.quick-search .p-inputtext, .filter-toolbar .p-button { min-height: 42px; }
+.p-inputtext, .p-select, .p-inputnumber-input { font-size: 14px; }
+.p-select { min-height: 40px; }
+.p-select-label { padding-block: 0.56rem; }
+.p-select-option { min-height: 40px; font-size: 14px; }
+.result-count { font-size: 12px; }
+.filter-scroll > label > span, .filter-group legend, .filter-group legend em, .filter-range label span { font-size: 12px; }
+.filter-chip span { padding: 8px 10px; font-size: 12px; }
+
+table { font-size: 14px; }
+thead { font-size: 11px; }
+th, td { height: 56px; padding: 9px 12px; }
+.item-name { font-size: 14px; }
+.item-id, .rarity { font-size: 11px; }
+.data-tag { padding: 5px 8px; font-size: 11px; }
+.row-action { min-height: 36px; padding: 5px 9px; font-size: 13px; }
+.table-footer, .app-footer { font-size: 12px; }
+.pagination { gap: 10px; }
+.pagination .p-button { width: 36px; height: 36px; }
+.pagination b { font-size: 13px; }
+
+.build-drawer header small, .build-section h3 small, .build-grid label, .target-row label, .main-stat-grid legend, .include-equipped, .target-column-headings { font-size: 12px; }
+.build-section h3 { font-size: 17px; }
+.build-grid .p-select, .target-row .p-select, .target-row .p-inputnumber, .target-row .p-inputnumber-input { width: 100%; min-height: 40px; }
+.main-stat-grid fieldset { padding: 12px; }
+.build-actions { gap: 10px; padding: 16px 22px; }
+
+/* Keep the management sidebar fully within the application frame. The page is
+   a desktop control surface, not a document that should acquire a second
+   scrollbar. */
+.archive-sidebar {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.archive-sidebar .kind-switcher { margin-bottom: 16px; }
+.archive-sidebar .archive-meta { margin-bottom: 14px; padding-block: 9px; }
+.archive-sidebar .secondary-action { flex: 0 0 auto; }
+
+@media (max-height: 900px) {
+  .archive-sidebar { padding: 17px 18px; }
+  .archive-sidebar h2 { font-size: 21px; }
+  .archive-sidebar .sidebar-copy { margin: 5px 0 11px; font-size: 12px; line-height: 1.45; }
+  .archive-sidebar .kind-switcher { margin-bottom: 10px; }
+  .archive-sidebar .kind-switcher button { min-height: 62px; }
+  .archive-sidebar .archive-meta { margin-bottom: 9px; padding-block: 7px; }
+  .archive-sidebar .secondary-action, .archive-sidebar .danger-action { min-height: 38px; height: 38px; }
+  .archive-sidebar .secondary-action + .secondary-action { margin-top: 6px; }
+  .archive-sidebar .sidebar-clear { margin-top: 8px; }
+}
+
+/* Target rows are an editable grid: numeric fields align with the attribute
+   selector, while deletion is a quiet icon action instead of a full button. */
+.target-column-headings,
+.target-row {
+  grid-template-columns: 22px 42px minmax(180px, 1fr) minmax(110px, .7fr) minmax(140px, .86fr) 42px;
+  gap: 12px;
+}
+
+.target-column-headings { font-size: 12px; margin: 14px 0 6px; }
+.target-row { min-height: 52px; margin-top: 10px; }
+.target-row > b { padding: 0; font-size: 13px; }
+.target-row .p-select,
+.target-row .p-inputnumber,
+.target-row .p-inputnumber-input { height: 46px; min-height: 46px; }
+.target-row .p-inputnumber-input { padding-inline: 13px; }
+.target-remove.p-button { width: 42px; height: 42px; padding: 0; border: 1px solid rgba(170, 82, 67, .22); color: #a2584b; background: #fff8f6; font-size: 22px; }
+.target-remove.p-button:hover { border-color: rgba(170, 82, 67, .4); background: #fff0eb; }
+
+.target-drag-preview {
+  box-sizing: border-box;
+  grid-template-columns: 22px 42px minmax(180px, 1fr) minmax(110px, .7fr) minmax(140px, .86fr) 42px;
+  gap: 12px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  transform: rotate(.15deg);
+}
+
+/* Attribute target density: compact enough for a plan drawer, while inputs
+   retain equal visual weight and the lifted row has breathing room. */
+.target-row {
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 5px 0;
+  box-sizing: border-box;
+}
+
+.target-row .p-select,
+.target-row .p-inputnumber,
+.target-row .p-inputnumber-input {
+  height: 38px;
+  min-height: 38px;
+}
+
+.target-row .p-select-label,
+.target-row .p-inputnumber-input {
+  font-size: 14px !important;
+  line-height: 1.2;
+}
+
+.target-row .p-select-label { padding-block: 0.55rem; }
+.target-row .p-inputnumber-input { font-weight: 600; }
+.target-remove.p-button { width: 38px; height: 38px; font-size: 19px; }
+
+/* Keep the plan editor left-aligned. Fractional columns made the form drift
+   right as the drawer widened and pushed the remove action against its edge. */
+.target-column-headings,
+.target-row {
+  width: min(100%, 696px);
+  margin-left: 0;
+  margin-right: auto;
+  grid-template-columns: 20px 34px minmax(180px, 260px) minmax(90px, 130px) minmax(110px, 170px) 38px;
+  gap: 8px;
+}
+
+.target-drag-preview { padding: 5px 12px; }
+
+/* Character records use a compact dossier layout so empty skill/traces do not
+   leave large, unrelated whitespace. */
+.character-detail-drawer { width: min(600px, 56vw); }
+.character-detail-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 18px;
+}
+
+.character-identity,
+.character-metrics,
+.character-detail-card > .relic-detail-footer,
+.memosprite-note { grid-column: 1 / -1; }
+.character-identity { grid-template-columns: 64px minmax(0, 1fr) auto; gap: 14px; padding: 18px; border: 1px solid rgba(36, 86, 166, .26); background: linear-gradient(120deg, #e9f3ff, #f8fbff 70%); }
+.path-seal { width: 62px; height: 62px; border-radius: 10px; font-size: 28px; }
+.character-identity p { font-size: 11px; }
+.character-identity h3 { font-size: 23px; }
+.character-identity small { font-size: 12px; }
+.character-identity > b { padding: 10px 13px; border-radius: 6px; font-size: 15px; }
+.character-metrics { gap: 10px; margin: 0; }
+.character-metrics div { padding: 12px 14px; border-radius: 5px; }
+.character-metrics span { font-size: 12px; }
+.character-metrics b { font-size: 21px; }
+.character-data-section { min-width: 0; margin-top: 0; padding: 14px; border: 1px solid var(--line); border-radius: 5px; background: rgba(255,255,255,.55); }
+.character-data-section > header { padding-bottom: 9px; }
+.character-data-section h3 { font-size: 15px; }
+.character-data-section > header small { font-size: 12px; }
+.character-data-section .empty-substats { min-height: 70px; padding: 20px 0 0; font-size: 13px; }
+.character-data-list { grid-template-columns: 1fr; }
+.character-data-list div { font-size: 13px; }
+.character-data-list b { font-size: 13px; }
+.character-detail-card > .relic-detail-footer { grid-template-columns: repeat(2, 1fr); margin-top: 0; }
+.character-detail-card > .relic-detail-footer div { padding: 12px; border-radius: 5px; }
+.character-detail-card > .relic-detail-footer span { font-size: 11px; }
+.character-detail-card > .relic-detail-footer b { font-size: 13px; }
+
+@media (max-width: 760px) {
+  .target-column-headings,
+  .target-row { grid-template-columns: 18px 30px minmax(0, 1fr) 86px 96px 36px; gap: 7px; }
+  .target-remove.p-button { width: 36px; height: 36px; }
+  .character-detail-card { grid-template-columns: 1fr; }
+  .character-identity,
+  .character-metrics,
+  .character-detail-card > .relic-detail-footer,
+  .memosprite-note { grid-column: auto; }
 }

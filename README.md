@@ -46,7 +46,11 @@ Windows PowerShell：
 .\dev.ps1
 ```
 
-两个脚本都会检查 Node.js 22.12+、Rust 和依赖；首次运行会执行 `npm ci`。也可以直接使用 `npm run dev:desktop`。
+首次在 Windows 10/11 上运行 `dev.ps1` 时，脚本会请求一次管理员授权，并通过
+Windows Package Manager（winget）自动安装 nvm-windows、Node.js 22、Rust 和 Visual
+Studio C++ Build Tools；随后会执行 `npm ci` 并启动应用。若电脑没有 winget，请先从
+Microsoft Store 安装/更新 **App Installer**。也可以直接使用 `npm run dev:desktop`，但这
+要求上述环境已经手动配置完成。
 
 `dev.sh` 会在检测到 nvm 时自动执行 `nvm use 22`，避免 IDE 或非交互终端误用系统 Node。Windows 脚本在检测到 nvm-windows 时也会切换至 22。
 

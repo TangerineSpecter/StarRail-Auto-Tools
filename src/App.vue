@@ -2,6 +2,13 @@
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import Button from "primevue/button";
+import Checkbox from "primevue/checkbox";
+import Drawer from "primevue/drawer";
+import InputNumber from "primevue/inputnumber";
+import InputText from "primevue/inputtext";
+import Select from "primevue/select";
+import Tag from "primevue/tag";
 import { api } from "./services/tauri";
 import type {
   CharacterFilter,
@@ -127,6 +134,11 @@ const filters = reactive({
   path: "",
   eidolon: "",
 });
+
+const substatCountOptions = [
+  { label: "不限", value: "" },
+  ...[0, 1, 2, 3, 4, 5].map((value) => ({ label: `${value} 次`, value })),
+];
 
 const relicSlots = [
   { value: "Head", label: "头部" }, { value: "Hands", label: "手部" },
@@ -614,15 +626,20 @@ function beginBuildTargetDrag(event: PointerEvent, index: number) {
   const preview = row.cloneNode(true) as HTMLElement;
   const bounds = row.getBoundingClientRect();
   preview.classList.add("target-drag-preview");
-  preview.style.width = `${bounds.width}px`;
+  // The preview is rendered outside the grid, so it needs an explicit trailing
+  // allowance for its own padding and the remove action.
+  preview.style.width = `${bounds.width + 56}px`;
   copyTargetRowValues(row, preview);
   document.body.append(preview);
   targetDragPreview = preview;
   const offsetX = Math.min(48, Math.max(16, event.clientX - bounds.left));
   const offsetY = Math.min(20, Math.max(12, event.clientY - bounds.top));
   const move = (moveEvent: PointerEvent) => {
-    preview.style.left = `${moveEvent.clientX - offsetX}px`;
-    preview.style.top = `${moveEvent.clientY - offsetY}px`;
+    const previewBounds = preview.getBoundingClientRect();
+    const left = Math.max(12, Math.min(moveEvent.clientX - offsetX, window.innerWidth - previewBounds.width - 12));
+    const top = Math.max(12, Math.min(moveEvent.clientY - offsetY, window.innerHeight - previewBounds.height - 12));
+    preview.style.left = `${left}px`;
+    preview.style.top = `${top}px`;
     const target = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY)?.closest<HTMLElement>(".target-row");
     const targetIndex = Number(target?.dataset.targetIndex);
     if (!Number.isNaN(targetIndex)) dragTargetIndex.value = targetIndex;
@@ -977,10 +994,10 @@ onUnmounted(() => {
               <strong>检测到不同账号</strong>
               <p>当前数据与本次登录不一致。切换将清空现有本地档案。</p>
             </div>
-            <button type="button" :disabled="busy" @click="switchAccount">确认切换</button>
+            <Button type="button" severity="danger" :disabled="busy" @click="switchAccount">确认切换</Button>
           </div>
 
-          <button
+          <Button
             class="primary-action"
             :disabled="busy || direct.phase === 'unsupported'"
             @click="toggleDirectRead"
@@ -991,7 +1008,7 @@ onUnmounted(() => {
               {{ directRunning ? "停止实时监听" : "启动游戏数据直读" }}
             </span>
             <i aria-hidden="true">→</i>
-          </button>
+          </Button>
           <p class="privilege-note">
             游戏数据直读仅支持 Windows；启动后请从游戏的登录界面重新登录。
           </p>
@@ -1010,9 +1027,9 @@ onUnmounted(() => {
               <div><span>最近同步</span><strong>{{ formatTime(summary.lastSyncAt) }}</strong></div>
               <div><span>已归档数据</span><strong>{{ summary.relics + summary.lightCones + summary.characters }} 条</strong></div>
             </div>
-            <button class="secondary-action" type="button" :disabled="busy" @click="exportData">
+            <Button class="secondary-action" type="button" outlined :disabled="busy" @click="exportData">
               <span>导出数据</span><i>↗</i>
-            </button>
+            </Button>
           </article>
 
           <article class="panel ocr-panel">
@@ -1024,9 +1041,9 @@ onUnmounted(() => {
               <span class="local-badge">本地识别</span>
             </div>
             <p class="ocr-capture-note"><b>01</b> 点击后进入全屏框选模式；仅识别虚线框内的内容。</p>
-            <button class="secondary-action" :disabled="busy" @click="runOcrScreenshot">
+            <Button class="secondary-action" outlined :disabled="busy" @click="runOcrScreenshot">
               <span>{{ busy ? "正在截图 / 识别" : "截图并框选" }}</span><i>◎</i>
-            </button>
+            </Button>
             <div v-if="ocrResult" class="ocr-output">
               <div class="output-meta">
                 <span>{{ ocrResult.regions.length }} 个文本区域</span>
@@ -1067,13 +1084,13 @@ onUnmounted(() => {
             </button>
           </div>
           <div class="archive-meta"><span>最近同步</span><strong>{{ formatTime(summary.lastSyncAt) }}</strong></div>
-          <button class="secondary-action" type="button" :disabled="busy" @click="exportData">
+          <Button class="secondary-action" type="button" outlined :disabled="busy" @click="exportData">
             <span>导出数据</span><i>↗</i>
-          </button>
-          <button class="secondary-action" type="button" :disabled="busy" @click="importData">
+          </Button>
+          <Button class="secondary-action" type="button" outlined :disabled="busy" @click="importData">
             <span>导入 JSON</span><i>↙</i>
-          </button>
-          <button class="danger-action sidebar-clear" type="button" :disabled="busy" @click="clearAll">清空全部数据</button>
+          </Button>
+          <Button class="danger-action sidebar-clear" type="button" severity="danger" outlined :disabled="busy" @click="clearAll">清空全部数据</Button>
         </aside>
 
         <article class="panel archive-main">
@@ -1083,35 +1100,37 @@ onUnmounted(() => {
               <h2>{{ kindTitle }}</h2>
             </div>
             <div class="archive-actions">
-              <button
+              <Button
                 class="danger-action"
                 type="button"
+                severity="danger"
+                outlined
                 :disabled="busy || selectedIds.size === 0"
                 @click="deleteSelected"
               >
                 删除所选 {{ selectedIds.size || "" }}
-              </button>
-              <button class="ghost-action" type="button" :disabled="busy" @click="clearCurrent">
+              </Button>
+              <Button class="ghost-action" type="button" outlined :disabled="busy" @click="clearCurrent">
                 清空本类
-              </button>
-              <button class="danger-action" type="button" :disabled="busy" @click="clearAll">
+              </Button>
+              <Button class="danger-action" type="button" severity="danger" outlined :disabled="busy" @click="clearAll">
                 全部清空
-              </button>
+              </Button>
             </div>
           </header>
 
           <div class="filter-toolbar">
-            <label class="quick-search"><span class="visually-hidden">关键词</span><input v-model="filters.search" placeholder="搜索名称或套装" @keyup.enter="applyFilters" /></label>
-            <button class="filter-toggle" type="button" @click="filterOpen = true">筛选条件 <b v-if="activeFilterCount">{{ activeFilterCount }}</b><i>⌄</i></button>
-            <button v-if="activeFilterCount" class="clear-filter" type="button" @click="resetFilters">清除筛选</button>
+            <label class="quick-search"><span class="visually-hidden">关键词</span><InputText v-model="filters.search" placeholder="搜索名称或套装" @keyup.enter="applyFilters" /></label>
+            <Button class="filter-toggle" type="button" outlined @click="filterOpen = true">筛选条件 <b v-if="activeFilterCount">{{ activeFilterCount }}</b></Button>
+            <Button v-if="activeFilterCount" class="clear-filter" type="button" text @click="resetFilters">清除筛选</Button>
             <span class="result-count">{{ result.total }} 条记录</span>
           </div>
 
-          <div v-if="filterOpen" class="filter-layer" @click.self="filterOpen = false">
-          <form class="filter-drawer" @submit.prevent="applyFilters">
+          <Drawer v-model:visible="filterOpen" position="right" class="filter-drawer">
+          <form @submit.prevent="applyFilters">
             <header class="filter-drawer-heading">
               <div><p class="eyebrow">FILTERS</p><h2>筛选条件</h2><small>选择需要的条件，未选择即代表不限。</small></div>
-              <button type="button" aria-label="关闭筛选" @click="filterOpen = false">×</button>
+              <Button type="button" aria-label="关闭筛选" text @click="filterOpen = false">×</Button>
             </header>
             <div class="filter-scroll">
             <template v-if="inventoryKind === 'relic'">
@@ -1129,43 +1148,43 @@ onUnmounted(() => {
               </div></fieldset>
               <fieldset class="filter-group filter-group-wide"><legend>副词条强化次数 <em>每 4 级增加一次 · 0–5 次</em></legend>
                 <div class="filter-range">
-                  <label><span>最少</span><select v-model="filters.minSubstatCount"><option value="">不限</option><option v-for="count in [0, 1, 2, 3, 4, 5]" :key="count" :value="count">{{ count }} 次</option></select></label>
-                  <label><span>最多</span><select v-model="filters.maxSubstatCount"><option value="">不限</option><option v-for="count in [0, 1, 2, 3, 4, 5]" :key="count" :value="count">{{ count }} 次</option></select></label>
+                  <label><span>最少</span><Select v-model="filters.minSubstatCount" :options="substatCountOptions" option-label="label" option-value="value" /></label>
+                  <label><span>最多</span><Select v-model="filters.maxSubstatCount" :options="substatCountOptions" option-label="label" option-value="value" /></label>
                 </div>
               </fieldset>
               <label><span>锁定</span>
-                <select v-model="filters.locked"><option value="">全部</option><option value="true">已锁定</option><option value="false">未锁定</option></select>
+                <Select v-model="filters.locked" :options="[{ label: '全部', value: '' }, { label: '已锁定', value: 'true' }, { label: '未锁定', value: 'false' }]" option-label="label" option-value="value" />
               </label>
               <label><span>弃置</span>
-                <select v-model="filters.discard"><option value="">全部</option><option value="true">已标记</option><option value="false">未标记</option></select>
+                <Select v-model="filters.discard" :options="[{ label: '全部', value: '' }, { label: '已标记', value: 'true' }, { label: '未标记', value: 'false' }]" option-label="label" option-value="value" />
               </label>
             </template>
             <template v-else-if="inventoryKind === 'lightCone'">
-              <label><span>叠影</span><select v-model="filters.superimposition"><option value="">不限</option><option v-for="level in [1, 2, 3, 4, 5]" :key="level" :value="level">{{ level }} 阶</option></select></label>
+              <label><span>叠影</span><Select v-model="filters.superimposition" :options="['', 1, 2, 3, 4, 5]" :option-label="(value) => value === '' ? '不限' : `${value} 阶`" /></label>
               <label><span>锁定</span>
-                <select v-model="filters.locked"><option value="">全部</option><option value="true">已锁定</option><option value="false">未锁定</option></select>
+                <Select v-model="filters.locked" :options="[{ label: '全部', value: '' }, { label: '已锁定', value: 'true' }, { label: '未锁定', value: 'false' }]" option-label="label" option-value="value" />
               </label>
             </template>
             <template v-else>
-              <label><span>命途</span><select v-model="filters.path"><option value="">全部命途</option><option value="Destruction">毁灭</option><option value="Hunt">巡猎</option><option value="Erudition">智识</option><option value="Harmony">同谐</option><option value="Nihility">虚无</option><option value="Preservation">存护</option><option value="Abundance">丰饶</option><option value="Remembrance">记忆</option></select></label>
-              <label><span>星魂</span><select v-model="filters.eidolon"><option value="">不限</option><option v-for="level in [0, 1, 2, 3, 4, 5, 6]" :key="level" :value="level">{{ level }} 魂</option></select></label>
+              <label><span>命途</span><Select v-model="filters.path" :options="[{ label: '全部命途', value: '' }, { label: '毁灭', value: 'Destruction' }, { label: '巡猎', value: 'Hunt' }, { label: '智识', value: 'Erudition' }, { label: '同谐', value: 'Harmony' }, { label: '虚无', value: 'Nihility' }, { label: '存护', value: 'Preservation' }, { label: '丰饶', value: 'Abundance' }, { label: '记忆', value: 'Remembrance' }]" option-label="label" option-value="value" /></label>
+              <label><span>星魂</span><Select v-model="filters.eidolon" :options="['', 0, 1, 2, 3, 4, 5, 6]" :option-label="(value) => value === '' ? '不限' : `${value} 魂`" /></label>
             </template>
             <label v-if="inventoryKind !== 'character'"><span>装备状态</span>
-              <select v-model="filters.equipped"><option value="">全部</option><option value="true">已装备</option><option value="false">未装备</option></select>
+              <Select v-model="filters.equipped" :options="[{ label: '全部', value: '' }, { label: '已装备', value: 'true' }, { label: '未装备', value: 'false' }]" option-label="label" option-value="value" />
             </label>
             </div>
             <div class="filter-actions">
-              <button class="filter-reset" type="button" @click="resetFilters">重置全部</button>
-              <button class="filter-submit" type="submit" :disabled="busy">查看结果</button>
+              <Button class="filter-reset" type="button" outlined @click="resetFilters">重置全部</Button>
+              <Button class="filter-submit" type="submit" :disabled="busy">查看结果</Button>
             </div>
           </form>
-          </div>
+          </Drawer>
 
           <div class="table-shell">
             <table>
               <thead>
                 <tr>
-                  <th class="check-cell"><input type="checkbox" :checked="allSelected" @change="toggleAll" /></th>
+                  <th class="check-cell"><Checkbox binary :model-value="allSelected" @update:model-value="toggleAll" /></th>
                   <th>名称</th>
                   <template v-if="inventoryKind === 'relic'">
                     <th>部位</th><th>星级</th><th>等级</th><th>主词条</th><th>状态</th>
@@ -1182,11 +1201,7 @@ onUnmounted(() => {
               <tbody>
                 <tr v-for="item in result.items" :key="idFor(item)">
                   <td class="check-cell">
-                    <input
-                      type="checkbox"
-                      :checked="selectedIds.has(idFor(item))"
-                      @change="toggleSelected(idFor(item))"
-                    />
+                    <Checkbox binary :model-value="selectedIds.has(idFor(item))" @update:model-value="toggleSelected(idFor(item))" />
                   </td>
                   <td>
                     <strong class="item-name">{{ itemTitle(item) }}</strong>
@@ -1198,9 +1213,9 @@ onUnmounted(() => {
                     <td><b>+{{ (item as RelicListItem).level }}</b></td>
                     <td>{{ statLabel((item as RelicListItem).mainStat) }} +{{ formatStatValue((item as RelicListItem).mainStat, (item as RelicListItem).mainStatValue) }}</td>
                     <td>
-                      <span v-if="(item as RelicListItem).locked" class="data-tag">锁定</span>
-                      <span v-if="(item as RelicListItem).discard" class="data-tag danger">弃置</span>
-                      <span v-if="(item as RelicListItem).location" class="data-tag cyan">已装备</span>
+                      <Tag v-if="(item as RelicListItem).locked" value="锁定" class="data-tag" />
+                      <Tag v-if="(item as RelicListItem).discard" value="弃置" severity="danger" class="data-tag danger" />
+                      <Tag v-if="(item as RelicListItem).location" value="已装备" severity="info" class="data-tag cyan" />
                     </td>
                   </template>
                   <template v-else-if="inventoryKind === 'lightCone'">
@@ -1208,7 +1223,7 @@ onUnmounted(() => {
                     <td>{{ (item as LightConeListItem).ascension }}</td>
                     <td>叠影 {{ (item as LightConeListItem).superimposition }}</td>
                     <td>{{ (item as LightConeListItem).location || "—" }}</td>
-                    <td><span v-if="(item as LightConeListItem).locked" class="data-tag">锁定</span></td>
+                    <td><Tag v-if="(item as LightConeListItem).locked" value="锁定" class="data-tag" /></td>
                   </template>
                   <template v-else>
                     <td>{{ pathLabel((item as CharacterListItem).path) }}</td>
@@ -1218,8 +1233,8 @@ onUnmounted(() => {
                     <td>V{{ (item as CharacterListItem).abilityVersion }}</td>
                   </template>
                   <td class="detail-cell">
-                    <button class="row-action" type="button" @click="openDetail(item)">查看 →</button>
-                    <button v-if="inventoryKind === 'character'" class="row-action build-action" type="button" @click="openBuild(item as CharacterListItem)">培养方案</button>
+                    <Button class="row-action" type="button" text @click="openDetail(item)">查看</Button>
+                    <Button v-if="inventoryKind === 'character'" class="row-action build-action" type="button" text @click="openBuild(item as CharacterListItem)">培养方案</Button>
                   </td>
                 </tr>
                 <tr v-if="!result.items.length">
@@ -1236,9 +1251,9 @@ onUnmounted(() => {
           <footer class="table-footer">
             <span>共 {{ result.total }} 条 · 每页 {{ result.pageSize }} 条</span>
             <div class="pagination">
-              <button type="button" :disabled="result.page <= 1 || busy" @click="goPage(result.page - 1)">←</button>
+              <Button type="button" text :disabled="result.page <= 1 || busy" @click="goPage(result.page - 1)">←</Button>
               <b>{{ result.page }} / {{ pageCount }}</b>
-              <button type="button" :disabled="result.page >= pageCount || busy" @click="goPage(result.page + 1)">→</button>
+              <Button type="button" text :disabled="result.page >= pageCount || busy" @click="goPage(result.page + 1)">→</Button>
             </div>
             <span>本地删除的数据会在下次完整同步时恢复</span>
           </footer>
@@ -1292,10 +1307,10 @@ onUnmounted(() => {
           <section class="build-section">
             <h3>套装结构</h3>
             <div class="build-grid">
-              <label><span>四件遗器区</span><select v-model="buildPlan.cavernMode"><option value="fourPiece">指定 4 件套</option><option value="twoPlusTwo">指定 2 件 + 2 件</option></select></label>
-              <label><span>{{ buildPlan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套' }}</span><select v-model.number="buildPlan.cavernSetA"><option v-for="set in relicSetOptions" :key="set.setId" :value="set.setId">{{ set.name }} (#{{ set.setId }})</option></select></label>
-              <label v-if="buildPlan.cavernMode === 'twoPlusTwo'"><span>第二组 2 件套</span><select v-model.number="buildPlan.cavernSetB"><option v-for="set in relicSetOptions" :key="set.setId" :value="set.setId">{{ set.name }} (#{{ set.setId }})</option></select></label>
-              <label><span>位面饰品 2 件套</span><select v-model.number="buildPlan.planarSetId"><option v-for="set in relicSetOptions" :key="set.setId" :value="set.setId">{{ set.name }} (#{{ set.setId }})</option></select></label>
+              <label><span>四件遗器区</span><Select v-model="buildPlan.cavernMode" :options="[{ label: '指定 4 件套', value: 'fourPiece' }, { label: '指定 2 件 + 2 件', value: 'twoPlusTwo' }]" option-label="label" option-value="value" /></label>
+              <label><span>{{ buildPlan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套' }}</span><Select v-model="buildPlan.cavernSetA" :options="relicSetOptions" option-label="name" option-value="setId" /></label>
+              <label v-if="buildPlan.cavernMode === 'twoPlusTwo'"><span>第二组 2 件套</span><Select v-model="buildPlan.cavernSetB" :options="relicSetOptions" option-label="name" option-value="setId" /></label>
+              <label><span>位面饰品 2 件套</span><Select v-model="buildPlan.planarSetId" :options="relicSetOptions" option-label="name" option-value="setId" /></label>
             </div>
           </section>
 
@@ -1310,10 +1325,10 @@ onUnmounted(() => {
           <section class="build-section"><div class="build-section-heading"><h3>属性目标 <small>按顺序决定优先级</small></h3><button type="button" class="row-action" :disabled="buildPlan.targets.length >= 3" @click="addBuildTarget">+ 添加</button></div>
             <div class="target-column-headings" aria-hidden="true"><span /><span /><span>属性</span><span>目标</span><span>最低标准</span><span /></div>
             <div v-for="(target, index) in buildPlan.targets" :key="target.statKey" :data-target-index="index" :class="['target-row', { dragging: draggedTargetIndex === index, 'drag-over': draggedTargetIndex !== null && dragTargetIndex === index && draggedTargetIndex !== index }]">
-              <span class="drag-handle" title="按住拖拽以调整优先级" @pointerdown="beginBuildTargetDrag($event, index)">⠿</span><b>P{{ index + 1 }}</b><select v-model="target.statKey" aria-label="属性"><option v-for="stat in relicSubStats" :key="stat" :value="stat">{{ statLabel(stat) }}</option></select>
-              <label aria-label="目标"><input v-model.number="target.target" min="0" type="number" /></label>
-              <label aria-label="最低标准"><input v-model.number="target.minimum" min="0" :max="target.target" type="number" /></label>
-              <button type="button" aria-label="删除属性目标" @click="removeBuildTarget(index)">×</button>
+              <span class="drag-handle" title="按住拖拽以调整优先级" @pointerdown="beginBuildTargetDrag($event, index)">⠿</span><b>P{{ index + 1 }}</b><Select v-model="target.statKey" :options="relicSubStats.map((stat) => ({ label: statLabel(stat), value: stat }))" option-label="label" option-value="value" aria-label="属性" />
+              <label aria-label="目标"><InputNumber v-model="target.target" :min="0" /></label>
+              <label aria-label="最低标准"><InputNumber v-model="target.minimum" :min="0" :max="target.target" /></label>
+              <Button class="target-remove" type="button" severity="danger" text aria-label="删除属性目标" @click="removeBuildTarget(index)">×</Button>
             </div>
           </section>
 
@@ -1324,7 +1339,7 @@ onUnmounted(() => {
             <div v-if="buildRecommendation.recommendedProgress" class="recommended-summary"><span v-for="progress in buildRecommendation.recommendedProgress" :key="progress.statKey">{{ statLabel(progress.statKey) }} {{ progress.current.toFixed(1) }}<b v-if="progress.gap"> · 缺 {{ progress.gap.toFixed(1) }}</b></span></div>
           </section>
         </div>
-        <footer class="build-actions"><label class="include-equipped"><input v-model="includeEquipped" type="checkbox" /> 纳入已装备遗器</label><span /><button :class="['filter-reset', { 'confirm-delete': buildDeleteArmed }]" type="button" @click="deleteBuildPlan">{{ buildDeleteArmed ? '再次点击确认' : '删除方案' }}</button><button class="filter-submit" type="button" @click="saveBuildPlan">保存并计算</button><button class="filter-submit" type="button" :disabled="!buildPlan.characterId" @click="calculateBuild">重新计算</button></footer>
+        <footer class="build-actions"><label class="include-equipped"><Checkbox v-model="includeEquipped" binary /> 纳入已装备遗器</label><span /><Button :class="['filter-reset', { 'confirm-delete': buildDeleteArmed }]" type="button" outlined @click="deleteBuildPlan">{{ buildDeleteArmed ? '再次点击确认' : '删除方案' }}</Button><Button class="filter-submit" type="button" @click="saveBuildPlan">保存并计算</Button><Button class="filter-submit" type="button" :disabled="!buildPlan.characterId" @click="calculateBuild">重新计算</Button></footer>
       </aside>
     </div>
 
