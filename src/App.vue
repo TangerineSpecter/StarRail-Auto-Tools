@@ -70,15 +70,18 @@ const result = ref<PagedResult<InventoryListItem>>({
 const selectedIds = ref<Set<number>>(new Set());
 const detail = ref<InventoryDetail | null>(null);
 const detailLoading = ref(false);
+const filterOpen = ref(false);
 
 const filters = reactive({
   search: "",
-  slot: "",
-  rarity: "",
+  slots: [] as string[],
+  rarities: [] as number[],
   minLevel: "",
   maxLevel: "",
-  mainStat: "",
-  subStat: "",
+  mainStats: [] as string[],
+  subStats: [] as string[],
+  minSubstatCount: "",
+  maxSubstatCount: "",
   locked: "",
   discard: "",
   equipped: "",
@@ -87,6 +90,52 @@ const filters = reactive({
   path: "",
   eidolon: "",
 });
+
+const relicSlots = [
+  { value: "Head", label: "头部" }, { value: "Hands", label: "手部" },
+  { value: "Body", label: "躯干" }, { value: "Feet", label: "脚部" },
+  { value: "PlanarSphere", label: "位面球" }, { value: "LinkRope", label: "连结绳" },
+];
+const relicSubStats = ["HP", "HP%", "ATK", "ATK%", "DEF", "DEF%", "SPD", "CRIT Rate", "CRIT DMG", "Effect Hit Rate", "Effect RES", "Break Effect"];
+const relicMainStats: Record<string, string[]> = {
+  Head: ["HP"], Hands: ["ATK"],
+  Body: ["HP%", "ATK%", "DEF%", "CRIT Rate", "CRIT DMG", "Outgoing Healing Boost", "Effect Hit Rate"],
+  Feet: ["HP%", "ATK%", "DEF%", "SPD"],
+  PlanarSphere: ["HP%", "ATK%", "DEF%", "Physical DMG Boost", "Fire DMG Boost", "Ice DMG Boost", "Lightning DMG Boost", "Wind DMG Boost", "Quantum DMG Boost", "Imaginary DMG Boost"],
+  LinkRope: ["HP%", "ATK%", "DEF%", "Break Effect", "Energy Regeneration Rate"],
+};
+const statLabels: Record<string, string> = {
+  HP: "生命值", "HP%": "生命百分比", ATK: "攻击力", "ATK%": "攻击百分比",
+  DEF: "防御力", "DEF%": "防御百分比", SPD: "速度", "CRIT Rate": "暴击率",
+  "CRIT DMG": "暴击伤害", "Effect Hit Rate": "效果命中", "Effect RES": "效果抵抗",
+  "Break Effect": "击破特攻", "Outgoing Healing Boost": "治疗量加成",
+  "Energy Regeneration Rate": "能量恢复效率", "Physical DMG Boost": "物理伤害提高",
+  "Fire DMG Boost": "火属性伤害提高", "Ice DMG Boost": "冰属性伤害提高",
+  "Lightning DMG Boost": "雷属性伤害提高", "Wind DMG Boost": "风属性伤害提高",
+  "Quantum DMG Boost": "量子属性伤害提高", "Imaginary DMG Boost": "虚数属性伤害提高",
+};
+
+const availableMainStats = computed(() => {
+  const slots = filters.slots.length ? filters.slots : relicSlots.map((slot) => slot.value);
+  return [...new Set(slots.flatMap((slot) => relicMainStats[slot] ?? []))];
+});
+const activeFilterCount = computed(() => [
+  filters.slots.length,
+  filters.rarities.length,
+  filters.mainStats.length,
+  filters.subStats.length,
+  filters.minSubstatCount,
+  filters.maxSubstatCount,
+  filters.minLevel,
+  filters.maxLevel,
+  filters.locked,
+  filters.discard,
+  filters.equipped,
+  filters.minAscension,
+  filters.superimposition,
+  filters.path,
+  filters.eidolon,
+].filter(Boolean).length);
 
 let unlistenDirect: UnlistenFn | undefined;
 let unlistenInventory: UnlistenFn | undefined;
@@ -156,12 +205,12 @@ function currentFilter():
       page,
       pageSize,
       search: filters.search.trim() || undefined,
-      slot: filters.slot || undefined,
-      rarity: numberOrUndefined(filters.rarity),
-      minLevel: numberOrUndefined(filters.minLevel),
-      maxLevel: numberOrUndefined(filters.maxLevel),
-      mainStat: filters.mainStat.trim() || undefined,
-      subStat: filters.subStat.trim() || undefined,
+      slots: filters.slots.length ? filters.slots : undefined,
+      rarities: filters.rarities.length ? filters.rarities : undefined,
+      mainStats: filters.mainStats.length ? filters.mainStats : undefined,
+      subStats: filters.subStats.length ? filters.subStats : undefined,
+      minSubstatCount: numberOrUndefined(filters.minSubstatCount),
+      maxSubstatCount: numberOrUndefined(filters.maxSubstatCount),
       locked: boolOrUndefined(filters.locked),
       discard: boolOrUndefined(filters.discard),
       equipped: boolOrUndefined(filters.equipped),
@@ -172,9 +221,6 @@ function currentFilter():
       page,
       pageSize,
       search: filters.search.trim() || undefined,
-      minLevel: numberOrUndefined(filters.minLevel),
-      maxLevel: numberOrUndefined(filters.maxLevel),
-      minAscension: numberOrUndefined(filters.minAscension),
       superimposition: numberOrUndefined(filters.superimposition),
       locked: boolOrUndefined(filters.locked),
       equipped: boolOrUndefined(filters.equipped),
@@ -185,9 +231,6 @@ function currentFilter():
     pageSize,
     search: filters.search.trim() || undefined,
     path: filters.path.trim() || undefined,
-    minLevel: numberOrUndefined(filters.minLevel),
-    maxLevel: numberOrUndefined(filters.maxLevel),
-    minAscension: numberOrUndefined(filters.minAscension),
     eidolon: numberOrUndefined(filters.eidolon),
   });
 }
@@ -276,12 +319,14 @@ async function loadInventory() {
 function resetFilters() {
   Object.assign(filters, {
     search: "",
-    slot: "",
-    rarity: "",
+    slots: [],
+    rarities: [],
     minLevel: "",
     maxLevel: "",
-    mainStat: "",
-    subStat: "",
+    mainStats: [],
+    subStats: [],
+    minSubstatCount: "",
+    maxSubstatCount: "",
     locked: "",
     discard: "",
     equipped: "",
@@ -291,6 +336,12 @@ function resetFilters() {
     eidolon: "",
   });
   result.value.page = 1;
+  void loadInventory();
+}
+
+function applyFilters() {
+  result.value.page = 1;
+  filterOpen.value = false;
   void loadInventory();
 }
 
@@ -452,6 +503,10 @@ function slotLabel(slot: string): string {
   return slots[slot] ?? slot;
 }
 
+function statLabel(stat: string): string {
+  return statLabels[stat] ?? stat;
+}
+
 function itemTitle(item: InventoryListItem): string {
   return item.name;
 }
@@ -465,6 +520,10 @@ watch(activeView, (view) => {
     result.value.page = 1;
     void loadInventory();
   }
+});
+
+watch(availableMainStats, (options) => {
+  filters.mainStats = filters.mainStats.filter((stat) => options.includes(stat));
 });
 
 onMounted(async () => {
@@ -505,7 +564,6 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="topbar-meta">
-          <span class="protocol-label">{{ direct.protocolVersion }}</span>
           <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
           <div :class="['runtime-pill', `tone-${phaseCode}`]">
             <span :class="['status-dot', { active: directRunning }]" />
@@ -530,7 +588,7 @@ onUnmounted(() => {
           type="button"
           @click="activeView = 'archive'"
         >
-          <small>ARCHIVE</small>
+          <small>MANAGEMENT</small>
           数据管理
         </button>
         <span class="route-line" aria-hidden="true"><i /><i /><i /></span>
@@ -543,10 +601,9 @@ onUnmounted(() => {
 
       <section v-if="activeView === 'capture'" class="capture-workspace">
         <article class="panel direct-panel">
-          <div class="panel-corner" aria-hidden="true">NET-01</div>
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">PACKET RELAY · WINDOWS</p>
+              <p class="eyebrow">GAME DATA SYNC</p>
               <h2>游戏数据直读</h2>
               <p class="panel-description">
                 在进入游戏前开启监听，登录后自动归档遗器、光锥与角色。
@@ -564,8 +621,6 @@ onUnmounted(() => {
               <b>{{ direct.phase === "ready" ? "LIVE" : direct.phase.toUpperCase() }}</b>
             </div>
             <div class="signal-sweep" />
-            <span class="signal-port port-a">UDP 23301</span>
-            <span class="signal-port port-b">UDP 23302</span>
           </div>
 
           <div class="direct-message">
@@ -603,13 +658,13 @@ onUnmounted(() => {
           >
             <span class="action-symbol" aria-hidden="true">{{ directRunning ? "■" : "▶" }}</span>
             <span>
-              <small>PACKET MONITOR CONTROL</small>
+              <small>GAME DATA SYNC</small>
               {{ directRunning ? "停止实时监听" : "启动游戏数据直读" }}
             </span>
             <i aria-hidden="true">→</i>
           </button>
           <p class="privilege-note">
-            Windows 使用系统 Packet Monitor，应用启动时需要管理员权限；不读取进程内存。
+            游戏数据直读仅支持 Windows；启动后请从游戏的登录界面重新登录。
           </p>
         </article>
 
@@ -617,43 +672,34 @@ onUnmounted(() => {
           <article class="panel sync-panel">
             <div class="panel-heading compact">
               <div>
-                <p class="eyebrow">LOCAL ARCHIVE</p>
-                <h2>本地数据仓</h2>
+                <p class="eyebrow">DATA MANAGEMENT</p>
+                <h2>数据管理</h2>
               </div>
               <span class="record-dot" />
             </div>
             <div class="sync-ledger">
-              <div><span>存储介质</span><strong>SQLite · WAL</strong></div>
-              <div><span>同步策略</span><strong>完整快照 + 增量</strong></div>
-              <div><span>最后写入</span><strong>{{ formatTime(summary.lastSyncAt) }}</strong></div>
+              <div><span>最近同步</span><strong>{{ formatTime(summary.lastSyncAt) }}</strong></div>
+              <div><span>已归档数据</span><strong>{{ summary.relics + summary.lightCones + summary.characters }} 条</strong></div>
             </div>
             <button class="secondary-action" type="button" :disabled="busy" @click="exportData">
-              <span>导出 HSR-Scanner JSON</span><i>↗</i>
+              <span>导出数据</span><i>↗</i>
             </button>
           </article>
 
           <article class="panel ocr-panel">
             <div class="panel-heading compact">
               <div>
-                <p class="eyebrow">RECOGNITION LAB</p>
-                <h2>截图识别校准</h2>
+                <p class="eyebrow">SCREENSHOT RECOGNITION</p>
+                <h2>截图识别</h2>
               </div>
-              <span class="local-badge">OCR · LOCAL</span>
+              <span class="local-badge">本地识别</span>
             </div>
             <label class="field">
-              <span><b>01</b> 测试截图路径</span>
-              <input v-model="imagePath" placeholder="选择一张背包详情截图" />
+              <span><b>01</b> 截图位置</span>
+              <input v-model="imagePath" placeholder="粘贴一张背包详情截图的位置" />
             </label>
-            <details>
-              <summary><span>模型参数</span><i>展开配置 ＋</i></summary>
-              <div class="model-fields">
-                <input v-model="modelConfig.detectionModel" aria-label="检测模型" />
-                <input v-model="modelConfig.recognitionModel" aria-label="识别模型" />
-                <input v-model="modelConfig.characterDictionary" aria-label="字符字典" />
-              </div>
-            </details>
             <button class="secondary-action" :disabled="busy" @click="runOcrSample">
-              <span>执行 Rust OCR</span><i>◎</i>
+              <span>识别截图</span><i>◎</i>
             </button>
             <div v-if="ocrResult" class="ocr-output">
               <div class="output-meta">
@@ -666,7 +712,7 @@ onUnmounted(() => {
             </div>
             <div v-else class="empty-output">
               <span class="empty-symbol">◇</span>
-              <p>OCR 结果仅用于校准，本期不写入档案</p>
+              <p>识别结果仅供核对，暂不会写入数据管理</p>
               <small>等待导入背包详情截图</small>
             </div>
           </article>
@@ -675,8 +721,8 @@ onUnmounted(() => {
 
       <section v-else class="archive-workspace">
         <aside class="panel archive-sidebar">
-          <p class="eyebrow">DATA CATALOG</p>
-          <h2>数据档案</h2>
+          <p class="eyebrow">DATA MANAGEMENT</p>
+          <h2>数据管理</h2>
           <p class="sidebar-copy">结构化索引为后续遗器评分与配装分析准备。</p>
           <div class="kind-switcher">
             <button
@@ -694,21 +740,16 @@ onUnmounted(() => {
               <b>{{ entry.count }}</b>
             </button>
           </div>
-          <div class="archive-meta">
-            <span>协议版本</span>
-            <strong>{{ summary.protocolVersion }}</strong>
-            <span>最近同步</span>
-            <strong>{{ formatTime(summary.lastSyncAt) }}</strong>
-          </div>
+          <div class="archive-meta"><span>最近同步</span><strong>{{ formatTime(summary.lastSyncAt) }}</strong></div>
           <button class="secondary-action" type="button" :disabled="busy" @click="exportData">
-            <span>导出全部数据</span><i>↗</i>
+            <span>导出数据</span><i>↗</i>
           </button>
         </aside>
 
         <article class="panel archive-main">
           <header class="archive-heading">
             <div>
-              <p class="eyebrow">QUERY MATRIX</p>
+              <p class="eyebrow">FILTER RESULTS</p>
               <h2>{{ kindTitle }}</h2>
             </div>
             <div class="archive-actions">
@@ -729,25 +770,39 @@ onUnmounted(() => {
             </div>
           </header>
 
-          <form class="filter-matrix" @submit.prevent="result.page = 1; loadInventory()">
-            <label class="filter-search">
-              <span>关键词</span>
-              <input v-model="filters.search" placeholder="名称 / 套装" />
-            </label>
+          <div class="filter-toolbar">
+            <label class="quick-search"><span class="visually-hidden">关键词</span><input v-model="filters.search" placeholder="搜索名称或套装" @keyup.enter="applyFilters" /></label>
+            <button class="filter-toggle" type="button" @click="filterOpen = true">筛选条件 <b v-if="activeFilterCount">{{ activeFilterCount }}</b><i>⌄</i></button>
+            <button v-if="activeFilterCount" class="clear-filter" type="button" @click="resetFilters">清除筛选</button>
+            <span class="result-count">{{ result.total }} 条记录</span>
+          </div>
+
+          <div v-if="filterOpen" class="filter-layer" @click.self="filterOpen = false">
+          <form class="filter-drawer" @submit.prevent="applyFilters">
+            <header class="filter-drawer-heading">
+              <div><p class="eyebrow">FILTERS</p><h2>筛选条件</h2><small>选择需要的条件，未选择即代表不限。</small></div>
+              <button type="button" aria-label="关闭筛选" @click="filterOpen = false">×</button>
+            </header>
+            <div class="filter-scroll">
             <template v-if="inventoryKind === 'relic'">
-              <label><span>部位</span>
-                <select v-model="filters.slot">
-                  <option value="">全部部位</option>
-                  <option value="Head">头部</option><option value="Hands">手部</option>
-                  <option value="Body">躯干</option><option value="Feet">脚部</option>
-                  <option value="PlanarSphere">位面球</option><option value="LinkRope">连结绳</option>
-                </select>
-              </label>
-              <label><span>星级</span>
-                <select v-model="filters.rarity"><option value="">全部</option><option value="5">5 星</option><option value="4">4 星</option><option value="3">3 星</option></select>
-              </label>
-              <label><span>主词条</span><input v-model="filters.mainStat" placeholder="CRIT Rate" /></label>
-              <label><span>副词条</span><input v-model="filters.subStat" placeholder="CRIT DMG" /></label>
+              <fieldset class="filter-group filter-group-wide"><legend>部位 <em>可多选</em></legend><div class="filter-chips">
+                <label v-for="slot in relicSlots" :key="slot.value" class="filter-chip"><input v-model="filters.slots" type="checkbox" :value="slot.value" /><span>{{ slot.label }}</span></label>
+              </div></fieldset>
+              <fieldset class="filter-group"><legend>星级 <em>可多选</em></legend><div class="filter-chips">
+                <label v-for="rarity in [5, 4, 3, 2]" :key="rarity" class="filter-chip"><input v-model="filters.rarities" type="checkbox" :value="rarity" /><span>{{ rarity }} 星</span></label>
+              </div></fieldset>
+              <fieldset class="filter-group filter-group-wide"><legend>主词条 <em>随部位更新 · 可多选</em></legend><div class="filter-chips">
+                <label v-for="stat in availableMainStats" :key="stat" class="filter-chip"><input v-model="filters.mainStats" type="checkbox" :value="stat" /><span>{{ statLabel(stat) }}</span></label>
+              </div></fieldset>
+              <fieldset class="filter-group filter-group-wide"><legend>副词条 <em>可多选</em></legend><div class="filter-chips">
+                <label v-for="stat in relicSubStats" :key="stat" class="filter-chip"><input v-model="filters.subStats" type="checkbox" :value="stat" /><span>{{ statLabel(stat) }}</span></label>
+              </div></fieldset>
+              <fieldset class="filter-group filter-group-wide"><legend>副词条强化次数 <em>每 4 级增加一次 · 0–5 次</em></legend>
+                <div class="filter-range">
+                  <label><span>最少</span><select v-model="filters.minSubstatCount"><option value="">不限</option><option v-for="count in [0, 1, 2, 3, 4, 5]" :key="count" :value="count">{{ count }} 次</option></select></label>
+                  <label><span>最多</span><select v-model="filters.maxSubstatCount"><option value="">不限</option><option v-for="count in [0, 1, 2, 3, 4, 5]" :key="count" :value="count">{{ count }} 次</option></select></label>
+                </div>
+              </fieldset>
               <label><span>锁定</span>
                 <select v-model="filters.locked"><option value="">全部</option><option value="true">已锁定</option><option value="false">未锁定</option></select>
               </label>
@@ -756,27 +811,25 @@ onUnmounted(() => {
               </label>
             </template>
             <template v-else-if="inventoryKind === 'lightCone'">
-              <label><span>最低突破</span><input v-model="filters.minAscension" type="number" min="0" max="6" placeholder="0" /></label>
-              <label><span>叠影</span><input v-model="filters.superimposition" type="number" min="1" max="5" placeholder="全部" /></label>
+              <label><span>叠影</span><select v-model="filters.superimposition"><option value="">不限</option><option v-for="level in [1, 2, 3, 4, 5]" :key="level" :value="level">{{ level }} 阶</option></select></label>
               <label><span>锁定</span>
                 <select v-model="filters.locked"><option value="">全部</option><option value="true">已锁定</option><option value="false">未锁定</option></select>
               </label>
             </template>
             <template v-else>
-              <label><span>命途</span><input v-model="filters.path" placeholder="Harmony" /></label>
-              <label><span>最低突破</span><input v-model="filters.minAscension" type="number" min="0" max="6" placeholder="0" /></label>
-              <label><span>星魂</span><input v-model="filters.eidolon" type="number" min="0" max="6" placeholder="全部" /></label>
+              <label><span>命途</span><select v-model="filters.path"><option value="">全部命途</option><option value="Destruction">毁灭</option><option value="Hunt">巡猎</option><option value="Erudition">智识</option><option value="Harmony">同谐</option><option value="Nihility">虚无</option><option value="Preservation">存护</option><option value="Abundance">丰饶</option><option value="Remembrance">记忆</option></select></label>
+              <label><span>星魂</span><select v-model="filters.eidolon"><option value="">不限</option><option v-for="level in [0, 1, 2, 3, 4, 5, 6]" :key="level" :value="level">{{ level }} 魂</option></select></label>
             </template>
-            <label><span>最低等级</span><input v-model="filters.minLevel" type="number" min="0" placeholder="0" /></label>
-            <label><span>最高等级</span><input v-model="filters.maxLevel" type="number" min="0" placeholder="不限" /></label>
             <label v-if="inventoryKind !== 'character'"><span>装备状态</span>
               <select v-model="filters.equipped"><option value="">全部</option><option value="true">已装备</option><option value="false">未装备</option></select>
             </label>
+            </div>
             <div class="filter-actions">
-              <button class="filter-submit" type="submit" :disabled="busy">执行筛选</button>
-              <button class="filter-reset" type="button" @click="resetFilters">重置</button>
+              <button class="filter-reset" type="button" @click="resetFilters">重置全部</button>
+              <button class="filter-submit" type="submit" :disabled="busy">查看结果</button>
             </div>
           </form>
+          </div>
 
           <div class="table-shell">
             <table>
@@ -862,7 +915,7 @@ onUnmounted(() => {
       </section>
 
       <footer class="app-footer">
-        <span>StarRail-Auto-Tools · SQLite Inventory Core</span>
+        <span>StarRail-Auto-Tools</span>
         <span>{{ capabilities?.note }}</span>
       </footer>
     </main>

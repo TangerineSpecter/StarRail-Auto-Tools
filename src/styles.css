@@ -28,13 +28,14 @@ html,
 body,
 #app {
   min-width: 900px;
+  height: 100%;
   min-height: 100%;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  overflow-x: hidden;
+  min-height: 100%;
+  overflow: hidden;
 }
 
 button,
@@ -84,7 +85,8 @@ h2 {
 
 .app-stage {
   position: relative;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 620px;
   overflow: hidden;
   background:
     radial-gradient(circle at 86% 8%, rgba(236, 213, 158, 0.42), transparent 24rem),
@@ -150,7 +152,10 @@ h2 {
 .app-shell {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   width: min(1380px, calc(100vw - 46px));
+  height: 100%;
   margin: 0 auto;
   padding: 18px 0 12px;
 }
@@ -422,21 +427,31 @@ h2 {
   display: grid;
   grid-template-columns: minmax(0, 1.12fr) minmax(370px, 0.88fr);
   gap: 14px;
+  min-height: 0;
 }
 
 .direct-panel {
-  min-height: 622px;
+  min-height: 0;
   padding: 23px 24px 20px;
+  overflow-y: auto;
 }
 
 .capture-side {
   display: grid;
+  grid-template-rows: minmax(202px, 0.72fr) minmax(0, 1fr);
   gap: 14px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .sync-panel,
 .ocr-panel {
   padding: 20px 22px;
+}
+
+.ocr-panel {
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .signal-vessel {
@@ -914,11 +929,13 @@ summary i {
   display: grid;
   grid-template-columns: 224px minmax(0, 1fr);
   gap: 14px;
+  min-height: 0;
 }
 
 .archive-sidebar {
-  min-height: 684px;
+  min-height: 0;
   padding: 23px 20px;
+  overflow-y: auto;
 }
 
 .sidebar-copy {
@@ -1002,8 +1019,11 @@ summary i {
 }
 
 .archive-main {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  position: relative;
   min-width: 0;
-  min-height: 684px;
+  min-height: 0;
   padding: 21px 22px 15px;
 }
 
@@ -1031,38 +1051,245 @@ summary i {
   background: #f7f9fc;
 }
 
-.filter-matrix {
-  display: grid;
-  grid-template-columns: minmax(150px, 1.5fr) repeat(5, minmax(86px, 1fr)) auto;
+.filter-toolbar {
+  display: flex;
+  height: 48px;
+  align-items: center;
   gap: 8px;
-  align-items: end;
   margin-bottom: 13px;
-  padding: 12px;
+  padding: 7px;
   border: 1px solid var(--line);
   background: rgba(236, 242, 248, 0.52);
 }
 
-.filter-matrix label {
+.quick-search {
+  width: min(360px, 42%);
+}
+
+.quick-search input {
+  height: 32px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.filter-toggle,
+.clear-filter {
+  display: flex;
+  height: 32px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid rgba(36, 86, 166, 0.25);
+  color: var(--blue);
+  background: #fff;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.filter-toggle b {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--blue);
+  font: 600 8px/1 "Bahnschrift", sans-serif;
+}
+
+.filter-toggle i {
+  margin-left: 2px;
+  font: normal 12px/1 serif;
+}
+
+.clear-filter {
+  border-color: transparent;
+  color: var(--ink-soft);
+  background: transparent;
+}
+
+.result-count {
+  margin-left: auto;
+  padding-right: 5px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.filter-layer {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(23, 38, 67, 0.14);
+  backdrop-filter: blur(2px);
+}
+
+.filter-drawer {
+  display: grid;
+  width: min(520px, 100%);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-left: 1px solid rgba(42, 72, 113, 0.18);
+  background: linear-gradient(145deg, rgba(253, 254, 255, 0.99), rgba(239, 245, 251, 0.99));
+  box-shadow: -20px 0 45px rgba(30, 49, 79, 0.13);
+  animation: drawer-in 190ms ease-out;
+}
+
+.filter-drawer-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 22px 22px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.filter-drawer-heading h2 {
+  font-size: 18px;
+}
+
+.filter-drawer-heading small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.filter-drawer-heading button {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--blue);
+  background: #fff;
+  font-size: 18px;
+}
+
+.filter-scroll {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 15px 12px;
+  padding: 18px 22px;
+  overflow-y: auto;
+}
+
+.filter-scroll > label {
   display: grid;
   gap: 5px;
 }
 
-.filter-matrix input,
-.filter-matrix select {
-  height: 32px;
+.filter-scroll > label > span {
+  color: var(--ink-soft);
+  font-size: 9px;
+}
+
+.filter-scroll input,
+.filter-scroll select {
+  height: 33px;
   min-width: 0;
   font-size: 9px;
 }
 
+.filter-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filter-group-wide {
+  grid-column: 1 / -1;
+}
+
+.filter-group legend {
+  margin-bottom: 5px;
+  padding: 0;
+  color: var(--ink-soft);
+  font-size: 9px;
+}
+
+.filter-group legend em {
+  margin-left: 4px;
+  color: var(--muted);
+  font-style: normal;
+  font-size: 8px;
+}
+
+.filter-range {
+  display: grid;
+  max-width: 255px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.filter-range label {
+  display: grid;
+  gap: 5px;
+}
+
+.filter-range label span {
+  color: var(--ink-soft);
+  font-size: 8px;
+}
+
+.filter-chips {
+  display: flex;
+  min-height: 32px;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-content: flex-start;
+}
+
+.filter-chip {
+  position: relative;
+  display: inline-flex !important;
+  width: auto !important;
+  align-items: center;
+  gap: 0 !important;
+  cursor: pointer;
+}
+
+.filter-chip input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0;
+}
+
+.filter-chip span {
+  display: block;
+  padding: 6px 8px;
+  border: 1px solid rgba(46, 78, 119, 0.14);
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.58);
+  font-size: 8px;
+  line-height: 1;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+
+.filter-chip input:checked + span {
+  border-color: rgba(36, 86, 166, 0.48);
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.filter-chip:focus-within span {
+  box-shadow: 0 0 0 2px rgba(36, 86, 166, 0.12);
+}
+
 .filter-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 5px;
+  padding: 13px 22px;
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .filter-submit,
 .filter-reset {
-  height: 32px;
-  padding: 0 10px;
+  height: 34px;
+  padding: 0 15px;
   font-size: 9px;
   white-space: nowrap;
 }
@@ -1072,6 +1299,15 @@ summary i {
   background: var(--blue);
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .filter-reset {
   border: 1px solid var(--line);
   color: var(--ink-soft);
@@ -1079,8 +1315,7 @@ summary i {
 }
 
 .table-shell {
-  height: 454px;
-  min-height: 454px;
+  min-height: 0;
   overflow: auto;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
@@ -1397,7 +1632,4 @@ input[type="checkbox"] {
     grid-template-columns: 190px minmax(0, 1fr);
   }
 
-  .filter-matrix {
-    grid-template-columns: repeat(4, minmax(100px, 1fr));
-  }
 }

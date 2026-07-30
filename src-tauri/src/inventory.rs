@@ -81,12 +81,14 @@ pub struct RelicFilter {
     #[serde(flatten)]
     pub page: PageQuery,
     pub search: Option<String>,
-    pub slot: Option<String>,
-    pub rarity: Option<u32>,
+    pub slots: Option<Vec<String>>,
+    pub rarities: Option<Vec<u32>>,
     pub min_level: Option<u32>,
     pub max_level: Option<u32>,
-    pub main_stat: Option<String>,
-    pub sub_stat: Option<String>,
+    pub main_stats: Option<Vec<String>>,
+    pub sub_stats: Option<Vec<String>>,
+    pub min_substat_count: Option<u32>,
+    pub max_substat_count: Option<u32>,
     pub locked: Option<bool>,
     pub discard: Option<bool>,
     pub equipped: Option<bool>,
@@ -603,20 +605,37 @@ impl InventoryStore {
             values.push(value.clone());
             values.push(value);
         }
-        push_text_filter(&mut clauses, &mut values, "slot", &filter.slot);
-        push_number_filter(&mut clauses, &mut values, "rarity", "=", filter.rarity);
+        push_text_filters(&mut clauses, &mut values, "slot", &filter.slots);
+        push_number_filters(&mut clauses, &mut values, "rarity", &filter.rarities);
         push_number_filter(&mut clauses, &mut values, "level", ">=", filter.min_level);
         push_number_filter(&mut clauses, &mut values, "level", "<=", filter.max_level);
-        if let Some(main_stat) = clean_filter(&filter.main_stat) {
-            clauses.push("main_stat LIKE ?".to_owned());
-            values.push(SqlValue::Text(format!("%{main_stat}%")));
-        }
-        if let Some(sub_stat) = clean_filter(&filter.sub_stat) {
-            clauses.push(
-                "EXISTS (SELECT 1 FROM relic_substats s WHERE s.relic_id = relics.item_id AND s.stat_key = ?)"
-                    .to_owned(),
-            );
-            values.push(SqlValue::Text(sub_stat));
+        push_text_filters(&mut clauses, &mut values, "main_stat", &filter.main_stats);
+        let sub_stats = clean_filters(&filter.sub_stats);
+        if sub_stats.is_some()
+            || filter.min_substat_count.is_some()
+            || filter.max_substat_count.is_some()
+        {
+            let mut substat_clauses = vec!["s.relic_id = relics.item_id".to_owned()];
+            if let Some(sub_stats) = sub_stats {
+                let placeholders = std::iter::repeat("?")
+                    .take(sub_stats.len())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                substat_clauses.push(format!("s.stat_key IN ({placeholders})"));
+                values.extend(sub_stats.into_iter().map(SqlValue::Text));
+            }
+            if let Some(count) = filter.min_substat_count {
+                substat_clauses.push("s.count >= ?".to_owned());
+                values.push(SqlValue::Integer(count as i64));
+            }
+            if let Some(count) = filter.max_substat_count {
+                substat_clauses.push("s.count <= ?".to_owned());
+                values.push(SqlValue::Integer(count as i64));
+            }
+            clauses.push(format!(
+                "EXISTS (SELECT 1 FROM relic_substats s WHERE {})",
+                substat_clauses.join(" AND ")
+            ));
         }
         push_bool_filter(&mut clauses, &mut values, "locked", filter.locked);
         push_bool_filter(&mut clauses, &mut values, "discard", filter.discard);
@@ -982,6 +1001,57 @@ fn push_text_filter(
     if let Some(value) = clean_filter(value) {
         clauses.push(format!("{column} = ?"));
         values.push(SqlValue::Text(value));
+    }
+}
+
+fn clean_filters(value: &Option<Vec<String>>) -> Option<Vec<String>> {
+    value
+        .as_ref()
+        .map(|values| {
+            values
+                .iter()
+                .map(|value| value.trim())
+                .filter(|value| !value.is_empty())
+                .map(str::to_owned)
+                .collect::<Vec<_>>()
+        })
+        .filter(|values| !values.is_empty())
+}
+
+fn push_text_filters(
+    clauses: &mut Vec<String>,
+    values: &mut Vec<SqlValue>,
+    column: &str,
+    value: &Option<Vec<String>>,
+) {
+    if let Some(values_to_match) = clean_filters(value) {
+        let placeholders = std::iter::repeat("?")
+            .take(values_to_match.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        clauses.push(format!("{column} IN ({placeholders})"));
+        values.extend(values_to_match.into_iter().map(SqlValue::Text));
+    }
+}
+
+fn push_number_filters(
+    clauses: &mut Vec<String>,
+    values: &mut Vec<SqlValue>,
+    column: &str,
+    value: &Option<Vec<u32>>,
+) {
+    if let Some(values_to_match) = value.as_ref().filter(|values| !values.is_empty()) {
+        let placeholders = std::iter::repeat("?")
+            .take(values_to_match.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        clauses.push(format!("{column} IN ({placeholders})"));
+        values.extend(
+            values_to_match
+                .iter()
+                .copied()
+                .map(|value| SqlValue::Integer(value as i64)),
+        );
     }
 }
 
@@ -1382,11 +1452,19 @@ mod tests {
             .unwrap();
         let page = store
             .list_relics(&RelicFilter {
-                sub_stat: Some("CRIT Rate".to_owned()),
+                sub_stats: Some(vec!["CRIT Rate".to_owned()]),
+                min_substat_count: Some(2),
                 ..Default::default()
             })
             .unwrap();
         assert_eq!(page.total, 1);
+        let no_match = store
+            .list_relics(&RelicFilter {
+                max_substat_count: Some(1),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(no_match.total, 0);
         let error = store
             .delete_items(&DeleteItemsRequest {
                 kind: InventoryKind::Relic,

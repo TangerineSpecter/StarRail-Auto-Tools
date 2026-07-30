@@ -67,12 +67,14 @@ export interface PagedResult<T> extends PageQuery {
 
 export interface RelicFilter extends PageQuery {
   search?: string;
-  slot?: string;
-  rarity?: number;
+  slots?: string[];
+  rarities?: number[];
   minLevel?: number;
   maxLevel?: number;
-  mainStat?: string;
-  subStat?: string;
+  mainStats?: string[];
+  subStats?: string[];
+  minSubstatCount?: number;
+  maxSubstatCount?: number;
   locked?: boolean;
   discard?: boolean;
   equipped?: boolean;
