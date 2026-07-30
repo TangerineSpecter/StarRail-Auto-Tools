@@ -1,77 +1,101 @@
-<div align="center">
+# StarRail-Auto-Tools
 
-<br/>
-<br/>
+星穹铁道工具箱：一个使用 Tauri 2、Vue 3 和 Rust 构建的本地游戏自动化与背包 OCR 录入工具。
 
-  <h1 align="center">
-    StarRail Auto Tools
-  </h1>
-  <h4 align="center">
-    星 穹 铁 道，一款自动执行日常任务的脚本
-  </h4>
-</div>
+## 技术路线
 
-<p align="center">
-    <a href="#">
-        <img src="https://img.shields.io/badge/StarRail Auto Tools-0.0.1-green.svg" alt="HuTaoWallet version">
-    </a>        
-    <a href="#">
-        <img src="https://img.shields.io/badge/Python-3.11.6-green.svg" alt="Vue Version">
-    </a>
-</p>
+```text
+Windows Packet Monitor（UDP 23301-23302）
+  → reliquary 协议解析
+  → 遗器 / 光锥 / 角色完整快照与增量同步
+  → SQLite 数据管理与 JSON 导出
 
-<div align="center">
-  <img  width="92%" style="border-radius:10px;margin-top:20px;margin-bottom:20px;box-shadow: 2px 0 6px gray;" src="Resource/docs/demo.png" />
-</div>
-<br>
-
-## 项目介绍
-> 星穹铁道自动化工具。
-
-本项目主要用于日常任务清体力使用，目前还在开发阶段...
-
-> 敲黑板
-```
-本项目主要根据个人使用习惯进行开发，目前仅开发个人使用，有兴趣的小伙伴也可以Fork去使用。
+游戏窗口采集
+  → 画面变化检测
+  → 背包详情区域裁剪
+  → PaddleOCR ONNX（Rust）
+  → 字段规则校验与去重
+  → 本地数据录入
 ```
 
-## 当前系统版本
+- Tauri 负责桌面窗口和前后端通信。
+- Rust 负责网络包解析、SQLite 持久化、截图处理和 OCR 推理。
+- Windows 游戏数据直读基于系统 Packet Monitor 与 `reliquary v22.0.0`，无需安装 Npcap。
+- OCR 使用 `oar-ocr` 加载 PaddleOCR ONNX 检测/识别模型。
+- YOLO 不是 OCR 的替代品；只有在固定区域裁剪不可靠时，才用于定位物品或详情面板。
+- 大模型不进入逐帧主链路，只预留给低置信度结果做可选复核。
+
+## 开发
+
+要求：
+
+- Node.js 22.12+
+- Rust 1.95+
+- Windows 10/11（游戏窗口采集的目标平台）
+
+macOS/Linux：
+
+```bash
+chmod +x dev.sh
+./dev.sh
 ```
-0.0.1
+
+Windows PowerShell：
+
+```powershell
+.\dev.ps1
 ```
 
-## 相关技术
+两个脚本都会检查 Node.js 22.12+、Rust 和依赖；首次运行会执行 `npm ci`。也可以直接使用 `npm run dev:desktop`。
 
-| 库名 | 版本号 |
-| --  | -- |
-| Python | 3.11.6 |
-| opencv | 4.6.0.66 |
-| paddleocr | 2.6.0 |
-| pyside6 | 6.6.2 |
-| pyautogui | 0.9.54 |
-| keyboard | 0.13.5 |
+`dev.sh` 会在检测到 nvm 时自动执行 `nvm use 22`，避免 IDE 或非交互终端误用系统 Node。Windows 脚本在检测到 nvm-windows 时也会切换至 22。
 
-## 帮助
+在 macOS/Linux 上可以开发界面和测试图片 OCR；游戏窗口采集计划在 Windows 上启用，目前适配器仍在开发中。
 
-1. 环境和库安装
-~~~
-# 创建conda环境
-conda create --name star-rail python=3.11.6
-# 库安装
-conda install pyside6
-conda install keyboard
-python -m pip install playsound
-python -m pip python-opencv==4.6.0.66
-python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
-python -m pip install paddleocr -i https://mirror.baidu.com/pypi/simple
-python -m pip install pyautogui
-~~~
+## 游戏数据直读
 
-2. 报错问题
+Windows 10/11 版本会以管理员权限启动，并自动监听星穹铁道登录流量。使用步骤：
 
-Q：提示`NameError: name 'predict_system' is not defined`
-A：修改paddleocr.py代码
-~~~
-54行,这样改from ppstructure.predict_system import StructureSystem, save_structure_res, to_excel,TextSystem
-575行,这样改class PaddleOCR(TextSystem):
-~~~
+1. 启动工具并接受 Windows UAC。
+2. 等待状态显示“等待登录”。
+3. 从游戏的“点击进入游戏”界面重新登录。
+4. 完整数据解析成功后，遗器、光锥和角色会写入本地 SQLite 数据库。
+
+应用不会读取游戏进程内存。数据库保存在 Tauri 应用数据目录的
+`inventory.sqlite3`，只保留当前状态；本地删除的数据会在下次完整同步时恢复。
+数据管理页面支持分页筛选、详情、批量删除、分类清空和 HSR-Scanner/Fribbels
+兼容 JSON 导出。
+
+## OCR 模型
+
+应用需要三个本地文件：
+
+```text
+models/
+  text_detection.onnx
+  text_recognition.onnx
+  character_dict.txt
+```
+
+模型不会提交到仓库。可以使用 PaddleOCR 的中文 PP-OCR ONNX 模型；最终模型版本应根据游戏截图样本进行准确率测试后锁定。
+
+## Windows 打包
+
+在 Windows 10/11 上，直接双击 [`build-windows.cmd`](./build-windows.cmd)。脚本会显示菜单供选择：推荐的 NSIS 安装包 EXE、企业部署用 MSI，或同时构建两种格式。
+
+默认生成 **NSIS 安装包 EXE**，输出目录为 `src-tauri\target\release\bundle\nsis`。这是推荐的发布形式：它会创建开始菜单/卸载入口，并按当前配置在用户缺少 WebView2 Runtime 时使用轻量下载引导程序安装该运行时。
+
+不建议直接分发 `target\release` 下的裸 EXE：用户仍可能缺少 WebView2，且后续应用资源、模型和升级管理会变得零散。当前 OCR 模型刻意未打入安装包（体积和模型许可待确定）；发布时应单独提供模型下载，或在确认许可和体积后把 `models/` 加入 Tauri bundle resources。
+
+## 当前里程碑
+
+- [x] Tauri 2 + Vue 3 客户端骨架
+- [x] Rust 扫描状态机和领域模型
+- [x] Rust 本地图片 OCR 命令
+- [x] Windows pktmon 游戏数据直读
+- [x] 遗器、光锥和角色 SQLite 持久化
+- [x] 数据分页筛选、详情、删除与 JSON 导出
+- [ ] Windows 游戏窗口帧采集
+- [ ] 背包区域标定与画面变化检测
+- [ ] OCR 字段解析与确认入库
+- [ ] 使用真实游戏截图建立回归样本集

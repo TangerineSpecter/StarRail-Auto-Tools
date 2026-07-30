@@ -1,0 +1,40 @@
+[package]
+name = "starrail-auto-tools"
+version = "0.1.0"
+description = "Star Rail automation and local OCR toolbox"
+authors = ["StarRail-Auto-Tools contributors"]
+edition = "2021"
+
+[lib]
+name = "starrail_auto_tools_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+oar-ocr = "0.8.1"
+# oar-ocr 0.8.1 still uses the rc.12 execution-provider API. Cargo otherwise
+# considers newer release candidates compatible and currently selects rc.13.
+ort = "=2.0.0-rc.12"
+rfd = "0.17.2"
+rusqlite = { version = "0.37", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+thiserror = "2"
+
+[target.'cfg(windows)'.dependencies]
+futures = "0.3.31"
+pktmon = { version = "0.6.2", features = ["tokio"] }
+protobuf = "=3.7.1"
+reliquary = { git = "https://github.com/IceDynamix/reliquary", tag = "v22.0.0", features = ["proto-rqa"] }
+reliquary-archiver = { git = "https://github.com/IceDynamix/reliquary-archiver", tag = "v0.17.1", default-features = false }
+tokio = { version = "1.44.2", features = ["sync", "time"] }
+windows = { version = "0.62", features = [
+  "Graphics_Capture",
+  "Graphics_DirectX",
+  "Win32_Foundation",
+  "Win32_Graphics_Direct3D11",
+  "Win32_Graphics_Dxgi",
+] }
