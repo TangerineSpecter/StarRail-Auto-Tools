@@ -1,0 +1,24 @@
+{
+  "source": "starrail_auto_tools_demo",
+  "version": 4,
+  "metadata": { "uid": null, "trailblazer": "Demo" },
+  "light_cones": [],
+  "characters": [{
+    "id": "9001", "name": "演示角色", "path": "Harmony", "level": 80,
+    "ascension": 6, "eidolon": 0, "skills": {}, "traces": {}, "ability_version": 1
+  }],
+  "relics": [
+    {"_uid":"1","set_id":"101","name":"演示疾速套","slot":"Head","rarity":5,"level":15,"mainstat":"HP","substats":[{"key":"SPD","value":9.2,"count":4,"step":2},{"key":"CRIT Rate","value":5.8,"count":2,"step":1}],"location":"演示角色","lock":true,"discard":false},
+    {"_uid":"2","set_id":"101","name":"演示疾速套","slot":"Hands","rarity":5,"level":15,"mainstat":"ATK","substats":[{"key":"SPD","value":8.4,"count":3,"step":2},{"key":"CRIT DMG","value":17.5,"count":3,"step":2}],"location":"演示角色","lock":true,"discard":false},
+    {"_uid":"3","set_id":"101","name":"演示疾速套","slot":"Body","rarity":5,"level":15,"mainstat":"CRIT Rate","substats":[{"key":"SPD","value":6.1,"count":2,"step":1},{"key":"CRIT DMG","value":12.9,"count":2,"step":1}],"location":"演示角色","lock":true,"discard":false},
+    {"_uid":"4","set_id":"101","name":"演示疾速套","slot":"Feet","rarity":5,"level":15,"mainstat":"SPD","substats":[{"key":"CRIT Rate","value":8.1,"count":3,"step":2},{"key":"CRIT DMG","value":12.9,"count":2,"step":1}],"location":"演示角色","lock":true,"discard":false},
+    {"_uid":"5","set_id":"201","name":"演示位面套","slot":"PlanarSphere","rarity":5,"level":15,"mainstat":"Fire DMG Boost","substats":[{"key":"SPD","value":5.4,"count":2,"step":1},{"key":"CRIT Rate","value":6.5,"count":2,"step":1}],"location":"演示角色","lock":true,"discard":false},
+    {"_uid":"6","set_id":"201","name":"演示位面套","slot":"LinkRope","rarity":5,"level":15,"mainstat":"Energy Regeneration Rate","substats":[{"key":"SPD","value":7.0,"count":3,"step":1},{"key":"CRIT DMG","value":11.7,"count":2,"step":1}],"location":"演示角色","lock":true,"discard":false},
+    {"_uid":"11","set_id":"101","name":"演示疾速套","slot":"Head","rarity":5,"level":15,"mainstat":"HP","substats":[{"key":"SPD","value":11.0,"count":5,"step":3},{"key":"CRIT Rate","value":8.1,"count":3,"step":2}],"location":"","lock":true,"discard":false},
+    {"_uid":"12","set_id":"101","name":"演示疾速套","slot":"Hands","rarity":5,"level":15,"mainstat":"ATK","substats":[{"key":"SPD","value":9.8,"count":4,"step":2},{"key":"CRIT DMG","value":19.4,"count":3,"step":2}],"location":"","lock":true,"discard":false},
+    {"_uid":"13","set_id":"101","name":"演示疾速套","slot":"Body","rarity":5,"level":15,"mainstat":"CRIT Rate","substats":[{"key":"SPD","value":8.0,"count":3,"step":2},{"key":"CRIT DMG","value":18.1,"count":3,"step":2}],"location":"","lock":true,"discard":false},
+    {"_uid":"14","set_id":"101","name":"演示疾速套","slot":"Feet","rarity":5,"level":15,"mainstat":"SPD","substats":[{"key":"CRIT Rate","value":9.7,"count":3,"step":2},{"key":"CRIT DMG","value":18.1,"count":3,"step":2}],"location":"","lock":true,"discard":false},
+    {"_uid":"15","set_id":"201","name":"演示位面套","slot":"PlanarSphere","rarity":5,"level":15,"mainstat":"Fire DMG Boost","substats":[{"key":"SPD","value":7.8,"count":3,"step":2},{"key":"CRIT Rate","value":8.1,"count":3,"step":2}],"location":"","lock":true,"discard":false},
+    {"_uid":"16","set_id":"201","name":"演示位面套","slot":"LinkRope","rarity":5,"level":15,"mainstat":"Energy Regeneration Rate","substats":[{"key":"SPD","value":8.4,"count":3,"step":2},{"key":"CRIT DMG","value":19.4,"count":3,"step":2}],"location":"","lock":true,"discard":false}
+  ]
+}

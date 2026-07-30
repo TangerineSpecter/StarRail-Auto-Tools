@@ -108,6 +108,7 @@ export interface RelicListItem {
   rarity: number;
   level: number;
   mainStat: string;
+  mainStatValue: number;
   location: string;
   locked: boolean;
   discard: boolean;
@@ -148,4 +149,31 @@ export type InventoryListItem =
 export interface InventoryDetail {
   kind: InventoryKind;
   data: Record<string, unknown>;
+}
+
+export interface BuildTarget {
+  statKey: string;
+  target: number;
+  priority: number;
+  minimum: number;
+}
+
+export interface CharacterBuildPlan {
+  characterId: number;
+  cavernMode: "fourPiece" | "twoPlusTwo";
+  cavernSetA: number;
+  cavernSetB: number | null;
+  planarSetId: number;
+  mainStats: Record<string, string[]>;
+  targets: BuildTarget[];
+}
+
+export interface RelicSetOption { setId: number; name: string; }
+export interface BuildProgress { statKey: string; current: number; target: number; gap: number; minimum: number; priority: number; }
+export interface BuildRelicChoice { itemId: number; name: string; slot: string; setId: number; mainStat: string; location: string; borrowed: boolean; }
+export interface BuildRecommendation {
+  current: BuildProgress[];
+  recommended: BuildRelicChoice[] | null;
+  recommendedProgress: BuildProgress[] | null;
+  message: string;
 }

@@ -16,6 +16,8 @@ pub enum AppError {
     Ocr(String),
     #[error("Windows 游戏窗口采集尚未在当前平台启用")]
     CaptureUnavailable,
+    #[error("截图失败：{0}")]
+    Capture(String),
     #[error("内部状态不可用")]
     StateUnavailable,
     #[error("本地数据库错误：{0}")]

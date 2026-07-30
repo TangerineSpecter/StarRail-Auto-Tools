@@ -5,12 +5,13 @@ use crate::{
     domain::{OcrImageResult, OcrModelConfig, ScanSnapshot, StartScanRequest, SystemCapabilities},
     error::AppError,
     inventory::{
-        CharacterFilter, ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryKind,
+        BuildRecommendation, BuildRecommendationRequest, CharacterBuildPlan, CharacterFilter, ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryKind,
         InventoryStore, InventorySummary, LightConeFilter, LightConeListItem, PagedResult,
         RelicFilter, RelicListItem,
     },
     ocr,
     scanner::ScannerState,
+    screenshot,
 };
 
 #[tauri::command]
@@ -53,6 +54,23 @@ pub async fn recognize_image(
     tauri::async_runtime::spawn_blocking(move || ocr::recognize_image(image_path, models))
         .await
         .map_err(|error| AppError::Ocr(error.to_string()))?
+}
+
+#[tauri::command]
+pub async fn recognize_screenshot(
+    image_bytes: Vec<u8>,
+    models: OcrModelConfig,
+) -> Result<OcrImageResult, AppError> {
+    tauri::async_runtime::spawn_blocking(move || ocr::recognize_screenshot(image_bytes, models))
+        .await
+        .map_err(|error| AppError::Ocr(error.to_string()))?
+}
+
+#[tauri::command]
+pub async fn capture_desktop() -> Result<Vec<u8>, AppError> {
+    tauri::async_runtime::spawn_blocking(screenshot::capture_desktop)
+        .await
+        .map_err(|error| AppError::Capture(error.to_string()))?
 }
 
 #[tauri::command]
@@ -118,6 +136,31 @@ pub fn get_inventory_detail(
 }
 
 #[tauri::command]
+pub fn list_relic_sets(store: State<'_, InventoryStore>) -> Result<Vec<crate::inventory::RelicSetOption>, AppError> {
+    store.list_relic_sets()
+}
+
+#[tauri::command]
+pub fn get_character_build_plan(character_id: u32, store: State<'_, InventoryStore>) -> Result<Option<CharacterBuildPlan>, AppError> {
+    store.build_plan(character_id)
+}
+
+#[tauri::command]
+pub fn save_character_build_plan(plan: CharacterBuildPlan, store: State<'_, InventoryStore>) -> Result<(), AppError> {
+    store.save_build_plan(&plan)
+}
+
+#[tauri::command]
+pub fn delete_character_build_plan(character_id: u32, store: State<'_, InventoryStore>) -> Result<(), AppError> {
+    store.delete_build_plan(character_id)
+}
+
+#[tauri::command]
+pub fn recommend_character_build(request: BuildRecommendationRequest, store: State<'_, InventoryStore>) -> Result<BuildRecommendation, AppError> {
+    store.recommend_build(&request)
+}
+
+#[tauri::command]
 pub fn delete_inventory_items(
     request: DeleteItemsRequest,
     app: AppHandle,
@@ -145,15 +188,36 @@ pub fn clear_inventory(
 }
 
 #[tauri::command]
-pub fn export_inventory(store: State<'_, InventoryStore>) -> Result<Option<String>, AppError> {
-    let Some(path) = rfd::FileDialog::new()
+pub async fn export_inventory(store: State<'_, InventoryStore>) -> Result<Option<String>, AppError> {
+    let Some(file) = rfd::AsyncFileDialog::new()
         .set_title("导出星穹铁道数据")
         .set_file_name("starrail-inventory.json")
         .add_filter("JSON", &["json"])
-        .save_file()
+        .save_file().await
     else {
         return Ok(None);
     };
+    let path = file.path();
     store.export_to_path(&path)?;
     Ok(Some(path.to_string_lossy().into_owned()))
+}
+
+#[tauri::command]
+pub async fn import_inventory(app: AppHandle, store: State<'_, InventoryStore>) -> Result<Option<InventorySummary>, AppError> {
+    let Some(file) = rfd::AsyncFileDialog::new()
+        .set_title("导入星穹铁道数据")
+        .add_filter("JSON", &["json"])
+        .pick_file().await
+    else { return Ok(None) };
+    let path = file.path();
+    let file = std::fs::File::open(path)?;
+    let import: crate::inventory::InventoryImport = serde_json::from_reader(file)
+        .map_err(|error| AppError::Database(format!("JSON 格式无效：{error}")))?;
+    let summary = match store.apply_full_snapshot(&import)? {
+        Ok(summary) => summary,
+        Err(_) => return Err(AppError::AccountMismatch),
+    };
+    direct_read::inventory_changed(&app, &summary, false)?;
+    let _ = app.emit("inventory://changed", &summary);
+    Ok(Some(summary))
 }

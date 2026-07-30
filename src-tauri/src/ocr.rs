@@ -1,6 +1,8 @@
 use std::{
+    fs,
     path::{Path, PathBuf},
-    time::Instant,
+    process,
+    time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use oar_ocr::{oarocr::OAROCRBuilder, utils::load_image};
@@ -55,5 +57,35 @@ pub fn recognize_image(
         image_path: image_path.display().to_string(),
         regions,
         elapsed_ms: started.elapsed().as_millis(),
+    })
+}
+
+/// Runs OCR on an in-memory PNG captured by the UI. The image only exists on disk
+/// while the OCR library is reading it, then is removed regardless of the outcome.
+pub fn recognize_screenshot(
+    image_bytes: Vec<u8>,
+    models: OcrModelConfig,
+) -> Result<OcrImageResult, AppError> {
+    if image_bytes.is_empty() {
+        return Err(AppError::Ocr("截图内容为空".to_owned()));
+    }
+
+    let temporary_path = std::env::temp_dir().join(format!(
+        "starrail-auto-tools-{}-{}.png",
+        process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos(),
+    ));
+    fs::write(&temporary_path, image_bytes)
+        .map_err(|error| AppError::Ocr(format!("无法保存临时截图：{error}")))?;
+
+    let result = recognize_image(temporary_path.display().to_string(), models);
+    let _ = fs::remove_file(&temporary_path);
+
+    result.map(|mut ocr_result| {
+        ocr_result.image_path = "临时截图（已清理）".to_owned();
+        ocr_result
     })
 }

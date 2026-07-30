@@ -1,6 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   CharacterFilter,
+  CharacterBuildPlan,
+  BuildRecommendation,
   CharacterListItem,
   DirectReadSnapshot,
   InventoryDetail,
@@ -13,6 +15,7 @@ import type {
   PagedResult,
   RelicFilter,
   RelicListItem,
+  RelicSetOption,
   SystemCapabilities,
 } from "../types";
 
@@ -20,6 +23,9 @@ export const api = {
   capabilities: () => invoke<SystemCapabilities>("get_system_capabilities"),
   recognizeImage: (imagePath: string, models: OcrModelConfig) =>
     invoke<OcrImageResult>("recognize_image", { imagePath, models }),
+  recognizeScreenshot: (imageBytes: number[], models: OcrModelConfig) =>
+    invoke<OcrImageResult>("recognize_screenshot", { imageBytes, models }),
+  captureDesktop: () => invoke<number[]>("capture_desktop"),
 
   directReadSnapshot: () =>
     invoke<DirectReadSnapshot>("get_direct_read_snapshot"),
@@ -44,4 +50,14 @@ export const api = {
     invoke<InventorySummary>("clear_inventory", { request: { kind } }),
   exportInventory: () =>
     invoke<string | null>("export_inventory"),
+  importInventory: () => invoke<InventorySummary | null>("import_inventory"),
+  relicSets: () => invoke<RelicSetOption[]>("list_relic_sets"),
+  characterBuildPlan: (characterId: number) =>
+    invoke<CharacterBuildPlan | null>("get_character_build_plan", { characterId }),
+  saveCharacterBuildPlan: (plan: CharacterBuildPlan) =>
+    invoke<void>("save_character_build_plan", { plan }),
+  deleteCharacterBuildPlan: (characterId: number) =>
+    invoke<void>("delete_character_build_plan", { characterId }),
+  recommendCharacterBuild: (characterId: number, includeEquipped: boolean) =>
+    invoke<BuildRecommendation>("recommend_character_build", { request: { characterId, includeEquipped } }),
 };

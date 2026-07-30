@@ -5,6 +5,7 @@ mod error;
 mod inventory;
 mod ocr;
 mod scanner;
+mod screenshot;
 
 use direct_read::DirectReadState;
 use inventory::InventoryStore;
@@ -31,6 +32,8 @@ pub fn run() {
             commands::start_scanner,
             commands::stop_scanner,
             commands::recognize_image,
+            commands::recognize_screenshot,
+            commands::capture_desktop,
             commands::get_direct_read_snapshot,
             commands::start_direct_read,
             commands::stop_direct_read,
@@ -40,9 +43,15 @@ pub fn run() {
             commands::list_light_cones,
             commands::list_characters,
             commands::get_inventory_detail,
+            commands::list_relic_sets,
+            commands::get_character_build_plan,
+            commands::save_character_build_plan,
+            commands::delete_character_build_plan,
+            commands::recommend_character_build,
             commands::delete_inventory_items,
             commands::clear_inventory,
             commands::export_inventory,
+            commands::import_inventory,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run StarRail-Auto-Tools");

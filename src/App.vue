@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { api } from "./services/tauri";
 import type {
   CharacterFilter,
+  CharacterBuildPlan,
+  BuildRecommendation,
   CharacterListItem,
   DirectReadSnapshot,
   InventoryDetail,
@@ -17,10 +20,21 @@ import type {
   PagedResult,
   RelicFilter,
   RelicListItem,
+  RelicSetOption,
   SystemCapabilities,
 } from "./types";
 
 type ViewName = "capture" | "archive";
+type RelicDetailData = {
+  itemId: number; name: string; setName: string; slot: string; rarity: number; level: number;
+  mainStat: string; mainStatValue: number; location: string; locked: boolean; discard: boolean;
+  updatedAt: number; substats?: Array<{ kind: string; key: string; value: number; count: number }>;
+};
+type CharacterDetailData = {
+  characterId: number; name: string; path: string; level: number; ascension: number; eidolon: number;
+  skills: Record<string, unknown>; traces: Record<string, unknown>; memosprite?: Record<string, unknown> | null;
+  abilityVersion: number; updatedAt: number;
+};
 
 const emptyDirectSnapshot: DirectReadSnapshot = {
   phase: "unsupported",
@@ -52,13 +66,24 @@ const busy = ref(false);
 const error = ref("");
 const notice = ref("");
 
-const imagePath = ref("");
 const modelConfig = ref<OcrModelConfig>({
   detectionModel: "models/text_detection.onnx",
   recognitionModel: "models/text_recognition.onnx",
   characterDictionary: "models/character_dict.txt",
 });
 const ocrResult = ref<OcrImageResult | null>(null);
+const screenshotPreviewUrl = ref<string | null>(null);
+const cropSurface = ref<HTMLElement | null>(null);
+const cropDragging = ref(false);
+const screenshotFullscreen = ref(false);
+const cropSelection = reactive({ startX: 0, startY: 0, endX: 0, endY: 0 });
+const cropBox = computed(() => ({
+  left: Math.min(cropSelection.startX, cropSelection.endX),
+  top: Math.min(cropSelection.startY, cropSelection.endY),
+  width: Math.abs(cropSelection.endX - cropSelection.startX),
+  height: Math.abs(cropSelection.endY - cropSelection.startY),
+}));
+const hasCropSelection = computed(() => cropBox.value.width >= 12 && cropBox.value.height >= 12);
 
 const inventoryKind = ref<InventoryKind>("relic");
 const result = ref<PagedResult<InventoryListItem>>({
@@ -71,6 +96,18 @@ const selectedIds = ref<Set<number>>(new Set());
 const detail = ref<InventoryDetail | null>(null);
 const detailLoading = ref(false);
 const filterOpen = ref(false);
+const buildOpen = ref(false);
+const buildLoading = ref(false);
+const buildRecommendation = ref<BuildRecommendation | null>(null);
+const relicSetOptions = ref<RelicSetOption[]>([]);
+const includeEquipped = ref(false);
+const buildDeleteArmed = ref(false);
+const draggedTargetIndex = ref<number | null>(null);
+const dragTargetIndex = ref<number | null>(null);
+const buildPlan = reactive<CharacterBuildPlan>({
+  characterId: 0, cavernMode: "fourPiece", cavernSetA: 0, cavernSetB: null,
+  planarSetId: 0, mainStats: { Head: [], Hands: [], Body: [], Feet: [], PlanarSphere: [], LinkRope: [] }, targets: [],
+});
 
 const filters = reactive({
   search: "",
@@ -119,6 +156,12 @@ const availableMainStats = computed(() => {
   const slots = filters.slots.length ? filters.slots : relicSlots.map((slot) => slot.value);
   return [...new Set(slots.flatMap((slot) => relicMainStats[slot] ?? []))];
 });
+const detailRelic = computed<RelicDetailData | null>(() =>
+  detail.value?.kind === "relic" ? detail.value.data as unknown as RelicDetailData : null,
+);
+const detailCharacter = computed<CharacterDetailData | null>(() =>
+  detail.value?.kind === "character" ? detail.value.data as unknown as CharacterDetailData : null,
+);
 const activeFilterCount = computed(() => [
   filters.slots.length,
   filters.rarities.length,
@@ -140,6 +183,8 @@ const activeFilterCount = computed(() => [
 let unlistenDirect: UnlistenFn | undefined;
 let unlistenInventory: UnlistenFn | undefined;
 let detailRequestId = 0;
+let targetDragPreview: HTMLElement | undefined;
+let targetDragCleanup: (() => void) | undefined;
 
 const directRunning = computed(() =>
   ["starting", "waitingForLogin", "connected", "syncing", "ready"].includes(
@@ -275,19 +320,128 @@ async function switchAccount() {
   }
 }
 
-async function runOcrSample() {
-  if (!imagePath.value.trim()) {
-    error.value = "请填写一张本地截图的路径";
-    return;
-  }
+async function runOcrScreenshot() {
   busy.value = true;
   error.value = "";
+  notice.value = "正在进入框选截图模式…";
   ocrResult.value = null;
+  const appWindow = getCurrentWindow();
   try {
-    ocrResult.value = await api.recognizeImage(
-      imagePath.value.trim(),
+    notice.value = "正在隐藏工具箱并读取当前桌面…";
+    await appWindow.hide();
+    await new Promise((resolve) => window.setTimeout(resolve, 120));
+    const imageBytes = await Promise.race([
+      api.captureDesktop(),
+      new Promise<never>((_, reject) => window.setTimeout(
+        () => reject(new Error("系统截图在 8 秒内没有返回；请检查 macOS 的“屏幕录制”权限，或重新启动应用后再试。")),
+        8000,
+      )),
+    ]);
+    if (!imageBytes.length) throw new Error("系统截图返回了空图片");
+    const image = new Blob([new Uint8Array(imageBytes)], { type: "image/png" });
+    await appWindow.show();
+    screenshotPreviewUrl.value = URL.createObjectURL(image);
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+    notice.value = "请拖拽虚线框选需要识别的区域";
+    screenshotFullscreen.value = true;
+    await appWindow.setFullscreen(true);
+  } catch (cause) {
+    await appWindow.show();
+    await closeCropPicker(false);
+    error.value = `无法进入截图模式：${String(cause)}`;
+  } finally {
+    busy.value = false;
+  }
+}
+
+function cropPoint(event: PointerEvent) {
+  const bounds = cropSurface.value?.getBoundingClientRect();
+  if (!bounds) return { x: 0, y: 0 };
+  return {
+    x: Math.max(0, Math.min(bounds.width, event.clientX - bounds.left)),
+    y: Math.max(0, Math.min(bounds.height, event.clientY - bounds.top)),
+  };
+}
+
+function startCropSelection(event: PointerEvent) {
+  const point = cropPoint(event);
+  cropSelection.startX = point.x;
+  cropSelection.startY = point.y;
+  cropSelection.endX = point.x;
+  cropSelection.endY = point.y;
+  cropDragging.value = true;
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+}
+
+function updateCropSelection(event: PointerEvent) {
+  if (!cropDragging.value) return;
+  const point = cropPoint(event);
+  cropSelection.endX = point.x;
+  cropSelection.endY = point.y;
+}
+
+function endCropSelection(event: PointerEvent) {
+  updateCropSelection(event);
+  cropDragging.value = false;
+}
+
+function resetCropSelection() {
+  cropSelection.startX = 0;
+  cropSelection.startY = 0;
+  cropSelection.endX = 0;
+  cropSelection.endY = 0;
+}
+
+async function closeCropPicker(cancelled = true) {
+  if (screenshotPreviewUrl.value) URL.revokeObjectURL(screenshotPreviewUrl.value);
+  screenshotPreviewUrl.value = null;
+  cropDragging.value = false;
+  resetCropSelection();
+  if (screenshotFullscreen.value) {
+    screenshotFullscreen.value = false;
+    await getCurrentWindow().setFullscreen(false);
+  }
+  if (cancelled) notice.value = "已取消截图";
+}
+
+async function recognizeCrop() {
+  const previewUrl = screenshotPreviewUrl.value;
+  const surface = cropSurface.value;
+  if (!previewUrl || !surface || !hasCropSelection.value) {
+    error.value = "请拖拽框选需要识别的区域";
+    return;
+  }
+
+  busy.value = true;
+  error.value = "";
+  try {
+    const source = await createImageBitmap(await (await fetch(previewUrl)).blob());
+    const bounds = surface.getBoundingClientRect();
+    const scaleX = source.width / bounds.width;
+    const scaleY = source.height / bounds.height;
+    const area = cropBox.value;
+    const sourceX = Math.round(area.left * scaleX);
+    const sourceY = Math.round(area.top * scaleY);
+    const sourceWidth = Math.max(1, Math.round(area.width * scaleX));
+    const sourceHeight = Math.max(1, Math.round(area.height * scaleY));
+    const canvas = document.createElement("canvas");
+    canvas.width = sourceWidth;
+    canvas.height = sourceHeight;
+    canvas.getContext("2d")?.drawImage(
+      source, sourceX, sourceY, sourceWidth, sourceHeight,
+      0, 0, sourceWidth, sourceHeight,
+    );
+    source.close();
+    const image = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("截图裁剪失败")), "image/png");
+    });
+    await closeCropPicker(false);
+    notice.value = "正在本地识别框选区域…";
+    ocrResult.value = await api.recognizeScreenshot(
+      Array.from(new Uint8Array(await image.arrayBuffer())),
       modelConfig.value,
     );
+    notice.value = "区域已识别，临时图片已清理";
   } catch (cause) {
     error.value = String(cause);
   } finally {
@@ -398,6 +552,137 @@ function closeDetail() {
   detailLoading.value = false;
 }
 
+function resetBuildPlan(characterId: number) {
+  Object.assign(buildPlan, {
+    characterId,
+    cavernMode: "fourPiece",
+    cavernSetA: relicSetOptions.value[0]?.setId ?? 0,
+    cavernSetB: null,
+    planarSetId: relicSetOptions.value[0]?.setId ?? 0,
+    mainStats: Object.fromEntries(relicSlots.map((slot) => [slot.value, []])),
+    targets: [
+      { statKey: "SPD", target: 180, priority: 1, minimum: 180 },
+      { statKey: "CRIT Rate", target: 80, priority: 2, minimum: 65 },
+    ],
+  });
+}
+
+async function openBuild(item: CharacterListItem) {
+  buildOpen.value = true;
+  buildLoading.value = true;
+  buildRecommendation.value = null;
+  includeEquipped.value = false;
+  buildDeleteArmed.value = false;
+  try {
+    const [sets, saved] = await Promise.all([api.relicSets(), api.characterBuildPlan(item.characterId)]);
+    relicSetOptions.value = sets;
+    resetBuildPlan(item.characterId);
+    if (saved) Object.assign(buildPlan, saved);
+  } catch (cause) {
+    error.value = String(cause);
+  } finally {
+    buildLoading.value = false;
+  }
+}
+
+function closeBuild() { buildOpen.value = false; buildRecommendation.value = null; buildDeleteArmed.value = false; }
+
+function addBuildTarget() {
+  if (buildPlan.targets.length >= 3) return;
+  buildPlan.targets.push({ statKey: "CRIT DMG", target: 160, priority: buildPlan.targets.length + 1, minimum: 140 });
+}
+
+function removeBuildTarget(index: number) { buildPlan.targets.splice(index, 1); }
+
+function copyTargetRowValues(source: HTMLElement, preview: HTMLElement) {
+  const sourceFields = source.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input, select");
+  const previewFields = preview.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input, select");
+  sourceFields.forEach((field, fieldIndex) => {
+    const previewField = previewFields[fieldIndex];
+    if (previewField) previewField.value = field.value;
+  });
+}
+
+function beginBuildTargetDrag(event: PointerEvent, index: number) {
+  if (event.button !== 0) return;
+  event.preventDefault();
+  targetDragCleanup?.();
+  draggedTargetIndex.value = index;
+  dragTargetIndex.value = index;
+  const row = (event.currentTarget as HTMLElement).closest(".target-row") as HTMLElement | null;
+  if (!row) return;
+  const preview = row.cloneNode(true) as HTMLElement;
+  const bounds = row.getBoundingClientRect();
+  preview.classList.add("target-drag-preview");
+  preview.style.width = `${bounds.width}px`;
+  copyTargetRowValues(row, preview);
+  document.body.append(preview);
+  targetDragPreview = preview;
+  const offsetX = Math.min(48, Math.max(16, event.clientX - bounds.left));
+  const offsetY = Math.min(20, Math.max(12, event.clientY - bounds.top));
+  const move = (moveEvent: PointerEvent) => {
+    preview.style.left = `${moveEvent.clientX - offsetX}px`;
+    preview.style.top = `${moveEvent.clientY - offsetY}px`;
+    const target = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY)?.closest<HTMLElement>(".target-row");
+    const targetIndex = Number(target?.dataset.targetIndex);
+    if (!Number.isNaN(targetIndex)) dragTargetIndex.value = targetIndex;
+  };
+  const finish = () => {
+    const from = draggedTargetIndex.value;
+    const to = dragTargetIndex.value;
+    draggedTargetIndex.value = null;
+    dragTargetIndex.value = null;
+    targetDragPreview?.remove();
+    targetDragPreview = undefined;
+    targetDragCleanup = undefined;
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", finish);
+    window.removeEventListener("pointercancel", finish);
+    if (from === null || to === null || from === to) return;
+    const [target] = buildPlan.targets.splice(from, 1);
+    buildPlan.targets.splice(to, 0, target);
+  };
+  targetDragCleanup = finish;
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", finish, { once: true });
+  window.addEventListener("pointercancel", finish, { once: true });
+  move(event);
+}
+
+
+async function saveBuildPlan() {
+  if (!buildPlan.characterId || !buildPlan.targets.length) { error.value = "请至少设置一条属性目标"; return; }
+  buildLoading.value = true;
+  try {
+    buildPlan.targets.forEach((target, index) => { target.priority = index + 1; });
+    await api.saveCharacterBuildPlan(JSON.parse(JSON.stringify(buildPlan)));
+    notice.value = "毕业方案已保存";
+    await calculateBuild();
+  } catch (cause) { error.value = String(cause); } finally { buildLoading.value = false; }
+}
+
+async function calculateBuild() {
+  buildLoading.value = true;
+  try { buildRecommendation.value = await api.recommendCharacterBuild(buildPlan.characterId, includeEquipped.value); }
+  catch (cause) { error.value = String(cause); } finally { buildLoading.value = false; }
+}
+
+async function deleteBuildPlan() {
+  if (!buildPlan.characterId) return;
+  if (!buildDeleteArmed.value) {
+    buildDeleteArmed.value = true;
+    notice.value = "再次点击“删除方案”确认删除";
+    return;
+  }
+  buildLoading.value = true;
+  try { await api.deleteCharacterBuildPlan(buildPlan.characterId); resetBuildPlan(buildPlan.characterId); buildRecommendation.value = null; buildDeleteArmed.value = false; notice.value = "毕业方案已删除"; }
+  catch (cause) { error.value = String(cause); } finally { buildLoading.value = false; }
+}
+
+function progressPercent(progress: { current: number; target: number }) {
+  return Math.min(100, Math.round((progress.current / Math.max(progress.target, 1)) * 100));
+}
+
 async function deleteSelected() {
   const ids = [...selectedIds.value];
   if (!ids.length) return;
@@ -474,6 +759,22 @@ async function exportData() {
   }
 }
 
+async function importData() {
+  busy.value = true;
+  try {
+    const imported = await api.importInventory();
+    if (imported) {
+      summary.value = imported;
+      await loadInventory();
+      notice.value = `已导入 ${imported.relics} 件遗器、${imported.lightCones} 件光锥、${imported.characters} 名角色`;
+    }
+  } catch (cause) {
+    error.value = String(cause);
+  } finally {
+    busy.value = false;
+  }
+}
+
 function goPage(page: number) {
   if (page < 1 || page > pageCount.value) return;
   result.value.page = page;
@@ -505,6 +806,33 @@ function slotLabel(slot: string): string {
 
 function statLabel(stat: string): string {
   return statLabels[stat] ?? stat;
+}
+
+function formatStatValue(stat: string, value: number): string {
+  const percentStats = new Set([
+    "HP%", "ATK%", "DEF%", "CRIT Rate", "CRIT DMG", "Effect Hit Rate", "Effect RES",
+    "Break Effect", "Outgoing Healing Boost", "Energy Regeneration Rate", "Physical DMG Boost",
+    "Fire DMG Boost", "Ice DMG Boost", "Lightning DMG Boost", "Wind DMG Boost", "Quantum DMG Boost", "Imaginary DMG Boost",
+  ]);
+  return `${value.toFixed(1)}${percentStats.has(stat) ? "%" : ""}`;
+}
+
+function pathLabel(path: string): string {
+  const paths: Record<string, string> = {
+    Destruction: "毁灭", Hunt: "巡猎", Erudition: "智识", Harmony: "同谐",
+    Nihility: "虚无", Preservation: "存护", Abundance: "丰饶", Remembrance: "记忆",
+  };
+  return paths[path] ?? path;
+}
+
+function recordEntries(value: Record<string, unknown> | null | undefined): Array<[string, string]> {
+  if (!value) return [];
+  return Object.entries(value).map(([key, item]) => {
+    if (typeof item === "number" || typeof item === "string") return [key, String(item)];
+    if (typeof item === "boolean") return [key, item ? "已激活" : "未激活"];
+    if (Array.isArray(item)) return [key, `${item.length} 项`];
+    return [key, "已同步"];
+  });
 }
 
 function itemTitle(item: InventoryListItem): string {
@@ -546,6 +874,7 @@ onMounted(async () => {
 onUnmounted(() => {
   unlistenDirect?.();
   unlistenInventory?.();
+  targetDragCleanup?.();
 });
 </script>
 
@@ -694,12 +1023,9 @@ onUnmounted(() => {
               </div>
               <span class="local-badge">本地识别</span>
             </div>
-            <label class="field">
-              <span><b>01</b> 截图位置</span>
-              <input v-model="imagePath" placeholder="粘贴一张背包详情截图的位置" />
-            </label>
-            <button class="secondary-action" :disabled="busy" @click="runOcrSample">
-              <span>识别截图</span><i>◎</i>
+            <p class="ocr-capture-note"><b>01</b> 点击后进入全屏框选模式；仅识别虚线框内的内容。</p>
+            <button class="secondary-action" :disabled="busy" @click="runOcrScreenshot">
+              <span>{{ busy ? "正在截图 / 识别" : "截图并框选" }}</span><i>◎</i>
             </button>
             <div v-if="ocrResult" class="ocr-output">
               <div class="output-meta">
@@ -713,7 +1039,7 @@ onUnmounted(() => {
             <div v-else class="empty-output">
               <span class="empty-symbol">◇</span>
               <p>识别结果仅供核对，暂不会写入数据管理</p>
-              <small>等待导入背包详情截图</small>
+              <small>点击“截图并框选”开始截图</small>
             </div>
           </article>
         </div>
@@ -744,6 +1070,10 @@ onUnmounted(() => {
           <button class="secondary-action" type="button" :disabled="busy" @click="exportData">
             <span>导出数据</span><i>↗</i>
           </button>
+          <button class="secondary-action" type="button" :disabled="busy" @click="importData">
+            <span>导入 JSON</span><i>↙</i>
+          </button>
+          <button class="danger-action sidebar-clear" type="button" :disabled="busy" @click="clearAll">清空全部数据</button>
         </aside>
 
         <article class="panel archive-main">
@@ -866,7 +1196,7 @@ onUnmounted(() => {
                     <td>{{ slotLabel((item as RelicListItem).slot) }}</td>
                     <td><span class="rarity">{{ "✦".repeat((item as RelicListItem).rarity) }}</span></td>
                     <td><b>+{{ (item as RelicListItem).level }}</b></td>
-                    <td>{{ (item as RelicListItem).mainStat }}</td>
+                    <td>{{ statLabel((item as RelicListItem).mainStat) }} +{{ formatStatValue((item as RelicListItem).mainStat, (item as RelicListItem).mainStatValue) }}</td>
                     <td>
                       <span v-if="(item as RelicListItem).locked" class="data-tag">锁定</span>
                       <span v-if="(item as RelicListItem).discard" class="data-tag danger">弃置</span>
@@ -881,7 +1211,7 @@ onUnmounted(() => {
                     <td><span v-if="(item as LightConeListItem).locked" class="data-tag">锁定</span></td>
                   </template>
                   <template v-else>
-                    <td>{{ (item as CharacterListItem).path }}</td>
+                    <td>{{ pathLabel((item as CharacterListItem).path) }}</td>
                     <td><b>Lv.{{ (item as CharacterListItem).level }}</b></td>
                     <td>{{ (item as CharacterListItem).ascension }}</td>
                     <td>{{ (item as CharacterListItem).eidolon }}</td>
@@ -889,6 +1219,7 @@ onUnmounted(() => {
                   </template>
                   <td class="detail-cell">
                     <button class="row-action" type="button" @click="openDetail(item)">查看 →</button>
+                    <button v-if="inventoryKind === 'character'" class="row-action build-action" type="button" @click="openBuild(item as CharacterListItem)">培养方案</button>
                   </td>
                 </tr>
                 <tr v-if="!result.items.length">
@@ -920,13 +1251,142 @@ onUnmounted(() => {
       </footer>
     </main>
 
-    <div v-if="detail || detailLoading" class="detail-backdrop" @click.self="closeDetail">
-      <aside class="detail-drawer">
+    <div v-if="screenshotPreviewUrl" class="crop-backdrop" @click.self="closeCropPicker()">
+      <section class="crop-picker" aria-label="截图区域选择">
+        <header class="crop-picker-header">
+          <div><p class="eyebrow">SELECT OCR REGION</p><h2>框选识别区域</h2></div>
+          <button type="button" aria-label="取消截图" @click="closeCropPicker()">×</button>
+        </header>
+        <p>拖拽框选遗器、光锥或角色详情。框外内容不会发送给 OCR。</p>
+        <div
+          ref="cropSurface"
+          class="crop-surface"
+          @pointerdown="startCropSelection"
+          @pointermove="updateCropSelection"
+          @pointerup="endCropSelection"
+          @pointercancel="endCropSelection"
+        >
+          <img :src="screenshotPreviewUrl" alt="待框选的截图" draggable="false" />
+          <span v-if="hasCropSelection" class="crop-box" :style="{ left: `${cropBox.left}px`, top: `${cropBox.top}px`, width: `${cropBox.width}px`, height: `${cropBox.height}px` }" />
+          <div v-if="hasCropSelection" class="crop-toolbar" :style="{ left: `${cropBox.left + cropBox.width + 10}px`, top: `${cropBox.top + cropBox.height + 10}px` }" @pointerdown.stop>
+            <button type="button" title="确认识别" :disabled="busy" @click="recognizeCrop">✓</button>
+            <button type="button" title="重新框选" @click="resetCropSelection">↻</button>
+            <button type="button" title="取消截图" @click="closeCropPicker()">×</button>
+          </div>
+        </div>
+        <footer class="crop-picker-actions">
+          <span v-if="hasCropSelection">已选择 {{ Math.round(cropBox.width) }} × {{ Math.round(cropBox.height) }} px</span>
+          <span v-else>拖拽鼠标开始框选</span>
+        </footer>
+      </section>
+    </div>
+
+    <div v-if="buildOpen" class="detail-backdrop build-backdrop" @click.self="closeBuild">
+      <aside class="detail-drawer build-drawer">
         <header>
-          <div><p class="eyebrow">RECORD DETAIL</p><h2>结构化详情</h2></div>
+          <div><p class="eyebrow">BUILD BLUEPRINT</p><h2>培养方案 / 毕业目标</h2><small>属性统计包含已换算的主词条与同步的副词条。</small></div>
+          <button type="button" aria-label="关闭培养方案" @click="closeBuild">×</button>
+        </header>
+        <div v-if="buildLoading" class="detail-loading">正在计算毕业方案…</div>
+        <div v-else class="build-scroll">
+          <section class="build-section">
+            <h3>套装结构</h3>
+            <div class="build-grid">
+              <label><span>四件遗器区</span><select v-model="buildPlan.cavernMode"><option value="fourPiece">指定 4 件套</option><option value="twoPlusTwo">指定 2 件 + 2 件</option></select></label>
+              <label><span>{{ buildPlan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套' }}</span><select v-model.number="buildPlan.cavernSetA"><option v-for="set in relicSetOptions" :key="set.setId" :value="set.setId">{{ set.name }} (#{{ set.setId }})</option></select></label>
+              <label v-if="buildPlan.cavernMode === 'twoPlusTwo'"><span>第二组 2 件套</span><select v-model.number="buildPlan.cavernSetB"><option v-for="set in relicSetOptions" :key="set.setId" :value="set.setId">{{ set.name }} (#{{ set.setId }})</option></select></label>
+              <label><span>位面饰品 2 件套</span><select v-model.number="buildPlan.planarSetId"><option v-for="set in relicSetOptions" :key="set.setId" :value="set.setId">{{ set.name }} (#{{ set.setId }})</option></select></label>
+            </div>
+          </section>
+
+          <section class="build-section"><h3>各部位允许主词条</h3>
+            <div class="main-stat-grid">
+              <fieldset v-for="slot in relicSlots" :key="slot.value"><legend>{{ slot.label }}</legend>
+                <label v-for="stat in (relicMainStats[slot.value] ?? [])" :key="stat" class="filter-chip"><input v-model="buildPlan.mainStats[slot.value]" type="checkbox" :value="stat" /><span>{{ statLabel(stat) }}</span></label>
+              </fieldset>
+            </div>
+          </section>
+
+          <section class="build-section"><div class="build-section-heading"><h3>属性目标 <small>按顺序决定优先级</small></h3><button type="button" class="row-action" :disabled="buildPlan.targets.length >= 3" @click="addBuildTarget">+ 添加</button></div>
+            <div class="target-column-headings" aria-hidden="true"><span /><span /><span>属性</span><span>目标</span><span>最低标准</span><span /></div>
+            <div v-for="(target, index) in buildPlan.targets" :key="target.statKey" :data-target-index="index" :class="['target-row', { dragging: draggedTargetIndex === index, 'drag-over': draggedTargetIndex !== null && dragTargetIndex === index && draggedTargetIndex !== index }]">
+              <span class="drag-handle" title="按住拖拽以调整优先级" @pointerdown="beginBuildTargetDrag($event, index)">⠿</span><b>P{{ index + 1 }}</b><select v-model="target.statKey" aria-label="属性"><option v-for="stat in relicSubStats" :key="stat" :value="stat">{{ statLabel(stat) }}</option></select>
+              <label aria-label="目标"><input v-model.number="target.target" min="0" type="number" /></label>
+              <label aria-label="最低标准"><input v-model.number="target.minimum" min="0" :max="target.target" type="number" /></label>
+              <button type="button" aria-label="删除属性目标" @click="removeBuildTarget(index)">×</button>
+            </div>
+          </section>
+
+          <section v-if="buildRecommendation" class="build-section build-results"><h3>当前进度</h3>
+            <div v-for="progress in buildRecommendation.current" :key="progress.statKey" class="progress-row"><div><b>{{ statLabel(progress.statKey) }}</b><span>{{ progress.current.toFixed(1) }} / {{ progress.target }}</span></div><i><em :style="{ width: `${progressPercent(progress)}%` }" /></i><small v-if="progress.gap">缺 {{ progress.gap.toFixed(1) }}</small><small v-else>已达标</small></div>
+            <h3>推荐组合</h3><p class="build-message">{{ buildRecommendation.message }}</p>
+            <div v-if="buildRecommendation.recommended" class="recommend-list"><div v-for="item in buildRecommendation.recommended" :key="item.itemId"><b>{{ slotLabel(item.slot) }}</b><span>{{ item.name }} · {{ statLabel(item.mainStat) }}</span><small v-if="item.borrowed">借用：{{ item.location }}</small></div></div>
+            <div v-if="buildRecommendation.recommendedProgress" class="recommended-summary"><span v-for="progress in buildRecommendation.recommendedProgress" :key="progress.statKey">{{ statLabel(progress.statKey) }} {{ progress.current.toFixed(1) }}<b v-if="progress.gap"> · 缺 {{ progress.gap.toFixed(1) }}</b></span></div>
+          </section>
+        </div>
+        <footer class="build-actions"><label class="include-equipped"><input v-model="includeEquipped" type="checkbox" /> 纳入已装备遗器</label><span /><button :class="['filter-reset', { 'confirm-delete': buildDeleteArmed }]" type="button" @click="deleteBuildPlan">{{ buildDeleteArmed ? '再次点击确认' : '删除方案' }}</button><button class="filter-submit" type="button" @click="saveBuildPlan">保存并计算</button><button class="filter-submit" type="button" :disabled="!buildPlan.characterId" @click="calculateBuild">重新计算</button></footer>
+      </aside>
+    </div>
+
+    <div v-if="detail || detailLoading" class="detail-backdrop" @click.self="closeDetail">
+      <aside :class="['detail-drawer', { 'relic-detail-drawer': detailRelic, 'character-detail-drawer': detailCharacter }]">
+        <header>
+          <div><p class="eyebrow">{{ detailRelic ? 'RELIC ANALYSIS' : detailCharacter ? 'CHARACTER DOSSIER' : 'RECORD DETAIL' }}</p><h2>{{ detailRelic ? '遗器档案详情' : detailCharacter ? '角色档案详情' : '结构化详情' }}</h2></div>
           <button type="button" aria-label="关闭详情" @click="closeDetail">×</button>
         </header>
         <div v-if="detailLoading" class="detail-loading">正在读取 SQLite 记录…</div>
+        <section v-else-if="detailRelic" class="relic-detail-card">
+          <div class="relic-detail-identity">
+            <div class="relic-slot-mark">{{ slotLabel(detailRelic.slot).slice(0, 1) }}</div>
+            <div><p>{{ detailRelic.setName }}</p><h3>{{ detailRelic.name }}</h3><small>#{{ detailRelic.itemId }} · {{ slotLabel(detailRelic.slot) }}</small></div>
+            <b class="relic-level">+{{ detailRelic.level }}</b>
+          </div>
+
+          <div class="relic-rarity" :aria-label="`${detailRelic.rarity} 星`">{{ '✦'.repeat(detailRelic.rarity) }}</div>
+          <section class="main-stat-card">
+            <p>主词条 <span>MAIN STAT</span></p>
+            <strong>{{ statLabel(detailRelic.mainStat) }}</strong>
+            <b>+{{ formatStatValue(detailRelic.mainStat, detailRelic.mainStatValue) }}</b>
+          </section>
+
+          <section class="substat-card">
+            <header><div><p class="eyebrow">SUB STATS</p><h3>副词条</h3></div><small>{{ detailRelic.substats?.length ?? 0 }} 条记录</small></header>
+            <div v-if="detailRelic.substats?.length" class="substat-list">
+              <div v-for="(stat, index) in detailRelic.substats" :key="`${stat.kind}-${index}`" :class="['substat-row', { auxiliary: stat.kind !== 'normal' }]">
+                <span>{{ statLabel(stat.key) }}</span><b>+{{ formatStatValue(stat.key, stat.value) }}</b><small v-if="stat.count">强化 {{ stat.count }} 次</small><em v-if="stat.kind !== 'normal'">{{ stat.kind === 'reroll' ? '重铸' : '预览' }}</em>
+              </div>
+            </div>
+            <p v-else class="empty-substats">该遗器尚未记录副词条。</p>
+          </section>
+
+          <footer class="relic-detail-footer">
+            <div><span>装备归属</span><b>{{ detailRelic.location || '未装备' }}</b></div>
+            <div><span>状态</span><b>{{ detailRelic.locked ? '已锁定' : detailRelic.discard ? '已标记弃置' : '正常' }}</b></div>
+            <div><span>更新于</span><b>{{ formatTime(detailRelic.updatedAt) }}</b></div>
+          </footer>
+        </section>
+        <section v-else-if="detailCharacter" class="character-detail-card">
+          <div class="character-identity">
+            <div class="path-seal">{{ pathLabel(detailCharacter.path).slice(0, 1) }}</div>
+            <div><p>{{ pathLabel(detailCharacter.path) }} · PATH</p><h3>{{ detailCharacter.name }}</h3><small>#{{ detailCharacter.characterId }}</small></div>
+            <b>Lv.{{ detailCharacter.level }}</b>
+          </div>
+          <div class="character-metrics">
+            <div><span>突破</span><b>{{ detailCharacter.ascension }}</b></div><div><span>星魂</span><b>{{ detailCharacter.eidolon }}</b></div><div><span>能力版本</span><b>V{{ detailCharacter.abilityVersion }}</b></div>
+          </div>
+          <section class="character-data-section">
+            <header><div><p class="eyebrow">SKILL LEVELS</p><h3>技能等级</h3></div><small>{{ recordEntries(detailCharacter.skills).length }} 项</small></header>
+            <div v-if="recordEntries(detailCharacter.skills).length" class="character-data-list"><div v-for="([key, value]) in recordEntries(detailCharacter.skills)" :key="key"><span>{{ key }}</span><b>{{ value }}</b></div></div>
+            <p v-else class="empty-substats">未同步技能数据。</p>
+          </section>
+          <section class="character-data-section">
+            <header><div><p class="eyebrow">TRACE STATUS</p><h3>行迹数据</h3></div><small>{{ recordEntries(detailCharacter.traces).length }} 项</small></header>
+            <div v-if="recordEntries(detailCharacter.traces).length" class="character-data-list"><div v-for="([key, value]) in recordEntries(detailCharacter.traces)" :key="key"><span>{{ key }}</span><b>{{ value }}</b></div></div>
+            <p v-else class="empty-substats">未同步行迹数据。</p>
+          </section>
+          <section v-if="detailCharacter.memosprite" class="memosprite-note"><span>忆灵</span><b>已同步 {{ recordEntries(detailCharacter.memosprite).length }} 项数据</b></section>
+          <footer class="relic-detail-footer"><div><span>更新于</span><b>{{ formatTime(detailCharacter.updatedAt) }}</b></div><div><span>数据来源</span><b>游戏同步</b></div></footer>
+        </section>
         <pre v-else>{{ detailJson() }}</pre>
       </aside>
     </div>
@@ -937,7 +1397,7 @@ onUnmounted(() => {
     </div>
     <div v-if="notice" class="toast notice-toast" role="status" @click="notice = ''">
       <span class="toast-symbol">✓</span>
-      <div><strong>操作完成</strong><p>{{ notice }}</p></div>
+      <div><strong>{{ busy ? "正在处理" : "操作完成" }}</strong><p>{{ notice }}</p></div>
     </div>
   </div>
 </template>
