@@ -1192,72 +1192,29 @@ onUnmounted(() => {
               <div class="meteor m1"></div>
               <div class="meteor m2"></div>
               <div class="meteor m3"></div>
-              <div class="meteor-small ms1"></div>
-              <div class="meteor-small ms2"></div>
             </div>
 
             <div class="orbit-system">
-              <div class="orbit-ellipse oe-1"><div class="satellite sat-march7"></div></div>
-              <div class="orbit-ellipse oe-2">
+              <div class="orbit-track track-inner">
+                <div class="satellite sat-march7"></div>
+              </div>
+              <div class="orbit-track track-middle">
                 <div class="satellite sat-danheng"></div>
                 <div class="satellite sat-himeko"></div>
               </div>
-              <div class="orbit-ellipse oe-3">
+              <div class="orbit-track track-outer">
                 <div class="satellite sat-welt"></div>
                 <div class="satellite sat-bronya"></div>
-              </div>
-              <div class="orbit-ellipse oe-4">
                 <div class="satellite sat-seele"></div>
-                <div class="satellite sat-serval"></div>
-                <div class="satellite sat-gepard"></div>
-              </div>
-              <div class="orbit-ellipse oe-5">
-                <div class="satellite sat-pela"></div>
-                <div class="satellite sat-natasha"></div>
               </div>
 
               <div class="astral-core">
-                <div class="core-ring ring-outer"></div>
-                <div class="core-ring ring-mid"></div>
-                <div class="core-ring ring-inner"></div>
                 <div class="core-glow"></div>
+                <div class="core-reticle"></div>
                 <div class="core-diamond">
                   <span>{{ directRunning ? "◈" : "◇" }}</span>
                 </div>
               </div>
-
-              <svg class="orbit-lines" viewBox="0 0 400 260">
-                <defs>
-                  <linearGradient id="lineGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#6366F1" stop-opacity="0" />
-                    <stop offset="50%" stop-color="#6366F1" stop-opacity="0.4" />
-                    <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
-                  </linearGradient>
-                  <linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0" />
-                    <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.3" />
-                    <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0" />
-                  </linearGradient>
-                </defs>
-                <line x1="0" y1="130" x2="400" y2="130" stroke="url(#lineGrad1)" stroke-width="1" />
-                <line x1="200" y1="0" x2="200" y2="260" stroke="url(#lineGrad2)" stroke-width="1" />
-                <line
-                  x1="60"
-                  y1="40"
-                  x2="340"
-                  y2="220"
-                  stroke="url(#lineGrad1)"
-                  stroke-width="0.5"
-                />
-                <line
-                  x1="340"
-                  y1="40"
-                  x2="60"
-                  y2="220"
-                  stroke="url(#lineGrad2)"
-                  stroke-width="0.5"
-                />
-              </svg>
             </div>
 
             <div class="visual-status">

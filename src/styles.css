@@ -1169,6 +1169,133 @@ h2 {
   pointer-events: none;
 }
 
+/* ===== Signal vessel redesign: a precise deep-space navigation display ===== */
+.meteor {
+  width: 4px;
+  height: 4px;
+  background: #eff6ff;
+  box-shadow: 0 0 5px 1px #fff, 0 0 12px 3px rgba(96, 165, 250, 0.62);
+}
+.meteor::before,
+.meteor::after {
+  top: 50%;
+  right: 2px;
+  left: auto;
+  width: var(--tail-length);
+  content: "";
+  transform: translateY(-50%) rotate(var(--tail-angle));
+  transform-origin: right center;
+}
+.meteor::before {
+  height: 1px;
+  border-radius: 0;
+  background: linear-gradient(90deg, transparent, rgba(87, 144, 255, 0.14) 30%, rgba(148, 192, 255, 0.78) 83%, #fff);
+  filter: drop-shadow(0 0 2px rgba(96, 165, 250, 0.9));
+}
+.meteor::after {
+  height: 5px;
+  border-radius: 0;
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2) 76%, rgba(191, 219, 254, 0.58));
+  filter: blur(3px);
+}
+.m1 { top: 10%; left: -10%; --tail-angle: 35deg; --tail-length: 128px; animation: comet-a 12s cubic-bezier(0.2, 0.75, 0.35, 1) infinite; }
+.m2 { top: -8%; left: 53%; --tail-angle: 52deg; --tail-length: 92px; animation: comet-b 16s cubic-bezier(0.2, 0.75, 0.35, 1) infinite 5.5s; }
+.m3 { top: 37%; left: -8%; --tail-angle: 29deg; --tail-length: 64px; animation: comet-c 19s cubic-bezier(0.2, 0.75, 0.35, 1) infinite 10.5s; }
+@keyframes comet-a {
+  0%, 58% { opacity: 0; transform: translate3d(0, 0, 0); }
+  60% { opacity: 0; }
+  63% { opacity: 1; }
+  74% { opacity: 0.92; transform: translate3d(360px, 252px, 0); }
+  77%, 100% { opacity: 0; transform: translate3d(410px, 287px, 0); }
+}
+@keyframes comet-b {
+  0%, 61% { opacity: 0; transform: translate3d(0, 0, 0); }
+  63% { opacity: 0.9; }
+  71% { opacity: 0.78; transform: translate3d(220px, 290px, 0); }
+  74%, 100% { opacity: 0; transform: translate3d(250px, 330px, 0); }
+}
+@keyframes comet-c {
+  0%, 52% { opacity: 0; transform: translate3d(0, 0, 0); }
+  55% { opacity: 0.7; }
+  63% { opacity: 0.62; transform: translate3d(210px, 116px, 0); }
+  66%, 100% { opacity: 0; transform: translate3d(250px, 138px, 0); }
+}
+
+.orbit-track {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(129, 140, 248, 0.28);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.track-inner { width: 92px; height: 92px; border-color: rgba(45, 212, 191, 0.42); animation: orbital-turn 16s linear infinite; }
+.track-middle { width: 184px; height: 72px; border-color: rgba(129, 140, 248, 0.34); animation: orbital-turn 27s linear infinite reverse; }
+.track-outer { width: 290px; height: 148px; border-color: rgba(167, 139, 250, 0.2); border-style: dashed; animation: orbital-turn 42s linear infinite; }
+@keyframes orbital-turn {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.satellite {
+  position: absolute;
+  height: auto;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.72), 0 0 8px currentColor;
+}
+.sat-march7 { top: -5px; left: 50%; width: 10px; transform: translateX(-50%); background: #f9a8d4; color: #ec4899; }
+.sat-danheng { top: -4px; left: 32%; width: 8px; transform: none; background: #5eead4; color: #14b8a6; }
+.sat-himeko { right: 9%; bottom: -4px; left: auto; width: 9px; transform: none; background: #fdba74; color: #f97316; }
+.sat-welt { top: 7%; right: 19%; width: 9px; transform: none; background: #a5b4fc; color: #818cf8; }
+.sat-bronya { bottom: 6%; left: 25%; width: 7px; transform: none; background: #e2e8f0; color: #cbd5e1; }
+.sat-seele { top: 48%; left: -4px; width: 8px; transform: none; background: #d8b4fe; color: #a855f7; }
+
+.core-ring { display: none; }
+.core-glow {
+  width: 66px;
+  height: 66px;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.52), rgba(49, 46, 129, 0.32) 38%, transparent 70%);
+  animation: core-breathe 3.6s ease-in-out infinite;
+}
+@keyframes core-breathe {
+  0%, 100% { opacity: 0.62; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+.core-reticle {
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  border: 1px solid rgba(196, 181, 253, 0.42);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 8px rgba(30, 27, 75, 0.22);
+}
+.core-reticle::before,
+.core-reticle::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(196, 181, 253, 0.55), transparent);
+}
+.core-reticle::before { width: 110px; height: 1px; transform: translate(-50%, -50%); }
+.core-reticle::after { width: 1px; height: 110px; transform: translate(-50%, -50%); }
+.running .core-reticle { border-color: rgba(94, 234, 212, 0.62); animation: reticle-turn 12s linear infinite; }
+@keyframes reticle-turn { to { transform: rotate(360deg); } }
+.core-diamond {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(224, 231, 255, 0.88);
+  background: rgba(49, 46, 129, 0.65);
+  color: #e0e7ff;
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.7), inset 0 0 12px rgba(165, 180, 252, 0.22);
+  animation: diamond-turn 18s linear infinite;
+  font-size: 22px;
+}
+@keyframes diamond-turn {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Visual Status */
 .visual-status {
   position: absolute;
