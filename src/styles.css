@@ -1114,25 +1114,45 @@ summary i {
   background: #f7f9fc;
 }
 
-.filter-toolbar {
-  display: flex;
-  height: 48px;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 13px;
-  padding: 7px;
-  border: 1px solid var(--line);
-  background: rgba(236, 242, 248, 0.52);
-  border-radius: calc(var(--control-radius) + 1px);
-}
 
 .quick-search {
-  width: min(360px, 42%);
+  position: relative;
+  width: min(320px, 42%);
 }
 
-.quick-search input {
-  height: 32px;
-  background: rgba(255, 255, 255, 0.7);
+.quick-search svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.quick-search .p-inputtext {
+  width: 100%;
+  height: 34px;
+  padding-left: 30px;
+  background: #f4f6f8;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ink);
+  transition: all 0.2s;
+}
+
+.quick-search .p-inputtext:hover {
+  background: #edf0f3;
+}
+
+.quick-search .p-inputtext:focus-visible {
+  background: #fff;
+  border-color: rgba(36, 86, 166, 0.3);
+  box-shadow: 0 0 0 3px rgba(36, 86, 166, 0.1);
+  outline: none;
 }
 
 /* PrimeVue is themed with the same tokens as the hand-crafted shell. These
@@ -1185,16 +1205,22 @@ summary i {
 .filter-toggle,
 .clear-filter {
   display: flex;
-  height: 32px;
+  height: 34px;
   align-items: center;
-  gap: 7px;
-  padding: 0 11px;
-  border: 1px solid rgba(36, 86, 166, 0.25);
-  color: var(--blue);
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid rgba(46, 78, 119, 0.15);
+  color: var(--ink-soft);
   background: #fff;
-  font-size: 9px;
-  font-weight: 600;
-  border-radius: var(--control-radius);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.filter-toggle:hover {
+  background: #f8fbff;
+  border-color: rgba(46, 78, 119, 0.25);
 }
 
 .filter-toggle b {
@@ -1206,6 +1232,11 @@ summary i {
   color: #fff;
   background: var(--blue);
   font: 600 8px/1 "Bahnschrift", sans-serif;
+}
+
+.filter-toggle svg {
+  font-size: 1.25em;
+  color: var(--ink-soft);
 }
 
 .filter-toggle i {
@@ -1912,15 +1943,13 @@ h2 { font-size: 24px; }
 .kind-switcher small, .archive-meta span { font-size: 10px; }
 .kind-switcher b { font-size: 26px; }
 
-.secondary-action, .danger-action, .ghost-action, .filter-toggle, .clear-filter, .filter-submit, .filter-reset { min-height: 42px; font-size: 13px; }
+.secondary-action, .danger-action, .ghost-action, .filter-submit, .filter-reset { min-height: 42px; font-size: 13px; }
 .secondary-action { height: 46px; padding-inline: 15px; }
-.archive-actions { gap: 12px; }
-.archive-actions .p-button { min-width: 98px; }
+.archive-actions { gap: 10px; }
+.archive-actions .p-button { min-width: auto; }
 .archive-sidebar .secondary-action + .secondary-action { margin-top: 10px; }
 .sidebar-clear { margin-top: 12px; }
 
-.filter-toolbar { height: 62px; gap: 12px; padding: 9px; }
-.quick-search .p-inputtext, .filter-toolbar .p-button { min-height: 42px; }
 .p-inputtext, .p-select, .p-inputnumber-input { font-size: 14px; }
 .p-select { min-height: 40px; }
 .p-select-label { padding-block: 0.56rem; }
@@ -1930,8 +1959,9 @@ h2 { font-size: 24px; }
 .filter-chip span { padding: 8px 10px; font-size: 12px; }
 
 table { font-size: 14px; }
-thead { font-size: 11px; }
-th, td { height: 56px; padding: 9px 12px; }
+thead { font-size: 13px; }
+th { height: 44px; padding: 0 12px; }
+td { height: 56px; padding: 9px 12px; }
 .item-name { font-size: 14px; }
 .item-id, .rarity { font-size: 11px; }
 .data-tag { padding: 5px 8px; font-size: 11px; }

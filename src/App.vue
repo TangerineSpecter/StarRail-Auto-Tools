@@ -1165,7 +1165,6 @@ onUnmounted(() => {
           <Button class="secondary-action" type="button" outlined :disabled="busy" @click="importData">
             <span>导入 JSON</span><i>↙</i>
           </Button>
-          <Button class="danger-action sidebar-clear" type="button" severity="danger" outlined :disabled="busy" @click="clearAll">清空全部数据</Button>
         </aside>
 
         <article class="panel archive-main">
@@ -1174,32 +1173,22 @@ onUnmounted(() => {
               <p class="eyebrow">FILTER RESULTS</p>
               <h2>{{ kindTitle }}</h2>
             </div>
-            <div class="archive-actions">
-              <Button
-                class="danger-action"
-                type="button"
-                severity="danger"
-                outlined
-                :disabled="busy || selectedIds.size === 0"
-                @click="deleteSelected"
-              >
-                删除所选 {{ selectedIds.size || "" }}
+            <div class="archive-actions" style="align-items: center">
+              <label class="quick-search">
+                <span class="visually-hidden">关键词</span>
+                <svg viewBox="0 0 1024 1024"><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.6-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a40.2 40.2 0 0 0 56.9 0l0.3-0.3a40.2 40.2 0 0 0-2-54.8zM412 640c-125.9 0-228-102.1-228-228S286.1 184 412 184s228 102.1 228 228-102.1 228-228 228z" fill="currentColor"></path></svg>
+                <InputText v-model="filters.search" placeholder="搜索名称或套装" @keyup.enter="applyFilters" />
+              </label>
+              <Button class="filter-toggle" type="button" outlined @click="filterOpen = true">
+                <svg viewBox="0 0 1024 1024" width="1em" height="1em"><path d="M790.698667 171.690667A60.0064 60.0064 0 0 0 735.744 136.533333h-539.306667c-23.893333 0-45.056 13.482667-55.125333 35.157334-10.069333 21.674667-6.826667 46.421333 8.533333 64.682666L339.626667 461.824v301.738667c0 28.501333 16.896 54.101333 43.178666 65.194666l136.021334 58.197334c6.656 2.901333 13.653333 4.266667 20.821333 4.266666 10.24 0 20.309333-2.901333 29.013333-8.704a52.565333 52.565333 0 0 0 23.722667-44.032V461.824l189.781333-225.450667c15.36-18.261333 18.602667-43.008 8.533334-64.682666zM524.117333 436.906667v378.026666L409.6 766.122667c-1.024-0.512-1.706667-1.365333-1.706667-2.56V436.906667L212.650667 204.8h507.050666L524.117333 436.906667zM853.333333 745.130667h-110.592c-18.773333 0-34.133333 15.36-34.133333 34.133333s15.36 34.133333 34.133333 34.133333H853.333333c18.773333 0 34.133333-15.36 34.133334-34.133333s-15.36-34.133333-34.133334-34.133333zM853.333333 597.504h-110.592c-18.773333 0-34.133333 15.36-34.133333 34.133333s15.36 34.133333 34.133333 34.133334H853.333333c18.773333 0 34.133333-15.36 34.133334-34.133334s-15.36-34.133333-34.133334-34.133333z" fill="currentColor"></path><path d="M708.608 484.181333c0 18.773333 15.36 34.133333 34.133333 34.133334H853.333333c18.773333 0 34.133333-15.36 34.133334-34.133334s-15.36-34.133333-34.133334-34.133333h-110.592a34.133333 34.133333 0 0 0-34.133333 34.133333z" fill="currentColor"></path></svg>
+                <span>筛选</span>
+                <b v-if="activeFilterCount">{{ activeFilterCount }}</b>
               </Button>
-              <Button class="ghost-action" type="button" outlined :disabled="busy" @click="clearCurrent">
-                清空本类
-              </Button>
-              <Button class="danger-action" type="button" severity="danger" outlined :disabled="busy" @click="clearAll">
-                全部清空
-              </Button>
+              <Button v-if="activeFilterCount" class="clear-filter" type="button" text @click="resetFilters">清除筛选</Button>
+              <span class="toolbar-spacer"></span>
+              <span class="result-count">{{ result.total }} 条记录</span>
             </div>
           </header>
-
-          <div class="filter-toolbar">
-            <label class="quick-search"><span class="visually-hidden">关键词</span><InputText v-model="filters.search" placeholder="搜索名称或套装" @keyup.enter="applyFilters" /></label>
-            <Button class="filter-toggle" type="button" outlined @click="filterOpen = true">筛选条件 <b v-if="activeFilterCount">{{ activeFilterCount }}</b></Button>
-            <Button v-if="activeFilterCount" class="clear-filter" type="button" text @click="resetFilters">清除筛选</Button>
-            <span class="result-count">{{ result.total }} 条记录</span>
-          </div>
 
           <Drawer v-model:visible="filterOpen" position="right" class="filter-drawer">
           <form @submit.prevent="applyFilters">
