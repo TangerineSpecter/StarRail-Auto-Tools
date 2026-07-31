@@ -38,6 +38,7 @@ import { inventoryApi } from "@/shared/api/inventory";
 import { systemApi } from "@/shared/api/system";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import AppNavigation, { type AppView } from "@/app/AppNavigation.vue";
+import ExpressPassage from "@/features/capture/ExpressPassage.vue";
 import { buildInventoryFilter, createInventoryFilterForm } from "@/features/inventory/filter";
 import relicCatalogueJson from "./data/relic-sets.json";
 import characterCatalogueJson from "./data/characters.json";
@@ -1193,6 +1194,8 @@ onUnmounted(() => {
               <div class="meteor m2"></div>
               <div class="meteor m3"></div>
             </div>
+
+            <ExpressPassage />
 
             <div class="orbit-system">
               <div class="orbit-track track-inner">

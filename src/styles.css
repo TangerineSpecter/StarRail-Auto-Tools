@@ -1764,6 +1764,91 @@ h2 {
   filter: drop-shadow(0 8px 8px rgba(8, 14, 48, 0.36));
 }
 .running .core-diamond { background: none; box-shadow: none; }
+
+/* A transparent illustrated train sprite crosses behind the centre planet. */
+.express-lane {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.express-pass {
+  position: absolute;
+  z-index: 1;
+  top: 22%;
+  width: clamp(180px, 18%, 230px);
+  aspect-ratio: 1774 / 887;
+  opacity: 0;
+  filter: drop-shadow(0 5px 6px rgba(5, 8, 28, 0.34));
+  will-change: transform, opacity;
+  animation: express-crossing 40s linear infinite;
+}
+.express-pass img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.express-trail {
+  position: absolute;
+  top: 31%;
+  right: -138px;
+  z-index: -1;
+  width: 150px;
+  height: 104px;
+  overflow: visible;
+  pointer-events: none;
+}
+.express-trail i {
+  position: absolute;
+  top: var(--star-y);
+  left: 0;
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 50%;
+  background: var(--star-color);
+  box-shadow: 0 0 4px 1px var(--star-glow);
+  opacity: 0;
+  animation: star-wake var(--star-duration) ease-out infinite;
+  animation-delay: var(--star-delay);
+}
+.express-trail i:nth-child(1) { --star-y: 49px; --star-size: 3px; --star-color: #fff9c4; --star-glow: rgba(255, 229, 119, .72); --star-duration: 2.8s; --star-delay: -1.7s; --star-x: 142px; --star-rise: -5px; }
+.express-trail i:nth-child(2) { --star-y: 39px; --star-size: 2px; --star-color: #d9f8ff; --star-glow: rgba(129, 213, 255, .82); --star-duration: 3.4s; --star-delay: -.8s; --star-x: 122px; --star-rise: -26px; }
+.express-trail i:nth-child(3) { --star-y: 61px; --star-size: 2px; --star-color: #b8e9ff; --star-glow: rgba(91, 181, 255, .7); --star-duration: 2.5s; --star-delay: -2.1s; --star-x: 112px; --star-rise: 17px; }
+.express-trail i:nth-child(4) { --star-y: 27px; --star-size: 2px; --star-color: #fff5bb; --star-glow: rgba(255, 218, 118, .65); --star-duration: 3.1s; --star-delay: -1.2s; --star-x: 148px; --star-rise: -15px; }
+.express-trail i:nth-child(5) { --star-y: 72px; --star-size: 3px; --star-color: #d8f5ff; --star-glow: rgba(135, 210, 255, .74); --star-duration: 3.7s; --star-delay: -2.8s; --star-x: 136px; --star-rise: 6px; }
+.express-trail i:nth-child(6) { --star-y: 45px; --star-size: 1.5px; --star-color: #fff; --star-glow: rgba(195, 237, 255, .65); --star-duration: 2.4s; --star-delay: -.4s; --star-x: 96px; --star-rise: 23px; }
+.express-trail i:nth-child(7) { --star-y: 16px; --star-size: 2px; --star-color: #c8edff; --star-glow: rgba(111, 192, 255, .65); --star-duration: 3.6s; --star-delay: -2.4s; --star-x: 128px; --star-rise: 14px; }
+.express-trail i:nth-child(8) { --star-y: 82px; --star-size: 1.5px; --star-color: #fff5c9; --star-glow: rgba(255, 221, 125, .58); --star-duration: 2.7s; --star-delay: -1.3s; --star-x: 104px; --star-rise: -11px; }
+.express-trail i:nth-child(9) { --star-y: 54px; --star-size: 2px; --star-color: #e6fbff; --star-glow: rgba(145, 224, 255, .8); --star-duration: 3.2s; --star-delay: -2.9s; --star-x: 154px; --star-rise: 21px; }
+.express-trail i:nth-child(10) { --star-y: 34px; --star-size: 1.5px; --star-color: #b5e4ff; --star-glow: rgba(87, 170, 255, .65); --star-duration: 2.9s; --star-delay: -.1s; --star-x: 116px; --star-rise: -30px; }
+.express-trail i:nth-child(11) { --star-y: 67px; --star-size: 2px; --star-color: #fff9d6; --star-glow: rgba(255, 232, 144, .62); --star-duration: 3.8s; --star-delay: -2s; --star-x: 145px; --star-rise: -18px; }
+.express-trail i:nth-child(12) { --star-y: 23px; --star-size: 1.5px; --star-color: #d8f6ff; --star-glow: rgba(142, 216, 255, .62); --star-duration: 2.6s; --star-delay: -1.6s; --star-x: 92px; --star-rise: 9px; }
+.express-trail i:nth-child(13) { --star-y: 58px; --star-size: 2.5px; --star-color: #f1fcff; --star-glow: rgba(164, 231, 255, .76); --star-duration: 3.3s; --star-delay: -3s; --star-x: 132px; --star-rise: 29px; }
+.express-trail i:nth-child(14) { --star-y: 11px; --star-size: 1px; --star-color: #fff5c5; --star-glow: rgba(255, 224, 122, .62); --star-duration: 2.3s; --star-delay: -1s; --star-x: 108px; --star-rise: 25px; }
+.express-trail i:nth-child(15) { --star-y: 77px; --star-size: 2px; --star-color: #b9e9ff; --star-glow: rgba(100, 187, 255, .65); --star-duration: 3.5s; --star-delay: -2.6s; --star-x: 151px; --star-rise: -9px; }
+.express-trail i:nth-child(16) { --star-y: 42px; --star-size: 1px; --star-color: #fff; --star-glow: rgba(195, 237, 255, .55); --star-duration: 2.5s; --star-delay: -1.9s; --star-x: 82px; --star-rise: -19px; }
+.express-trail i:nth-child(17) { --star-y: 30px; --star-size: 2px; --star-color: #e1f8ff; --star-glow: rgba(137, 218, 255, .7); --star-duration: 3.9s; --star-delay: -.55s; --star-x: 146px; --star-rise: 7px; }
+.express-trail i:nth-child(18) { --star-y: 63px; --star-size: 1px; --star-color: #fff7c9; --star-glow: rgba(255, 224, 129, .55); --star-duration: 2.8s; --star-delay: -2.3s; --star-x: 118px; --star-rise: -28px; }
+.express-trail i:nth-child(19) { --star-y: 50px; --star-size: 1.5px; --star-color: #c8efff; --star-glow: rgba(112, 198, 255, .68); --star-duration: 3.1s; --star-delay: -1.45s; --star-x: 139px; --star-rise: 17px; }
+.express-trail i:nth-child(20) { --star-y: 87px; --star-size: 1px; --star-color: #e5faff; --star-glow: rgba(156, 225, 255, .55); --star-duration: 3.6s; --star-delay: -3.2s; --star-x: 126px; --star-rise: -36px; }
+@keyframes star-wake {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.25); }
+  16% { opacity: 1; transform: translate3d(20px, 0, 0) scale(1); }
+  55% { opacity: 0.78; }
+  100% { opacity: 0; transform: translate3d(var(--star-x), var(--star-rise), 0) scale(0.18); }
+}
+@keyframes express-crossing {
+  0%, 4% { opacity: 0; transform: translate3d(128vw, 16px, 0) rotate(-4deg); }
+  6% { opacity: 1; }
+  44% { opacity: 1; transform: translate3d(-128vw, -16px, 0) rotate(5deg); }
+  46%, 50% { opacity: 0; transform: translate3d(-132vw, -18px, 0) rotate(5deg); }
+  50.01%, 54% { opacity: 0; transform: translate3d(-132vw, 18px, 0) scaleX(-1) rotate(-5deg); }
+  56% { opacity: 1; }
+  94% { opacity: 1; transform: translate3d(128vw, -14px, 0) scaleX(-1) rotate(4deg); }
+  96%, 100% { opacity: 0; transform: translate3d(132vw, -16px, 0) scaleX(-1) rotate(4deg); }
+}
 @keyframes planet-core-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
@@ -1777,6 +1862,11 @@ h2 {
   .core-diamond {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
+  }
+  .express-pass { animation: none; }
+  .express-pass {
+    opacity: 0.9;
+    transform: translate3d(24vw, 0, 0) rotate(-3deg);
   }
 }
 
