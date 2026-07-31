@@ -1,24 +1,21 @@
 # Local desktop development entry point for Windows PowerShell.
-# It can bootstrap the required toolchain on a clean Windows 10/11 machine.
+# It checks the required toolchain and gives guidance when something is missing.
 [CmdletBinding()]
 param(
-    [switch]$BootstrapOnly,
-    [switch]$InstallBuildToolsOnly
+    [switch]$BootstrapOnly
 )
 
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
-# nvm-windows is more reliable with a full version than with a major-version alias.
-$NodeVersion = '22.14.0'
-
+# ---------------------------------------------------------------------------
+# Helper: refresh PATH so we can detect freshly-installed tools
+# ---------------------------------------------------------------------------
 function Refresh-Path {
     $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
     $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
     $env:Path = "$machinePath;$userPath"
 
-    # rustup and nvm-windows can be installed without their directories being
-    # visible to the PowerShell process that started this script.
     $cargoBin = Join-Path $env:USERPROFILE '.cargo\\bin'
     $nvmHome = [Environment]::GetEnvironmentVariable('NVM_HOME', 'Machine')
     if (-not $nvmHome) { $nvmHome = [Environment]::GetEnvironmentVariable('NVM_HOME', 'User') }
@@ -30,6 +27,9 @@ function Refresh-Path {
     }
 }
 
+# ---------------------------------------------------------------------------
+# Environment checks
+# ---------------------------------------------------------------------------
 function Test-Node22 {
     if (-not (Get-Command node -ErrorAction SilentlyContinue)) { return $false }
     & node -e "const [major, minor] = process.versions.node.split('.').map(Number); process.exit(major === 22 && minor >= 12 ? 0 : 1)"
@@ -49,139 +49,151 @@ function Test-RustToolchain {
     return $LASTEXITCODE -eq 0
 }
 
-function Test-ToolchainReady {
-    Refresh-Path
-    return (Test-Node22) -and
-        (Test-RustToolchain) -and
-        (Test-VcBuildTools)
+# ---------------------------------------------------------------------------
+# Guidance messages — tell the user what to install and how
+# ---------------------------------------------------------------------------
+function Show-NvmGuidance {
+    Write-Host ''
+    Write-Host '╔══════════════════════════════════════════════════════════════════╗' -ForegroundColor Red
+    Write-Host '║  未检测到 nvm-windows，请先安装 nvm 来管理 Node.js 版本          ║' -ForegroundColor Red
+    Write-Host '╚══════════════════════════════════════════════════════════════════╝' -ForegroundColor Red
+    Write-Host ''
+    Write-Host '  安装步骤:' -ForegroundColor Yellow
+    Write-Host '  1. 前往 nvm-windows 发布页下载安装包:' -ForegroundColor White
+    Write-Host '     https://github.com/coreybutler/nvm-windows/releases' -ForegroundColor Cyan
+    Write-Host '     下载 nvm-setup.exe 并运行安装程序' -ForegroundColor White
+    Write-Host ''
+    Write-Host '  2. 安装完成后, 关闭并重新打开 PowerShell, 然后执行:' -ForegroundColor White
+    Write-Host '     nvm install 22        # 安装 Node.js 22 最新版' -ForegroundColor Green
+    Write-Host '     nvm use 22            # 切换到 Node.js 22' -ForegroundColor Green
+    Write-Host ''
+    Write-Host '  3. 确认安装成功:' -ForegroundColor White
+    Write-Host '     node --version        # 应输出 v22.x.x' -ForegroundColor Green
+    Write-Host '     npm --version         # 应输出版本号' -ForegroundColor Green
+    Write-Host ''
 }
 
-function Install-WithWinget([string]$Id, [string[]]$ExtraArguments = @()) {
-    Write-Host "Installing $Id ..." -ForegroundColor Cyan
-    & winget install --exact --id $Id --accept-package-agreements --accept-source-agreements @ExtraArguments
-    if ($LASTEXITCODE -ne 0) { throw "winget could not install $Id (exit code $LASTEXITCODE)." }
-    Refresh-Path
+function Show-NodeGuidance {
+    Write-Host ''
+    Write-Host '╔══════════════════════════════════════════════════════════════════╗' -ForegroundColor Red
+    Write-Host '║  Node.js 版本不满足要求 (需要 22.12+)                            ║' -ForegroundColor Red
+    Write-Host '╚══════════════════════════════════════════════════════════════════╝' -ForegroundColor Red
+    Write-Host ''
+    Write-Host "  当前版本: $(& node --version 2>$null)" -ForegroundColor White
+    Write-Host ''
+    Write-Host '  请使用 nvm 安装并切换到 Node.js 22:' -ForegroundColor Yellow
+    Write-Host '     nvm install 22        # 安装 Node.js 22 最新版' -ForegroundColor Green
+    Write-Host '     nvm use 22            # 切换到 Node.js 22' -ForegroundColor Green
+    Write-Host ''
+    Write-Host '  确认版本:' -ForegroundColor White
+    Write-Host '     node --version        # 应输出 v22.x.x' -ForegroundColor Green
+    Write-Host ''
 }
 
-function Install-Toolchain {
-    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        throw 'Windows Package Manager (winget) is required for automatic setup. Install/update App Installer from Microsoft Store, then run .\\dev.ps1 again.'
-    }
-
-    if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
-        Install-WithWinget 'CoreyButler.NVMforWindows'
-    }
-
-    if (-not (Test-Node22)) {
-        Write-Host "Installing and selecting Node.js $NodeVersion via nvm-windows ..." -ForegroundColor Cyan
-        & nvm install $NodeVersion
-        if ($LASTEXITCODE -ne 0) {
-            throw "nvm could not install Node.js $NodeVersion (exit code $LASTEXITCODE). Check the nvm output immediately above for proxy, TLS, or download errors."
-        }
-        & nvm use $NodeVersion
-        if ($LASTEXITCODE -ne 0) { throw "nvm could not select Node.js $NodeVersion (exit code $LASTEXITCODE)." }
-        Refresh-Path
-    }
-
-    if (-not (Get-Command rustup -ErrorAction SilentlyContinue)) {
-        Install-WithWinget 'Rustlang.Rustup'
-    }
-    if (-not (Test-RustToolchain)) {
-        Write-Host 'Installing the Rust MSVC toolchain ...' -ForegroundColor Cyan
-        & rustup default stable-x86_64-pc-windows-msvc
-        if ($LASTEXITCODE -ne 0) { throw "rustup could not install the Rust MSVC toolchain (exit code $LASTEXITCODE)." }
-        Refresh-Path
-    }
-
-    if (-not (Test-VcBuildTools)) {
-        # Rust's MSVC target and Tauri's native dependencies need the C++ toolset.
-        Install-WithWinget 'Microsoft.VisualStudio.2022.BuildTools' @(
-            '--override', '--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'
-        )
-    }
+function Show-RustGuidance {
+    Write-Host ''
+    Write-Host '╔══════════════════════════════════════════════════════════════════╗' -ForegroundColor Red
+    Write-Host '║  未检测到 Rust 工具链, 请先安装 Rust 环境                        ║' -ForegroundColor Red
+    Write-Host '╚══════════════════════════════════════════════════════════════════╝' -ForegroundColor Red
+    Write-Host ''
+    Write-Host '  安装步骤:' -ForegroundColor Yellow
+    Write-Host '  1. 前往 Rust 官网下载 rustup 安装程序:' -ForegroundColor White
+    Write-Host '     https://www.rust-lang.org/tools/install' -ForegroundColor Cyan
+    Write-Host '     或直接下载: https://win.rustup.rs/x86_64' -ForegroundColor Cyan
+    Write-Host ''
+    Write-Host '  2. 运行 rustup-init.exe, 按提示安装 (选择默认选项即可)' -ForegroundColor White
+    Write-Host ''
+    Write-Host '  3. 安装完成后, 关闭并重新打开 PowerShell, 然后确认:' -ForegroundColor White
+    Write-Host '     rustc --version        # 应输出 rustc x.x.x' -ForegroundColor Green
+    Write-Host '     cargo --version        # 应输出 cargo x.x.x' -ForegroundColor Green
+    Write-Host ''
+    Write-Host '  提示: Rust 的 MSVC 目标需要 Visual Studio C++ Build Tools,' -ForegroundColor Yellow
+    Write-Host '  rustup 安装程序通常会自动引导您安装。' -ForegroundColor Yellow
+    Write-Host ''
 }
 
+function Show-VcBuildToolsGuidance {
+    Write-Host ''
+    Write-Host '╔══════════════════════════════════════════════════════════════════╗' -ForegroundColor Red
+    Write-Host '║  未检测到 Visual Studio C++ Build Tools                         ║' -ForegroundColor Red
+    Write-Host '╚══════════════════════════════════════════════════════════════════╝' -ForegroundColor Red
+    Write-Host ''
+    Write-Host '  Tauri 需要 C++ 编译工具来构建原生桌面应用。' -ForegroundColor White
+    Write-Host ''
+    Write-Host '  安装步骤:' -ForegroundColor Yellow
+    Write-Host '  1. 前往 Visual Studio 下载页:' -ForegroundColor White
+    Write-Host '     https://visualstudio.microsoft.com/visual-cpp-build-tools/' -ForegroundColor Cyan
+    Write-Host ''
+    Write-Host '  2. 下载并运行 "Build Tools for Visual Studio 2022"' -ForegroundColor White
+    Write-Host ''
+    Write-Host '  3. 在安装程序中勾选:' -ForegroundColor White
+    Write-Host '     [x] "使用 C++ 的桌面开发" 工作负载' -ForegroundColor Green
+    Write-Host '     (英文: "Desktop development with C++")' -ForegroundColor DarkGray
+    Write-Host ''
+    Write-Host '  4. 安装完成后, 关闭并重新打开 PowerShell, 再次运行 .\dev.ps1' -ForegroundColor White
+    Write-Host ''
+    Write-Host '  或者通过 winget 命令行安装:' -ForegroundColor Yellow
+    Write-Host '     winget install Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"' -ForegroundColor Green
+    Write-Host ''
+}
+
+# ---------------------------------------------------------------------------
+# Main flow: check each dependency, collect missing items, show guidance
+# ---------------------------------------------------------------------------
 Refresh-Path
 
-# nvm-windows and rustup are normally installed per user.  Running their setup
-# in an elevated PowerShell changes USERPROFILE, so the administrator process
-# cannot see the current user's nvm/rustup installation and exits before Node
-# is installed.  Bootstrap those tools in this process; elevate only the VS
-# Build Tools installer when it is genuinely needed.
-if ($InstallBuildToolsOnly) {
-    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        throw 'Windows Package Manager (winget) is required for automatic setup. Install/update App Installer, then run .\\dev.ps1 again.'
-    }
-    if (-not (Test-VcBuildTools)) {
-        Install-WithWinget 'Microsoft.VisualStudio.2022.BuildTools' @(
-            '--override', '--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'
-        )
-    }
-    exit 0
-}
+$hasMissing = $false
 
-if (-not (Test-Node22)) {
-    if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
-        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-            throw 'Node.js 22.12 or newer is required, but neither nvm nor winget is available. Install nvm-windows, then run .\\dev.ps1 again.'
-        }
-        Install-WithWinget 'CoreyButler.NVMforWindows'
-    }
+# --- Node.js ---
+if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
+    Show-NvmGuidance
+    $hasMissing = $true
+} else {
+    # nvm is available — try to use Node 22
+    & nvm use 22 *> $null
+    Refresh-Path
 
-    Write-Host "Installing and selecting Node.js $NodeVersion via nvm-windows ..." -ForegroundColor Cyan
-    & nvm install $NodeVersion
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "nvm could not download Node.js $NodeVersion (exit code $LASTEXITCODE). Trying the Windows Package Manager fallback..."
-        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-            throw "nvm could not install Node.js $NodeVersion (exit code $LASTEXITCODE). Check your network, proxy, TLS settings, or nvm output immediately above."
-        }
-        Install-WithWinget 'OpenJS.NodeJS.22'
-        Refresh-Path
-    }
     if (-not (Test-Node22)) {
-        & nvm use $NodeVersion
-        if ($LASTEXITCODE -ne 0) { throw "nvm could not select Node.js $NodeVersion (exit code $LASTEXITCODE)." }
-    }
-    Refresh-Path
-}
-
-if (-not (Test-RustToolchain)) {
-    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        throw 'Rust is required, but winget is unavailable. Install rustup, then run .\\dev.ps1 again.'
-    }
-    if (-not (Get-Command rustup -ErrorAction SilentlyContinue)) {
-        Install-WithWinget 'Rustlang.Rustup'
-    }
-    Write-Host 'Installing the Rust MSVC toolchain ...' -ForegroundColor Cyan
-    & rustup default stable-x86_64-pc-windows-msvc
-    if ($LASTEXITCODE -ne 0) { throw "rustup could not install the Rust MSVC toolchain (exit code $LASTEXITCODE)." }
-    Refresh-Path
-}
-
-if (-not (Test-VcBuildTools)) {
-    if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Write-Host 'C++ Build Tools are missing. Requesting administrator permission to install them...' -ForegroundColor Yellow
-        $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-InstallBuildToolsOnly')
-        $process = Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $arguments -Wait -PassThru
-        if ($process.ExitCode -ne 0) { throw "C++ Build Tools installation failed (exit code $($process.ExitCode))." }
+        # Node 22 is not installed via nvm yet
+        Write-Host 'Node.js 22 未通过 nvm 安装, 正在尝试安装...' -ForegroundColor Cyan
+        & nvm install 22
+        & nvm use 22
         Refresh-Path
-    } else {
-        Install-Toolchain
+
+        if (-not (Test-Node22)) {
+            Show-NodeGuidance
+            $hasMissing = $true
+        }
     }
+}
+
+# --- Rust ---
+if (-not (Test-RustToolchain)) {
+    Show-RustGuidance
+    $hasMissing = $true
+}
+
+# --- VC Build Tools ---
+if (-not (Test-VcBuildTools)) {
+    Show-VcBuildToolsGuidance
+    $hasMissing = $true
+}
+
+# --- Abort if anything is missing ---
+if ($hasMissing) {
+    Write-Host ''
+    Write-Host '请按照上方提示安装缺失的依赖, 然后重新运行 .\dev.ps1' -ForegroundColor Yellow
+    Write-Host ''
+    exit 1
 }
 
 if ($BootstrapOnly) { exit 0 }
 
-if (-not (Test-ToolchainReady)) {
-    throw 'The required toolchain is still unavailable. Close and reopen PowerShell, then run .\\dev.ps1 again.'
-}
+Write-Host '✓ 环境检查通过' -ForegroundColor Green
 
-if (-not (Test-Node22)) {
-    throw "Node.js 22.12 or newer is required (current: $(& node --version))."
-}
-
+# --- Install frontend dependencies ---
 if (-not (Test-Path 'node_modules/@tauri-apps/cli/package.json')) {
-    Write-Host 'Installing frontend dependencies...' -ForegroundColor Cyan
+    Write-Host '正在安装前端依赖...' -ForegroundColor Cyan
     npm ci
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
@@ -192,7 +204,7 @@ $modelFiles = @(
     'models/character_dict.txt'
 )
 if (@($modelFiles | Where-Object { -not (Test-Path $_) }).Count -gt 0) {
-    Write-Warning 'OCR model files are missing under models/. The UI can start, but OCR will be unavailable.'
+    Write-Warning 'OCR 模型文件缺失 (models/ 目录下)。UI 可以启动, 但 OCR 功能不可用。'
 }
 
 npm run tauri -- dev
