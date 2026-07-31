@@ -115,6 +115,11 @@ const relicCatalogue = relicCatalogueJson as RelicSetCatalogue;
 const characterCatalogue = characterCatalogueJson as CharacterCatalogue;
 const characterAvatars = new Map(characterCatalogue.characters.map((character) => [character.name, character.image]));
 const characterElements = new Map(characterCatalogue.characters.map((character) => [character.name, character.element]));
+const relicPieceImages = new Map(
+  relicCatalogue.sets.flatMap((set) =>
+    (set.pieces || []).map((piece) => [`${set.id}_${piece.slot}`, piece.image] as const)
+  )
+);
 const relicSetOptions = ref<RelicSetOption[]>(
   relicCatalogue.sets.map((set) => ({ setId: set.id, name: set.name, kind: set.kind })),
 );
@@ -478,24 +483,48 @@ async function recognizeCrop() {
   }
 }
 
-async function loadInventory() {
+const isAppending = ref(false);
+
+async function loadInventory(append = false) {
   if (activeView.value !== "archive") return;
   busy.value = true;
-  error.value = "";
+  if (append) isAppending.value = true;
+  else error.value = "";
   try {
     const filter = currentFilter();
+    let res;
     if (inventoryKind.value === "relic") {
-      result.value = await api.listRelics(filter as RelicFilter);
+      res = await api.listRelics(filter as RelicFilter);
     } else if (inventoryKind.value === "lightCone") {
-      result.value = await api.listLightCones(filter as LightConeFilter);
+      res = await api.listLightCones(filter as LightConeFilter);
     } else {
-      result.value = await api.listCharacters(filter as CharacterFilter);
+      res = await api.listCharacters(filter as CharacterFilter);
     }
-    selectedIds.value = new Set();
+    
+    if (append) {
+      result.value = {
+        ...res,
+        items: [...result.value.items, ...res.items]
+      };
+    } else {
+      result.value = res;
+      selectedIds.value = new Set();
+    }
   } catch (cause) {
     error.value = String(cause);
   } finally {
     busy.value = false;
+    isAppending.value = false;
+  }
+}
+
+function onTableScroll(e: Event) {
+  const target = e.target as HTMLElement;
+  if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
+    if (!busy.value && result.value.items.length < result.value.total) {
+      result.value.page += 1;
+      void loadInventory(true);
+    }
   }
 }
 
@@ -866,6 +895,10 @@ function getCharacterElement(name: string): string | null {
   return characterElements.get(name) ?? null;
 }
 
+function relicPieceImage(item: RelicListItem): string | null {
+  return relicPieceImages.get(`${item.setId}_${item.slot}`) ?? null;
+}
+
 function recordEntries(value: Record<string, unknown> | null | undefined): Array<[string, string]> {
   if (!value) return [];
   return Object.entries(value).map(([key, item]) => {
@@ -1213,7 +1246,7 @@ onUnmounted(() => {
           </form>
           </Drawer>
 
-          <div class="table-shell">
+          <div class="table-shell" @scroll="onTableScroll">
             <table>
               <thead>
                 <tr>
@@ -1240,7 +1273,8 @@ onUnmounted(() => {
                     <template v-if="inventoryKind === 'relic'">
                       <div class="relic-name-cell">
                         <div class="relic-icon-box">
-                          <span class="relic-icon-star">☆</span>
+                          <img v-if="relicPieceImage(item as RelicListItem)" :src="relicPieceImage(item as RelicListItem)!" :alt="slotLabel((item as RelicListItem).slot)" class="relic-piece-image" />
+                          <span v-else class="relic-icon-star">☆</span>
                         </div>
                         <div class="relic-name-info">
                           <strong class="item-name">{{ itemTitle(item) }}</strong>
@@ -1255,7 +1289,9 @@ onUnmounted(() => {
                     </template>
                   </td>
                   <template v-if="inventoryKind === 'relic'">
-                    <td><span class="relic-level-badge">+{{ (item as RelicListItem).level }}</span></td>
+                    <td>
+                      <span :class="['relic-level-badge', { 'is-max': (item as RelicListItem).level === 15 }]">+{{ (item as RelicListItem).level }}</span>
+                    </td>
                     <td>
                       <div class="relic-main-stat">
                         <span class="stat-name">{{ statLabel((item as RelicListItem).mainStat) }}</span>
@@ -1305,17 +1341,10 @@ onUnmounted(() => {
                 </tr>
               </tbody>
             </table>
-          </div>
-
-          <footer class="table-footer">
-            <span>共 {{ result.total }} 条 · 每页 {{ result.pageSize }} 条</span>
-            <div class="pagination">
-              <Button type="button" text :disabled="result.page <= 1 || busy" @click="goPage(result.page - 1)">←</Button>
-              <b>{{ result.page }} / {{ pageCount }}</b>
-              <Button type="button" text :disabled="result.page >= pageCount || busy" @click="goPage(result.page + 1)">→</Button>
+            <div v-if="isAppending" class="loading-more">
+              <span class="loading-spinner">↻</span> 加载更多数据中...
             </div>
-            <span>本地删除的数据会在下次完整同步时恢复</span>
-          </footer>
+          </div>
         </article>
       </section>
 
