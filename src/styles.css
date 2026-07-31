@@ -2024,8 +2024,20 @@ th, td { height: 56px; padding: 9px 12px; }
 .catalogue-card small { color: var(--muted); font: 600 10px/1 monospace; }.catalogue-card h4 { margin: 4px 0 7px; color: var(--ink); font-size: 14px; }.catalogue-card p { margin: 4px 0; color: var(--ink-soft); font-size: 11px; line-height: 1.45; }.catalogue-card p b { display: inline-block; width: 31px; color: var(--blue); }
 .catalogue-empty { display: grid; justify-items: center; gap: 8px; margin-top: 28px; padding: 28px; border: 1px dashed var(--line); color: var(--muted); text-align: center; }.catalogue-empty > span { color: var(--blue); font-size: 25px; }.catalogue-empty strong { color: var(--ink-soft); font-size: 15px; }.catalogue-empty p { max-width: 500px; margin: 0; font-size: 12px; line-height: 1.7; }
 .character-table-avatar { width: 34px; height: 34px; margin-right: 9px; vertical-align: middle; object-fit: cover; border: 1px solid rgba(36, 86, 166, .25); border-radius: 50%; background: #e8eef6; }.character-detail-avatar { width: 62px; height: 62px; object-fit: cover; border: 1px solid #6c99cd; border-radius: 10px; background: #e8eef6; }
-.character-catalogue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }.character-catalogue-card { overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,.66); }.character-catalogue-portrait, .character-catalogue-card > span { display: grid; width: 100%; aspect-ratio: 1; place-items: center; background: center / cover no-repeat, linear-gradient(155deg, #e7edf5, #c8d4e6); }.character-catalogue-portrait img { width: 100%; height: 100%; object-fit: cover; }.character-catalogue-card > span { color: var(--muted); }.character-catalogue-card div { padding: 8px; }.character-catalogue-card h4 { margin: 0 0 4px; font-size: 13px; }.character-catalogue-card small, .catalogue-source-note { color: var(--muted); font-size: 10px; }.catalogue-source-note { margin: 0; }
-.character-catalogue-card .character-catalogue-tags { display: flex; align-items: center; gap: 4px; }.character-catalogue-card .character-catalogue-tags img { width: 14px; height: 14px; aspect-ratio: auto; object-fit: contain; background: none; }.character-catalogue-card .character-catalogue-tags img + img { margin-left: 5px; }
+.character-catalogue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+.character-catalogue-card { overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,.66); }
+.character-catalogue-portrait { position: relative; overflow: hidden; }
+.character-catalogue-portrait, .character-catalogue-card > span { display: grid; width: 100%; aspect-ratio: 1; place-items: center; background: center / cover no-repeat, linear-gradient(155deg, #e7edf5, #c8d4e6); }
+.character-catalogue-portrait .character-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+.character-catalogue-card:hover .character-image { transform: scale(1.08); }
+.character-catalogue-portrait .character-icons { position: absolute; bottom: 8px; left: 0; width: 100%; display: flex; justify-content: space-between; padding: 0 8px; box-sizing: border-box; }
+.character-catalogue-portrait .character-icons img { width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); background: none; }
+.character-catalogue-card > span { color: var(--muted); }
+.character-catalogue-card .character-info { padding: 14px 8px; text-align: center; }
+.character-catalogue-card h4 { margin: 0 0 8px; font-size: 17px; font-weight: 600; color: var(--ink); letter-spacing: 1px; }
+.character-catalogue-card .character-text-tags { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-soft); font-weight: 500; letter-spacing: 0.5px; }
+.character-catalogue-card .character-text-tags .tag-divider { width: 4px; height: 4px; border-radius: 50%; background-color: var(--ink-soft); opacity: 0.4; }
+.catalogue-source-note { margin: 0; color: var(--muted); font-size: 10px; }
 
 @media (max-width: 760px) {
   .target-column-headings,

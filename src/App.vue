@@ -1314,9 +1314,22 @@ onUnmounted(() => {
             <h3>角色基础信息 <small>{{ characterCatalogue.characters.length }} 名</small></h3>
             <div v-if="characterCatalogue.characters.length" class="character-catalogue-grid">
               <article v-for="character in characterCatalogue.characters" :key="character.slug" class="character-catalogue-card">
-                <div v-if="character.image" class="character-catalogue-portrait" :style="character.backgroundImage ? { backgroundImage: `url(${character.backgroundImage})` } : undefined"><img :src="character.image" :alt="character.name" /></div>
+                <div v-if="character.image" class="character-catalogue-portrait" :style="character.backgroundImage ? { backgroundImage: `url(${character.backgroundImage})` } : undefined">
+                  <img class="character-image" :src="character.image" :alt="character.name" />
+                  <div class="character-icons">
+                    <img v-if="character.elementIcon" :src="character.elementIcon" alt="" class="element-icon" />
+                    <img v-if="character.pathIcon" :src="character.pathIcon" alt="" class="path-icon" />
+                  </div>
+                </div>
                 <span v-else>◇</span>
-                <div><h4>{{ character.name }}</h4><small class="character-catalogue-tags"><img v-if="character.elementIcon" :src="character.elementIcon" alt="" />{{ character.element }}<img v-if="character.pathIcon" :src="character.pathIcon" alt="" />{{ character.path }}</small></div>
+                <div class="character-info">
+                  <h4>{{ character.name }}</h4>
+                  <div class="character-text-tags">
+                    <span class="tag-element">{{ character.element }}</span>
+                    <span class="tag-divider"></span>
+                    <span class="tag-path">{{ character.path }}</span>
+                  </div>
+                </div>
               </article>
             </div>
             <p v-else class="catalogue-source-note">角色目录将在下一次运行同步命令后显示。</p>
