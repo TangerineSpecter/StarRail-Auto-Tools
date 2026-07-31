@@ -1300,9 +1300,10 @@ onUnmounted(() => {
                     </td>
                     <td>
                       <div class="relic-substats-grid">
-                        <span v-for="stat in (item as RelicListItem).substats" :key="stat.key" class="relic-substat-item">
+                        <span v-for="stat in (item as RelicListItem).substats" :key="stat.key" :class="['relic-substat-item', `hit-${stat.count}`]">
                           <span class="substat-name">{{ statLabel(stat.key) }}</span>
                           <strong class="substat-value">{{ formatStatValue(stat.key, stat.value) }}</strong>
+                          <i v-if="stat.count >= 3" class="hit-count-badge">{{ stat.count === 5 ? 'MAX' : `+${stat.count}` }}</i>
                         </span>
                       </div>
                     </td>

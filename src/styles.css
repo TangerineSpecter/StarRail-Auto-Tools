@@ -1903,9 +1903,31 @@ th, td { height: 56px; padding: 9px 12px; }
 .relic-main-stat .stat-name { font-size: 11px; color: var(--muted); }
 .relic-main-stat .stat-value { font-size: 14px; font-weight: 700; color: var(--ink); }
 .relic-substats-grid { display: grid; grid-template-columns: 1fr 1fr; row-gap: 8px; column-gap: 8px; min-width: 200px; }
-.relic-substat-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: #f5f7fa; border-radius: 4px; font-size: 12px; }
+.relic-substat-item { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: #f5f7fa; border-radius: 4px; font-size: 12px; transition: transform 0.2s; }
 .relic-substat-item .substat-name { color: var(--ink-soft); }
 .relic-substat-item .substat-value { color: var(--ink); font-weight: 600; }
+.hit-count-badge { position: absolute; right: 0; bottom: 0; font-size: 8px; font-weight: 800; font-style: normal; line-height: 1; padding: 2px 4px; border-radius: 4px 0 4px 0; }
+
+.relic-substat-item.hit-3 { background: linear-gradient(135deg, #f3ebfc, #e5d4f7); box-shadow: 0 1px 3px rgba(136, 67, 207, 0.15); }
+.relic-substat-item.hit-3 .substat-name { color: #58338e; }
+.relic-substat-item.hit-3 .substat-value { color: #431e78; }
+.relic-substat-item.hit-3 .hit-count-badge { background: #58338e; color: #fff; }
+
+.relic-substat-item.hit-4 { background: linear-gradient(135deg, #fdf5e5, #f5d499); box-shadow: 0 1px 4px rgba(214, 135, 37, 0.25); border: 1px solid rgba(214, 135, 37, 0.3); }
+.relic-substat-item.hit-4 .substat-name { color: #a15d04; }
+.relic-substat-item.hit-4 .substat-value { color: #874900; }
+.relic-substat-item.hit-4 .hit-count-badge { background: #b56b12; color: #fff; }
+
+.relic-substat-item.hit-5 { background: linear-gradient(110deg, #ff4e50, #f9d423, #ff4e50); background-size: 200% 200%; animation: mythic-glow 2.5s ease infinite; border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 10px rgba(249, 212, 35, 0.6), inset 0 0 5px rgba(255,255,255,0.8); transform: scale(1.02); }
+.relic-substat-item.hit-5 .substat-name { color: #fff; text-shadow: 0 1px 2px rgba(181, 107, 18, 0.8); }
+.relic-substat-item.hit-5 .substat-value { color: #fff; text-shadow: 0 1px 3px rgba(160, 50, 0, 0.9); font-weight: 800; font-size: 13px; }
+.relic-substat-item.hit-5 .hit-count-badge { background: #fff; color: #d6371c; box-shadow: 0 -1px 2px rgba(0,0,0,0.2); }
+
+@keyframes mythic-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 .relic-equip-tag { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
 .relic-equip-tag.unequipped { background: #f0f2f5; color: var(--muted); }
 .relic-equip-tag.element-火 { background: #ffebe5; color: #d13d21; }
