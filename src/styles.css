@@ -204,6 +204,29 @@ h2 {
   box-shadow: 0 10px 25px rgba(43, 74, 116, 0.08);
 }
 
+.brand h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--blue) 70%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 2px;
+  margin-left: 2px;
+}
+
+.brand .eyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.3em;
+  margin-bottom: 4px;
+  margin-left: 4px;
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: var(--blue);
