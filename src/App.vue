@@ -250,26 +250,34 @@ const detailRelic = computed<RelicDetailData | null>(() =>
 const detailCharacter = computed<CharacterDetailData | null>(() =>
   detail.value?.kind === "character" ? (detail.value.data as unknown as CharacterDetailData) : null,
 );
-const activeFilterCount = computed(
-  () =>
-    [
+const activeFilterCount = computed(() => {
+  const kind = inventoryKind.value;
+  let activeFilters: any[] = [];
+  if (kind === "relic") {
+    activeFilters = [
       filters.slots.length,
-      filters.rarities.length,
       filters.mainStats.length,
       filters.subStats.length,
       filters.minSubstatCount,
       filters.maxSubstatCount,
-      filters.minLevel,
-      filters.maxLevel,
       filters.locked,
       filters.discard,
       filters.equipped,
-      filters.minAscension,
+    ];
+  } else if (kind === "lightCone") {
+    activeFilters = [
       filters.superimposition,
-      filters.path,
-      filters.eidolon,
-    ].filter(Boolean).length,
-);
+      filters.locked,
+      filters.equipped,
+    ];
+  } else if (kind === "character") {
+    activeFilters = [
+      filters.path.length,
+      filters.eidolon.length,
+    ];
+  }
+  return activeFilters.filter(Boolean).length;
+});
 
 let unlistenDirect: UnlistenFn | undefined;
 let unlistenInventory: UnlistenFn | undefined;
@@ -974,6 +982,30 @@ function pathLabel(path: string): string {
   return paths[path] ?? path;
 }
 
+function pathIcon(path: string): string {
+  const icons: Record<string, string> = {
+    Destruction: "⚔",
+    Hunt: "◎",
+    Erudition: "✧",
+    Harmony: "🎵",
+    Nihility: "🌙",
+    Preservation: "⛨",
+    Abundance: "✿",
+    Remembrance: "❄",
+  };
+  return icons[path] ?? "✧";
+}
+
+const avatarColors = ["#1ea2e8", "#e84a4a", "#8740e5", "#33b061", "#f0a21d", "#e0427f"];
+function avatarColor(name: string): string {
+  if (!name) return avatarColors[0];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return avatarColors[Math.abs(hash) % avatarColors.length];
+}
+
 function characterAvatar(name: string): string | null {
   return characterAvatars.get(name) ?? null;
 }
@@ -1126,12 +1158,14 @@ onUnmounted(() => {
             :disabled="busy || direct.phase === 'unsupported'"
             @click="toggleDirectRead"
           >
-            <span class="action-symbol" aria-hidden="true">{{ directRunning ? "■" : "▶" }}</span>
-            <span>
+            <span class="action-symbol" aria-hidden="true">
+              <span v-if="directRunning">■</span>
+              <svg v-else t="1785488611476" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="24598" width="14" height="14"><path d="M893.035 463.821679C839.00765 429.699141 210.584253 28.759328 179.305261 8.854514 139.495634-16.737389 99.686007 17.385148 99.686007 57.194775v909.934329c0 45.496716 42.653172 68.245075 76.775709 48.340262 45.496716-28.435448 676.763657-429.375262 716.573284-454.967165 34.122537-22.748358 34.122537-76.775709 0-96.680522z" fill="currentColor" p-id="24599"></path></svg>
+            </span>
+            <span class="action-text-wrapper">
               <small>GAME DATA SYNC</small>
               {{ directRunning ? "停止实时监听" : "启动游戏数据直读" }}
             </span>
-            <i aria-hidden="true">→</i>
           </Button>
           <p class="privilege-note">
             游戏数据直读仅支持 Windows；启动后请从游戏的登录界面重新登录。
@@ -1431,12 +1465,10 @@ onUnmounted(() => {
                   </label>
                 </template>
                 <template v-else>
-                  <label
-                    ><span>命途</span
-                    ><Select
-                      v-model="filters.path"
-                      :options="[
-                        { label: '全部命途', value: '' },
+                  <fieldset class="filter-group filter-group-wide">
+                    <legend>命途 <em>可多选</em></legend>
+                    <div class="filter-chips">
+                      <label v-for="path in [
                         { label: '毁灭', value: 'Destruction' },
                         { label: '巡猎', value: 'Hunt' },
                         { label: '智识', value: 'Erudition' },
@@ -1445,19 +1477,24 @@ onUnmounted(() => {
                         { label: '存护', value: 'Preservation' },
                         { label: '丰饶', value: 'Abundance' },
                         { label: '记忆', value: 'Remembrance' },
-                      ]"
-                      option-label="label"
-                      option-value="value"
-                      placeholder="全部命途"
-                  /></label>
-                  <label
-                    ><span>星魂</span
-                    ><Select
-                      v-model="filters.eidolon"
-                      :options="['', 0, 1, 2, 3, 4, 5, 6]"
-                      :option-label="(value) => (value === '' ? '不限' : `${value} 魂`)"
-                      placeholder="不限"
-                  /></label>
+                      ]" :key="path.value" class="filter-chip filter-path-chip">
+                        <input v-model="filters.path" type="checkbox" :value="path.value" />
+                        <span>
+                          <img :src="`/character-icons/paths/${path.label}.webp`" class="filter-chip-img" alt="" />
+                          {{ path.label }}
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+                  <fieldset class="filter-group filter-group-wide">
+                    <legend>星魂 <em>可多选</em></legend>
+                    <div class="filter-chips">
+                      <label v-for="e in 7" :key="e" class="filter-chip">
+                        <input v-model="filters.eidolon" type="checkbox" :value="e - 1" />
+                        <span>{{ e - 1 }} 魂</span>
+                      </label>
+                    </div>
+                  </fieldset>
                 </template>
                 <label v-if="inventoryKind !== 'character'"
                   ><span>装备状态</span>
@@ -1484,13 +1521,12 @@ onUnmounted(() => {
           </Drawer>
 
           <div class="table-shell" @scroll="onTableScroll">
-            <table>
+            <table v-if="inventoryKind !== 'character'">
               <thead>
                 <tr>
                   <th class="check-cell">
                     <Checkbox binary :model-value="allSelected" @update:model-value="toggleAll" />
                   </th>
-                  <th v-if="inventoryKind === 'character'">头像</th>
                   <th>名称</th>
                   <template v-if="inventoryKind === 'relic'">
                     <th>等级</th>
@@ -1505,12 +1541,6 @@ onUnmounted(() => {
                     <th>装备角色</th>
                     <th>状态</th>
                   </template>
-                  <template v-else>
-                    <th>命途</th>
-                    <th>突破</th>
-                    <th>星魂</th>
-                    <th>能力版本</th>
-                  </template>
                   <th class="detail-cell">详情</th>
                 </tr>
               </thead>
@@ -1521,14 +1551,6 @@ onUnmounted(() => {
                       binary
                       :model-value="selectedIds.has(idFor(item))"
                       @update:model-value="toggleSelected(idFor(item))"
-                    />
-                  </td>
-                  <td v-if="inventoryKind === 'character'">
-                    <img
-                      v-if="characterAvatar((item as CharacterListItem).name)"
-                      class="character-table-avatar"
-                      :src="characterAvatar((item as CharacterListItem).name)!"
-                      :alt="`${item.name} 头像`"
                     />
                   </td>
                   <td>
@@ -1554,9 +1576,7 @@ onUnmounted(() => {
                     </template>
                     <template v-else>
                       <strong class="item-name">{{ itemTitle(item) }}</strong>
-                      <small v-if="inventoryKind !== 'character'" class="item-id"
-                        >#{{ idFor(item) }}</small
-                      >
+                      <small class="item-id">#{{ idFor(item) }}</small>
                     </template>
                   </td>
                   <template v-if="inventoryKind === 'relic'">
@@ -1627,28 +1647,14 @@ onUnmounted(() => {
                       />
                     </td>
                   </template>
-                  <template v-else>
-                    <td>{{ pathLabel((item as CharacterListItem).path) }}</td>
-                    <td>{{ (item as CharacterListItem).ascension }}</td>
-                    <td>{{ (item as CharacterListItem).eidolon }}</td>
-                    <td>V{{ (item as CharacterListItem).abilityVersion }}</td>
-                  </template>
                   <td class="detail-cell">
                     <Button class="row-action" type="button" text @click="openDetail(item)"
                       >查看</Button
                     >
-                    <Button
-                      v-if="inventoryKind === 'character'"
-                      class="row-action build-action"
-                      type="button"
-                      text
-                      @click="openBuild(item as CharacterListItem)"
-                      >培养方案</Button
-                    >
                   </td>
                 </tr>
                 <tr v-if="!result.items.length">
-                  <td colspan="8" class="table-empty">
+                  <td colspan="7" class="table-empty">
                     <span>◇</span>
                     <strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong>
                     <small>启动游戏数据直读并重新登录后，档案会自动出现</small>
@@ -1656,6 +1662,62 @@ onUnmounted(() => {
                 </tr>
               </tbody>
             </table>
+
+            <div v-else class="character-card-grid">
+              <div
+                v-for="item in result.items"
+                :key="idFor(item)"
+                class="character-card"
+                @click="openDetail(item)"
+              >
+                <div class="character-card-header">
+                  <img
+                    v-if="characterAvatar(item.name)"
+                    class="character-card-avatar"
+                    :src="characterAvatar(item.name)!"
+                    :alt="`${item.name} 头像`"
+                  />
+                  <div v-else class="character-card-avatar-fallback" :style="{ background: avatarColor(item.name) }">
+                    {{ item.name.charAt(0) }}
+                  </div>
+                  <div class="character-path">
+                    <span class="path-icon">{{ pathIcon((item as CharacterListItem).path) }}</span>
+                    <span class="path-text">{{ pathLabel((item as CharacterListItem).path) }}</span>
+                  </div>
+                  <div class="character-name">{{ item.name }}</div>
+                  <div class="character-stars">
+                    ★★★★★
+                  </div>
+                </div>
+                <div class="character-card-stats">
+                  <div class="stat-col">
+                    <span class="stat-label">等级</span>
+                    <strong class="stat-val">Lv.{{ (item as CharacterListItem).level }}</strong>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">突破</span>
+                    <strong class="stat-val">{{ (item as CharacterListItem).ascension }}</strong>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">星魂</span>
+                    <strong
+                      :class="['stat-val', { 'is-active': (item as CharacterListItem).eidolon > 0 }]"
+                    >
+                      E{{ (item as CharacterListItem).eidolon }}
+                    </strong>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">版本</span>
+                    <strong class="stat-val">V{{ (item as CharacterListItem).abilityVersion }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div v-if="!result.items.length" class="table-empty">
+                <span>◇</span>
+                <strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong>
+                <small>启动游戏数据直读并重新登录后，档案会自动出现</small>
+              </div>
+            </div>
             <div v-if="isAppending" class="loading-more">
               <span class="loading-spinner">↻</span> 加载更多数据中...
             </div>

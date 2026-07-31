@@ -660,7 +660,7 @@ impl InventoryStore {
             clauses.push("name LIKE ?".to_owned());
             values.push(SqlValue::Text(format!("%{search}%")));
         }
-        push_text_filter(&mut clauses, &mut values, "path", &filter.path);
+        push_text_filters(&mut clauses, &mut values, "path", &filter.path);
         push_number_filter(&mut clauses, &mut values, "level", ">=", filter.min_level);
         push_number_filter(&mut clauses, &mut values, "level", "<=", filter.max_level);
         push_number_filter(
@@ -670,7 +670,7 @@ impl InventoryStore {
             ">=",
             filter.min_ascension,
         );
-        push_number_filter(&mut clauses, &mut values, "eidolon", "=", filter.eidolon);
+        push_number_filters(&mut clauses, &mut values, "eidolon", &filter.eidolon);
         let where_sql = make_where(&clauses);
         let total = query_count(&connection, "characters", &where_sql, &values)?;
         let mut paged_values = values.clone();

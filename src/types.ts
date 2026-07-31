@@ -92,11 +92,11 @@ export interface LightConeFilter extends PageQuery {
 
 export interface CharacterFilter extends PageQuery {
   search?: string;
-  path?: string;
+  path?: string[];
   minLevel?: number;
   maxLevel?: number;
   minAscension?: number;
-  eidolon?: number;
+  eidolon?: number[];
 }
 
 export interface RelicSubstatItem {

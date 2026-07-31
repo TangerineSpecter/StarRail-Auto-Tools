@@ -15,8 +15,8 @@ export interface InventoryFilterForm {
   equipped: string;
   minAscension: string;
   superimposition: string;
-  path: string;
-  eidolon: string;
+  path: string[];
+  eidolon: number[];
 }
 
 export const createInventoryFilterForm = (): InventoryFilterForm => ({
@@ -34,8 +34,8 @@ export const createInventoryFilterForm = (): InventoryFilterForm => ({
   equipped: "",
   minAscension: "",
   superimposition: "",
-  path: "",
-  eidolon: "",
+  path: [],
+  eidolon: [],
 });
 
 const asNumber = (value: string): number | undefined => {
@@ -82,7 +82,7 @@ export function buildInventoryFilter(
   }
   return compact({
     ...shared,
-    path: form.path.trim() || undefined,
-    eidolon: asNumber(form.eidolon),
+    path: form.path.length ? form.path : undefined,
+    eidolon: form.eidolon.length ? form.eidolon : undefined,
   });
 }

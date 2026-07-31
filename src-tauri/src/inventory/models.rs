@@ -103,11 +103,11 @@ pub struct CharacterFilter {
     #[serde(flatten)]
     pub page: PageQuery,
     pub search: Option<String>,
-    pub path: Option<String>,
+    pub path: Option<Vec<String>>,
     pub min_level: Option<u32>,
     pub max_level: Option<u32>,
     pub min_ascension: Option<u32>,
-    pub eidolon: Option<u32>,
+    pub eidolon: Option<Vec<u32>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
