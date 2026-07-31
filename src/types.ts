@@ -151,10 +151,7 @@ export interface CharacterListItem {
   updatedAt: number;
 }
 
-export type InventoryListItem =
-  | RelicListItem
-  | LightConeListItem
-  | CharacterListItem;
+export type InventoryListItem = RelicListItem | LightConeListItem | CharacterListItem;
 
 export interface InventoryDetail {
   kind: InventoryKind;
@@ -179,7 +176,11 @@ export interface CharacterBuildPlan {
 }
 
 export type RelicSetKind = "cavern" | "planar";
-export interface RelicSetOption { setId: number; name: string; kind: RelicSetKind; }
+export interface RelicSetOption {
+  setId: number;
+  name: string;
+  kind: RelicSetKind;
+}
 export interface RelicSetCatalogueEntry {
   id: number;
   name: string;
@@ -212,8 +213,23 @@ export interface CharacterCatalogue {
   source: { name: string; url: string; syncedAt: string | null };
   characters: CharacterCatalogueEntry[];
 }
-export interface BuildProgress { statKey: string; current: number; target: number; gap: number; minimum: number; priority: number; }
-export interface BuildRelicChoice { itemId: number; name: string; slot: string; setId: number; mainStat: string; location: string; borrowed: boolean; }
+export interface BuildProgress {
+  statKey: string;
+  current: number;
+  target: number;
+  gap: number;
+  minimum: number;
+  priority: number;
+}
+export interface BuildRelicChoice {
+  itemId: number;
+  name: string;
+  slot: string;
+  setId: number;
+  mainStat: string;
+  location: string;
+  borrowed: boolean;
+}
 export interface BuildRecommendation {
   current: BuildProgress[];
   recommended: BuildRelicChoice[] | null;

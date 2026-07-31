@@ -136,10 +136,10 @@ pub fn start(app: AppHandle) -> Result<DirectReadSnapshot, AppError> {
     #[cfg(not(windows))]
     {
         let state = app.state::<DirectReadState>();
-        return state.update(&app, |snapshot| {
+        state.update(&app, |snapshot| {
             snapshot.phase = DirectReadPhase::Unsupported;
             snapshot.message = "游戏数据直读仅支持 Windows 10/11".to_owned();
-        });
+        })
     }
 
     #[cfg(windows)]

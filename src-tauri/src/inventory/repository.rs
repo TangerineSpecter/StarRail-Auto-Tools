@@ -10,339 +10,19 @@ use rusqlite::{
     params, params_from_iter, types::Value as SqlValue, Connection, OptionalExtension, Row,
     Transaction,
 };
-use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
+use super::models::*;
 use crate::error::AppError;
-
-const SCHEMA_VERSION: i64 = 4;
-pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
-
-#[derive(Debug, Clone)]
-pub struct InventoryStore {
-    path: PathBuf,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum InventoryKind {
-    Relic,
-    LightCone,
-    Character,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PageQuery {
-    #[serde(default = "default_page")]
-    pub page: u32,
-    #[serde(default = "default_page_size")]
-    pub page_size: u32,
-}
-
-fn default_page() -> u32 {
-    1
-}
-
-fn default_page_size() -> u32 {
-    50
-}
-
-impl Default for PageQuery {
-    fn default() -> Self {
-        Self {
-            page: default_page(),
-            page_size: default_page_size(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PagedResult<T> {
-    pub items: Vec<T>,
-    pub total: u64,
-    pub page: u32,
-    pub page_size: u32,
-}
-
-#[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct InventorySummary {
-    pub relics: u64,
-    pub light_cones: u64,
-    pub characters: u64,
-    pub last_sync_at: Option<i64>,
-    pub protocol_version: String,
-}
-
-#[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct RelicFilter {
-    #[serde(flatten)]
-    pub page: PageQuery,
-    pub search: Option<String>,
-    pub slots: Option<Vec<String>>,
-    pub rarities: Option<Vec<u32>>,
-    pub min_level: Option<u32>,
-    pub max_level: Option<u32>,
-    pub main_stats: Option<Vec<String>>,
-    pub sub_stats: Option<Vec<String>>,
-    pub min_substat_count: Option<u32>,
-    pub max_substat_count: Option<u32>,
-    pub locked: Option<bool>,
-    pub discard: Option<bool>,
-    pub equipped: Option<bool>,
-}
-
-#[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct LightConeFilter {
-    #[serde(flatten)]
-    pub page: PageQuery,
-    pub search: Option<String>,
-    pub min_level: Option<u32>,
-    pub max_level: Option<u32>,
-    pub min_ascension: Option<u32>,
-    pub superimposition: Option<u32>,
-    pub locked: Option<bool>,
-    pub equipped: Option<bool>,
-}
-
-#[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct CharacterFilter {
-    #[serde(flatten)]
-    pub page: PageQuery,
-    pub search: Option<String>,
-    pub path: Option<String>,
-    pub min_level: Option<u32>,
-    pub max_level: Option<u32>,
-    pub min_ascension: Option<u32>,
-    pub eidolon: Option<u32>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RelicSubstatItem {
-    pub kind: String,
-    pub position: u32,
-    pub key: String,
-    pub value: f64,
-    pub count: u32,
-    pub step: u32,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RelicListItem {
-    pub item_id: u32,
-    pub set_id: u32,
-    pub name: String,
-    pub set_name: String,
-    pub slot: String,
-    pub rarity: u32,
-    pub level: u32,
-    pub main_stat: String,
-    pub main_stat_value: f64,
-    pub location: String,
-    pub locked: bool,
-    pub discard: bool,
-    pub source: String,
-    pub updated_at: i64,
-    pub substats: Vec<RelicSubstatItem>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LightConeListItem {
-    pub item_id: u32,
-    pub template_id: u32,
-    pub name: String,
-    pub level: u32,
-    pub ascension: u32,
-    pub superimposition: u32,
-    pub location: String,
-    pub locked: bool,
-    pub source: String,
-    pub updated_at: i64,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CharacterListItem {
-    pub character_id: u32,
-    pub name: String,
-    pub path: String,
-    pub level: u32,
-    pub ascension: u32,
-    pub eidolon: u32,
-    pub ability_version: u32,
-    pub source: String,
-    pub updated_at: i64,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct InventoryDetail {
-    pub kind: InventoryKind,
-    pub data: Value,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DeleteItemsRequest {
-    pub kind: InventoryKind,
-    pub ids: Vec<u32>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ClearInventoryRequest {
-    pub kind: Option<InventoryKind>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct InventoryImport {
-    pub metadata: ImportMetadata,
-    pub relics: Vec<ImportRelic>,
-    pub light_cones: Vec<ImportLightCone>,
-    pub characters: Vec<ImportCharacter>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct ImportMetadata {
-    pub uid: Option<u32>,
-    pub trailblazer: Option<String>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct ImportRelic {
-    #[serde(deserialize_with = "deserialize_u32_any")]
-    pub set_id: u32,
-    pub name: String,
-    pub slot: String,
-    pub rarity: u32,
-    pub level: u32,
-    pub mainstat: String,
-    pub substats: Vec<ImportSubstat>,
-    #[serde(default)]
-    pub reroll_substats: Option<Vec<ImportSubstat>>,
-    #[serde(default)]
-    pub preview_substats: Option<Vec<ImportSubstat>>,
-    pub location: String,
-    pub lock: bool,
-    pub discard: bool,
-    #[serde(deserialize_with = "deserialize_u32_any")]
-    pub _uid: u32,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct ImportSubstat {
-    pub key: String,
-    pub value: f64,
-    pub count: u32,
-    pub step: u32,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BuildTarget {
-    pub stat_key: String,
-    pub target: f64,
-    pub priority: u32,
-    pub minimum: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CharacterBuildPlan {
-    pub character_id: u32,
-    pub cavern_mode: String,
-    pub cavern_set_a: u32,
-    pub cavern_set_b: Option<u32>,
-    pub planar_set_id: u32,
-    #[serde(default)]
-    pub main_stats: HashMap<String, Vec<String>>,
-    #[serde(default)]
-    pub targets: Vec<BuildTarget>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RelicSetOption { pub set_id: u32, pub name: String }
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BuildRecommendationRequest { pub character_id: u32, #[serde(default)] pub include_equipped: bool }
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BuildProgress { pub stat_key: String, pub current: f64, pub target: f64, pub gap: f64, pub minimum: f64, pub priority: u32 }
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BuildRelicChoice { pub item_id: u32, pub name: String, pub slot: String, pub set_id: u32, pub main_stat: String, pub location: String, pub borrowed: bool }
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BuildRecommendation { pub current: Vec<BuildProgress>, pub recommended: Option<Vec<BuildRelicChoice>>, pub recommended_progress: Option<Vec<BuildProgress>>, pub message: String }
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct ImportLightCone {
-    #[serde(deserialize_with = "deserialize_u32_any")]
-    pub id: u32,
-    pub name: String,
-    pub level: u32,
-    pub ascension: u32,
-    pub superimposition: u32,
-    pub location: String,
-    pub lock: bool,
-    #[serde(deserialize_with = "deserialize_u32_any")]
-    pub _uid: u32,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct ImportCharacter {
-    #[serde(deserialize_with = "deserialize_u32_any")]
-    pub id: u32,
-    pub name: String,
-    pub path: String,
-    pub level: u32,
-    pub ascension: u32,
-    pub eidolon: u32,
-    pub skills: Value,
-    pub traces: Value,
-    #[serde(default)]
-    pub memosprite: Option<Value>,
-    pub ability_version: u32,
-}
-
-fn deserialize_u32_any<'de, D>(deserializer: D) -> Result<u32, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum Number {
-        Integer(u32),
-        String(String),
-    }
-
-    match Number::deserialize(deserializer)? {
-        Number::Integer(value) => Ok(value),
-        Number::String(value) => value.parse().map_err(serde::de::Error::custom),
-    }
-}
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
-pub struct AccountMismatch {
+pub(crate) struct AccountMismatch {
     pub existing_uid: u32,
     pub incoming_uid: u32,
 }
 
-pub type ApplyResult = Result<InventorySummary, AccountMismatch>;
+pub(crate) type ApplyResult = Result<InventorySummary, AccountMismatch>;
 
 impl InventoryStore {
     pub fn initialize(path: PathBuf) -> Result<Self, AppError> {
@@ -477,9 +157,18 @@ impl InventoryStore {
         )?;
         // Older databases predate the derived main-stat value. SQLite does not support
         // conditional ADD COLUMN in a batch, so ignore the duplicate-column case.
-        let _ = connection.execute("ALTER TABLE relics ADD COLUMN main_stat_value REAL NOT NULL DEFAULT 0", []);
-        let _ = connection.execute("ALTER TABLE character_build_targets ADD COLUMN minimum REAL NOT NULL DEFAULT 0", []);
-        connection.execute("UPDATE character_build_targets SET minimum = target - max_gap", [])?;
+        let _ = connection.execute(
+            "ALTER TABLE relics ADD COLUMN main_stat_value REAL NOT NULL DEFAULT 0",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE character_build_targets ADD COLUMN minimum REAL NOT NULL DEFAULT 0",
+            [],
+        );
+        connection.execute(
+            "UPDATE character_build_targets SET minimum = target - max_gap",
+            [],
+        )?;
         backfill_main_stat_values(connection)?;
         connection.execute("UPDATE schema_meta SET version = ?1", [SCHEMA_VERSION])?;
         Ok(())
@@ -492,8 +181,17 @@ impl InventoryStore {
 
     pub fn list_relic_sets(&self) -> Result<Vec<RelicSetOption>, AppError> {
         let connection = self.connect()?;
-        let mut statement = connection.prepare("SELECT set_id, MIN(set_name) FROM relics GROUP BY set_id ORDER BY MIN(set_name)")?;
-        let sets = statement.query_map([], |row| Ok(RelicSetOption { set_id: row.get(0)?, name: row.get(1)? }))?.collect::<Result<Vec<_>, _>>()?;
+        let mut statement = connection.prepare(
+            "SELECT set_id, MIN(set_name) FROM relics GROUP BY set_id ORDER BY MIN(set_name)",
+        )?;
+        let sets = statement
+            .query_map([], |row| {
+                Ok(RelicSetOption {
+                    set_id: row.get(0)?,
+                    name: row.get(1)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(sets)
     }
 
@@ -503,22 +201,51 @@ impl InventoryStore {
             "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json FROM character_build_plans WHERE character_id = ?1",
             [character_id], |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?, row.get::<_, Option<u32>>(2)?, row.get::<_, u32>(3)?, row.get::<_, String>(4)?))
         ).optional()?;
-        let Some((cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json)) = row else { return Ok(None) };
+        let Some((cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json)) = row
+        else {
+            return Ok(None);
+        };
         let mut statement = connection.prepare("SELECT stat_key, target, priority, minimum FROM character_build_targets WHERE character_id = ?1 ORDER BY priority, stat_key")?;
-        let targets = statement.query_map([character_id], |row| Ok(BuildTarget { stat_key: row.get(0)?, target: row.get(1)?, priority: row.get(2)?, minimum: row.get(3)? }))?.collect::<Result<Vec<_>, _>>()?;
-        Ok(Some(CharacterBuildPlan { character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats: serde_json::from_str(&main_stats_json).unwrap_or_default(), targets }))
+        let targets = statement
+            .query_map([character_id], |row| {
+                Ok(BuildTarget {
+                    stat_key: row.get(0)?,
+                    target: row.get(1)?,
+                    priority: row.get(2)?,
+                    minimum: row.get(3)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(Some(CharacterBuildPlan {
+            character_id,
+            cavern_mode,
+            cavern_set_a,
+            cavern_set_b,
+            planar_set_id,
+            main_stats: serde_json::from_str(&main_stats_json).unwrap_or_default(),
+            targets,
+        }))
     }
 
     pub fn save_build_plan(&self, plan: &CharacterBuildPlan) -> Result<(), AppError> {
-        if !matches!(plan.cavern_mode.as_str(), "fourPiece" | "twoPlusTwo") || plan.targets.is_empty() || plan.targets.len() > 3 || (plan.cavern_mode == "twoPlusTwo" && plan.cavern_set_b.is_none()) {
+        if !matches!(plan.cavern_mode.as_str(), "fourPiece" | "twoPlusTwo")
+            || plan.targets.is_empty()
+            || plan.targets.len() > 3
+            || (plan.cavern_mode == "twoPlusTwo" && plan.cavern_set_b.is_none())
+        {
             return Err(AppError::Database("毕业方案配置无效".to_owned()));
         }
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
         transaction.execute("INSERT INTO character_build_plans(character_id,cavern_mode,cavern_set_a,cavern_set_b,planar_set_id,main_stats_json,updated_at) VALUES(?1,?2,?3,?4,?5,?6,?7) ON CONFLICT(character_id) DO UPDATE SET cavern_mode=excluded.cavern_mode,cavern_set_a=excluded.cavern_set_a,cavern_set_b=excluded.cavern_set_b,planar_set_id=excluded.planar_set_id,main_stats_json=excluded.main_stats_json,updated_at=excluded.updated_at", params![plan.character_id, plan.cavern_mode, plan.cavern_set_a, plan.cavern_set_b, plan.planar_set_id, serde_json::to_string(&plan.main_stats).map_err(|e| AppError::Database(e.to_string()))?, now_millis()])?;
-        transaction.execute("DELETE FROM character_build_targets WHERE character_id = ?1", [plan.character_id])?;
+        transaction.execute(
+            "DELETE FROM character_build_targets WHERE character_id = ?1",
+            [plan.character_id],
+        )?;
         for target in &plan.targets {
-            if target.minimum > target.target { return Err(AppError::Database("最低标准不能高于目标值".to_owned())); }
+            if target.minimum > target.target {
+                return Err(AppError::Database("最低标准不能高于目标值".to_owned()));
+            }
             transaction.execute("INSERT INTO character_build_targets(character_id,stat_key,target,priority,max_gap,minimum) VALUES(?1,?2,?3,?4,?5,?6)", params![plan.character_id, target.stat_key, target.target, target.priority, target.target - target.minimum, target.minimum])?;
         }
         transaction.commit()?;
@@ -526,21 +253,52 @@ impl InventoryStore {
     }
 
     pub fn delete_build_plan(&self, character_id: u32) -> Result<(), AppError> {
-        self.connect()?.execute("DELETE FROM character_build_plans WHERE character_id = ?1", [character_id])?;
+        self.connect()?.execute(
+            "DELETE FROM character_build_plans WHERE character_id = ?1",
+            [character_id],
+        )?;
         Ok(())
     }
 
-    pub fn recommend_build(&self, request: &BuildRecommendationRequest) -> Result<BuildRecommendation, AppError> {
-        let Some(plan) = self.build_plan(request.character_id)? else { return Err(AppError::Database("请先保存该角色的毕业方案".to_owned())) };
+    pub fn recommend_build(
+        &self,
+        request: &BuildRecommendationRequest,
+    ) -> Result<BuildRecommendation, AppError> {
+        let Some(plan) = self.build_plan(request.character_id)? else {
+            return Err(AppError::Database("请先保存该角色的毕业方案".to_owned()));
+        };
         let connection = self.connect()?;
-        let character_name: String = connection.query_row("SELECT name FROM characters WHERE character_id = ?1", [request.character_id], |row| row.get(0)).optional()?.ok_or_else(|| AppError::Database("角色不存在".to_owned()))?;
+        let character_name: String = connection
+            .query_row(
+                "SELECT name FROM characters WHERE character_id = ?1",
+                [request.character_id],
+                |row| row.get(0),
+            )
+            .optional()?
+            .ok_or_else(|| AppError::Database("角色不存在".to_owned()))?;
         let current = load_build_relics(&connection, Some(&character_name))?;
         let current_progress = progress_for(&plan.targets, &current);
         let candidates = build_candidates(&connection, &plan, request.include_equipped)?;
         let recommended = choose_build(&plan, candidates, &character_name);
-        let recommended_progress = recommended.as_ref().map(|items| progress_for(&plan.targets, items));
-        let message = if recommended.is_some() { "已按套装结构与属性优先级找到推荐组合。".to_owned() } else { "当前候选无法同时满足套装、主词条与属性缺口限制。".to_owned() };
-        Ok(BuildRecommendation { current: current_progress, recommended: recommended.map(|items| items.into_iter().map(|item| item.into_choice(&character_name)).collect()), recommended_progress, message })
+        let recommended_progress = recommended
+            .as_ref()
+            .map(|items| progress_for(&plan.targets, items));
+        let message = if recommended.is_some() {
+            "已按套装结构与属性优先级找到推荐组合。".to_owned()
+        } else {
+            "当前候选无法同时满足套装、主词条与属性缺口限制。".to_owned()
+        };
+        Ok(BuildRecommendation {
+            current: current_progress,
+            recommended: recommended.map(|items| {
+                items
+                    .into_iter()
+                    .map(|item| item.into_choice(&character_name))
+                    .collect()
+            }),
+            recommended_progress,
+            message,
+        })
     }
 
     pub fn current_uid(&self) -> Result<Option<u32>, AppError> {
@@ -754,8 +512,7 @@ impl InventoryStore {
         {
             let mut substat_clauses = vec!["s.relic_id = relics.item_id".to_owned()];
             if let Some(sub_stats) = sub_stats {
-                let placeholders = std::iter::repeat("?")
-                    .take(sub_stats.len())
+                let placeholders = std::iter::repeat_n("?", sub_stats.len())
                     .collect::<Vec<_>>()
                     .join(", ");
                 substat_clauses.push(format!("s.stat_key IN ({placeholders})"));
@@ -801,12 +558,12 @@ impl InventoryStore {
         let mut items = statement
             .query_map(params_from_iter(paged_values.iter()), map_relic)?
             .collect::<Result<Vec<_>, _>>()?;
-            
+
         let mut substat_stmt = connection.prepare(
             "SELECT kind, position, stat_key, value, count, step
              FROM relic_substats WHERE relic_id = ?1 AND kind = 'normal' ORDER BY position",
         )?;
-        
+
         for item in &mut items {
             item.substats = substat_stmt
                 .query_map([item.item_id], |row| {
@@ -821,7 +578,7 @@ impl InventoryStore {
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
         }
-            
+
         Ok(PagedResult {
             items,
             total,
@@ -1026,35 +783,91 @@ impl InventoryStore {
 
 #[derive(Debug, Clone)]
 struct BuildCandidate {
-    item_id: u32, name: String, slot: String, set_id: u32, main_stat: String, main_stat_value: f64, location: String, stats: HashMap<String, f64>,
+    item_id: u32,
+    name: String,
+    slot: String,
+    set_id: u32,
+    main_stat: String,
+    main_stat_value: f64,
+    location: String,
+    stats: HashMap<String, f64>,
 }
 
 impl BuildCandidate {
     fn into_choice(self, character_name: &str) -> BuildRelicChoice {
-        BuildRelicChoice { item_id: self.item_id, name: self.name, slot: self.slot, set_id: self.set_id, main_stat: self.main_stat, borrowed: !self.location.is_empty() && self.location != character_name, location: self.location }
+        BuildRelicChoice {
+            item_id: self.item_id,
+            name: self.name,
+            slot: self.slot,
+            set_id: self.set_id,
+            main_stat: self.main_stat,
+            borrowed: !self.location.is_empty() && self.location != character_name,
+            location: self.location,
+        }
     }
 }
 
 const BUILD_SLOTS: [&str; 6] = ["Head", "Hands", "Body", "Feet", "PlanarSphere", "LinkRope"];
 
-fn load_build_relics(connection: &Connection, location: Option<&str>) -> Result<Vec<BuildCandidate>, AppError> {
-    let mut statement = connection.prepare("SELECT item_id, name, slot, set_id, main_stat, main_stat_value, location FROM relics")?;
-    let mut items = statement.query_map([], |row| Ok(BuildCandidate { item_id: row.get(0)?, name: row.get(1)?, slot: row.get(2)?, set_id: row.get(3)?, main_stat: row.get(4)?, main_stat_value: row.get(5)?, location: row.get(6)?, stats: HashMap::new() }))?.collect::<Result<Vec<_>, _>>()?;
-    if let Some(name) = location { items.retain(|item| item.location == name); }
-    let mut stat_statement = connection.prepare("SELECT stat_key, value FROM relic_substats WHERE relic_id = ?1 AND kind = 'normal'")?;
+fn load_build_relics(
+    connection: &Connection,
+    location: Option<&str>,
+) -> Result<Vec<BuildCandidate>, AppError> {
+    let mut statement = connection.prepare(
+        "SELECT item_id, name, slot, set_id, main_stat, main_stat_value, location FROM relics",
+    )?;
+    let mut items = statement
+        .query_map([], |row| {
+            Ok(BuildCandidate {
+                item_id: row.get(0)?,
+                name: row.get(1)?,
+                slot: row.get(2)?,
+                set_id: row.get(3)?,
+                main_stat: row.get(4)?,
+                main_stat_value: row.get(5)?,
+                location: row.get(6)?,
+                stats: HashMap::new(),
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    if let Some(name) = location {
+        items.retain(|item| item.location == name);
+    }
+    let mut stat_statement = connection.prepare(
+        "SELECT stat_key, value FROM relic_substats WHERE relic_id = ?1 AND kind = 'normal'",
+    )?;
     for item in &mut items {
         *item.stats.entry(item.main_stat.clone()).or_default() += item.main_stat_value;
-        for entry in stat_statement.query_map([item.item_id], |row| Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?)))? { let (key, value) = entry?; *item.stats.entry(key).or_default() += value; }
+        for entry in stat_statement.query_map([item.item_id], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+        })? {
+            let (key, value) = entry?;
+            *item.stats.entry(key).or_default() += value;
+        }
     }
     Ok(items)
 }
 
-fn build_candidates(connection: &Connection, plan: &CharacterBuildPlan, include_equipped: bool) -> Result<Vec<BuildCandidate>, AppError> {
+fn build_candidates(
+    connection: &Connection,
+    plan: &CharacterBuildPlan,
+    include_equipped: bool,
+) -> Result<Vec<BuildCandidate>, AppError> {
     let mut items = load_build_relics(connection, None)?;
     items.retain(|item| {
         let is_planar = matches!(item.slot.as_str(), "PlanarSphere" | "LinkRope");
-        let allowed_set = if is_planar { item.set_id == plan.planar_set_id } else if plan.cavern_mode == "fourPiece" { item.set_id == plan.cavern_set_a } else { item.set_id == plan.cavern_set_a || Some(item.set_id) == plan.cavern_set_b };
-        let allowed_main = plan.main_stats.get(&item.slot).map(|values| values.is_empty() || values.contains(&item.main_stat)).unwrap_or(false);
+        let allowed_set = if is_planar {
+            item.set_id == plan.planar_set_id
+        } else if plan.cavern_mode == "fourPiece" {
+            item.set_id == plan.cavern_set_a
+        } else {
+            item.set_id == plan.cavern_set_a || Some(item.set_id) == plan.cavern_set_b
+        };
+        let allowed_main = plan
+            .main_stats
+            .get(&item.slot)
+            .map(|values| values.is_empty() || values.contains(&item.main_stat))
+            .unwrap_or(false);
         let allowed_location = include_equipped || item.location.is_empty();
         allowed_set && allowed_main && allowed_location
     });
@@ -1063,22 +876,64 @@ fn build_candidates(connection: &Connection, plan: &CharacterBuildPlan, include_
 
 fn progress_for(targets: &[BuildTarget], relics: &[BuildCandidate]) -> Vec<BuildProgress> {
     let mut totals = HashMap::<String, f64>::new();
-    for relic in relics { for (key, value) in &relic.stats { *totals.entry(key.clone()).or_default() += value; } }
-    let mut output = targets.iter().map(|target| { let current = *totals.get(&target.stat_key).unwrap_or(&0.0); BuildProgress { stat_key: target.stat_key.clone(), current, target: target.target, gap: (target.target - current).max(0.0), minimum: target.minimum, priority: target.priority } }).collect::<Vec<_>>();
+    for relic in relics {
+        for (key, value) in &relic.stats {
+            *totals.entry(key.clone()).or_default() += value;
+        }
+    }
+    let mut output = targets
+        .iter()
+        .map(|target| {
+            let current = *totals.get(&target.stat_key).unwrap_or(&0.0);
+            BuildProgress {
+                stat_key: target.stat_key.clone(),
+                current,
+                target: target.target,
+                gap: (target.target - current).max(0.0),
+                minimum: target.minimum,
+                priority: target.priority,
+            }
+        })
+        .collect::<Vec<_>>();
     output.sort_by_key(|item| item.priority);
     output
 }
 
-fn choose_build(plan: &CharacterBuildPlan, candidates: Vec<BuildCandidate>, character_name: &str) -> Option<Vec<BuildCandidate>> {
-    let mut per_slot = BUILD_SLOTS.iter().map(|slot| candidates.iter().filter(|item| item.slot == *slot).cloned().collect::<Vec<_>>()).collect::<Vec<_>>();
+fn choose_build(
+    plan: &CharacterBuildPlan,
+    candidates: Vec<BuildCandidate>,
+    character_name: &str,
+) -> Option<Vec<BuildCandidate>> {
+    let mut per_slot = BUILD_SLOTS
+        .iter()
+        .map(|slot| {
+            candidates
+                .iter()
+                .filter(|item| item.slot == *slot)
+                .cloned()
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
     for (index, items) in per_slot.iter_mut().enumerate() {
         let sort_items = |items: &mut Vec<BuildCandidate>| {
-            items.sort_by(|a, b| individual_key(&plan.targets, a).partial_cmp(&individual_key(&plan.targets, b)).unwrap_or(std::cmp::Ordering::Equal));
+            items.sort_by(|a, b| {
+                individual_key(&plan.targets, a)
+                    .partial_cmp(&individual_key(&plan.targets, b))
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
         };
         if plan.cavern_mode == "twoPlusTwo" && index < 4 {
             let slot_candidates = std::mem::take(items);
-            let mut set_a = slot_candidates.iter().filter(|item| item.set_id == plan.cavern_set_a).cloned().collect::<Vec<_>>();
-            let mut set_b = slot_candidates.iter().filter(|item| Some(item.set_id) == plan.cavern_set_b).cloned().collect::<Vec<_>>();
+            let mut set_a = slot_candidates
+                .iter()
+                .filter(|item| item.set_id == plan.cavern_set_a)
+                .cloned()
+                .collect::<Vec<_>>();
+            let mut set_b = slot_candidates
+                .iter()
+                .filter(|item| Some(item.set_id) == plan.cavern_set_b)
+                .cloned()
+                .collect::<Vec<_>>();
             sort_items(&mut set_a);
             sort_items(&mut set_b);
             set_a.truncate(4);
@@ -1089,22 +944,50 @@ fn choose_build(plan: &CharacterBuildPlan, candidates: Vec<BuildCandidate>, char
             items.truncate(8);
         }
     }
-    if per_slot.iter().any(Vec::is_empty) { return None; }
+    if per_slot.iter().any(Vec::is_empty) {
+        return None;
+    }
     let mut best: Option<(Vec<f64>, Vec<BuildCandidate>)> = None;
-    fn visit(index: usize, pools: &[Vec<BuildCandidate>], selected: &mut Vec<BuildCandidate>, plan: &CharacterBuildPlan, best: &mut Option<(Vec<f64>, Vec<BuildCandidate>)>) {
+    fn visit(
+        index: usize,
+        pools: &[Vec<BuildCandidate>],
+        selected: &mut Vec<BuildCandidate>,
+        plan: &CharacterBuildPlan,
+        best: &mut Option<(Vec<f64>, Vec<BuildCandidate>)>,
+    ) {
         if index == pools.len() {
             if plan.cavern_mode == "twoPlusTwo" {
-                let a = selected[..4].iter().filter(|item| item.set_id == plan.cavern_set_a).count();
-                let b = selected[..4].iter().filter(|item| Some(item.set_id) == plan.cavern_set_b).count();
-                if a != 2 || b != 2 { return; }
+                let a = selected[..4]
+                    .iter()
+                    .filter(|item| item.set_id == plan.cavern_set_a)
+                    .count();
+                let b = selected[..4]
+                    .iter()
+                    .filter(|item| Some(item.set_id) == plan.cavern_set_b)
+                    .count();
+                if a != 2 || b != 2 {
+                    return;
+                }
             }
             let progress = progress_for(&plan.targets, selected);
-            if progress.iter().any(|item| item.current < item.minimum) { return; }
+            if progress.iter().any(|item| item.current < item.minimum) {
+                return;
+            }
             let key = progress.iter().map(|item| item.gap).collect::<Vec<_>>();
-            if best.as_ref().map(|(old, _)| key.as_slice() < old.as_slice()).unwrap_or(true) { *best = Some((key, selected.clone())); }
+            if best
+                .as_ref()
+                .map(|(old, _)| key.as_slice() < old.as_slice())
+                .unwrap_or(true)
+            {
+                *best = Some((key, selected.clone()));
+            }
             return;
         }
-        for item in &pools[index] { selected.push(item.clone()); visit(index + 1, pools, selected, plan, best); selected.pop(); }
+        for item in &pools[index] {
+            selected.push(item.clone());
+            visit(index + 1, pools, selected, plan, best);
+            selected.pop();
+        }
     }
     visit(0, &per_slot, &mut Vec::new(), plan, &mut best);
     let _ = character_name;
@@ -1112,7 +995,13 @@ fn choose_build(plan: &CharacterBuildPlan, candidates: Vec<BuildCandidate>, char
 }
 
 fn individual_key(targets: &[BuildTarget], item: &BuildCandidate) -> f64 {
-    targets.iter().map(|target| (target.target - item.stats.get(&target.stat_key).copied().unwrap_or(0.0)).max(0.0) * (1000.0 / (target.priority.max(1) as f64))).sum()
+    targets
+        .iter()
+        .map(|target| {
+            (target.target - item.stats.get(&target.stat_key).copied().unwrap_or(0.0)).max(0.0)
+                * (1000.0 / (target.priority.max(1) as f64))
+        })
+        .sum()
 }
 
 /// Static relic-main-affix growth table. Values are the in-game internal values
@@ -1123,22 +1012,57 @@ fn main_stat_value(rarity: u32, level: u32, stat_key: &str) -> f64 {
         "ATK" => (56.448, 19.7568),
         "HP%" | "ATK%" | "Effect Hit Rate" => (6.912, 2.4192),
         "DEF%" => (8.64, 3.024),
-        "SPD" => return match rarity { 5 => 4.032 + level as f64 * 1.4, 4 => 3.2256 + level as f64 * 1.1, 3 => 2.4192 + level as f64, 2 => 1.6128 + level as f64, _ => 0.0 },
+        "SPD" => {
+            return match rarity {
+                5 => 4.032 + level as f64 * 1.4,
+                4 => 3.2256 + level as f64 * 1.1,
+                3 => 2.4192 + level as f64,
+                2 => 1.6128 + level as f64,
+                _ => 0.0,
+            }
+        }
         "CRIT Rate" => (5.184, 1.8144),
         "CRIT DMG" | "Break Effect" => (10.368, 3.6288),
         "Outgoing Healing Boost" => (5.5296, 1.93536),
         "Energy Regeneration Rate" => (3.1104, 1.08864),
-        "Physical DMG Boost" | "Fire DMG Boost" | "Ice DMG Boost" | "Lightning DMG Boost" | "Wind DMG Boost" | "Quantum DMG Boost" | "Imaginary DMG Boost" => (6.2208, 2.17728),
+        "Physical DMG Boost"
+        | "Fire DMG Boost"
+        | "Ice DMG Boost"
+        | "Lightning DMG Boost"
+        | "Wind DMG Boost"
+        | "Quantum DMG Boost"
+        | "Imaginary DMG Boost" => (6.2208, 2.17728),
         _ => return 0.0,
     };
-    let scale = match rarity { 5 => 1.0, 4 => 0.8, 3 => 0.6, 2 => 0.4, _ => return 0.0 };
+    let scale = match rarity {
+        5 => 1.0,
+        4 => 0.8,
+        3 => 0.6,
+        2 => 0.4,
+        _ => return 0.0,
+    };
     (base + per_level * level as f64) * scale
 }
 
 fn backfill_main_stat_values(connection: &Connection) -> Result<(), AppError> {
-    let mut statement = connection.prepare("SELECT item_id, rarity, level, main_stat FROM relics")?;
-    let rows = statement.query_map([], |row| Ok((row.get::<_, u32>(0)?, row.get::<_, u32>(1)?, row.get::<_, u32>(2)?, row.get::<_, String>(3)?)))?.collect::<Result<Vec<_>, _>>()?;
-    for (item_id, rarity, level, stat_key) in rows { connection.execute("UPDATE relics SET main_stat_value = ?1 WHERE item_id = ?2", params![main_stat_value(rarity, level, &stat_key), item_id])?; }
+    let mut statement =
+        connection.prepare("SELECT item_id, rarity, level, main_stat FROM relics")?;
+    let rows = statement
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, u32>(0)?,
+                row.get::<_, u32>(1)?,
+                row.get::<_, u32>(2)?,
+                row.get::<_, String>(3)?,
+            ))
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    for (item_id, rarity, level, stat_key) in rows {
+        connection.execute(
+            "UPDATE relics SET main_stat_value = ?1 WHERE item_id = ?2",
+            params![main_stat_value(rarity, level, &stat_key), item_id],
+        )?;
+    }
     Ok(())
 }
 
@@ -1303,8 +1227,7 @@ fn push_text_filters(
     value: &Option<Vec<String>>,
 ) {
     if let Some(values_to_match) = clean_filters(value) {
-        let placeholders = std::iter::repeat("?")
-            .take(values_to_match.len())
+        let placeholders = std::iter::repeat_n("?", values_to_match.len())
             .collect::<Vec<_>>()
             .join(", ");
         clauses.push(format!("{column} IN ({placeholders})"));
@@ -1319,8 +1242,7 @@ fn push_number_filters(
     value: &Option<Vec<u32>>,
 ) {
     if let Some(values_to_match) = value.as_ref().filter(|values| !values.is_empty()) {
-        let placeholders = std::iter::repeat("?")
-            .take(values_to_match.len())
+        let placeholders = std::iter::repeat_n("?", values_to_match.len())
             .collect::<Vec<_>>()
             .join(", ");
         clauses.push(format!("{column} IN ({placeholders})"));
@@ -1851,30 +1773,74 @@ mod tests {
     fn build_plan_survives_inventory_clear() {
         let store = InventoryStore::test_store();
         let plan = CharacterBuildPlan {
-            character_id: 1001, cavern_mode: "fourPiece".to_owned(), cavern_set_a: 101,
-            cavern_set_b: None, planar_set_id: 201, main_stats: HashMap::new(),
-            targets: vec![BuildTarget { stat_key: "SPD".to_owned(), target: 180.0, priority: 1, minimum: 170.0 }],
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 180.0,
+                priority: 1,
+                minimum: 170.0,
+            }],
         };
         store.save_build_plan(&plan).unwrap();
         store.clear(None).unwrap();
-        assert_eq!(store.build_plan(1001).unwrap().unwrap().targets[0].target, 180.0);
+        assert_eq!(
+            store.build_plan(1001).unwrap().unwrap().targets[0].target,
+            180.0
+        );
     }
 
     #[test]
     fn two_plus_two_optimizer_never_returns_four_plus_zero() {
         let plan = CharacterBuildPlan {
-            character_id: 1, cavern_mode: "twoPlusTwo".to_owned(), cavern_set_a: 10,
-            cavern_set_b: Some(11), planar_set_id: 20, main_stats: HashMap::new(),
-            targets: vec![BuildTarget { stat_key: "SPD".to_owned(), target: 0.0, priority: 1, minimum: 0.0 }],
+            character_id: 1,
+            cavern_mode: "twoPlusTwo".to_owned(),
+            cavern_set_a: 10,
+            cavern_set_b: Some(11),
+            planar_set_id: 20,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 0.0,
+                priority: 1,
+                minimum: 0.0,
+            }],
         };
         let mut candidates = Vec::new();
         for (index, slot) in BUILD_SLOTS.iter().enumerate() {
             let sets: Vec<u32> = if index < 4 { vec![10, 11] } else { vec![20] };
-            for set_id in sets { candidates.push(BuildCandidate { item_id: candidates.len() as u32 + 1, name: "测试遗器".to_owned(), slot: (*slot).to_owned(), set_id, main_stat: "SPD".to_owned(), main_stat_value: 0.0, location: String::new(), stats: HashMap::new() }); }
+            for set_id in sets {
+                candidates.push(BuildCandidate {
+                    item_id: candidates.len() as u32 + 1,
+                    name: "测试遗器".to_owned(),
+                    slot: (*slot).to_owned(),
+                    set_id,
+                    main_stat: "SPD".to_owned(),
+                    main_stat_value: 0.0,
+                    location: String::new(),
+                    stats: HashMap::new(),
+                });
+            }
         }
         let selected = choose_build(&plan, candidates, "测试角色").unwrap();
-        assert_eq!(selected[..4].iter().filter(|item| item.set_id == 10).count(), 2);
-        assert_eq!(selected[..4].iter().filter(|item| item.set_id == 11).count(), 2);
+        assert_eq!(
+            selected[..4]
+                .iter()
+                .filter(|item| item.set_id == 10)
+                .count(),
+            2
+        );
+        assert_eq!(
+            selected[..4]
+                .iter()
+                .filter(|item| item.set_id == 11)
+                .count(),
+            2
+        );
         assert!(selected[4..].iter().all(|item| item.set_id == 20));
     }
 

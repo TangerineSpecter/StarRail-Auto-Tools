@@ -1,4 +1,8 @@
-use std::{fs, process::Command, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    fs,
+    process::Command,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use crate::error::AppError;
 
@@ -6,7 +10,10 @@ fn temporary_path() -> std::path::PathBuf {
     std::env::temp_dir().join(format!(
         "starrail-auto-tools-screen-{}-{}.png",
         std::process::id(),
-        SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos(),
     ))
 }
 
@@ -21,7 +28,8 @@ pub fn capture_desktop() -> Result<Vec<u8>, AppError> {
     if !status.success() {
         return Err(AppError::Capture("系统截图已取消或失败".to_owned()));
     }
-    let image = fs::read(&path).map_err(|error| AppError::Capture(format!("无法读取截图：{error}")));
+    let image =
+        fs::read(&path).map_err(|error| AppError::Capture(format!("无法读取截图：{error}")));
     let _ = fs::remove_file(path);
     image
 }
@@ -48,7 +56,8 @@ $bitmap.Dispose()
     if !status.success() {
         return Err(AppError::Capture("系统截图失败".to_owned()));
     }
-    let image = fs::read(&path).map_err(|error| AppError::Capture(format!("无法读取截图：{error}")));
+    let image =
+        fs::read(&path).map_err(|error| AppError::Capture(format!("无法读取截图：{error}")));
     let _ = fs::remove_file(path);
     image
 }

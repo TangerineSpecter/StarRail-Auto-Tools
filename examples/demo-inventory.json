@@ -5,53 +5,496 @@
   "light_cones": [],
   "characters": [
     {
-      "id": "1001", "name": "飞霄", "path": "Hunt", "level": 80,
-      "ascension": 6, "eidolon": 0, "skills": {}, "traces": {}, "ability_version": 1
+      "id": "1001",
+      "name": "飞霄",
+      "path": "Hunt",
+      "level": 80,
+      "ascension": 6,
+      "eidolon": 0,
+      "skills": {},
+      "traces": {},
+      "ability_version": 1
     },
     {
-      "id": "1002", "name": "黄泉", "path": "Nihility", "level": 80,
-      "ascension": 6, "eidolon": 0, "skills": {}, "traces": {}, "ability_version": 1
+      "id": "1002",
+      "name": "黄泉",
+      "path": "Nihility",
+      "level": 80,
+      "ascension": 6,
+      "eidolon": 0,
+      "skills": {},
+      "traces": {},
+      "ability_version": 1
     },
     {
-      "id": "1003", "name": "阮•梅", "path": "Harmony", "level": 80,
-      "ascension": 6, "eidolon": 0, "skills": {}, "traces": {}, "ability_version": 1
+      "id": "1003",
+      "name": "阮•梅",
+      "path": "Harmony",
+      "level": 80,
+      "ascension": 6,
+      "eidolon": 0,
+      "skills": {},
+      "traces": {},
+      "ability_version": 1
     },
     {
-      "id": "1004", "name": "花火", "path": "Harmony", "level": 80,
-      "ascension": 6, "eidolon": 1, "skills": {}, "traces": {}, "ability_version": 1
+      "id": "1004",
+      "name": "花火",
+      "path": "Harmony",
+      "level": 80,
+      "ascension": 6,
+      "eidolon": 1,
+      "skills": {},
+      "traces": {},
+      "ability_version": 1
     },
     {
-      "id": "1005", "name": "砂金", "path": "Preservation", "level": 80,
-      "ascension": 6, "eidolon": 0, "skills": {}, "traces": {}, "ability_version": 1
+      "id": "1005",
+      "name": "砂金",
+      "path": "Preservation",
+      "level": 80,
+      "ascension": 6,
+      "eidolon": 0,
+      "skills": {},
+      "traces": {},
+      "ability_version": 1
     }
   ],
   "relics": [
-    {"_uid":"1","set_id":"120","name":"风举云飞的勇烈","slot":"Head","rarity":5,"level":15,"mainstat":"HP","substats":[{"key":"CRIT Rate","value":11.0,"count":3,"step":2},{"key":"CRIT DMG","value":10.4,"count":1,"step":0},{"key":"SPD","value":5.0,"count":1,"step":1},{"key":"ATK%","value":3.9,"count":0,"step":0}],"location":"飞霄","lock":true,"discard":false},
-    {"_uid":"2","set_id":"120","name":"风举云飞的勇烈","slot":"Hands","rarity":5,"level":15,"mainstat":"ATK","substats":[{"key":"CRIT DMG","value":27.2,"count":4,"step":2},{"key":"CRIT Rate","value":2.9,"count":0,"step":0},{"key":"SPD","value":4.2,"count":1,"step":0},{"key":"DEF%","value":4.9,"count":0,"step":0}],"location":"飞霄","lock":true,"discard":false},
-    {"_uid":"3","set_id":"120","name":"风举云飞的勇烈","slot":"Body","rarity":5,"level":15,"mainstat":"CRIT Rate","substats":[{"key":"CRIT DMG","value":16.2,"count":2,"step":1},{"key":"ATK%","value":7.3,"count":1,"step":0},{"key":"SPD","value":4.6,"count":1,"step":1},{"key":"HP%","value":3.9,"count":0,"step":0}],"location":"飞霄","lock":true,"discard":false},
-    {"_uid":"4","set_id":"120","name":"风举云飞的勇烈","slot":"Feet","rarity":5,"level":15,"mainstat":"SPD","substats":[{"key":"CRIT Rate","value":10.8,"count":3,"step":2},{"key":"CRIT DMG","value":10.4,"count":1,"step":0},{"key":"ATK%","value":8.2,"count":1,"step":1},{"key":"DEF","value":19.0,"count":0,"step":0}],"location":"飞霄","lock":true,"discard":false},
-    {"_uid":"5","set_id":"309","name":"繁星竞技场","slot":"PlanarSphere","rarity":5,"level":15,"mainstat":"Wind DMG Boost","substats":[{"key":"CRIT Rate","value":8.1,"count":2,"step":1},{"key":"CRIT DMG","value":12.4,"count":1,"step":1},{"key":"ATK%","value":7.3,"count":1,"step":0},{"key":"Effect RES","value":4.3,"count":0,"step":0}],"location":"飞霄","lock":true,"discard":false},
-    {"_uid":"6","set_id":"309","name":"繁星竞技场","slot":"LinkRope","rarity":5,"level":15,"mainstat":"ATK%","substats":[{"key":"CRIT Rate","value":8.7,"count":2,"step":1},{"key":"CRIT DMG","value":17.5,"count":2,"step":1},{"key":"SPD","value":4.2,"count":1,"step":0},{"key":"HP","value":38.0,"count":0,"step":0}],"location":"飞霄","lock":true,"discard":false},
+    {
+      "_uid": "1",
+      "set_id": "120",
+      "name": "风举云飞的勇烈",
+      "slot": "Head",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "HP",
+      "substats": [
+        { "key": "CRIT Rate", "value": 11.0, "count": 3, "step": 2 },
+        { "key": "CRIT DMG", "value": 10.4, "count": 1, "step": 0 },
+        { "key": "SPD", "value": 5.0, "count": 1, "step": 1 },
+        { "key": "ATK%", "value": 3.9, "count": 0, "step": 0 }
+      ],
+      "location": "飞霄",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "2",
+      "set_id": "120",
+      "name": "风举云飞的勇烈",
+      "slot": "Hands",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK",
+      "substats": [
+        { "key": "CRIT DMG", "value": 27.2, "count": 4, "step": 2 },
+        { "key": "CRIT Rate", "value": 2.9, "count": 0, "step": 0 },
+        { "key": "SPD", "value": 4.2, "count": 1, "step": 0 },
+        { "key": "DEF%", "value": 4.9, "count": 0, "step": 0 }
+      ],
+      "location": "飞霄",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "3",
+      "set_id": "120",
+      "name": "风举云飞的勇烈",
+      "slot": "Body",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "CRIT Rate",
+      "substats": [
+        { "key": "CRIT DMG", "value": 16.2, "count": 2, "step": 1 },
+        { "key": "ATK%", "value": 7.3, "count": 1, "step": 0 },
+        { "key": "SPD", "value": 4.6, "count": 1, "step": 1 },
+        { "key": "HP%", "value": 3.9, "count": 0, "step": 0 }
+      ],
+      "location": "飞霄",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "4",
+      "set_id": "120",
+      "name": "风举云飞的勇烈",
+      "slot": "Feet",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "SPD",
+      "substats": [
+        { "key": "CRIT Rate", "value": 10.8, "count": 3, "step": 2 },
+        { "key": "CRIT DMG", "value": 10.4, "count": 1, "step": 0 },
+        { "key": "ATK%", "value": 8.2, "count": 1, "step": 1 },
+        { "key": "DEF", "value": 19.0, "count": 0, "step": 0 }
+      ],
+      "location": "飞霄",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "5",
+      "set_id": "309",
+      "name": "繁星竞技场",
+      "slot": "PlanarSphere",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "Wind DMG Boost",
+      "substats": [
+        { "key": "CRIT Rate", "value": 8.1, "count": 2, "step": 1 },
+        { "key": "CRIT DMG", "value": 12.4, "count": 1, "step": 1 },
+        { "key": "ATK%", "value": 7.3, "count": 1, "step": 0 },
+        { "key": "Effect RES", "value": 4.3, "count": 0, "step": 0 }
+      ],
+      "location": "飞霄",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "6",
+      "set_id": "309",
+      "name": "繁星竞技场",
+      "slot": "LinkRope",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK%",
+      "substats": [
+        { "key": "CRIT Rate", "value": 8.7, "count": 2, "step": 1 },
+        { "key": "CRIT DMG", "value": 17.5, "count": 2, "step": 1 },
+        { "key": "SPD", "value": 4.2, "count": 1, "step": 0 },
+        { "key": "HP", "value": 38.0, "count": 0, "step": 0 }
+      ],
+      "location": "飞霄",
+      "lock": true,
+      "discard": false
+    },
 
-    {"_uid":"7","set_id":"117","name":"死水深潜的先驱","slot":"Head","rarity":5,"level":15,"mainstat":"HP","substats":[{"key":"CRIT DMG","value":33.4,"count":5,"step":3},{"key":"CRIT Rate","value":2.9,"count":0,"step":0},{"key":"ATK%","value":3.9,"count":0,"step":0},{"key":"Effect Hit Rate","value":3.5,"count":0,"step":0}],"location":"黄泉","lock":true,"discard":false},
-    {"_uid":"8","set_id":"117","name":"死水深潜的先驱","slot":"Hands","rarity":5,"level":15,"mainstat":"ATK","substats":[{"key":"CRIT DMG","value":22.0,"count":3,"step":2},{"key":"ATK%","value":3.9,"count":0,"step":0},{"key":"CRIT Rate","value":5.5,"count":1,"step":0},{"key":"DEF","value":19.0,"count":0,"step":0}],"location":"黄泉","lock":true,"discard":false},
-    {"_uid":"9","set_id":"117","name":"死水深潜的先驱","slot":"Body","rarity":5,"level":15,"mainstat":"CRIT DMG","substats":[{"key":"CRIT Rate","value":11.3,"count":3,"step":2},{"key":"ATK%","value":7.3,"count":1,"step":0},{"key":"SPD","value":4.2,"count":1,"step":0},{"key":"Effect Hit Rate","value":3.5,"count":0,"step":0}],"location":"黄泉","lock":true,"discard":false},
-    {"_uid":"10","set_id":"117","name":"死水深潜的先驱","slot":"Feet","rarity":5,"level":15,"mainstat":"SPD","substats":[{"key":"CRIT DMG","value":21.4,"count":3,"step":2},{"key":"CRIT Rate","value":5.5,"count":1,"step":0},{"key":"ATK%","value":8.2,"count":1,"step":1},{"key":"HP%","value":3.9,"count":0,"step":0}],"location":"黄泉","lock":true,"discard":false},
-    {"_uid":"11","set_id":"315","name":"奔狼的都蓝王朝","slot":"PlanarSphere","rarity":5,"level":15,"mainstat":"Lightning DMG Boost","substats":[{"key":"CRIT Rate","value":8.1,"count":2,"step":1},{"key":"CRIT DMG","value":10.4,"count":1,"step":0},{"key":"ATK%","value":7.3,"count":1,"step":0},{"key":"DEF%","value":4.9,"count":0,"step":0}],"location":"黄泉","lock":true,"discard":false},
-    {"_uid":"12","set_id":"315","name":"奔狼的都蓝王朝","slot":"LinkRope","rarity":5,"level":15,"mainstat":"ATK%","substats":[{"key":"CRIT DMG","value":29.2,"count":4,"step":3},{"key":"CRIT Rate","value":5.8,"count":1,"step":0},{"key":"SPD","value":2.3,"count":0,"step":0},{"key":"Effect RES","value":3.5,"count":0,"step":0}],"location":"黄泉","lock":true,"discard":false},
+    {
+      "_uid": "7",
+      "set_id": "117",
+      "name": "死水深潜的先驱",
+      "slot": "Head",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "HP",
+      "substats": [
+        { "key": "CRIT DMG", "value": 33.4, "count": 5, "step": 3 },
+        { "key": "CRIT Rate", "value": 2.9, "count": 0, "step": 0 },
+        { "key": "ATK%", "value": 3.9, "count": 0, "step": 0 },
+        { "key": "Effect Hit Rate", "value": 3.5, "count": 0, "step": 0 }
+      ],
+      "location": "黄泉",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "8",
+      "set_id": "117",
+      "name": "死水深潜的先驱",
+      "slot": "Hands",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK",
+      "substats": [
+        { "key": "CRIT DMG", "value": 22.0, "count": 3, "step": 2 },
+        { "key": "ATK%", "value": 3.9, "count": 0, "step": 0 },
+        { "key": "CRIT Rate", "value": 5.5, "count": 1, "step": 0 },
+        { "key": "DEF", "value": 19.0, "count": 0, "step": 0 }
+      ],
+      "location": "黄泉",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "9",
+      "set_id": "117",
+      "name": "死水深潜的先驱",
+      "slot": "Body",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "CRIT DMG",
+      "substats": [
+        { "key": "CRIT Rate", "value": 11.3, "count": 3, "step": 2 },
+        { "key": "ATK%", "value": 7.3, "count": 1, "step": 0 },
+        { "key": "SPD", "value": 4.2, "count": 1, "step": 0 },
+        { "key": "Effect Hit Rate", "value": 3.5, "count": 0, "step": 0 }
+      ],
+      "location": "黄泉",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "10",
+      "set_id": "117",
+      "name": "死水深潜的先驱",
+      "slot": "Feet",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "SPD",
+      "substats": [
+        { "key": "CRIT DMG", "value": 21.4, "count": 3, "step": 2 },
+        { "key": "CRIT Rate", "value": 5.5, "count": 1, "step": 0 },
+        { "key": "ATK%", "value": 8.2, "count": 1, "step": 1 },
+        { "key": "HP%", "value": 3.9, "count": 0, "step": 0 }
+      ],
+      "location": "黄泉",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "11",
+      "set_id": "315",
+      "name": "奔狼的都蓝王朝",
+      "slot": "PlanarSphere",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "Lightning DMG Boost",
+      "substats": [
+        { "key": "CRIT Rate", "value": 8.1, "count": 2, "step": 1 },
+        { "key": "CRIT DMG", "value": 10.4, "count": 1, "step": 0 },
+        { "key": "ATK%", "value": 7.3, "count": 1, "step": 0 },
+        { "key": "DEF%", "value": 4.9, "count": 0, "step": 0 }
+      ],
+      "location": "黄泉",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "12",
+      "set_id": "315",
+      "name": "奔狼的都蓝王朝",
+      "slot": "LinkRope",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK%",
+      "substats": [
+        { "key": "CRIT DMG", "value": 29.2, "count": 4, "step": 3 },
+        { "key": "CRIT Rate", "value": 5.8, "count": 1, "step": 0 },
+        { "key": "SPD", "value": 2.3, "count": 0, "step": 0 },
+        { "key": "Effect RES", "value": 3.5, "count": 0, "step": 0 }
+      ],
+      "location": "黄泉",
+      "lock": true,
+      "discard": false
+    },
 
-    {"_uid":"13","set_id":"114","name":"骇域漫游的信使","slot":"Head","rarity":5,"level":15,"mainstat":"HP","substats":[{"key":"SPD","value":9.2,"count":3,"step":2},{"key":"Break Effect","value":10.4,"count":1,"step":0},{"key":"HP%","value":8.2,"count":1,"step":1},{"key":"DEF%","value":4.9,"count":0,"step":0}],"location":"阮•梅","lock":true,"discard":false},
-    {"_uid":"14","set_id":"114","name":"骇域漫游的信使","slot":"Hands","rarity":5,"level":15,"mainstat":"ATK","substats":[{"key":"SPD","value":8.8,"count":3,"step":2},{"key":"Break Effect","value":10.4,"count":1,"step":0},{"key":"Effect RES","value":3.5,"count":0,"step":0},{"key":"DEF","value":19.0,"count":0,"step":0}],"location":"阮•梅","lock":true,"discard":false},
-    {"_uid":"15","set_id":"114","name":"骇域漫游的信使","slot":"Body","rarity":5,"level":15,"mainstat":"HP%","substats":[{"key":"Break Effect","value":22.0,"count":3,"step":2},{"key":"SPD","value":4.2,"count":1,"step":0},{"key":"DEF%","value":9.7,"count":1,"step":1},{"key":"Effect RES","value":3.5,"count":0,"step":0}],"location":"阮•梅","lock":true,"discard":false},
-    {"_uid":"16","set_id":"114","name":"骇域漫游的信使","slot":"Feet","rarity":5,"level":15,"mainstat":"SPD","substats":[{"key":"Break Effect","value":33.4,"count":5,"step":3},{"key":"HP%","value":3.9,"count":0,"step":0},{"key":"Effect RES","value":3.5,"count":0,"step":0},{"key":"ATK","value":19.0,"count":0,"step":0}],"location":"阮•梅","lock":true,"discard":false},
-    {"_uid":"17","set_id":"312","name":"梦想之地匹诺康尼","slot":"PlanarSphere","rarity":5,"level":15,"mainstat":"HP%","substats":[{"key":"SPD","value":6.5,"count":2,"step":1},{"key":"Break Effect","value":10.4,"count":1,"step":0},{"key":"DEF%","value":9.7,"count":1,"step":0},{"key":"ATK","value":19.0,"count":0,"step":0}],"location":"阮•梅","lock":true,"discard":false},
-    {"_uid":"18","set_id":"312","name":"梦想之地匹诺康尼","slot":"LinkRope","rarity":5,"level":15,"mainstat":"Energy Regeneration Rate","substats":[{"key":"Break Effect","value":22.0,"count":3,"step":2},{"key":"SPD","value":4.2,"count":1,"step":0},{"key":"HP%","value":7.3,"count":1,"step":0},{"key":"DEF","value":19.0,"count":0,"step":0}],"location":"阮•梅","lock":true,"discard":false},
+    {
+      "_uid": "13",
+      "set_id": "114",
+      "name": "骇域漫游的信使",
+      "slot": "Head",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "HP",
+      "substats": [
+        { "key": "SPD", "value": 9.2, "count": 3, "step": 2 },
+        { "key": "Break Effect", "value": 10.4, "count": 1, "step": 0 },
+        { "key": "HP%", "value": 8.2, "count": 1, "step": 1 },
+        { "key": "DEF%", "value": 4.9, "count": 0, "step": 0 }
+      ],
+      "location": "阮•梅",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "14",
+      "set_id": "114",
+      "name": "骇域漫游的信使",
+      "slot": "Hands",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK",
+      "substats": [
+        { "key": "SPD", "value": 8.8, "count": 3, "step": 2 },
+        { "key": "Break Effect", "value": 10.4, "count": 1, "step": 0 },
+        { "key": "Effect RES", "value": 3.5, "count": 0, "step": 0 },
+        { "key": "DEF", "value": 19.0, "count": 0, "step": 0 }
+      ],
+      "location": "阮•梅",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "15",
+      "set_id": "114",
+      "name": "骇域漫游的信使",
+      "slot": "Body",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "HP%",
+      "substats": [
+        { "key": "Break Effect", "value": 22.0, "count": 3, "step": 2 },
+        { "key": "SPD", "value": 4.2, "count": 1, "step": 0 },
+        { "key": "DEF%", "value": 9.7, "count": 1, "step": 1 },
+        { "key": "Effect RES", "value": 3.5, "count": 0, "step": 0 }
+      ],
+      "location": "阮•梅",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "16",
+      "set_id": "114",
+      "name": "骇域漫游的信使",
+      "slot": "Feet",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "SPD",
+      "substats": [
+        { "key": "Break Effect", "value": 33.4, "count": 5, "step": 3 },
+        { "key": "HP%", "value": 3.9, "count": 0, "step": 0 },
+        { "key": "Effect RES", "value": 3.5, "count": 0, "step": 0 },
+        { "key": "ATK", "value": 19.0, "count": 0, "step": 0 }
+      ],
+      "location": "阮•梅",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "17",
+      "set_id": "312",
+      "name": "梦想之地匹诺康尼",
+      "slot": "PlanarSphere",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "HP%",
+      "substats": [
+        { "key": "SPD", "value": 6.5, "count": 2, "step": 1 },
+        { "key": "Break Effect", "value": 10.4, "count": 1, "step": 0 },
+        { "key": "DEF%", "value": 9.7, "count": 1, "step": 0 },
+        { "key": "ATK", "value": 19.0, "count": 0, "step": 0 }
+      ],
+      "location": "阮•梅",
+      "lock": true,
+      "discard": false
+    },
+    {
+      "_uid": "18",
+      "set_id": "312",
+      "name": "梦想之地匹诺康尼",
+      "slot": "LinkRope",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "Energy Regeneration Rate",
+      "substats": [
+        { "key": "Break Effect", "value": 22.0, "count": 3, "step": 2 },
+        { "key": "SPD", "value": 4.2, "count": 1, "step": 0 },
+        { "key": "HP%", "value": 7.3, "count": 1, "step": 0 },
+        { "key": "DEF", "value": 19.0, "count": 0, "step": 0 }
+      ],
+      "location": "阮•梅",
+      "lock": true,
+      "discard": false
+    },
 
-    {"_uid":"19","set_id":"110","name":"晨昏交界的翔鹰","slot":"Head","rarity":5,"level":15,"mainstat":"HP","substats":[{"key":"CRIT Rate","value":10.8,"count":3,"step":2},{"key":"CRIT DMG","value":10.4,"count":1,"step":0},{"key":"SPD","value":4.2,"count":1,"step":0},{"key":"ATK%","value":3.9,"count":0,"step":0}],"location":"","lock":false,"discard":false},
-    {"_uid":"20","set_id":"110","name":"晨昏交界的翔鹰","slot":"Hands","rarity":5,"level":15,"mainstat":"ATK","substats":[{"key":"CRIT DMG","value":16.2,"count":2,"step":1},{"key":"SPD","value":4.6,"count":1,"step":1},{"key":"CRIT Rate","value":5.5,"count":1,"step":0},{"key":"HP%","value":3.9,"count":0,"step":0}],"location":"","lock":false,"discard":false},
-    {"_uid":"21","set_id":"110","name":"晨昏交界的翔鹰","slot":"Body","rarity":5,"level":15,"mainstat":"CRIT Rate","substats":[{"key":"CRIT DMG","value":21.4,"count":3,"step":2},{"key":"SPD","value":4.2,"count":1,"step":0},{"key":"ATK%","value":7.3,"count":1,"step":0},{"key":"DEF","value":19.0,"count":0,"step":0}],"location":"","lock":false,"discard":false},
-    {"_uid":"22","set_id":"110","name":"晨昏交界的翔鹰","slot":"Feet","rarity":5,"level":15,"mainstat":"SPD","substats":[{"key":"CRIT Rate","value":8.1,"count":2,"step":1},{"key":"CRIT DMG","value":12.4,"count":1,"step":1},{"key":"ATK%","value":7.3,"count":1,"step":0},{"key":"Effect RES","value":4.3,"count":0,"step":0}],"location":"","lock":false,"discard":false},
-    {"_uid":"23","set_id":"301","name":"太空封印站","slot":"PlanarSphere","rarity":5,"level":15,"mainstat":"Fire DMG Boost","substats":[{"key":"ATK%","value":18.6,"count":4,"step":2},{"key":"CRIT Rate","value":5.8,"count":1,"step":0},{"key":"SPD","value":2.3,"count":0,"step":0},{"key":"HP%","value":3.9,"count":0,"step":0}],"location":"","lock":false,"discard":false},
-    {"_uid":"24","set_id":"301","name":"太空封印站","slot":"LinkRope","rarity":5,"level":15,"mainstat":"ATK%","substats":[{"key":"CRIT DMG","value":21.4,"count":3,"step":2},{"key":"CRIT Rate","value":5.5,"count":1,"step":0},{"key":"SPD","value":4.6,"count":1,"step":1},{"key":"DEF%","value":4.9,"count":0,"step":0}],"location":"","lock":false,"discard":false}
+    {
+      "_uid": "19",
+      "set_id": "110",
+      "name": "晨昏交界的翔鹰",
+      "slot": "Head",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "HP",
+      "substats": [
+        { "key": "CRIT Rate", "value": 10.8, "count": 3, "step": 2 },
+        { "key": "CRIT DMG", "value": 10.4, "count": 1, "step": 0 },
+        { "key": "SPD", "value": 4.2, "count": 1, "step": 0 },
+        { "key": "ATK%", "value": 3.9, "count": 0, "step": 0 }
+      ],
+      "location": "",
+      "lock": false,
+      "discard": false
+    },
+    {
+      "_uid": "20",
+      "set_id": "110",
+      "name": "晨昏交界的翔鹰",
+      "slot": "Hands",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK",
+      "substats": [
+        { "key": "CRIT DMG", "value": 16.2, "count": 2, "step": 1 },
+        { "key": "SPD", "value": 4.6, "count": 1, "step": 1 },
+        { "key": "CRIT Rate", "value": 5.5, "count": 1, "step": 0 },
+        { "key": "HP%", "value": 3.9, "count": 0, "step": 0 }
+      ],
+      "location": "",
+      "lock": false,
+      "discard": false
+    },
+    {
+      "_uid": "21",
+      "set_id": "110",
+      "name": "晨昏交界的翔鹰",
+      "slot": "Body",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "CRIT Rate",
+      "substats": [
+        { "key": "CRIT DMG", "value": 21.4, "count": 3, "step": 2 },
+        { "key": "SPD", "value": 4.2, "count": 1, "step": 0 },
+        { "key": "ATK%", "value": 7.3, "count": 1, "step": 0 },
+        { "key": "DEF", "value": 19.0, "count": 0, "step": 0 }
+      ],
+      "location": "",
+      "lock": false,
+      "discard": false
+    },
+    {
+      "_uid": "22",
+      "set_id": "110",
+      "name": "晨昏交界的翔鹰",
+      "slot": "Feet",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "SPD",
+      "substats": [
+        { "key": "CRIT Rate", "value": 8.1, "count": 2, "step": 1 },
+        { "key": "CRIT DMG", "value": 12.4, "count": 1, "step": 1 },
+        { "key": "ATK%", "value": 7.3, "count": 1, "step": 0 },
+        { "key": "Effect RES", "value": 4.3, "count": 0, "step": 0 }
+      ],
+      "location": "",
+      "lock": false,
+      "discard": false
+    },
+    {
+      "_uid": "23",
+      "set_id": "301",
+      "name": "太空封印站",
+      "slot": "PlanarSphere",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "Fire DMG Boost",
+      "substats": [
+        { "key": "ATK%", "value": 18.6, "count": 4, "step": 2 },
+        { "key": "CRIT Rate", "value": 5.8, "count": 1, "step": 0 },
+        { "key": "SPD", "value": 2.3, "count": 0, "step": 0 },
+        { "key": "HP%", "value": 3.9, "count": 0, "step": 0 }
+      ],
+      "location": "",
+      "lock": false,
+      "discard": false
+    },
+    {
+      "_uid": "24",
+      "set_id": "301",
+      "name": "太空封印站",
+      "slot": "LinkRope",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK%",
+      "substats": [
+        { "key": "CRIT DMG", "value": 21.4, "count": 3, "step": 2 },
+        { "key": "CRIT Rate", "value": 5.5, "count": 1, "step": 0 },
+        { "key": "SPD", "value": 4.6, "count": 1, "step": 1 },
+        { "key": "DEF%", "value": 4.9, "count": 0, "step": 0 }
+      ],
+      "location": "",
+      "lock": false,
+      "discard": false
+    }
   ]
 }

@@ -5,9 +5,10 @@ use crate::{
     domain::{OcrImageResult, OcrModelConfig, ScanSnapshot, StartScanRequest, SystemCapabilities},
     error::AppError,
     inventory::{
-        BuildRecommendation, BuildRecommendationRequest, CharacterBuildPlan, CharacterFilter, ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryKind,
-        InventoryStore, InventorySummary, LightConeFilter, LightConeListItem, PagedResult,
-        RelicFilter, RelicListItem,
+        BuildRecommendation, BuildRecommendationRequest, CharacterBuildPlan, CharacterFilter,
+        ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryKind, InventoryStore,
+        InventorySummary, LightConeFilter, LightConeListItem, PagedResult, RelicFilter,
+        RelicListItem,
     },
     scanner::ScannerState,
     screenshot,
@@ -55,15 +56,19 @@ pub async fn recognize_image(
 ) -> Result<OcrImageResult, AppError> {
     #[cfg(feature = "ocr")]
     {
-        return tauri::async_runtime::spawn_blocking(move || ocr::recognize_image(image_path, models))
-            .await
-            .map_err(|error| AppError::Ocr(error.to_string()))?;
+        return tauri::async_runtime::spawn_blocking(move || {
+            ocr::recognize_image(image_path, models)
+        })
+        .await
+        .map_err(|error| AppError::Ocr(error.to_string()))?;
     }
 
     #[cfg(not(feature = "ocr"))]
     {
         let _ = (image_path, models);
-        Err(AppError::Ocr("OCR 功能未启用。请使用 --features ocr 重新构建。".to_owned()))
+        Err(AppError::Ocr(
+            "OCR 功能未启用。请使用 --features ocr 重新构建。".to_owned(),
+        ))
     }
 }
 
@@ -74,15 +79,19 @@ pub async fn recognize_screenshot(
 ) -> Result<OcrImageResult, AppError> {
     #[cfg(feature = "ocr")]
     {
-        return tauri::async_runtime::spawn_blocking(move || ocr::recognize_screenshot(image_bytes, models))
-            .await
-            .map_err(|error| AppError::Ocr(error.to_string()))?;
+        return tauri::async_runtime::spawn_blocking(move || {
+            ocr::recognize_screenshot(image_bytes, models)
+        })
+        .await
+        .map_err(|error| AppError::Ocr(error.to_string()))?;
     }
 
     #[cfg(not(feature = "ocr"))]
     {
         let _ = (image_bytes, models);
-        Err(AppError::Ocr("OCR 功能未启用。请使用 --features ocr 重新构建。".to_owned()))
+        Err(AppError::Ocr(
+            "OCR 功能未启用。请使用 --features ocr 重新构建。".to_owned(),
+        ))
     }
 }
 
@@ -156,27 +165,41 @@ pub fn get_inventory_detail(
 }
 
 #[tauri::command]
-pub fn list_relic_sets(store: State<'_, InventoryStore>) -> Result<Vec<crate::inventory::RelicSetOption>, AppError> {
+pub fn list_relic_sets(
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<crate::inventory::RelicSetOption>, AppError> {
     store.list_relic_sets()
 }
 
 #[tauri::command]
-pub fn get_character_build_plan(character_id: u32, store: State<'_, InventoryStore>) -> Result<Option<CharacterBuildPlan>, AppError> {
+pub fn get_character_build_plan(
+    character_id: u32,
+    store: State<'_, InventoryStore>,
+) -> Result<Option<CharacterBuildPlan>, AppError> {
     store.build_plan(character_id)
 }
 
 #[tauri::command]
-pub fn save_character_build_plan(plan: CharacterBuildPlan, store: State<'_, InventoryStore>) -> Result<(), AppError> {
+pub fn save_character_build_plan(
+    plan: CharacterBuildPlan,
+    store: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
     store.save_build_plan(&plan)
 }
 
 #[tauri::command]
-pub fn delete_character_build_plan(character_id: u32, store: State<'_, InventoryStore>) -> Result<(), AppError> {
+pub fn delete_character_build_plan(
+    character_id: u32,
+    store: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
     store.delete_build_plan(character_id)
 }
 
 #[tauri::command]
-pub fn recommend_character_build(request: BuildRecommendationRequest, store: State<'_, InventoryStore>) -> Result<BuildRecommendation, AppError> {
+pub fn recommend_character_build(
+    request: BuildRecommendationRequest,
+    store: State<'_, InventoryStore>,
+) -> Result<BuildRecommendation, AppError> {
     store.recommend_build(&request)
 }
 
@@ -208,27 +231,36 @@ pub fn clear_inventory(
 }
 
 #[tauri::command]
-pub async fn export_inventory(store: State<'_, InventoryStore>) -> Result<Option<String>, AppError> {
+pub async fn export_inventory(
+    store: State<'_, InventoryStore>,
+) -> Result<Option<String>, AppError> {
     let Some(file) = rfd::AsyncFileDialog::new()
         .set_title("导出星穹铁道数据")
         .set_file_name("starrail-inventory.json")
         .add_filter("JSON", &["json"])
-        .save_file().await
+        .save_file()
+        .await
     else {
         return Ok(None);
     };
     let path = file.path();
-    store.export_to_path(&path)?;
+    store.export_to_path(path)?;
     Ok(Some(path.to_string_lossy().into_owned()))
 }
 
 #[tauri::command]
-pub async fn import_inventory(app: AppHandle, store: State<'_, InventoryStore>) -> Result<Option<InventorySummary>, AppError> {
+pub async fn import_inventory(
+    app: AppHandle,
+    store: State<'_, InventoryStore>,
+) -> Result<Option<InventorySummary>, AppError> {
     let Some(file) = rfd::AsyncFileDialog::new()
         .set_title("导入星穹铁道数据")
         .add_filter("JSON", &["json"])
-        .pick_file().await
-    else { return Ok(None) };
+        .pick_file()
+        .await
+    else {
+        return Ok(None);
+    };
     let path = file.path();
     let file = std::fs::File::open(path)?;
     let import: crate::inventory::InventoryImport = serde_json::from_reader(file)

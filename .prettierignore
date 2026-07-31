@@ -1,0 +1,7 @@
+# Legacy stylesheet uses CSS constructs that Prettier 3.8 formats non-idempotently.
+# New feature styles live beside their components and remain covered by Prettier.
+src/styles.css
+
+dist/
+node_modules/
+src-tauri/target/

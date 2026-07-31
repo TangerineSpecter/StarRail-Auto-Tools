@@ -48,41 +48,86 @@ function parseCard(id, fragment) {
   // The source renders the set-size marker as a standalone number. Require a
   // following Chinese character so values such as `40 %` in planar effects do
   // not get misidentified as a four-piece section.
-  const fourPieceMatch = kind === "cavern"
-    ? effects.match(/^([\s\S]*?)\s+4(?:件)?\s+(?=[\p{Script=Han}【])([\s\S]*)$/u)
-    : null;
+  const fourPieceMatch =
+    kind === "cavern"
+      ? effects.match(/^([\s\S]*?)\s+4(?:件)?\s+(?=[\p{Script=Han}【])([\s\S]*)$/u)
+      : null;
   const twoPiece = (fourPieceMatch?.[1] ?? effects).trim();
   const fourPiece = fourPieceMatch?.[2]?.trim() ?? "";
   const imageUrls = [...fragment.matchAll(/<img[^>]+(?:src|data-src)=["']([^"']+)["']/gi)]
     .map((match) => absoluteUrl(match[1]))
     .filter(Boolean);
   // The first image is the set icon; the rest are individual relic/ornament pieces.
-  return { id: Number(id), name, kind, effects: { twoPiece, fourPiece }, imageUrl: imageUrls[0] ?? null, pieceImageUrls: imageUrls.slice(1) };
+  return {
+    id: Number(id),
+    name,
+    kind,
+    effects: { twoPiece, fourPiece },
+    imageUrl: imageUrls[0] ?? null,
+    pieceImageUrls: imageUrls.slice(1),
+  };
 }
 
 function parseCharacter(slug, fragment) {
-  const labels = new Set(["物理", "火", "冰", "雷", "风", "量子", "虚数", "毁灭", "巡猎", "智识", "同谐", "虚无", "存护", "丰饶", "记忆", "欢愉", "New", "4⭐", "5⭐"]);
+  const labels = new Set([
+    "物理",
+    "火",
+    "冰",
+    "雷",
+    "风",
+    "量子",
+    "虚数",
+    "毁灭",
+    "巡猎",
+    "智识",
+    "同谐",
+    "虚无",
+    "存护",
+    "丰饶",
+    "记忆",
+    "欢愉",
+    "New",
+    "4⭐",
+    "5⭐",
+  ]);
   const elementNames = ["物理", "火", "冰", "雷", "风", "量子", "虚数"];
   const pathNames = ["毁灭", "巡猎", "智识", "同谐", "虚无", "存护", "丰饶", "记忆", "欢愉"];
   const parts = decodeHtml(fragment).split(" ").filter(Boolean);
   // The card's visible text only contains the name. Attribute/path labels are
   // exposed through the two icon alt attributes on the source page.
-  const iconAlts = [...fragment.matchAll(/<img[^>]+alt=["']([^"']+)["']/gi)].map((match) => decodeHtml(match[1]));
-  const element = parts.find((part) => elementNames.includes(part)) ?? iconAlts.find((alt) => elementNames.includes(alt)) ?? "";
-  const path = parts.find((part) => pathNames.includes(part)) ?? iconAlts.find((alt) => pathNames.includes(alt)) ?? "";
+  const iconAlts = [...fragment.matchAll(/<img[^>]+alt=["']([^"']+)["']/gi)].map((match) =>
+    decodeHtml(match[1]),
+  );
+  const element =
+    parts.find((part) => elementNames.includes(part)) ??
+    iconAlts.find((alt) => elementNames.includes(alt)) ??
+    "";
+  const path =
+    parts.find((part) => pathNames.includes(part)) ??
+    iconAlts.find((alt) => pathNames.includes(alt)) ??
+    "";
   const imageAlt = fragment.match(/<img[^>]+alt=["']([^"']+)["']/i)?.[1] ?? "";
   const visibleName = parts.filter((part) => !labels.has(part)).join(" ");
   // The list page has changed between server-rendered text cards and image-only
   // cards. Image alt text is the stable fallback for the latter.
   const name = (visibleName || imageAlt).replace(/^New\s*/i, "").trim();
-  const backgrounds = [...fragment.matchAll(/(?:background(?:-image)?\s*:\s*)?url\(\s*["']?([^"')\s]+)["']?\s*\)/gi)]
-    .map((match) => absoluteUrl(match[1])).filter(Boolean);
-  const inlineImages = [...fragment.matchAll(/<(?:img|source)[^>]+(?:src|data-src|srcset)=["']([^"']+)["']/gi)]
-    .map((match) => absoluteUrl(match[1].split(" ")[0])).filter(Boolean);
+  const backgrounds = [
+    ...fragment.matchAll(/(?:background(?:-image)?\s*:\s*)?url\(\s*["']?([^"')\s]+)["']?\s*\)/gi),
+  ]
+    .map((match) => absoluteUrl(match[1]))
+    .filter(Boolean);
+  const inlineImages = [
+    ...fragment.matchAll(/<(?:img|source)[^>]+(?:src|data-src|srcset)=["']([^"']+)["']/gi),
+  ]
+    .map((match) => absoluteUrl(match[1].split(" ")[0]))
+    .filter(Boolean);
   // The outer CSS background is the 4/5-star card backdrop, while the nested
   // CSS background is the portrait. Keep both so the client can layer them.
   return {
-    slug, name, element, path,
+    slug,
+    name,
+    element,
+    path,
     imageUrl: backgrounds.at(-1) ?? inlineImages.at(-1) ?? null,
     backgroundImageUrl: backgrounds.length > 1 ? backgrounds[0] : null,
     elementIconUrl: inlineImages[0] ?? null,
@@ -96,9 +141,11 @@ async function fetchOrThrow(url) {
   // returned to the synchronizer and to a maintainer's browser.
   const response = await fetch(url, {
     headers: {
-      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
       "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
-      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "user-agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
     },
   });
   if (!response.ok) throw new Error(`请求失败：${response.status} ${response.statusText} (${url})`);
@@ -122,14 +169,17 @@ async function downloadAsset(url, localPath) {
 
 const html = await (await fetchOrThrow(relicSourceUrl)).text();
 const found = new Map();
-const pattern = /<a\b[^>]*href=["'](?:https?:\/\/starrailstation\.com)?\/cn\/relics\/(\d+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+const pattern =
+  /<a\b[^>]*href=["'](?:https?:\/\/starrailstation\.com)?\/cn\/relics\/(\d+)["'][^>]*>([\s\S]*?)<\/a>/gi;
 for (const match of html.matchAll(pattern)) {
   const card = parseCard(match[1], match[2]);
   if (card.name && card.effects.twoPiece) found.set(card.id, card);
 }
 const sets = [...found.values()].sort((a, b) => a.id - b.id);
 if (sets.length < 10) {
-  throw new Error(`只解析到 ${sets.length} 个套装；页面结构可能已更新。为保护现有图鉴，未写入任何文件。`);
+  throw new Error(
+    `只解析到 ${sets.length} 个套装；页面结构可能已更新。为保护现有图鉴，未写入任何文件。`,
+  );
 }
 
 await mkdir(imageRoot, { recursive: true });
@@ -147,9 +197,8 @@ for (const set of sets) {
   if (!set.image) set.image = null;
 }
 for (const set of sets) {
-  const slots = set.kind === "planar"
-    ? ["PlanarSphere", "LinkRope"]
-    : ["Head", "Hands", "Body", "Feet"];
+  const slots =
+    set.kind === "planar" ? ["PlanarSphere", "LinkRope"] : ["Head", "Hands", "Body", "Feet"];
   const pieces = [];
   for (const [index, url] of set.pieceImageUrls.entries()) {
     const extension = extname(new URL(url).pathname) || ".webp";
@@ -164,7 +213,11 @@ for (const set of sets) {
 
 const catalogue = {
   schemaVersion: 1,
-  source: { name: "Star Rail Station Wiki", url: relicSourceUrl, syncedAt: new Date().toISOString() },
+  source: {
+    name: "Star Rail Station Wiki",
+    url: relicSourceUrl,
+    syncedAt: new Date().toISOString(),
+  },
   sets,
 };
 await writeFile(relicOutputFile, `${JSON.stringify(catalogue, null, 2)}\n`, "utf8");
@@ -173,16 +226,22 @@ const characterHtml = await (await fetchOrThrow(characterSourceUrl)).text();
 const charactersBySlug = new Map();
 const characterAnchorPattern = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
 for (const match of characterHtml.matchAll(characterAnchorPattern)) {
-  const href = match[1].match(/\bhref=["'](?:https?:\/\/starrailstation\.com)?\/cn\/characters?\/([^"'/?#]+)(?:\/)?(?:[?#][^"']*)?["']/i);
+  const href = match[1].match(
+    /\bhref=["'](?:https?:\/\/starrailstation\.com)?\/cn\/characters?\/([^"'/?#]+)(?:\/)?(?:[?#][^"']*)?["']/i,
+  );
   if (!href) continue;
   const accessibleName = match[1].match(/\b(?:aria-label|title)=["']([^"']+)["']/i)?.[1] ?? "";
   const character = parseCharacter(href[1], `${accessibleName} ${match[2]}`);
   if (character.name) charactersBySlug.set(character.slug, character);
 }
-const characters = [...charactersBySlug.values()].sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
+const characters = [...charactersBySlug.values()].sort((a, b) =>
+  a.name.localeCompare(b.name, "zh-CN"),
+);
 if (characters.length < 50) {
   const linkCount = [...characterHtml.matchAll(/\/cn\/characters?\//gi)].length;
-  throw new Error(`角色数据页未返回可用的角色卡片（发现 ${linkCount} 个角色链接，解析到 ${characters.length} 名角色）。请稍后重试；现有角色图鉴不会被覆盖。`);
+  throw new Error(
+    `角色数据页未返回可用的角色卡片（发现 ${linkCount} 个角色链接，解析到 ${characters.length} 名角色）。请稍后重试；现有角色图鉴不会被覆盖。`,
+  );
 }
 for (const character of characters) {
   if (!character.imageUrl) continue;
@@ -205,7 +264,10 @@ for (const character of characters) {
   delete character.imageUrl;
   if (!character.image) character.image = null;
 }
-const iconSpecs = [["element", "elementIconUrl", "elementIcon"], ["path", "pathIconUrl", "pathIcon"]];
+const iconSpecs = [
+  ["element", "elementIconUrl", "elementIcon"],
+  ["path", "pathIconUrl", "pathIcon"],
+];
 for (const [kind, sourceKey, targetKey] of iconSpecs) {
   const icons = new Map();
   for (const character of characters) {
@@ -217,7 +279,9 @@ for (const [kind, sourceKey, targetKey] of iconSpecs) {
     const relativePath = `character-icons/${kind}s/${name}${extension}`;
     const localPath = join(root, "public", relativePath);
     await downloadAsset(url, localPath);
-    for (const character of characters) if ((kind === "element" ? character.element : character.path) === name) character[targetKey] = `/${relativePath}`;
+    for (const character of characters)
+      if ((kind === "element" ? character.element : character.path) === name)
+        character[targetKey] = `/${relativePath}`;
   }
 }
 for (const character of characters) {
@@ -227,8 +291,14 @@ for (const character of characters) {
 }
 const characterCatalogue = {
   schemaVersion: 1,
-  source: { name: "Star Rail Station Wiki", url: characterSourceUrl, syncedAt: new Date().toISOString() },
+  source: {
+    name: "Star Rail Station Wiki",
+    url: characterSourceUrl,
+    syncedAt: new Date().toISOString(),
+  },
   characters,
 };
 await writeFile(characterOutputFile, `${JSON.stringify(characterCatalogue, null, 2)}\n`, "utf8");
-console.log(`已更新 ${sets.length} 个套装和 ${characters.length} 名角色${skipImages ? "（已跳过图片）" : "及图片"}。`);
+console.log(
+  `已更新 ${sets.length} 个套装和 ${characters.length} 名角色${skipImages ? "（已跳过图片）" : "及图片"}。`,
+);
