@@ -170,6 +170,13 @@ node_modules/
 dist/
 src-tauri/target/
 src-tauri/gen/
+# Vendored Rust crates are bootstrapped automatically by scripts/bootstrap-vendor.*
+# on first run (dev.sh / dev.ps1 / build-windows.ps1).  Do not commit them.
+src-tauri/vendor/
+# The *source of truth* for the above vendored crates: a pre-patched zip that
+# ships inside the git repo so builds stay reproducible even if the upstream
+# GitHub repo is removed or taken private.  Keep this tracked.
+!vendor-cache/
 
 models/*.onnx
 models/*.txt

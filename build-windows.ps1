@@ -5,6 +5,14 @@ param()
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
+# ---------------------------------------------------------------------------
+# Ensure vendored Rust crates exist before any build step.
+# On a fresh clone src-tauri/vendor/ is gitignored, so this step builds it
+# from upstream + local patches (see scripts/bootstrap-vendor.ps1).
+# ---------------------------------------------------------------------------
+& "$PSScriptRoot\scripts\bootstrap-vendor.ps1"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 # nvm-windows does not switch versions automatically for every new shell.
 if (Get-Command nvm -ErrorAction SilentlyContinue) {
     nvm use 22

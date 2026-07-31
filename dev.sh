@@ -6,6 +6,13 @@ set -euo pipefail
 project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$project_dir"
 
+# ---------------------------------------------------------------------------
+# Ensure vendored Rust crates exist before any Cargo/toolchain check.
+# On a fresh clone src-tauri/vendor/ is gitignored, so this step builds it
+# from upstream + local patches (see scripts/bootstrap-vendor.sh).
+# ---------------------------------------------------------------------------
+bash "$project_dir/scripts/bootstrap-vendor.sh"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

@@ -9,6 +9,14 @@ $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
 # ---------------------------------------------------------------------------
+# Ensure vendored Rust crates exist before any Cargo/toolchain check.
+# On a fresh clone src-tauri/vendor/ is gitignored, so this step builds it
+# from upstream + local patches (see scripts/bootstrap-vendor.ps1).
+# ---------------------------------------------------------------------------
+& "$PSScriptRoot\scripts\bootstrap-vendor.ps1"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+# ---------------------------------------------------------------------------
 # Helper: refresh PATH so we can detect freshly-installed tools
 # ---------------------------------------------------------------------------
 function Refresh-Path {
