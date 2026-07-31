@@ -1871,6 +1871,30 @@ th, td { height: 56px; padding: 9px 12px; }
 .item-id, .rarity { font-size: 11px; }
 .data-tag { padding: 5px 8px; font-size: 11px; }
 .row-action { min-height: 36px; padding: 5px 9px; font-size: 13px; }
+
+.relic-name-cell { display: flex; align-items: center; gap: 12px; }
+.relic-icon-box { display: grid; place-items: center; width: 38px; height: 38px; background: linear-gradient(135deg, #f29c38, #e87b1e); border-radius: 6px; color: #fff; font-size: 18px; }
+.relic-name-info { display: flex; flex-direction: column; gap: 4px; }
+.relic-name-info .item-name { font-size: 14px; color: var(--ink); }
+.relic-subtitle { font-size: 11px; color: var(--muted); }
+.relic-level-badge { display: inline-block; padding: 4px 10px; background: #f0f2f5; border-radius: 12px; font-weight: 700; font-size: 13px; color: var(--ink); }
+.relic-main-stat { display: flex; flex-direction: column; gap: 4px; }
+.relic-main-stat .stat-name { font-size: 11px; color: var(--muted); }
+.relic-main-stat .stat-value { font-size: 14px; font-weight: 700; color: var(--ink); }
+.relic-substats-grid { display: grid; grid-template-columns: 1fr 1fr; row-gap: 8px; column-gap: 8px; min-width: 200px; }
+.relic-substat-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: #f5f7fa; border-radius: 4px; font-size: 12px; }
+.relic-substat-item .substat-name { color: var(--ink-soft); }
+.relic-substat-item .substat-value { color: var(--ink); font-weight: 600; }
+.relic-equip-tag { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.relic-equip-tag.unequipped { background: #f0f2f5; color: var(--muted); }
+.relic-equip-tag.element-火 { background: #ffebe5; color: #d13d21; }
+.relic-equip-tag.element-冰 { background: #e5f5ff; color: #1a7ec2; }
+.relic-equip-tag.element-雷 { background: #f3ebfc; color: #8843cf; }
+.relic-equip-tag.element-风 { background: #e6f6eb; color: #279447; }
+.relic-equip-tag.element-物理 { background: #f0f2f5; color: #5c6470; }
+.relic-equip-tag.element-量子 { background: #f1eaf7; color: #58338e; }
+.relic-equip-tag.element-虚数 { background: #fdf5e5; color: #c48310; }
+.relic-equip-tag.element-null { background: #e8f0fb; color: var(--blue); }
 .table-footer, .app-footer { font-size: 12px; }
 .pagination { gap: 10px; }
 .pagination .p-button { width: 36px; height: 36px; }

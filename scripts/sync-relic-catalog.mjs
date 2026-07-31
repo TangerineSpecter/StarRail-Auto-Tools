@@ -3,7 +3,8 @@
  * Creates bundled relic and character catalogues from public Star Rail Station Wiki pages.
  * It deliberately has no third-party dependency so a maintainer can run it with Node 22.
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { access, mkdir, writeFile } from "node:fs/promises";
+import { constants as fsConstants } from "node:fs";
 import { dirname, extname, join } from "node:path";
 
 const relicSourceUrl = "https://starrailstation.com/cn/relics";
@@ -13,6 +14,7 @@ const relicOutputFile = join(root, "src/data/relic-sets.json");
 const characterOutputFile = join(root, "src/data/characters.json");
 const imageRoot = join(root, "public/relic-sets");
 const skipImages = process.argv.includes("--skip-images");
+const refreshImages = process.argv.includes("--refresh-images");
 
 function decodeHtml(value) {
   return value
@@ -51,8 +53,11 @@ function parseCard(id, fragment) {
     : null;
   const twoPiece = (fourPieceMatch?.[1] ?? effects).trim();
   const fourPiece = fourPieceMatch?.[2]?.trim() ?? "";
-  const imageMatch = fragment.match(/<img[^>]+(?:src|data-src)=["']([^"']+)["']/i);
-  return { id: Number(id), name, kind, effects: { twoPiece, fourPiece }, imageUrl: absoluteUrl(imageMatch?.[1] ?? null) };
+  const imageUrls = [...fragment.matchAll(/<img[^>]+(?:src|data-src)=["']([^"']+)["']/gi)]
+    .map((match) => absoluteUrl(match[1]))
+    .filter(Boolean);
+  // The first image is the set icon; the rest are individual relic/ornament pieces.
+  return { id: Number(id), name, kind, effects: { twoPiece, fourPiece }, imageUrl: imageUrls[0] ?? null, pieceImageUrls: imageUrls.slice(1) };
 }
 
 function parseCharacter(slug, fragment) {
@@ -100,6 +105,21 @@ async function fetchOrThrow(url) {
   return response;
 }
 
+async function downloadAsset(url, localPath) {
+  if (skipImages) return;
+  if (!refreshImages) {
+    try {
+      await access(localPath, fsConstants.F_OK);
+      return;
+    } catch {
+      // File does not exist yet; download it below.
+    }
+  }
+  const image = await fetchOrThrow(url);
+  await mkdir(dirname(localPath), { recursive: true });
+  await writeFile(localPath, Buffer.from(await image.arrayBuffer()));
+}
+
 const html = await (await fetchOrThrow(relicSourceUrl)).text();
 const found = new Map();
 const pattern = /<a\b[^>]*href=["'](?:https?:\/\/starrailstation\.com)?\/cn\/relics\/(\d+)["'][^>]*>([\s\S]*?)<\/a>/gi;
@@ -114,19 +134,32 @@ if (sets.length < 10) {
 
 await mkdir(imageRoot, { recursive: true });
 for (const set of sets) {
-  if (skipImages || !set.imageUrl) continue;
+  if (!set.imageUrl) continue;
   const extension = extname(new URL(set.imageUrl).pathname) || ".webp";
   const relativePath = `relic-sets/${set.id}${extension}`;
   const localPath = join(root, "public", relativePath);
-  const image = await fetchOrThrow(set.imageUrl);
-  await mkdir(dirname(localPath), { recursive: true });
-  await writeFile(localPath, Buffer.from(await image.arrayBuffer()));
+  await downloadAsset(set.imageUrl, localPath);
   set.image = `/${relativePath}`;
   delete set.imageUrl;
 }
 for (const set of sets) {
   delete set.imageUrl;
   if (!set.image) set.image = null;
+}
+for (const set of sets) {
+  const slots = set.kind === "planar"
+    ? ["PlanarSphere", "LinkRope"]
+    : ["Head", "Hands", "Body", "Feet"];
+  const pieces = [];
+  for (const [index, url] of set.pieceImageUrls.entries()) {
+    const extension = extname(new URL(url).pathname) || ".webp";
+    const relativePath = `relic-pieces/${set.id}-${index + 1}${extension}`;
+    const localPath = join(root, "public", relativePath);
+    await downloadAsset(url, localPath);
+    pieces.push({ slot: slots[index] ?? `Unknown-${index + 1}`, image: `/${relativePath}` });
+  }
+  set.pieces = pieces;
+  delete set.pieceImageUrls;
 }
 
 const catalogue = {
@@ -152,24 +185,20 @@ if (characters.length < 50) {
   throw new Error(`角色数据页未返回可用的角色卡片（发现 ${linkCount} 个角色链接，解析到 ${characters.length} 名角色）。请稍后重试；现有角色图鉴不会被覆盖。`);
 }
 for (const character of characters) {
-  if (skipImages || !character.imageUrl) continue;
+  if (!character.imageUrl) continue;
   const extension = extname(new URL(character.imageUrl).pathname) || ".webp";
   const relativePath = `characters/${character.slug}${extension}`;
   const localPath = join(root, "public", relativePath);
-  const image = await fetchOrThrow(character.imageUrl);
-  await mkdir(dirname(localPath), { recursive: true });
-  await writeFile(localPath, Buffer.from(await image.arrayBuffer()));
+  await downloadAsset(character.imageUrl, localPath);
   character.image = `/${relativePath}`;
   delete character.imageUrl;
 }
 for (const character of characters) {
-  if (skipImages || !character.backgroundImageUrl) continue;
+  if (!character.backgroundImageUrl) continue;
   const extension = extname(new URL(character.backgroundImageUrl).pathname) || ".webp";
   const relativePath = `character-backgrounds/${character.slug}${extension}`;
-  const image = await fetchOrThrow(character.backgroundImageUrl);
   const localPath = join(root, "public", relativePath);
-  await mkdir(dirname(localPath), { recursive: true });
-  await writeFile(localPath, Buffer.from(await image.arrayBuffer()));
+  await downloadAsset(character.backgroundImageUrl, localPath);
   character.backgroundImage = `/${relativePath}`;
 }
 for (const character of characters) {
@@ -186,12 +215,8 @@ for (const [kind, sourceKey, targetKey] of iconSpecs) {
   for (const [name, url] of icons) {
     const extension = extname(new URL(url).pathname) || ".webp";
     const relativePath = `character-icons/${kind}s/${name}${extension}`;
-    if (!skipImages) {
-      const image = await fetchOrThrow(url);
-      const localPath = join(root, "public", relativePath);
-      await mkdir(dirname(localPath), { recursive: true });
-      await writeFile(localPath, Buffer.from(await image.arrayBuffer()));
-    }
+    const localPath = join(root, "public", relativePath);
+    await downloadAsset(url, localPath);
     for (const character of characters) if ((kind === "element" ? character.element : character.path) === name) character[targetKey] = `/${relativePath}`;
   }
 }

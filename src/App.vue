@@ -114,6 +114,7 @@ const buildRecommendation = ref<BuildRecommendation | null>(null);
 const relicCatalogue = relicCatalogueJson as RelicSetCatalogue;
 const characterCatalogue = characterCatalogueJson as CharacterCatalogue;
 const characterAvatars = new Map(characterCatalogue.characters.map((character) => [character.name, character.image]));
+const characterElements = new Map(characterCatalogue.characters.map((character) => [character.name, character.element]));
 const relicSetOptions = ref<RelicSetOption[]>(
   relicCatalogue.sets.map((set) => ({ setId: set.id, name: set.name, kind: set.kind })),
 );
@@ -861,6 +862,10 @@ function characterAvatar(name: string): string | null {
   return characterAvatars.get(name) ?? null;
 }
 
+function getCharacterElement(name: string): string | null {
+  return characterElements.get(name) ?? null;
+}
+
 function recordEntries(value: Record<string, unknown> | null | undefined): Array<[string, string]> {
   if (!value) return [];
   return Object.entries(value).map(([key, item]) => {
@@ -1215,7 +1220,7 @@ onUnmounted(() => {
                   <th class="check-cell"><Checkbox binary :model-value="allSelected" @update:model-value="toggleAll" /></th>
                   <th>名称</th>
                   <template v-if="inventoryKind === 'relic'">
-                    <th>部位</th><th>星级</th><th>等级</th><th>主词条</th><th>状态</th>
+                    <th>等级</th><th>主词条</th><th>副词条</th><th>装备角色</th>
                   </template>
                   <template v-else-if="inventoryKind === 'lightCone'">
                     <th>等级</th><th>突破</th><th>叠影</th><th>装备角色</th><th>状态</th>
@@ -1232,19 +1237,44 @@ onUnmounted(() => {
                     <Checkbox binary :model-value="selectedIds.has(idFor(item))" @update:model-value="toggleSelected(idFor(item))" />
                   </td>
                   <td>
-                    <img v-if="inventoryKind === 'character' && characterAvatar((item as CharacterListItem).name)" class="character-table-avatar" :src="characterAvatar((item as CharacterListItem).name)!" :alt="`${item.name} 头像`" />
-                    <strong class="item-name">{{ itemTitle(item) }}</strong>
-                    <small class="item-id">#{{ idFor(item) }}</small>
+                    <template v-if="inventoryKind === 'relic'">
+                      <div class="relic-name-cell">
+                        <div class="relic-icon-box">
+                          <span class="relic-icon-star">☆</span>
+                        </div>
+                        <div class="relic-name-info">
+                          <strong class="item-name">{{ itemTitle(item) }}</strong>
+                          <small class="relic-subtitle">{{ (item as RelicListItem).setName }} · {{ slotLabel((item as RelicListItem).slot) }}</small>
+                        </div>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <img v-if="inventoryKind === 'character' && characterAvatar((item as CharacterListItem).name)" class="character-table-avatar" :src="characterAvatar((item as CharacterListItem).name)!" :alt="`${item.name} 头像`" />
+                      <strong class="item-name">{{ itemTitle(item) }}</strong>
+                      <small class="item-id">#{{ idFor(item) }}</small>
+                    </template>
                   </td>
                   <template v-if="inventoryKind === 'relic'">
-                    <td>{{ slotLabel((item as RelicListItem).slot) }}</td>
-                    <td><span class="rarity">{{ "✦".repeat((item as RelicListItem).rarity) }}</span></td>
-                    <td><b>+{{ (item as RelicListItem).level }}</b></td>
-                    <td>{{ statLabel((item as RelicListItem).mainStat) }} +{{ formatStatValue((item as RelicListItem).mainStat, (item as RelicListItem).mainStatValue) }}</td>
+                    <td><span class="relic-level-badge">+{{ (item as RelicListItem).level }}</span></td>
                     <td>
-                      <Tag v-if="(item as RelicListItem).locked" value="锁定" class="data-tag" />
-                      <Tag v-if="(item as RelicListItem).discard" value="弃置" severity="danger" class="data-tag danger" />
-                      <Tag v-if="(item as RelicListItem).location" value="已装备" severity="info" class="data-tag cyan" />
+                      <div class="relic-main-stat">
+                        <span class="stat-name">{{ statLabel((item as RelicListItem).mainStat) }}</span>
+                        <strong class="stat-value">{{ formatStatValue((item as RelicListItem).mainStat, (item as RelicListItem).mainStatValue) }}</strong>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="relic-substats-grid">
+                        <span v-for="stat in (item as RelicListItem).substats" :key="stat.key" class="relic-substat-item">
+                          <span class="substat-name">{{ statLabel(stat.key) }}</span>
+                          <strong class="substat-value">{{ formatStatValue(stat.key, stat.value) }}</strong>
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span v-if="(item as RelicListItem).location" :class="['relic-equip-tag', 'element-' + getCharacterElement((item as RelicListItem).location)]">
+                        {{ (item as RelicListItem).location }}
+                      </span>
+                      <span v-else class="relic-equip-tag unequipped">未装备</span>
                     </td>
                   </template>
                   <template v-else-if="inventoryKind === 'lightCone'">

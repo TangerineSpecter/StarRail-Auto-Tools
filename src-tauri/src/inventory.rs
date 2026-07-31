@@ -124,6 +124,17 @@ pub struct CharacterFilter {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RelicSubstatItem {
+    pub kind: String,
+    pub position: u32,
+    pub key: String,
+    pub value: f64,
+    pub count: u32,
+    pub step: u32,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RelicListItem {
     pub item_id: u32,
     pub set_id: u32,
@@ -139,6 +150,7 @@ pub struct RelicListItem {
     pub discard: bool,
     pub source: String,
     pub updated_at: i64,
+    pub substats: Vec<RelicSubstatItem>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -786,9 +798,30 @@ impl InventoryStore {
              ORDER BY rarity DESC, level DESC, item_id DESC LIMIT ? OFFSET ?"
         );
         let mut statement = connection.prepare(&sql)?;
-        let items = statement
+        let mut items = statement
             .query_map(params_from_iter(paged_values.iter()), map_relic)?
             .collect::<Result<Vec<_>, _>>()?;
+            
+        let mut substat_stmt = connection.prepare(
+            "SELECT kind, position, stat_key, value, count, step
+             FROM relic_substats WHERE relic_id = ?1 AND kind = 'normal' ORDER BY position",
+        )?;
+        
+        for item in &mut items {
+            item.substats = substat_stmt
+                .query_map([item.item_id], |row| {
+                    Ok(RelicSubstatItem {
+                        kind: row.get(0)?,
+                        position: row.get(1)?,
+                        key: row.get(2)?,
+                        value: row.get(3)?,
+                        count: row.get(4)?,
+                        step: row.get(5)?,
+                    })
+                })?
+                .collect::<Result<Vec<_>, _>>()?;
+        }
+            
         Ok(PagedResult {
             items,
             total,
@@ -1359,6 +1392,7 @@ fn map_relic(row: &Row<'_>) -> rusqlite::Result<RelicListItem> {
         discard: row.get(11)?,
         source: row.get(12)?,
         updated_at: row.get(13)?,
+        substats: vec![],
     })
 }
 

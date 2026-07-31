@@ -99,6 +99,15 @@ export interface CharacterFilter extends PageQuery {
   eidolon?: number;
 }
 
+export interface RelicSubstatItem {
+  kind: string;
+  position: number;
+  key: string;
+  value: number;
+  count: number;
+  step: number;
+}
+
 export interface RelicListItem {
   itemId: number;
   setId: number;
@@ -114,6 +123,7 @@ export interface RelicListItem {
   discard: boolean;
   source: string;
   updatedAt: number;
+  substats: RelicSubstatItem[];
 }
 
 export interface LightConeListItem {
@@ -176,6 +186,11 @@ export interface RelicSetCatalogueEntry {
   kind: RelicSetKind;
   effects: { twoPiece: string; fourPiece: string };
   image: string | null;
+  pieces?: Array<{
+    /** Head, Hands, Body, Feet, PlanarSphere, or LinkRope. */
+    slot: string;
+    image: string;
+  }>;
 }
 export interface RelicSetCatalogue {
   schemaVersion: number;
