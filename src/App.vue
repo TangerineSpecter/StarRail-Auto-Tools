@@ -120,6 +120,15 @@ const relicPieceImages = new Map(
     (set.pieces || []).map((piece) => [`${set.id}_${piece.slot}`, piece.image] as const)
   )
 );
+
+function getDetailRelicImage(detail: RelicDetailData): string | undefined {
+  const set = relicCatalogue.sets.find((s) => s.name === detail.setName);
+  if (set) {
+    return relicPieceImages.get(`${set.id}_${detail.slot}`);
+  }
+  return undefined;
+}
+
 const relicSetOptions = ref<RelicSetOption[]>(
   relicCatalogue.sets.map((set) => ({ setId: set.id, name: set.name, kind: set.kind })),
 );
@@ -1251,6 +1260,7 @@ onUnmounted(() => {
               <thead>
                 <tr>
                   <th class="check-cell"><Checkbox binary :model-value="allSelected" @update:model-value="toggleAll" /></th>
+                  <th v-if="inventoryKind === 'character'">头像</th>
                   <th>名称</th>
                   <template v-if="inventoryKind === 'relic'">
                     <th>等级</th><th>主词条</th><th>副词条</th><th>装备角色</th>
@@ -1259,7 +1269,7 @@ onUnmounted(() => {
                     <th>等级</th><th>突破</th><th>叠影</th><th>装备角色</th><th>状态</th>
                   </template>
                   <template v-else>
-                    <th>命途</th><th>等级</th><th>突破</th><th>星魂</th><th>能力版本</th>
+                    <th>命途</th><th>突破</th><th>星魂</th><th>能力版本</th>
                   </template>
                   <th class="detail-cell">详情</th>
                 </tr>
@@ -1268,6 +1278,9 @@ onUnmounted(() => {
                 <tr v-for="item in result.items" :key="idFor(item)">
                   <td class="check-cell">
                     <Checkbox binary :model-value="selectedIds.has(idFor(item))" @update:model-value="toggleSelected(idFor(item))" />
+                  </td>
+                  <td v-if="inventoryKind === 'character'">
+                    <img v-if="characterAvatar((item as CharacterListItem).name)" class="character-table-avatar" :src="characterAvatar((item as CharacterListItem).name)!" :alt="`${item.name} 头像`" />
                   </td>
                   <td>
                     <template v-if="inventoryKind === 'relic'">
@@ -1283,9 +1296,8 @@ onUnmounted(() => {
                       </div>
                     </template>
                     <template v-else>
-                      <img v-if="inventoryKind === 'character' && characterAvatar((item as CharacterListItem).name)" class="character-table-avatar" :src="characterAvatar((item as CharacterListItem).name)!" :alt="`${item.name} 头像`" />
                       <strong class="item-name">{{ itemTitle(item) }}</strong>
-                      <small class="item-id">#{{ idFor(item) }}</small>
+                      <small v-if="inventoryKind !== 'character'" class="item-id">#{{ idFor(item) }}</small>
                     </template>
                   </td>
                   <template v-if="inventoryKind === 'relic'">
@@ -1323,7 +1335,6 @@ onUnmounted(() => {
                   </template>
                   <template v-else>
                     <td>{{ pathLabel((item as CharacterListItem).path) }}</td>
-                    <td><b>Lv.{{ (item as CharacterListItem).level }}</b></td>
                     <td>{{ (item as CharacterListItem).ascension }}</td>
                     <td>{{ (item as CharacterListItem).eidolon }}</td>
                     <td>V{{ (item as CharacterListItem).abilityVersion }}</td>
@@ -1490,26 +1501,53 @@ onUnmounted(() => {
         <div v-if="detailLoading" class="detail-loading">正在读取 SQLite 记录…</div>
         <section v-else-if="detailRelic" class="relic-detail-card">
           <div class="relic-detail-identity">
-            <div class="relic-slot-mark">{{ slotLabel(detailRelic.slot).slice(0, 1) }}</div>
-            <div><p>{{ detailRelic.setName }}</p><h3>{{ detailRelic.name }}</h3><small>#{{ detailRelic.itemId }} · {{ slotLabel(detailRelic.slot) }}</small></div>
-            <b class="relic-level">+{{ detailRelic.level }}</b>
-          </div>
-
-          <div class="relic-rarity" :aria-label="`${detailRelic.rarity} 星`">{{ '✦'.repeat(detailRelic.rarity) }}</div>
-          <section class="main-stat-card">
-            <p>主词条 <span>MAIN STAT</span></p>
-            <strong>{{ statLabel(detailRelic.mainStat) }}</strong>
-            <b>+{{ formatStatValue(detailRelic.mainStat, detailRelic.mainStatValue) }}</b>
-          </section>
-
-          <section class="substat-card">
-            <header><div><p class="eyebrow">SUB STATS</p><h3>副词条</h3></div><small>{{ detailRelic.substats?.length ?? 0 }} 条记录</small></header>
-            <div v-if="detailRelic.substats?.length" class="substat-list">
-              <div v-for="(stat, index) in detailRelic.substats" :key="`${stat.kind}-${index}`" :class="['substat-row', { auxiliary: stat.kind !== 'normal' }]">
-                <span>{{ statLabel(stat.key) }}</span><b>+{{ formatStatValue(stat.key, stat.value) }}</b><small v-if="stat.count">强化 {{ stat.count }} 次</small><em v-if="stat.kind !== 'normal'">{{ stat.kind === 'reroll' ? '重铸' : '预览' }}</em>
+            <div :class="['detail-icon-box', `rarity-${detailRelic.rarity}`]">
+              <img v-if="getDetailRelicImage(detailRelic)" :src="getDetailRelicImage(detailRelic)!" :alt="slotLabel(detailRelic.slot)" class="detail-piece-image" />
+              <span v-else>{{ slotLabel(detailRelic.slot).slice(0, 1) }}</span>
+            </div>
+            <div class="detail-identity-text">
+              <p class="detail-set-name">{{ detailRelic.setName }}</p>
+              <h3>{{ detailRelic.name }}</h3>
+              <div class="detail-tags">
+                <span class="detail-slot-tag">{{ slotLabel(detailRelic.slot) }}</span>
+                <span class="detail-id-tag">#{{ detailRelic.itemId }}</span>
               </div>
             </div>
-            <p v-else class="empty-substats">该遗器尚未记录副词条。</p>
+            <b :class="['detail-relic-level', { 'is-max': detailRelic.level === 15 }]">+{{ detailRelic.level }}</b>
+          </div>
+
+          <div class="detail-rarity-stars" :aria-label="`${detailRelic.rarity} 星`">
+            <i v-for="n in detailRelic.rarity" :key="n">✦</i>
+          </div>
+
+          <section class="detail-main-stat">
+            <div class="stat-header">
+              <p>主属性 <span>MAIN STAT</span></p>
+            </div>
+            <div class="stat-body">
+              <strong>{{ statLabel(detailRelic.mainStat) }}</strong>
+              <b>+{{ formatStatValue(detailRelic.mainStat, detailRelic.mainStatValue) }}</b>
+            </div>
+          </section>
+
+          <section class="detail-substats">
+            <header>
+              <div><p class="eyebrow">SUB STATS</p><h3>副属性</h3></div>
+              <small>{{ detailRelic.substats?.length ?? 0 }} / 4</small>
+            </header>
+            <div v-if="detailRelic.substats?.length" class="detail-substat-list">
+              <div v-for="(stat, index) in detailRelic.substats" :key="`${stat.kind}-${index}`" :class="['detail-substat-row', `hit-${stat.count}`, { auxiliary: stat.kind !== 'normal' }]">
+                <span class="detail-substat-name">{{ statLabel(stat.key) }}</span>
+                <b class="detail-substat-value">+{{ formatStatValue(stat.key, stat.value) }}</b>
+                <div class="detail-substat-meta">
+                  <i v-if="stat.count > 0" class="detail-hit-badge">{{ stat.count === 5 ? 'MAX' : `+${stat.count}` }}</i>
+                  <em v-if="stat.kind !== 'normal'">{{ stat.kind === 'reroll' ? '重铸' : '预览' }}</em>
+                </div>
+              </div>
+            </div>
+            <div v-else class="detail-empty-substats">
+              <p>该遗器尚未记录副属性数据。</p>
+            </div>
           </section>
 
           <footer class="relic-detail-footer">
