@@ -54,3 +54,17 @@ windows = { version = "0.62", features = [
 # gates that Win32 resource embedding behind a never-enabled Cargo feature so
 # tauri-build remains the sole owner of the final executable's resources.
 reliquary-archiver = { path = "vendor/reliquary-archiver" }
+
+[profile.dev]
+# HoYoverse's KCP implementation uses a timestamp-like field differently from
+# the standard kcp crate, which eventually produces an arithmetic overflow in
+# `kcp-0.5.3/src/kcp.rs:517` when run with overflow checks enabled.  The
+# upstream reliquary-archiver disables overflow checks for the same reason;
+# match that policy here so the capture task does not panic mid-sync and leave
+# the UI stuck on "同步中" with zero imported records.
+overflow-checks = false
+
+[profile.release]
+# See [profile.dev] comment above — keep overflow checks disabled in release
+# builds as well to avoid the KCP timestamp multiply-with-overflow panic.
+overflow-checks = false
