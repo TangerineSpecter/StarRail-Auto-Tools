@@ -10,6 +10,7 @@ pub enum AppError {
     InvalidInterval,
     #[error("画面变化阈值必须在 0 到 1 之间")]
     InvalidThreshold,
+    #[allow(dead_code)]
     #[error("找不到文件：{0}")]
     MissingFile(String),
     #[error("OCR 初始化或推理失败：{0}")]

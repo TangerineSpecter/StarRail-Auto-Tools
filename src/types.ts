@@ -168,7 +168,35 @@ export interface CharacterBuildPlan {
   targets: BuildTarget[];
 }
 
-export interface RelicSetOption { setId: number; name: string; }
+export type RelicSetKind = "cavern" | "planar";
+export interface RelicSetOption { setId: number; name: string; kind: RelicSetKind; }
+export interface RelicSetCatalogueEntry {
+  id: number;
+  name: string;
+  kind: RelicSetKind;
+  effects: { twoPiece: string; fourPiece: string };
+  image: string | null;
+}
+export interface RelicSetCatalogue {
+  schemaVersion: number;
+  source: { name: string; url: string; syncedAt: string | null };
+  sets: RelicSetCatalogueEntry[];
+}
+export interface CharacterCatalogueEntry {
+  slug: string;
+  name: string;
+  element: string;
+  path: string;
+  image: string | null;
+  backgroundImage?: string;
+  elementIcon?: string;
+  pathIcon?: string;
+}
+export interface CharacterCatalogue {
+  schemaVersion: number;
+  source: { name: string; url: string; syncedAt: string | null };
+  characters: CharacterCatalogueEntry[];
+}
 export interface BuildProgress { statKey: string; current: number; target: number; gap: number; minimum: number; priority: number; }
 export interface BuildRelicChoice { itemId: number; name: string; slot: string; setId: number; mainStat: string; location: string; borrowed: boolean; }
 export interface BuildRecommendation {

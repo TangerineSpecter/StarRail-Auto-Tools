@@ -54,6 +54,7 @@ pub struct StartScanRequest {
     pub change_threshold: f32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OcrModelConfig {

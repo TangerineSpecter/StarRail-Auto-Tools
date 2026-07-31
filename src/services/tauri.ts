@@ -15,7 +15,6 @@ import type {
   PagedResult,
   RelicFilter,
   RelicListItem,
-  RelicSetOption,
   SystemCapabilities,
 } from "../types";
 
@@ -51,7 +50,6 @@ export const api = {
   exportInventory: () =>
     invoke<string | null>("export_inventory"),
   importInventory: () => invoke<InventorySummary | null>("import_inventory"),
-  relicSets: () => invoke<RelicSetOption[]>("list_relic_sets"),
   characterBuildPlan: (characterId: number) =>
     invoke<CharacterBuildPlan | null>("get_character_build_plan", { characterId }),
   saveCharacterBuildPlan: (plan: CharacterBuildPlan) =>

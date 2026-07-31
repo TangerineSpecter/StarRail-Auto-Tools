@@ -1,0 +1,960 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "name": "Star Rail Station Wiki",
+    "url": "https://starrailstation.com/cn/characters",
+    "syncedAt": "2026-07-31T04:33:23.898Z"
+  },
+  "characters": [
+    {
+      "slug": "aglaea",
+      "name": "阿格莱雅",
+      "element": "雷",
+      "path": "记忆",
+      "image": "/characters/aglaea.webp",
+      "backgroundImage": "/character-backgrounds/aglaea.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
+    },
+    {
+      "slug": "arlan",
+      "name": "阿兰",
+      "element": "雷",
+      "path": "毁灭",
+      "image": "/characters/arlan.webp",
+      "backgroundImage": "/character-backgrounds/arlan.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "asta",
+      "name": "艾丝妲",
+      "element": "火",
+      "path": "同谐",
+      "image": "/characters/asta.webp",
+      "backgroundImage": "/character-backgrounds/asta.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "phainon",
+      "name": "白厄",
+      "element": "物理",
+      "path": "毁灭",
+      "image": "/characters/phainon.webp",
+      "backgroundImage": "/character-backgrounds/phainon.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "bailu",
+      "name": "白露",
+      "element": "雷",
+      "path": "丰饶",
+      "image": "/characters/bailu.webp",
+      "backgroundImage": "/character-backgrounds/bailu.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/丰饶.webp"
+    },
+    {
+      "slug": "boothill",
+      "name": "波提欧",
+      "element": "物理",
+      "path": "巡猎",
+      "image": "/characters/boothill.webp",
+      "backgroundImage": "/character-backgrounds/boothill.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "ashveil",
+      "name": "不死途",
+      "element": "雷",
+      "path": "巡猎",
+      "image": "/characters/ashveil.webp",
+      "backgroundImage": "/character-backgrounds/ashveil.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "bronya",
+      "name": "布洛妮娅",
+      "element": "风",
+      "path": "同谐",
+      "image": "/characters/bronya.webp",
+      "backgroundImage": "/character-backgrounds/bronya.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "theherta",
+      "name": "大黑塔",
+      "element": "冰",
+      "path": "智识",
+      "image": "/characters/theherta.webp",
+      "backgroundImage": "/character-backgrounds/theherta.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "dahlia",
+      "name": "大丽花",
+      "element": "火",
+      "path": "虚无",
+      "image": "/characters/dahlia.webp",
+      "backgroundImage": "/character-backgrounds/dahlia.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "danheng",
+      "name": "丹恒",
+      "element": "风",
+      "path": "巡猎",
+      "image": "/characters/danheng.webp",
+      "backgroundImage": "/character-backgrounds/danheng.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "danhengpt",
+      "name": "丹恒•腾荒",
+      "element": "物理",
+      "path": "存护",
+      "image": "/characters/danhengpt.webp",
+      "backgroundImage": "/character-backgrounds/danhengpt.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/存护.webp"
+    },
+    {
+      "slug": "danhengil",
+      "name": "丹恒•饮月",
+      "element": "虚数",
+      "path": "毁灭",
+      "image": "/characters/danhengil.webp",
+      "backgroundImage": "/character-backgrounds/danhengil.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "feixiao",
+      "name": "飞霄",
+      "element": "风",
+      "path": "巡猎",
+      "image": "/characters/feixiao.webp",
+      "backgroundImage": "/character-backgrounds/feixiao.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "evanescia",
+      "name": "绯英",
+      "element": "物理",
+      "path": "欢愉",
+      "image": "/characters/evanescia.webp",
+      "backgroundImage": "/character-backgrounds/evanescia.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
+    },
+    {
+      "slug": "jade",
+      "name": "翡翠",
+      "element": "量子",
+      "path": "智识",
+      "image": "/characters/jade.webp",
+      "backgroundImage": "/character-backgrounds/jade.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "hyacine",
+      "name": "风堇",
+      "element": "风",
+      "path": "记忆",
+      "image": "/characters/hyacine.webp",
+      "backgroundImage": "/character-backgrounds/hyacine.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
+    },
+    {
+      "slug": "fuxuan",
+      "name": "符玄",
+      "element": "量子",
+      "path": "存护",
+      "image": "/characters/fuxuan.webp",
+      "backgroundImage": "/character-backgrounds/fuxuan.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/存护.webp"
+    },
+    {
+      "slug": "guinaifen",
+      "name": "桂乃芬",
+      "element": "火",
+      "path": "虚无",
+      "image": "/characters/guinaifen.webp",
+      "backgroundImage": "/character-backgrounds/guinaifen.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "hysilens",
+      "name": "\u0000海瑟音",
+      "element": "物理",
+      "path": "虚无",
+      "image": "/characters/hysilens.webp",
+      "backgroundImage": "/character-backgrounds/hysilens.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "hanya",
+      "name": "寒鸦",
+      "element": "物理",
+      "path": "同谐",
+      "image": "/characters/hanya.webp",
+      "backgroundImage": "/character-backgrounds/hanya.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "herta",
+      "name": "黑塔",
+      "element": "冰",
+      "path": "智识",
+      "image": "/characters/herta.webp",
+      "backgroundImage": "/character-backgrounds/herta.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "blackswan",
+      "name": "黑天鹅",
+      "element": "风",
+      "path": "虚无",
+      "image": "/characters/blackswan.webp",
+      "backgroundImage": "/character-backgrounds/blackswan.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "hook",
+      "name": "虎克",
+      "element": "火",
+      "path": "毁灭",
+      "image": "/characters/hook.webp",
+      "backgroundImage": "/character-backgrounds/hook.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "sparkle",
+      "name": "花火",
+      "element": "量子",
+      "path": "同谐",
+      "image": "/characters/sparkle.webp",
+      "backgroundImage": "/character-backgrounds/sparkle.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "acheron",
+      "name": "黄泉",
+      "element": "雷",
+      "path": "虚无",
+      "image": "/characters/acheron.webp",
+      "backgroundImage": "/character-backgrounds/acheron.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "sparxie",
+      "name": "火花",
+      "element": "火",
+      "path": "欢愉",
+      "image": "/characters/sparxie.webp",
+      "backgroundImage": "/character-backgrounds/sparxie.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
+    },
+    {
+      "slug": "huohuo",
+      "name": "藿藿",
+      "element": "风",
+      "path": "丰饶",
+      "image": "/characters/huohuo.webp",
+      "backgroundImage": "/character-backgrounds/huohuo.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/丰饶.webp"
+    },
+    {
+      "slug": "himeko",
+      "name": "姬子",
+      "element": "火",
+      "path": "智识",
+      "image": "/characters/himeko.webp",
+      "backgroundImage": "/character-backgrounds/himeko.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "himekonova",
+      "name": "姬子•启行",
+      "element": "火",
+      "path": "智识",
+      "image": "/characters/himekonova.webp",
+      "backgroundImage": "/character-backgrounds/himekonova.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "gilgamesh",
+      "name": "吉尔伽美什",
+      "element": "雷",
+      "path": "毁灭",
+      "image": "/characters/gilgamesh.webp",
+      "backgroundImage": "/character-backgrounds/gilgamesh.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "gallagher",
+      "name": "加拉赫",
+      "element": "火",
+      "path": "丰饶",
+      "image": "/characters/gallagher.webp",
+      "backgroundImage": "/character-backgrounds/gallagher.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/丰饶.webp"
+    },
+    {
+      "slug": "jiaoqiu",
+      "name": "椒丘",
+      "element": "火",
+      "path": "虚无",
+      "image": "/characters/jiaoqiu.webp",
+      "backgroundImage": "/character-backgrounds/jiaoqiu.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "gepard",
+      "name": "杰帕德",
+      "element": "冰",
+      "path": "存护",
+      "image": "/characters/gepard.webp",
+      "backgroundImage": "/character-backgrounds/gepard.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/存护.webp"
+    },
+    {
+      "slug": "jingyuan",
+      "name": "景元",
+      "element": "雷",
+      "path": "智识",
+      "image": "/characters/jingyuan.webp",
+      "backgroundImage": "/character-backgrounds/jingyuan.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "jingliu",
+      "name": "镜流",
+      "element": "冰",
+      "path": "毁灭",
+      "image": "/characters/jingliu.webp",
+      "backgroundImage": "/character-backgrounds/jingliu.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "kafka",
+      "name": "卡芙卡",
+      "element": "雷",
+      "path": "虚无",
+      "image": "/characters/kafka.webp",
+      "backgroundImage": "/character-backgrounds/kafka.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "playerboy",
+      "name": "开拓者",
+      "element": "物理",
+      "path": "毁灭",
+      "image": "/characters/playerboy.webp",
+      "backgroundImage": "/character-backgrounds/playerboy.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "playergirl",
+      "name": "开拓者",
+      "element": "物理",
+      "path": "毁灭",
+      "image": "/characters/playergirl.webp",
+      "backgroundImage": "/character-backgrounds/playergirl.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "playerboy2",
+      "name": "开拓者",
+      "element": "火",
+      "path": "存护",
+      "image": "/characters/playerboy2.webp",
+      "backgroundImage": "/character-backgrounds/playerboy2.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/存护.webp"
+    },
+    {
+      "slug": "playergirl2",
+      "name": "开拓者",
+      "element": "火",
+      "path": "存护",
+      "image": "/characters/playergirl2.webp",
+      "backgroundImage": "/character-backgrounds/playergirl2.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/存护.webp"
+    },
+    {
+      "slug": "playerboy3",
+      "name": "开拓者",
+      "element": "虚数",
+      "path": "同谐",
+      "image": "/characters/playerboy3.webp",
+      "backgroundImage": "/character-backgrounds/playerboy3.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "playergirl3",
+      "name": "开拓者",
+      "element": "虚数",
+      "path": "同谐",
+      "image": "/characters/playergirl3.webp",
+      "backgroundImage": "/character-backgrounds/playergirl3.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "playerboy4",
+      "name": "开拓者",
+      "element": "冰",
+      "path": "记忆",
+      "image": "/characters/playerboy4.webp",
+      "backgroundImage": "/character-backgrounds/playerboy4.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
+    },
+    {
+      "slug": "playergirl4",
+      "name": "开拓者",
+      "element": "冰",
+      "path": "记忆",
+      "image": "/characters/playergirl4.webp",
+      "backgroundImage": "/character-backgrounds/playergirl4.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
+    },
+    {
+      "slug": "playerboy5",
+      "name": "开拓者",
+      "element": "雷",
+      "path": "欢愉",
+      "image": "/characters/playerboy5.webp",
+      "backgroundImage": "/character-backgrounds/playerboy5.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
+    },
+    {
+      "slug": "playergirl5",
+      "name": "开拓者",
+      "element": "雷",
+      "path": "欢愉",
+      "image": "/characters/playergirl5.webp",
+      "backgroundImage": "/character-backgrounds/playergirl5.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
+    },
+    {
+      "slug": "clara",
+      "name": "克拉拉",
+      "element": "物理",
+      "path": "毁灭",
+      "image": "/characters/clara.webp",
+      "backgroundImage": "/character-backgrounds/clara.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "cerydra",
+      "name": "刻律德菈",
+      "element": "风",
+      "path": "同谐",
+      "image": "/characters/cerydra.webp",
+      "backgroundImage": "/character-backgrounds/cerydra.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "lingsha",
+      "name": "灵砂",
+      "element": "火",
+      "path": "丰饶",
+      "image": "/characters/lingsha.webp",
+      "backgroundImage": "/character-backgrounds/lingsha.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/丰饶.webp"
+    },
+    {
+      "slug": "lynx",
+      "name": "玲可",
+      "element": "量子",
+      "path": "丰饶",
+      "image": "/characters/lynx.webp",
+      "backgroundImage": "/character-backgrounds/lynx.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/丰饶.webp"
+    },
+    {
+      "slug": "sam",
+      "name": "流萤",
+      "element": "火",
+      "path": "毁灭",
+      "image": "/characters/sam.webp",
+      "backgroundImage": "/character-backgrounds/sam.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "luka",
+      "name": "卢卡",
+      "element": "物理",
+      "path": "虚无",
+      "image": "/characters/luka.webp",
+      "backgroundImage": "/character-backgrounds/luka.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "rappa",
+      "name": "乱破",
+      "element": "虚数",
+      "path": "智识",
+      "image": "/characters/rappa.webp",
+      "backgroundImage": "/character-backgrounds/rappa.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "luocha",
+      "name": "罗刹",
+      "element": "虚数",
+      "path": "丰饶",
+      "image": "/characters/luocha.webp",
+      "backgroundImage": "/character-backgrounds/luocha.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/丰饶.webp"
+    },
+    {
+      "slug": "misha",
+      "name": "米沙",
+      "element": "冰",
+      "path": "毁灭",
+      "image": "/characters/misha.webp",
+      "backgroundImage": "/character-backgrounds/misha.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "moze",
+      "name": "貊泽",
+      "element": "雷",
+      "path": "巡猎",
+      "image": "/characters/moze.webp",
+      "backgroundImage": "/character-backgrounds/moze.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "anaxa",
+      "name": "那刻夏",
+      "element": "风",
+      "path": "智识",
+      "image": "/characters/anaxa.webp",
+      "backgroundImage": "/character-backgrounds/anaxa.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "natasha",
+      "name": "娜塔莎",
+      "element": "物理",
+      "path": "丰饶",
+      "image": "/characters/natasha.webp",
+      "backgroundImage": "/character-backgrounds/natasha.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/丰饶.webp"
+    },
+    {
+      "slug": "pela",
+      "name": "佩拉",
+      "element": "冰",
+      "path": "虚无",
+      "image": "/characters/pela.webp",
+      "backgroundImage": "/character-backgrounds/pela.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "mortenaxblade",
+      "name": "千冶•刃",
+      "element": "火",
+      "path": "虚无",
+      "image": "/characters/mortenaxblade.webp",
+      "backgroundImage": "/character-backgrounds/mortenaxblade.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "qingque",
+      "name": "青雀",
+      "element": "量子",
+      "path": "智识",
+      "image": "/characters/qingque.webp",
+      "backgroundImage": "/character-backgrounds/qingque.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "blade",
+      "name": "刃",
+      "element": "风",
+      "path": "毁灭",
+      "image": "/characters/blade.webp",
+      "backgroundImage": "/character-backgrounds/blade.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "ruanmei",
+      "name": "阮•梅",
+      "element": "冰",
+      "path": "同谐",
+      "image": "/characters/ruanmei.webp",
+      "backgroundImage": "/character-backgrounds/ruanmei.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "cipher",
+      "name": "赛飞儿",
+      "element": "量子",
+      "path": "虚无",
+      "image": "/characters/cipher.webp",
+      "backgroundImage": "/character-backgrounds/cipher.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "mar7th2",
+      "name": "三月七",
+      "element": "虚数",
+      "path": "巡猎",
+      "image": "/characters/mar7th2.webp",
+      "backgroundImage": "/character-backgrounds/mar7th2.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "mar7th",
+      "name": "三月七",
+      "element": "冰",
+      "path": "存护",
+      "image": "/characters/mar7th.webp",
+      "backgroundImage": "/character-backgrounds/mar7th.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/存护.webp"
+    },
+    {
+      "slug": "sampo",
+      "name": "桑博",
+      "element": "风",
+      "path": "虚无",
+      "image": "/characters/sampo.webp",
+      "backgroundImage": "/character-backgrounds/sampo.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "aventurine",
+      "name": "砂金",
+      "element": "虚数",
+      "path": "存护",
+      "image": "/characters/aventurine.webp",
+      "backgroundImage": "/character-backgrounds/aventurine.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/存护.webp"
+    },
+    {
+      "slug": "sushang",
+      "name": "素裳",
+      "element": "物理",
+      "path": "巡猎",
+      "image": "/characters/sushang.webp",
+      "backgroundImage": "/character-backgrounds/sushang.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "tribbie",
+      "name": "缇宝",
+      "element": "量子",
+      "path": "同谐",
+      "image": "/characters/tribbie.webp",
+      "backgroundImage": "/character-backgrounds/tribbie.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "tingyun",
+      "name": "停云",
+      "element": "雷",
+      "path": "同谐",
+      "image": "/characters/tingyun.webp",
+      "backgroundImage": "/character-backgrounds/tingyun.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "topaz",
+      "name": "托帕&账账",
+      "element": "火",
+      "path": "巡猎",
+      "image": "/characters/topaz.webp",
+      "backgroundImage": "/character-backgrounds/topaz.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "welt",
+      "name": "瓦尔特",
+      "element": "虚数",
+      "path": "虚无",
+      "image": "/characters/welt.webp",
+      "backgroundImage": "/character-backgrounds/welt.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "mydei",
+      "name": "万敌",
+      "element": "虚数",
+      "path": "毁灭",
+      "image": "/characters/mydei.webp",
+      "backgroundImage": "/character-backgrounds/mydei.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "fugue",
+      "name": "忘归人",
+      "element": "火",
+      "path": "虚无",
+      "image": "/characters/fugue.webp",
+      "backgroundImage": "/character-backgrounds/fugue.webp",
+      "elementIcon": "/character-icons/elements/火.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "seele",
+      "name": "希儿",
+      "element": "量子",
+      "path": "巡猎",
+      "image": "/characters/seele.webp",
+      "backgroundImage": "/character-backgrounds/seele.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "serval",
+      "name": "希露瓦",
+      "element": "雷",
+      "path": "智识",
+      "image": "/characters/serval.webp",
+      "backgroundImage": "/character-backgrounds/serval.webp",
+      "elementIcon": "/character-icons/elements/雷.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "cyrene",
+      "name": "昔涟",
+      "element": "冰",
+      "path": "记忆",
+      "image": "/characters/cyrene.webp",
+      "backgroundImage": "/character-backgrounds/cyrene.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
+    },
+    {
+      "slug": "castorice",
+      "name": "遐蝶",
+      "element": "量子",
+      "path": "记忆",
+      "image": "/characters/castorice.webp",
+      "backgroundImage": "/character-backgrounds/castorice.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
+    },
+    {
+      "slug": "sunday",
+      "name": "星期日",
+      "element": "虚数",
+      "path": "同谐",
+      "image": "/characters/sunday.webp",
+      "backgroundImage": "/character-backgrounds/sunday.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "xueyi",
+      "name": "雪衣",
+      "element": "量子",
+      "path": "毁灭",
+      "image": "/characters/xueyi.webp",
+      "backgroundImage": "/character-backgrounds/xueyi.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "yanqing",
+      "name": "彦卿",
+      "element": "冰",
+      "path": "巡猎",
+      "image": "/characters/yanqing.webp",
+      "backgroundImage": "/character-backgrounds/yanqing.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "yaoguang",
+      "name": "爻光",
+      "element": "物理",
+      "path": "欢愉",
+      "image": "/characters/yaoguang.webp",
+      "backgroundImage": "/character-backgrounds/yaoguang.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
+    },
+    {
+      "slug": "silverwolf",
+      "name": "银狼",
+      "element": "量子",
+      "path": "虚无",
+      "image": "/characters/silverwolf.webp",
+      "backgroundImage": "/character-backgrounds/silverwolf.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/虚无.webp"
+    },
+    {
+      "slug": "silverwolflv999",
+      "name": "银狼LV. 999",
+      "element": "虚数",
+      "path": "欢愉",
+      "image": "/characters/silverwolflv999.webp",
+      "backgroundImage": "/character-backgrounds/silverwolflv999.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
+    },
+    {
+      "slug": "argenti",
+      "name": "银枝",
+      "element": "物理",
+      "path": "智识",
+      "image": "/characters/argenti.webp",
+      "backgroundImage": "/character-backgrounds/argenti.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "yukong",
+      "name": "驭空",
+      "element": "虚数",
+      "path": "同谐",
+      "image": "/characters/yukong.webp",
+      "backgroundImage": "/character-backgrounds/yukong.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "tohsakarin",
+      "name": "远坂凛",
+      "element": "量子",
+      "path": "智识",
+      "image": "/characters/tohsakarin.webp",
+      "backgroundImage": "/character-backgrounds/tohsakarin.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/智识.webp"
+    },
+    {
+      "slug": "yunli",
+      "name": "云璃",
+      "element": "物理",
+      "path": "毁灭",
+      "image": "/characters/yunli.webp",
+      "backgroundImage": "/character-backgrounds/yunli.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    },
+    {
+      "slug": "evernight",
+      "name": "长夜月",
+      "element": "冰",
+      "path": "记忆",
+      "image": "/characters/evernight.webp",
+      "backgroundImage": "/character-backgrounds/evernight.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
+    },
+    {
+      "slug": "drratio",
+      "name": "真理医生",
+      "element": "虚数",
+      "path": "巡猎",
+      "image": "/characters/drratio.webp",
+      "backgroundImage": "/character-backgrounds/drratio.webp",
+      "elementIcon": "/character-icons/elements/虚数.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "robin",
+      "name": "知更鸟",
+      "element": "物理",
+      "path": "同谐",
+      "image": "/characters/robin.webp",
+      "backgroundImage": "/character-backgrounds/robin.webp",
+      "elementIcon": "/character-icons/elements/物理.webp",
+      "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "archer",
+      "name": "Archer",
+      "element": "量子",
+      "path": "巡猎",
+      "image": "/characters/archer.webp",
+      "backgroundImage": "/character-backgrounds/archer.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "saber",
+      "name": "Saber",
+      "element": "风",
+      "path": "毁灭",
+      "image": "/characters/saber.webp",
+      "backgroundImage": "/character-backgrounds/saber.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/毁灭.webp"
+    }
+  ]
+}

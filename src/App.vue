@@ -10,8 +10,11 @@ import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import { api } from "./services/tauri";
+import relicCatalogueJson from "./data/relic-sets.json";
+import characterCatalogueJson from "./data/characters.json";
 import type {
   CharacterFilter,
+  CharacterCatalogue,
   CharacterBuildPlan,
   BuildRecommendation,
   CharacterListItem,
@@ -27,11 +30,13 @@ import type {
   PagedResult,
   RelicFilter,
   RelicListItem,
+  RelicSetCatalogue,
+  RelicSetCatalogueEntry,
   RelicSetOption,
   SystemCapabilities,
 } from "./types";
 
-type ViewName = "capture" | "archive";
+type ViewName = "capture" | "archive" | "catalogue";
 type RelicDetailData = {
   itemId: number; name: string; setName: string; slot: string; rarity: number; level: number;
   mainStat: string; mainStatValue: number; location: string; locked: boolean; discard: boolean;
@@ -106,7 +111,12 @@ const filterOpen = ref(false);
 const buildOpen = ref(false);
 const buildLoading = ref(false);
 const buildRecommendation = ref<BuildRecommendation | null>(null);
-const relicSetOptions = ref<RelicSetOption[]>([]);
+const relicCatalogue = relicCatalogueJson as RelicSetCatalogue;
+const characterCatalogue = characterCatalogueJson as CharacterCatalogue;
+const characterAvatars = new Map(characterCatalogue.characters.map((character) => [character.name, character.image]));
+const relicSetOptions = ref<RelicSetOption[]>(
+  relicCatalogue.sets.map((set) => ({ setId: set.id, name: set.name, kind: set.kind })),
+);
 const includeEquipped = ref(false);
 const buildDeleteArmed = ref(false);
 const draggedTargetIndex = ref<number | null>(null);
@@ -163,6 +173,12 @@ const statLabels: Record<string, string> = {
   "Lightning DMG Boost": "雷属性伤害提高", "Wind DMG Boost": "风属性伤害提高",
   "Quantum DMG Boost": "量子属性伤害提高", "Imaginary DMG Boost": "虚数属性伤害提高",
 };
+const cavernSetOptions = computed(() => relicSetOptions.value.filter((set) => set.kind === "cavern"));
+const planarSetOptions = computed(() => relicSetOptions.value.filter((set) => set.kind === "planar"));
+const catalogueGroups = computed(() => ({
+  cavern: relicCatalogue.sets.filter((set) => set.kind === "cavern"),
+  planar: relicCatalogue.sets.filter((set) => set.kind === "planar"),
+}));
 
 const availableMainStats = computed(() => {
   const slots = filters.slots.length ? filters.slots : relicSlots.map((slot) => slot.value);
@@ -568,9 +584,9 @@ function resetBuildPlan(characterId: number) {
   Object.assign(buildPlan, {
     characterId,
     cavernMode: "fourPiece",
-    cavernSetA: relicSetOptions.value[0]?.setId ?? 0,
+    cavernSetA: cavernSetOptions.value[0]?.setId ?? 0,
     cavernSetB: null,
-    planarSetId: relicSetOptions.value[0]?.setId ?? 0,
+    planarSetId: planarSetOptions.value[0]?.setId ?? 0,
     mainStats: Object.fromEntries(relicSlots.map((slot) => [slot.value, []])),
     targets: [
       { statKey: "SPD", target: 180, priority: 1, minimum: 180 },
@@ -586,8 +602,7 @@ async function openBuild(item: CharacterListItem) {
   includeEquipped.value = false;
   buildDeleteArmed.value = false;
   try {
-    const [sets, saved] = await Promise.all([api.relicSets(), api.characterBuildPlan(item.characterId)]);
-    relicSetOptions.value = sets;
+    const saved = await api.characterBuildPlan(item.characterId);
     resetBuildPlan(item.characterId);
     if (saved) Object.assign(buildPlan, saved);
   } catch (cause) {
@@ -842,6 +857,10 @@ function pathLabel(path: string): string {
   return paths[path] ?? path;
 }
 
+function characterAvatar(name: string): string | null {
+  return characterAvatars.get(name) ?? null;
+}
+
 function recordEntries(value: Record<string, unknown> | null | undefined): Array<[string, string]> {
   if (!value) return [];
   return Object.entries(value).map(([key, item]) => {
@@ -919,7 +938,7 @@ onUnmounted(() => {
       </header>
 
       <nav class="module-nav" aria-label="工具模块">
-        <span class="module-index">{{ activeView === "capture" ? "01" : "02" }}</span>
+        <span class="module-index">{{ activeView === "capture" ? "01" : activeView === "archive" ? "02" : "03" }}</span>
         <button
           :class="['nav-item', { active: activeView === 'capture' }]"
           type="button"
@@ -936,6 +955,15 @@ onUnmounted(() => {
         >
           <small>MANAGEMENT</small>
           数据管理
+        </button>
+        <span class="nav-divider" />
+        <button
+          :class="['nav-item', { active: activeView === 'catalogue' }]"
+          type="button"
+          @click="activeView = 'catalogue'"
+        >
+          <small>CATALOGUE</small>
+          套装图鉴
         </button>
         <span class="route-line" aria-hidden="true"><i /><i /><i /></span>
         <div class="nav-counts">
@@ -1062,7 +1090,7 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <section v-else class="archive-workspace">
+      <section v-else-if="activeView === 'archive'" class="archive-workspace">
         <aside class="panel archive-sidebar">
           <p class="eyebrow">DATA MANAGEMENT</p>
           <h2>数据管理</h2>
@@ -1204,6 +1232,7 @@ onUnmounted(() => {
                     <Checkbox binary :model-value="selectedIds.has(idFor(item))" @update:model-value="toggleSelected(idFor(item))" />
                   </td>
                   <td>
+                    <img v-if="inventoryKind === 'character' && characterAvatar((item as CharacterListItem).name)" class="character-table-avatar" :src="characterAvatar((item as CharacterListItem).name)!" :alt="`${item.name} 头像`" />
                     <strong class="item-name">{{ itemTitle(item) }}</strong>
                     <small class="item-id">#{{ idFor(item) }}</small>
                   </td>
@@ -1260,6 +1289,42 @@ onUnmounted(() => {
         </article>
       </section>
 
+      <section v-else class="catalogue-workspace">
+        <header class="catalogue-heading">
+          <div>
+            <p class="eyebrow">LOCAL REFERENCE DATA</p>
+            <h2>遗器与位面饰品图鉴</h2>
+            <p>随客户端打包的公共数据，不依赖游戏登录或本地背包。</p>
+          </div>
+          <small v-if="relicCatalogue.source.syncedAt">更新：{{ new Date(relicCatalogue.source.syncedAt).toLocaleDateString("zh-CN") }}</small>
+          <small v-else>尚未同步图鉴数据</small>
+        </header>
+        <div v-if="relicCatalogue.sets.length || characterCatalogue.characters.length" class="catalogue-groups">
+          <section v-for="group in [{ key: 'cavern', title: '隧洞遗器' }, { key: 'planar', title: '位面饰品' }]" :key="group.key" v-show="catalogueGroups[group.key as keyof typeof catalogueGroups].length" class="catalogue-group">
+            <h3>{{ group.title }} <small>{{ catalogueGroups[group.key as keyof typeof catalogueGroups].length }} 套</small></h3>
+            <div class="catalogue-grid">
+              <article v-for="set in catalogueGroups[group.key as keyof typeof catalogueGroups] as RelicSetCatalogueEntry[]" :key="set.id" class="catalogue-card">
+                <img v-if="set.image" :src="set.image" :alt="set.name" />
+                <span v-else class="catalogue-placeholder">◇</span>
+                <div><small>#{{ set.id }}</small><h4>{{ set.name }}</h4><p><b>2 件</b>{{ set.effects.twoPiece }}</p><p v-if="set.effects.fourPiece"><b>4 件</b>{{ set.effects.fourPiece }}</p></div>
+              </article>
+            </div>
+          </section>
+          <section class="catalogue-group character-catalogue-group">
+            <h3>角色基础信息 <small>{{ characterCatalogue.characters.length }} 名</small></h3>
+            <div v-if="characterCatalogue.characters.length" class="character-catalogue-grid">
+              <article v-for="character in characterCatalogue.characters" :key="character.slug" class="character-catalogue-card">
+                <div v-if="character.image" class="character-catalogue-portrait" :style="character.backgroundImage ? { backgroundImage: `url(${character.backgroundImage})` } : undefined"><img :src="character.image" :alt="character.name" /></div>
+                <span v-else>◇</span>
+                <div><h4>{{ character.name }}</h4><small class="character-catalogue-tags"><img v-if="character.elementIcon" :src="character.elementIcon" alt="" />{{ character.element }}<img v-if="character.pathIcon" :src="character.pathIcon" alt="" />{{ character.path }}</small></div>
+              </article>
+            </div>
+            <p v-else class="catalogue-source-note">角色目录将在下一次运行同步命令后显示。</p>
+          </section>
+        </div>
+        <div v-else class="catalogue-empty"><span>◇</span><strong>图鉴内容暂未准备好</strong><p>当前版本暂时无法展示遗器、饰品和角色图鉴。你的本地背包与游戏数据使用不受影响。</p></div>
+      </section>
+
       <footer class="app-footer">
         <span>StarRail-Auto-Tools</span>
         <span>{{ capabilities?.note }}</span>
@@ -1308,9 +1373,9 @@ onUnmounted(() => {
             <h3>套装结构</h3>
             <div class="build-grid">
               <label><span>四件遗器区</span><Select v-model="buildPlan.cavernMode" :options="[{ label: '指定 4 件套', value: 'fourPiece' }, { label: '指定 2 件 + 2 件', value: 'twoPlusTwo' }]" option-label="label" option-value="value" /></label>
-              <label><span>{{ buildPlan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套' }}</span><Select v-model="buildPlan.cavernSetA" :options="relicSetOptions" option-label="name" option-value="setId" /></label>
-              <label v-if="buildPlan.cavernMode === 'twoPlusTwo'"><span>第二组 2 件套</span><Select v-model="buildPlan.cavernSetB" :options="relicSetOptions" option-label="name" option-value="setId" /></label>
-              <label><span>位面饰品 2 件套</span><Select v-model="buildPlan.planarSetId" :options="relicSetOptions" option-label="name" option-value="setId" /></label>
+              <label><span>{{ buildPlan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套' }}</span><Select v-model="buildPlan.cavernSetA" :options="cavernSetOptions" option-label="name" option-value="setId" /></label>
+              <label v-if="buildPlan.cavernMode === 'twoPlusTwo'"><span>第二组 2 件套</span><Select v-model="buildPlan.cavernSetB" :options="cavernSetOptions" option-label="name" option-value="setId" /></label>
+              <label><span>位面饰品 2 件套</span><Select v-model="buildPlan.planarSetId" :options="planarSetOptions" option-label="name" option-value="setId" /></label>
             </div>
           </section>
 
@@ -1382,7 +1447,8 @@ onUnmounted(() => {
         </section>
         <section v-else-if="detailCharacter" class="character-detail-card">
           <div class="character-identity">
-            <div class="path-seal">{{ pathLabel(detailCharacter.path).slice(0, 1) }}</div>
+            <img v-if="characterAvatar(detailCharacter.name)" class="character-detail-avatar" :src="characterAvatar(detailCharacter.name)!" :alt="`${detailCharacter.name} 头像`" />
+            <div v-else class="path-seal">{{ pathLabel(detailCharacter.path).slice(0, 1) }}</div>
             <div><p>{{ pathLabel(detailCharacter.path) }} · PATH</p><h3>{{ detailCharacter.name }}</h3><small>#{{ detailCharacter.characterId }}</small></div>
             <b>Lv.{{ detailCharacter.level }}</b>
           </div>
