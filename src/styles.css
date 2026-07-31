@@ -181,8 +181,8 @@ h2 {
   position: relative;
   -webkit-app-region: drag;
   user-select: none;
-  padding: 10px 18px 6px;
-  margin: -10px -18px 0;
+  padding: 6px 16px 2px;
+  margin: -6px -16px 0;
   border-radius: 14px 14px 0 0;
   background:
     radial-gradient(circle at 94% 22%, rgba(236, 213, 158, 0.32), transparent 220px),
@@ -204,12 +204,14 @@ h2 {
 
 .topbar {
   justify-content: space-between;
-  padding: 4px 0 6px;
-  margin-bottom: 5px;
+  align-items: flex-start;
+  padding: 2px 0 2px;
+  margin-bottom: 2px;
 }
 
 .topbar-right {
   gap: 14px;
+  align-items: flex-start;
   -webkit-app-region: no-drag;
 }
 
@@ -220,7 +222,7 @@ h2 {
 .brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .brand > div {
@@ -230,31 +232,31 @@ h2 {
 }
 
 .brand-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
   object-fit: cover;
-  box-shadow: 0 6px 16px rgba(244, 159, 182, 0.25);
+  box-shadow: 0 5px 14px rgba(244, 159, 182, 0.22);
 }
 
 .brand h1 {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 900;
   letter-spacing: 0.05em;
   background: linear-gradient(135deg, var(--blue) 0%, #e27d9c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .brand .eyebrow {
   display: block;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 800;
   color: #7ca8e6;
   letter-spacing: 0.22em;
-  margin: 0 0 2px 2px;
+  margin: 0 0 1px 2px;
   text-transform: uppercase;
 }
 
@@ -269,14 +271,12 @@ h2 {
   text-transform: uppercase;
 }
 
-/* ===== Window Controls (in topbar) ===== */
+/* ===== Window Controls (top-right, top-aligned) ===== */
 .window-controls {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding-left: 14px;
-  margin-left: 4px;
-  border-left: 1px solid rgba(48, 75, 117, 0.14);
+  align-items: flex-start;
+  gap: 2px;
+  padding: 2px 0 0 6px;
 }
 
 .win-btn {
@@ -2549,10 +2549,41 @@ input[type="checkbox"] {
 
 .app-footer {
   justify-content: space-between;
+  align-items: center;
   gap: 30px;
   padding: 9px 3px 0;
   color: #7f8d9f;
   font-size: 8px;
+}
+
+.footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-meta .platform-label {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
+}
+
+.footer-meta .runtime-pill {
+  min-width: 86px;
+  gap: 7px;
+  padding: 5px 9px;
+  font-size: 9px;
+  box-shadow: 0 3px 8px rgba(51, 74, 110, 0.04);
+}
+
+.footer-meta .status-dot {
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 3px rgba(151, 164, 178, 0.12);
+}
+
+.footer-meta .status-dot.active {
+  box-shadow: 0 0 0 3px rgba(69, 174, 183, 0.14);
 }
 
 .detail-backdrop {

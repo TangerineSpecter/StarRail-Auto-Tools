@@ -1103,13 +1103,6 @@ onUnmounted(() => {
             </div>
           </div>
           <div class="topbar-right" style="-webkit-app-region: no-drag">
-            <div class="topbar-meta">
-              <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
-              <div :class="['runtime-pill', `tone-${phaseCode}`]">
-                <span :class="['status-dot', { active: directRunning }]" />
-                {{ phaseLabel }}
-              </div>
-            </div>
             <div class="window-controls">
               <button class="win-btn minimize" @click="minimizeWindow" title="最小化">
                 <svg viewBox="0 0 10 10" width="10" height="10"><rect y="4.5" width="10" height="1" fill="currentColor"/></svg>
@@ -1138,7 +1131,6 @@ onUnmounted(() => {
                 在进入游戏前开启监听，登录后自动归档遗器、光锥与角色。
               </p>
             </div>
-            <span :class="['stage-badge', `phase-${direct.phase}`]">{{ phaseLabel }}</span>
           </div>
 
           <div :class="['signal-vessel', { running: directRunning }]">
@@ -1915,7 +1907,13 @@ onUnmounted(() => {
 
       <footer class="app-footer">
         <span>StarRail-Auto-Tools</span>
-        <span>{{ capabilities?.note }}</span>
+        <div class="footer-meta">
+          <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
+          <div :class="['runtime-pill', `tone-${phaseCode}`]">
+            <span :class="['status-dot', { active: directRunning }]" />
+            {{ phaseLabel }}
+          </div>
+        </div>
       </footer>
     </main>
 
