@@ -176,9 +176,24 @@ h2 {
   padding: 18px 0 12px;
 }
 
+/* ===== Shell Header — unified drag & branding area (replaces system title bar) ===== */
+.shell-header {
+  position: relative;
+  -webkit-app-region: drag;
+  user-select: none;
+  padding: 10px 18px 6px;
+  margin: -10px -18px 0;
+  border-radius: 14px 14px 0 0;
+  background:
+    radial-gradient(circle at 94% 22%, rgba(236, 213, 158, 0.32), transparent 220px),
+    linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.18) 60%, transparent);
+  border-bottom: 1px solid rgba(48, 75, 117, 0.1);
+}
+
 .topbar,
 .brand,
 .topbar-meta,
+.topbar-right,
 .panel-heading,
 .archive-heading,
 .output-meta,
@@ -189,7 +204,17 @@ h2 {
 
 .topbar {
   justify-content: space-between;
-  margin-bottom: 11px;
+  padding: 4px 0 6px;
+  margin-bottom: 5px;
+}
+
+.topbar-right {
+  gap: 14px;
+  -webkit-app-region: no-drag;
+}
+
+.topbar-meta {
+  gap: 9px;
 }
 
 .brand {
@@ -244,8 +269,55 @@ h2 {
   text-transform: uppercase;
 }
 
-.topbar-meta {
-  gap: 9px;
+/* ===== Window Controls (in topbar) ===== */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 14px;
+  margin-left: 4px;
+  border-left: 1px solid rgba(48, 75, 117, 0.14);
+}
+
+.win-btn {
+  width: 36px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #5b6a82;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.win-btn:hover {
+  transform: none;
+}
+
+.win-btn svg {
+  opacity: 0.8;
+}
+
+.win-btn.minimize:hover {
+  background: rgba(36, 86, 166, 0.08);
+  color: var(--blue);
+}
+
+.win-btn.maximize:hover {
+  background: rgba(36, 86, 166, 0.08);
+  color: var(--blue);
+}
+
+.win-btn.close:hover {
+  background: #e81123;
+  color: #fff;
+}
+
+.win-btn.close:hover svg {
+  opacity: 1;
 }
 
 .platform-label,

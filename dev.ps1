@@ -133,7 +133,8 @@ function Show-VcBuildToolsGuidance {
     Write-Host '  4. 安装完成后, 关闭并重新打开 PowerShell, 再次运行 .\dev.ps1' -ForegroundColor White
     Write-Host ''
     Write-Host '  或者通过 winget 命令行安装:' -ForegroundColor Yellow
-    Write-Host '     winget install Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"' -ForegroundColor Green
+    $wingetArgs = '"--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"'
+    Write-Host ("     winget install Microsoft.VisualStudio.2022.BuildTools --override {0}" -f $wingetArgs) -ForegroundColor Green
     Write-Host ''
 }
 

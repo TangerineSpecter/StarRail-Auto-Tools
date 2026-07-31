@@ -4350,7 +4350,6 @@ dependencies = [
 [[package]]
 name = "reliquary-archiver"
 version = "0.17.0"
-source = "git+https://github.com/IceDynamix/reliquary-archiver?tag=v0.17.1#bd647df0b22922921199dfc66133113918c310ef"
 dependencies = [
  "async-stream",
  "base64 0.22.1",

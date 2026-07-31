@@ -3,5 +3,13 @@
   "identifier": "default",
   "description": "Permissions for the StarRail-Auto-Tools main window",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": [
+    "core:default",
+    "core:window:allow-minimize",
+    "core:window:allow-unminimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close"
+  ]
 }

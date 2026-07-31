@@ -4,6 +4,28 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import Button from "primevue/button";
+
+const appWindow = getCurrentWindow();
+const isMaximized = ref(false);
+
+async function minimizeWindow() {
+  await appWindow.minimize();
+}
+
+async function toggleMaximize() {
+  if (isMaximized.value) {
+    await appWindow.unmaximize();
+    isMaximized.value = false;
+  } else {
+    await appWindow.maximize();
+    isMaximized.value = true;
+  }
+}
+
+async function closeWindow() {
+  await appWindow.close();
+}
+
 import Checkbox from "primevue/checkbox";
 import Drawer from "primevue/drawer";
 import InputNumber from "primevue/inputnumber";
@@ -1071,22 +1093,38 @@ onUnmounted(() => {
     <div class="orbit orbit-two" />
 
     <main class="app-shell">
-      <header class="topbar">
-        <div class="brand">
-          <img src="/logo/android-chrome-192x192.png" alt="Logo" class="brand-logo" />
-          <div>
-            <p class="eyebrow">STARRAIL · AUTO TOOLS</p>
-            <h1>星穹数据航站</h1>
+      <div class="shell-header" data-tauri-drag-region>
+        <header class="topbar">
+          <div class="brand">
+            <img src="/logo/android-chrome-192x192.png" alt="Logo" class="brand-logo" />
+            <div>
+              <p class="eyebrow">STARRAIL · AUTO TOOLS</p>
+              <h1>星穹数据航站</h1>
+            </div>
           </div>
-        </div>
-        <div class="topbar-meta">
-          <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
-          <div :class="['runtime-pill', `tone-${phaseCode}`]">
-            <span :class="['status-dot', { active: directRunning }]" />
-            {{ phaseLabel }}
+          <div class="topbar-right" style="-webkit-app-region: no-drag">
+            <div class="topbar-meta">
+              <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
+              <div :class="['runtime-pill', `tone-${phaseCode}`]">
+                <span :class="['status-dot', { active: directRunning }]" />
+                {{ phaseLabel }}
+              </div>
+            </div>
+            <div class="window-controls">
+              <button class="win-btn minimize" @click="minimizeWindow" title="最小化">
+                <svg viewBox="0 0 10 10" width="10" height="10"><rect y="4.5" width="10" height="1" fill="currentColor"/></svg>
+              </button>
+              <button class="win-btn maximize" @click="toggleMaximize" :title="isMaximized ? '还原' : '最大化'">
+                <svg v-if="!isMaximized" viewBox="0 0 10 10" width="10" height="10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"/></svg>
+                <svg v-else viewBox="0 0 10 10" width="10" height="10"><rect x="2" y="0.5" width="7.5" height="7.5" fill="none" stroke="currentColor"/><rect x="0.5" y="2" width="7.5" height="7.5" fill="none" stroke="currentColor"/></svg>
+              </button>
+              <button class="win-btn close" @click="closeWindow" title="关闭">
+                <svg viewBox="0 0 10 10" width="10" height="10"><line x1="0.5" y1="0.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1"/><line x1="9.5" y1="0.5" x2="0.5" y2="9.5" stroke="currentColor" stroke-width="1"/></svg>
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       <AppNavigation v-model:active-view="activeView" :summary="summary" />
 

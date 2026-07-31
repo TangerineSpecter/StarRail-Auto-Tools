@@ -44,3 +44,13 @@ windows = { version = "0.62", features = [
   "Win32_Graphics_Direct3D11",
   "Win32_Graphics_Dxgi",
 ] }
+
+[patch."https://github.com/IceDynamix/reliquary-archiver"]
+# reliquary-archiver v0.17.1 (and earlier) unconditionally compiles a VERSION + ICON
+# Win32 resource in its build.rs via `winres`, even when consumed as a library.
+# The resulting `resource.lib` is propagated transitively to downstream binaries
+# and collides with the VERSION/ICON resource tauri-build emits from
+# tauri.conf.json, producing MSVC error CVT1100 / LNK1123.  This vendored copy
+# gates that Win32 resource embedding behind a never-enabled Cargo feature so
+# tauri-build remains the sole owner of the final executable's resources.
+reliquary-archiver = { path = "vendor/reliquary-archiver" }
