@@ -1073,7 +1073,7 @@ onUnmounted(() => {
     <main class="app-shell">
       <header class="topbar">
         <div class="brand">
-          <span class="brand-mark" aria-hidden="true"><i /></span>
+          <img src="/logo.png" alt="Logo" class="brand-logo" />
           <div>
             <p class="eyebrow">STARRAIL · AUTO TOOLS</p>
             <h1>星穹数据航站</h1>

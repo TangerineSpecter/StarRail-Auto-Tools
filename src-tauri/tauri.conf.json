@@ -29,7 +29,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "icon": ["../Resource/icon/start.png"],
+    "icon": ["../public/logo.png"],
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"

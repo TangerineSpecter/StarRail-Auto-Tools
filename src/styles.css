@@ -196,40 +196,12 @@ h2 {
   gap: 14px;
 }
 
-.brand-mark {
-  position: relative;
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border: 1px solid rgba(36, 86, 166, 0.2);
-  background: rgba(255, 255, 255, 0.72);
+.brand-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
   box-shadow: 0 10px 25px rgba(43, 74, 116, 0.08);
-  transform: rotate(45deg);
-}
-
-.brand-mark::before,
-.brand-mark::after {
-  position: absolute;
-  content: "";
-  background: var(--blue);
-}
-
-.brand-mark::before {
-  width: 24px;
-  height: 1px;
-}
-
-.brand-mark::after {
-  width: 1px;
-  height: 24px;
-}
-
-.brand-mark i {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--gold);
-  transform: rotate(45deg);
 }
 
 .eyebrow {
