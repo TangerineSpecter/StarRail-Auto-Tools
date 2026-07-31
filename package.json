@@ -16,6 +16,7 @@
     "check": "npm run format:check && npm run lint && npm run test && npm run build",
     "check:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo test --manifest-path src-tauri/Cargo.toml",
     "sync:relic-catalog": "node scripts/sync-relic-catalog.mjs",
+    "sync:light-cone-catalog": "node scripts/sync-light-cone-catalog.mjs",
     "build:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File ./build-windows.ps1",
     "preview": "vite preview",
     "tauri": "tauri"

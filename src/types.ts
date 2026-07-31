@@ -213,6 +213,18 @@ export interface CharacterCatalogue {
   source: { name: string; url: string; syncedAt: string | null };
   characters: CharacterCatalogueEntry[];
 }
+export interface LightConeCatalogueEntry {
+  id: number;
+  name: string;
+  rarity: number;
+  path: string;
+  image: string | null;
+}
+export interface LightConeCatalogue {
+  schemaVersion: number;
+  source: { name: string; url: string; syncedAt: string | null };
+  lightCones: LightConeCatalogueEntry[];
+}
 export interface BuildProgress {
   statKey: string;
   current: number;
