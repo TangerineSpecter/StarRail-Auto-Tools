@@ -29,7 +29,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "icon": ["../public/logo.png"],
+    "icon": ["../public/logo/android-chrome-512x512.png"],
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
