@@ -1157,13 +1157,16 @@ onUnmounted(() => {
               </div>
             </div>
             <Button
-              class="secondary-action"
+              class="capture-action-btn"
               type="button"
-              outlined
               :disabled="busy"
               @click="exportData"
             >
-              <span>导出数据</span><i>↗</i>
+              <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
+                <path d="M0 841.142857m66.742857 0l890.514286 0q66.742857 0 66.742857 66.742857l0 49.371429q0 66.742857-66.742857 66.742857l-890.514286 0q-66.742857 0-66.742857-66.742857l0-49.371429q0-66.742857 66.742857-66.742857Z" fill="currentColor"></path>
+                <path d="M900.937143 249.234286L600.137143 3.84a16.457143 16.457143 0 0 0-26.88 12.617143v91.428571a16.64 16.64 0 0 1-14.994286 16.274286c-389.485714 38.4-438.857143 358.4-441.234286 509.805714a16.457143 16.457143 0 0 0 31.268572 7.314286c73.142857-150.674286 227.84-230.4 407.771428-237.714286a16.64 16.64 0 0 1 17.188572 16.64v88.137143a16.457143 16.457143 0 0 0 26.88 12.8L900.937143 274.285714a16.64 16.64 0 0 0 0-25.051428z" fill="currentColor"></path>
+              </svg>
+              <span>导出数据</span>
             </Button>
           </article>
 
@@ -1175,11 +1178,6 @@ onUnmounted(() => {
               </div>
               <span class="local-badge">本地识别</span>
             </div>
-            <p class="ocr-capture-note"><b>01</b> 点击后进入全屏框选模式；仅识别虚线框内的内容。</p>
-            <Button class="secondary-action" outlined :disabled="busy" @click="runOcrScreenshot">
-              <span>{{ busy ? "正在截图 / 识别" : "截图并框选" }}</span
-              ><i>◎</i>
-            </Button>
             <div v-if="ocrResult" class="ocr-output">
               <div class="output-meta">
                 <span>{{ ocrResult.regions.length }} 个文本区域</span>
@@ -1190,10 +1188,17 @@ onUnmounted(() => {
               </p>
             </div>
             <div v-else class="empty-output">
-              <span class="empty-symbol">◇</span>
-              <p>识别结果仅供核对，暂不会写入数据管理</p>
-              <small>点击“截图并框选”开始截图</small>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="empty-image-icon"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              <p>识别结果仅供核对</p>
+              <small>点击下方按钮开始截图</small>
             </div>
+            
+            <Button class="capture-action-btn" :disabled="busy" @click="runOcrScreenshot">
+              <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
+                <path d="M119.579981 119.560026l185.746448 0c16.074094 0 29.283953-13.134135 29.283953-29.322839 0-16.303314-13.113669-29.321816-29.283953-29.321816l-215.107149 0c-8.037047 0-15.34857 3.282766-20.655436 8.590656-5.383614 5.307889-8.629541 12.619412-8.629541 20.694321L60.934303 305.306474c0 16.074094 13.134135 29.283953 29.321816 29.283953 16.303314 0 29.322839-13.114692 29.322839-29.283953L119.578957 119.560026zM901.51076 119.560026 715.764312 119.560026c-16.093537 0-29.283953-13.134135-29.283953-29.322839 0-16.303314 13.114692-29.321816 29.283953-29.321816l215.107149 0c8.037047 0 15.34857 3.282766 20.655436 8.590656 5.384637 5.307889 8.629541 12.619412 8.629541 20.694321L960.156438 305.306474c0 16.074094-13.134135 29.283953-29.321816 29.283953-16.303314 0-29.322839-13.114692-29.322839-29.283953L901.511783 119.560026zM119.579981 901.489782l185.746448 0c16.074094 0 29.283953 13.133112 29.283953 29.321816 0 16.303314-13.113669 29.321816-29.283953 29.321816l-215.107149 0c-8.037047 0-15.34857-3.28379-20.655436-8.590656-5.383614-5.306866-8.629541-12.619412-8.629541-20.694321L60.934303 715.744357c0-16.075117 13.134135-29.286 29.321816-29.286 16.303314 0 29.322839 13.114692 29.322839 29.286L119.578957 901.489782zM901.51076 901.489782 715.764312 901.489782c-16.093537 0-29.283953 13.133112-29.283953 29.321816 0 16.303314 13.114692 29.321816 29.283953 29.321816l215.107149 0c8.037047 0 15.34857-3.28379 20.655436-8.590656 5.384637-5.306866 8.629541-12.619412 8.629541-20.694321L960.156438 715.744357c0-16.075117-13.134135-29.286-29.321816-29.286-16.303314 0-29.322839 13.114692-29.322839 29.286L901.511783 901.489782z" fill="currentColor"></path>
+              </svg>
+              <span>{{ busy ? "正在截图 / 识别" : "截图并框选" }}</span>
+            </Button>
           </article>
         </div>
       </section>
@@ -1226,22 +1231,28 @@ onUnmounted(() => {
             <span>最近同步</span><strong>{{ formatTime(summary.lastSyncAt) }}</strong>
           </div>
           <Button
-            class="secondary-action"
+            class="capture-action-btn"
             type="button"
-            outlined
             :disabled="busy"
             @click="exportData"
           >
-            <span>导出数据</span><i>↗</i>
+            <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
+              <path d="M0 841.142857m66.742857 0l890.514286 0q66.742857 0 66.742857 66.742857l0 49.371429q0 66.742857-66.742857 66.742857l-890.514286 0q-66.742857 0-66.742857-66.742857l0-49.371429q0-66.742857 66.742857-66.742857Z" fill="currentColor"></path>
+              <path d="M900.937143 249.234286L600.137143 3.84a16.457143 16.457143 0 0 0-26.88 12.617143v91.428571a16.64 16.64 0 0 1-14.994286 16.274286c-389.485714 38.4-438.857143 358.4-441.234286 509.805714a16.457143 16.457143 0 0 0 31.268572 7.314286c73.142857-150.674286 227.84-230.4 407.771428-237.714286a16.64 16.64 0 0 1 17.188572 16.64v88.137143a16.457143 16.457143 0 0 0 26.88 12.8L900.937143 274.285714a16.64 16.64 0 0 0 0-25.051428z" fill="currentColor"></path>
+            </svg>
+            <span>导出数据</span>
           </Button>
           <Button
-            class="secondary-action"
+            class="capture-action-btn"
             type="button"
-            outlined
             :disabled="busy"
             @click="importData"
           >
-            <span>导入 JSON</span><i>↙</i>
+            <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
+              <path d="M0 841.264833m66.698336 0l889.920264 0q66.698336 0 66.698336 66.698336l0 49.338495q0 66.698336-66.698336 66.698336l-889.920264 0q-66.698336 0-66.698336-66.698336l0-49.338495q0-66.698336 66.698336-66.698336Z" fill="currentColor"></path>
+              <path d="M571.412868 698.000462L798.18721 420.973948a19.187193 19.187193 0 0 0-14.984284-31.430448h-99.590666C683.61226 66.102254 395.987107 8.357941 240.84495 0.683064a18.273517 18.273517 0 0 0-10.050434 36.547033c115.30589 61.947222 166.106267 167.202678 172.136528 332.212534A19.187193 19.187193 0 0 1 383.743851 388.812559h-79.672533a19.187193 19.187193 0 0 0-14.801548 32.161389l226.774342 277.757455a36.547033 36.547033 0 0 0 55.368756-0.730941z" fill="currentColor"></path>
+            </svg>
+            <span>导入 JSON</span>
           </Button>
         </aside>
 
@@ -1301,9 +1312,12 @@ onUnmounted(() => {
                   <h2>筛选条件</h2>
                   <small>选择需要的条件，未选择即代表不限。</small>
                 </div>
-                <Button type="button" aria-label="关闭筛选" text @click="filterOpen = false"
-                  >×</Button
-                >
+                <Button type="button" aria-label="关闭筛选" text @click="filterOpen = false">
+                  <svg viewBox="0 0 24 24" width="1.2em" height="1.2em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </Button>
               </header>
               <div class="filter-scroll">
                 <template v-if="inventoryKind === 'relic'">
@@ -1319,16 +1333,7 @@ onUnmounted(() => {
                       >
                     </div>
                   </fieldset>
-                  <fieldset class="filter-group">
-                    <legend>星级 <em>可多选</em></legend>
-                    <div class="filter-chips">
-                      <label v-for="rarity in [5, 4, 3, 2]" :key="rarity" class="filter-chip"
-                        ><input v-model="filters.rarities" type="checkbox" :value="rarity" /><span
-                          >{{ rarity }} 星</span
-                        ></label
-                      >
-                    </div>
-                  </fieldset>
+
                   <fieldset class="filter-group filter-group-wide">
                     <legend>主词条 <em>随部位更新 · 可多选</em></legend>
                     <div class="filter-chips">
@@ -1350,7 +1355,7 @@ onUnmounted(() => {
                     </div>
                   </fieldset>
                   <fieldset class="filter-group filter-group-wide">
-                    <legend>副词条强化次数 <em>每 4 级增加一次 · 0–5 次</em></legend>
+                    <legend>副词条强化次数</legend>
                     <div class="filter-range">
                       <label
                         ><span>最少</span
@@ -1359,6 +1364,7 @@ onUnmounted(() => {
                           :options="substatCountOptions"
                           option-label="label"
                           option-value="value"
+                          placeholder="不限"
                       /></label>
                       <label
                         ><span>最多</span
@@ -1367,6 +1373,7 @@ onUnmounted(() => {
                           :options="substatCountOptions"
                           option-label="label"
                           option-value="value"
+                          placeholder="不限"
                       /></label>
                     </div>
                   </fieldset>
@@ -1381,6 +1388,7 @@ onUnmounted(() => {
                       ]"
                       option-label="label"
                       option-value="value"
+                      placeholder="全部"
                     />
                   </label>
                   <label
@@ -1394,6 +1402,7 @@ onUnmounted(() => {
                       ]"
                       option-label="label"
                       option-value="value"
+                      placeholder="全部"
                     />
                   </label>
                 </template>
@@ -1404,6 +1413,7 @@ onUnmounted(() => {
                       v-model="filters.superimposition"
                       :options="['', 1, 2, 3, 4, 5]"
                       :option-label="(value) => (value === '' ? '不限' : `${value} 阶`)"
+                      placeholder="不限"
                   /></label>
                   <label
                     ><span>锁定</span>
@@ -1416,6 +1426,7 @@ onUnmounted(() => {
                       ]"
                       option-label="label"
                       option-value="value"
+                      placeholder="全部"
                     />
                   </label>
                 </template>
@@ -1437,6 +1448,7 @@ onUnmounted(() => {
                       ]"
                       option-label="label"
                       option-value="value"
+                      placeholder="全部命途"
                   /></label>
                   <label
                     ><span>星魂</span
@@ -1444,6 +1456,7 @@ onUnmounted(() => {
                       v-model="filters.eidolon"
                       :options="['', 0, 1, 2, 3, 4, 5, 6]"
                       :option-label="(value) => (value === '' ? '不限' : `${value} 魂`)"
+                      placeholder="不限"
                   /></label>
                 </template>
                 <label v-if="inventoryKind !== 'character'"
@@ -1457,6 +1470,7 @@ onUnmounted(() => {
                     ]"
                     option-label="label"
                     option-value="value"
+                    placeholder="全部"
                   />
                 </label>
               </div>
