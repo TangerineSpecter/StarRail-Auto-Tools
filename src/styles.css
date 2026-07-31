@@ -31,7 +31,7 @@
 html,
 body,
 #app {
-  min-width: 900px;
+  min-width: 1240px;
   height: 100%;
   min-height: 100%;
 }
@@ -1703,6 +1703,7 @@ summary i {
   position: relative;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   padding: 21px 22px 15px;
 }
 
@@ -2356,7 +2357,8 @@ summary i {
 
 .table-shell {
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
   border-radius: calc(var(--control-radius) + 1px);
@@ -2364,6 +2366,7 @@ summary i {
 
 table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   color: var(--ink-soft);
   font-size: 9px;
@@ -2388,7 +2391,27 @@ td {
   padding: 7px 9px;
   border-bottom: 1px solid rgba(48, 75, 117, 0.11);
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
+}
+
+/* Keep the inventory readable within the available workspace instead of
+   making the application acquire a horizontal scrollbar. */
+.inventory-col-select { width: 5%; }
+.inventory-col-name { width: 20%; }
+.inventory-col-level { width: 9%; }
+.inventory-col-primary { width: 11%; }
+.inventory-col-secondary { width: 34%; }
+.inventory-col-equipped { width: 13%; }
+.inventory-col-action { width: 8%; }
+
+.inventory-table--lightCone .inventory-col-name { width: 42%; }
+.inventory-table--lightCone .inventory-col-level { width: 13%; }
+.inventory-table--lightCone .inventory-col-primary { width: 15%; }
+.inventory-table--lightCone .inventory-col-secondary { width: 17%; }
+.inventory-table--lightCone .inventory-col-action { width: 8%; }
+
+.inventory-table th:nth-child(2) {
+  text-align: center;
 }
 
 tbody tr {
@@ -2400,7 +2423,6 @@ tbody tr:hover {
 }
 
 .check-cell {
-  width: 33px;
   text-align: center;
 }
 
@@ -2417,6 +2439,19 @@ input[type="checkbox"] {
   color: var(--ink);
   font-size: 10px;
   text-overflow: ellipsis;
+}
+
+.relic-name-cell,
+.relic-name-info,
+.relic-main-stat {
+  min-width: 0;
+}
+
+.relic-name-info .item-name,
+.relic-subtitle,
+.relic-main-stat .stat-name,
+.relic-main-stat .stat-value {
+  white-space: nowrap;
 }
 
 .item-id {
@@ -2454,8 +2489,19 @@ input[type="checkbox"] {
 }
 
 .detail-cell {
-  width: 62px;
+  text-align: center;
+}
+
+.inventory-table tbody .detail-cell {
+  padding-right: 20px;
   text-align: right;
+}
+
+.inventory-table th:last-child,
+.inventory-table .detail-cell,
+.row-action {
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 .row-action {
@@ -3473,16 +3519,17 @@ td {
 }
 .relic-substats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   row-gap: 8px;
   column-gap: 8px;
-  min-width: 200px;
+  min-width: 0;
 }
 .relic-substat-item {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   padding: 4px 8px;
   background: #f5f7fa;
   border-radius: 4px;
@@ -3491,6 +3538,7 @@ td {
 }
 .relic-substat-item .substat-name {
   color: var(--ink-soft);
+  white-space: nowrap;
 }
 .relic-substat-item .substat-value {
   color: var(--ink);
@@ -3598,6 +3646,7 @@ td {
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
 }
 .relic-equip-tag.unequipped {
   background: #f0f2f5;
@@ -4190,92 +4239,116 @@ td {
 /* Character Card Grid Layout */
 .character-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-  padding: 16px;
-  background-color: var(--page-bg, #f8fafc);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  align-content: start;
+  gap: 14px;
+  min-height: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(237, 243, 249, 0.9), rgba(248, 250, 252, 0.72));
   overflow-y: auto;
 }
 
 .character-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid var(--border-color, #e2e8f0);
+  position: relative;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  border: 1px solid rgba(36, 86, 166, 0.15);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 7px 18px rgba(37, 62, 102, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   user-select: none;
 }
 
 .character-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-color: rgba(36, 86, 166, 0.35);
+  box-shadow: 0 13px 24px rgba(37, 62, 102, 0.14);
   transform: translateY(-2px);
 }
 
 .character-card-header {
-  padding: 32px 16px 20px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-areas:
+    "avatar path"
+    "avatar name"
+    "avatar stars";
+  column-gap: 13px;
   align-items: center;
-  text-align: center;
+  padding: 18px;
+  background: linear-gradient(120deg, rgba(232, 240, 251, 0.9), rgba(255, 255, 255, 0.55));
+  text-align: left;
 }
 
 .character-card-avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
+  grid-area: avatar;
+  width: 64px;
+  height: 64px;
+  border-radius: 9px;
   object-fit: cover;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin: 0;
+  box-shadow: 0 5px 11px rgba(34, 62, 106, 0.13);
   background: #e8eef6;
   border: 1px solid rgba(36, 86, 166, 0.15);
 }
 
 .character-card-avatar-fallback {
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
+  grid-area: avatar;
+  width: 64px;
+  height: 64px;
+  border-radius: 9px;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
   font-weight: 500;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin: 0;
+  box-shadow: 0 5px 11px rgba(34, 62, 106, 0.13);
 }
 
 .character-path {
+  grid-area: path;
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   color: #1e293b;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
   font-weight: 600;
 }
 
 .character-name {
-  font-size: 20px;
+  grid-area: name;
+  overflow: hidden;
+  font-size: 19px;
   font-weight: 600;
   color: #0f172a;
-  margin-bottom: 8px;
+  margin-bottom: 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .character-stars {
+  grid-area: stars;
   color: #fbbf24;
-  font-size: 14px;
-  letter-spacing: 2px;
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
 .character-card-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid #f1f5f9;
-  padding: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgba(48, 75, 117, 0.1);
+  padding: 12px 18px;
   text-align: center;
+}
+
+.character-card-stats .stat-col + .stat-col {
+  border-left: 1px solid rgba(48, 75, 117, 0.1);
 }
 
 .stat-col {
@@ -4286,17 +4359,25 @@ td {
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
   font-weight: 500;
 }
 
 .stat-val {
-  font-size: 15px;
+  font-size: 16px;
   color: #0f172a;
   font-weight: 700;
 }
 
 .stat-val.is-active {
   color: #f59e0b;
+}
+
+.character-card-grid > .table-empty {
+  display: grid;
+  min-height: 350px;
+  grid-column: 1 / -1;
+  align-content: center;
+  justify-items: center;
 }

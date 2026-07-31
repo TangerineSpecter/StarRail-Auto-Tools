@@ -13,9 +13,9 @@
     "windows": [
       {
         "title": "星穹铁道工具箱",
-        "width": 1180,
+        "width": 1240,
         "height": 800,
-        "minWidth": 900,
+        "minWidth": 1240,
         "minHeight": 680,
         "resizable": true,
         "fullscreen": false,

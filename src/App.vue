@@ -1742,7 +1742,19 @@ onUnmounted(() => {
           </Drawer>
 
           <div class="table-shell" @scroll="onTableScroll">
-            <table v-if="inventoryKind !== 'character'">
+            <table
+              v-if="inventoryKind !== 'character'"
+              :class="['inventory-table', `inventory-table--${inventoryKind}`]"
+            >
+              <colgroup>
+                <col class="inventory-col-select" />
+                <col class="inventory-col-name" />
+                <col class="inventory-col-level" />
+                <col class="inventory-col-primary" />
+                <col class="inventory-col-secondary" />
+                <col v-if="inventoryKind === 'relic'" class="inventory-col-equipped" />
+                <col class="inventory-col-action" />
+              </colgroup>
               <thead>
                 <tr>
                   <th class="check-cell">
@@ -1947,10 +1959,6 @@ onUnmounted(() => {
                     <strong class="stat-val">Lv.{{ (item as CharacterListItem).level }}</strong>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">突破</span>
-                    <strong class="stat-val">{{ (item as CharacterListItem).ascension }}</strong>
-                  </div>
-                  <div class="stat-col">
                     <span class="stat-label">星魂</span>
                     <strong
                       :class="[
@@ -1960,12 +1968,6 @@ onUnmounted(() => {
                     >
                       E{{ (item as CharacterListItem).eidolon }}
                     </strong>
-                  </div>
-                  <div class="stat-col">
-                    <span class="stat-label">版本</span>
-                    <strong class="stat-val"
-                      >V{{ (item as CharacterListItem).abilityVersion }}</strong
-                    >
                   </div>
                 </div>
               </div>
