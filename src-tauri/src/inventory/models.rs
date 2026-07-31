@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 4;
+pub(crate) const SCHEMA_VERSION: i64 = 5;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]
@@ -62,6 +62,13 @@ pub struct InventorySummary {
     pub characters: u64,
     pub last_sync_at: Option<i64>,
     pub protocol_version: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InventoryImportResult {
+    pub summary: InventorySummary,
+    pub warnings: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -134,6 +141,7 @@ pub struct RelicListItem {
     pub main_stat: String,
     pub main_stat_value: f64,
     pub location: String,
+    pub equipped_character_id: Option<u32>,
     pub locked: bool,
     pub discard: bool,
     pub source: String,
@@ -151,6 +159,7 @@ pub struct LightConeListItem {
     pub ascension: u32,
     pub superimposition: u32,
     pub location: String,
+    pub equipped_character_id: Option<u32>,
     pub locked: bool,
     pub source: String,
     pub updated_at: i64,
@@ -219,6 +228,8 @@ pub struct ImportRelic {
     #[serde(default)]
     pub preview_substats: Option<Vec<ImportSubstat>>,
     pub location: String,
+    #[serde(skip)]
+    pub equipped_character_id: Option<u32>,
     pub lock: bool,
     pub discard: bool,
     #[serde(deserialize_with = "deserialize_u32_any")]
@@ -312,6 +323,8 @@ pub struct ImportLightCone {
     pub ascension: u32,
     pub superimposition: u32,
     pub location: String,
+    #[serde(skip)]
+    pub equipped_character_id: Option<u32>,
     pub lock: bool,
     #[serde(deserialize_with = "deserialize_u32_any")]
     pub _uid: u32,

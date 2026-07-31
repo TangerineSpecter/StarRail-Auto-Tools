@@ -31,7 +31,6 @@ import Drawer from "primevue/drawer";
 import InputNumber from "primevue/inputnumber";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
-import Tag from "primevue/tag";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { captureApi } from "@/shared/api/capture";
 import { directReadApi } from "@/shared/api/direct-read";
@@ -42,6 +41,7 @@ import AppNavigation, { type AppView } from "@/app/AppNavigation.vue";
 import { buildInventoryFilter, createInventoryFilterForm } from "@/features/inventory/filter";
 import relicCatalogueJson from "./data/relic-sets.json";
 import characterCatalogueJson from "./data/characters.json";
+import lightConeCatalogueJson from "./data/light-cones.json";
 import type {
   CharacterFilter,
   CharacterCatalogue,
@@ -54,6 +54,7 @@ import type {
   InventoryListItem,
   InventorySummary,
   LightConeFilter,
+  LightConeCatalogue,
   LightConeListItem,
   OcrImageResult,
   OcrModelConfig,
@@ -69,6 +70,7 @@ import type {
 type ViewName = AppView;
 type RelicDetailData = {
   itemId: number;
+  setId: number;
   name: string;
   setName: string;
   slot: string;
@@ -135,6 +137,7 @@ const buildLoading = ref(false);
 const buildRecommendation = ref<BuildRecommendation | null>(null);
 const relicCatalogue = relicCatalogueJson as RelicSetCatalogue;
 const characterCatalogue = characterCatalogueJson as CharacterCatalogue;
+const lightConeCatalogue = lightConeCatalogueJson as LightConeCatalogue;
 const characterAvatars = new Map(
   characterCatalogue.characters.map((character) => [character.name, character.image]),
 );
@@ -146,13 +149,12 @@ const relicPieceImages = new Map(
     (set.pieces || []).map((piece) => [`${set.id}_${piece.slot}`, piece.image] as const),
   ),
 );
+const lightConeImages = new Map(
+  lightConeCatalogue.lightCones.map((lightCone) => [lightCone.id, lightCone.image]),
+);
 
 function getDetailRelicImage(detail: RelicDetailData): string | undefined {
-  const set = relicCatalogue.sets.find((s) => s.name === detail.setName);
-  if (set) {
-    return relicPieceImages.get(`${set.id}_${detail.slot}`);
-  }
-  return undefined;
+  return relicPieceImages.get(`${detail.setId}_${detail.slot}`);
 }
 
 const relicSetOptions = ref<RelicSetOption[]>(
@@ -287,16 +289,9 @@ const activeFilterCount = computed(() => {
       filters.equipped,
     ];
   } else if (kind === "lightCone") {
-    activeFilters = [
-      filters.superimposition,
-      filters.locked,
-      filters.equipped,
-    ];
+    activeFilters = [filters.superimposition, filters.locked, filters.equipped];
   } else if (kind === "character") {
-    activeFilters = [
-      filters.path.length,
-      filters.eidolon.length,
-    ];
+    activeFilters = [filters.path.length, filters.eidolon.length];
   }
   return activeFilters.filter(Boolean).length;
 });
@@ -923,9 +918,9 @@ async function importData() {
   try {
     const imported = await inventoryApi.import();
     if (imported) {
-      summary.value = imported;
+      summary.value = imported.summary;
       await loadInventory();
-      notice.value = `已导入 ${imported.relics} 件遗器、${imported.lightCones} 件光锥、${imported.characters} 名角色`;
+      notice.value = `已导入 ${imported.summary.relics} 件遗器、${imported.summary.lightCones} 件光锥、${imported.summary.characters} 名角色${imported.warnings.length ? `；${imported.warnings.join("、")}` : ""}`;
     }
   } catch (cause) {
     error.value = String(cause);
@@ -1040,6 +1035,10 @@ function relicPieceImage(item: RelicListItem): string | null {
   return relicPieceImages.get(`${item.setId}_${item.slot}`) ?? null;
 }
 
+function lightConeImage(item: LightConeListItem): string | null {
+  return lightConeImages.get(item.templateId) ?? null;
+}
+
 function recordEntries(value: Record<string, unknown> | null | undefined): Array<[string, string]> {
   if (!value) return [];
   return Object.entries(value).map(([key, item]) => {
@@ -1093,7 +1092,7 @@ onUnmounted(() => {
     <div class="orbit orbit-two" />
 
     <main class="app-shell">
-      <div class="shell-header" data-tauri-drag-region>
+      <div class="shell-header" data-tauri-drag-region="deep">
         <header class="topbar">
           <div class="brand">
             <img src="/logo/android-chrome-192x192.png" alt="Logo" class="brand-logo" />
@@ -1105,14 +1104,42 @@ onUnmounted(() => {
           <div class="topbar-right" style="-webkit-app-region: no-drag">
             <div class="window-controls">
               <button class="win-btn minimize" @click="minimizeWindow" title="最小化">
-                <svg viewBox="0 0 10 10" width="10" height="10"><rect y="4.5" width="10" height="1" fill="currentColor"/></svg>
+                <svg viewBox="0 0 10 10" width="10" height="10">
+                  <rect y="4.5" width="10" height="1" fill="currentColor" />
+                </svg>
               </button>
-              <button class="win-btn maximize" @click="toggleMaximize" :title="isMaximized ? '还原' : '最大化'">
-                <svg v-if="!isMaximized" viewBox="0 0 10 10" width="10" height="10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"/></svg>
-                <svg v-else viewBox="0 0 10 10" width="10" height="10"><rect x="2" y="0.5" width="7.5" height="7.5" fill="none" stroke="currentColor"/><rect x="0.5" y="2" width="7.5" height="7.5" fill="none" stroke="currentColor"/></svg>
+              <button
+                class="win-btn maximize"
+                @click="toggleMaximize"
+                :title="isMaximized ? '还原' : '最大化'"
+              >
+                <svg v-if="!isMaximized" viewBox="0 0 10 10" width="10" height="10">
+                  <rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" />
+                </svg>
+                <svg v-else viewBox="0 0 10 10" width="10" height="10">
+                  <rect x="2" y="0.5" width="7.5" height="7.5" fill="none" stroke="currentColor" />
+                  <rect x="0.5" y="2" width="7.5" height="7.5" fill="none" stroke="currentColor" />
+                </svg>
               </button>
               <button class="win-btn close" @click="closeWindow" title="关闭">
-                <svg viewBox="0 0 10 10" width="10" height="10"><line x1="0.5" y1="0.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1"/><line x1="9.5" y1="0.5" x2="0.5" y2="9.5" stroke="currentColor" stroke-width="1"/></svg>
+                <svg viewBox="0 0 10 10" width="10" height="10">
+                  <line
+                    x1="0.5"
+                    y1="0.5"
+                    x2="9.5"
+                    y2="9.5"
+                    stroke="currentColor"
+                    stroke-width="1"
+                  />
+                  <line
+                    x1="9.5"
+                    y1="0.5"
+                    x2="0.5"
+                    y2="9.5"
+                    stroke="currentColor"
+                    stroke-width="1"
+                  />
+                </svg>
               </button>
             </div>
           </div>
@@ -1137,34 +1164,57 @@ onUnmounted(() => {
             <div class="nebula nebula-1"></div>
             <div class="nebula nebula-2"></div>
             <div class="nebula nebula-3"></div>
-            
+
             <div class="stellar-bg">
-              <div class="star-far sf1"></div><div class="star-far sf2"></div>
-              <div class="star-far sf3"></div><div class="star-far sf4"></div>
-              <div class="star-far sf5"></div><div class="star-far sf6"></div>
-              <div class="star-far sf7"></div><div class="star-far sf8"></div>
-              <div class="star-far sf9"></div><div class="star-far sf10"></div>
-              
-              <div class="star s1"></div><div class="star s2"></div>
-              <div class="star s3"></div><div class="star s4"></div>
+              <div class="star-far sf1"></div>
+              <div class="star-far sf2"></div>
+              <div class="star-far sf3"></div>
+              <div class="star-far sf4"></div>
+              <div class="star-far sf5"></div>
+              <div class="star-far sf6"></div>
+              <div class="star-far sf7"></div>
+              <div class="star-far sf8"></div>
+              <div class="star-far sf9"></div>
+              <div class="star-far sf10"></div>
+
+              <div class="star s1"></div>
+              <div class="star s2"></div>
+              <div class="star s3"></div>
+              <div class="star s4"></div>
               <div class="star s5"></div>
-              
-              <div class="star-bright sb1"></div><div class="star-bright sb2"></div>
+
+              <div class="star-bright sb1"></div>
+              <div class="star-bright sb2"></div>
               <div class="star-bright sb3"></div>
 
               <div class="grid-lines"></div>
 
-              <div class="meteor m1"></div><div class="meteor m2"></div>
+              <div class="meteor m1"></div>
+              <div class="meteor m2"></div>
               <div class="meteor m3"></div>
-              <div class="meteor-small ms1"></div><div class="meteor-small ms2"></div>
+              <div class="meteor-small ms1"></div>
+              <div class="meteor-small ms2"></div>
             </div>
 
             <div class="orbit-system">
               <div class="orbit-ellipse oe-1"><div class="satellite sat-march7"></div></div>
-              <div class="orbit-ellipse oe-2"><div class="satellite sat-danheng"></div><div class="satellite sat-himeko"></div></div>
-              <div class="orbit-ellipse oe-3"><div class="satellite sat-welt"></div><div class="satellite sat-bronya"></div></div>
-              <div class="orbit-ellipse oe-4"><div class="satellite sat-seele"></div><div class="satellite sat-serval"></div><div class="satellite sat-gepard"></div></div>
-              <div class="orbit-ellipse oe-5"><div class="satellite sat-pela"></div><div class="satellite sat-natasha"></div></div>
+              <div class="orbit-ellipse oe-2">
+                <div class="satellite sat-danheng"></div>
+                <div class="satellite sat-himeko"></div>
+              </div>
+              <div class="orbit-ellipse oe-3">
+                <div class="satellite sat-welt"></div>
+                <div class="satellite sat-bronya"></div>
+              </div>
+              <div class="orbit-ellipse oe-4">
+                <div class="satellite sat-seele"></div>
+                <div class="satellite sat-serval"></div>
+                <div class="satellite sat-gepard"></div>
+              </div>
+              <div class="orbit-ellipse oe-5">
+                <div class="satellite sat-pela"></div>
+                <div class="satellite sat-natasha"></div>
+              </div>
 
               <div class="astral-core">
                 <div class="core-ring ring-outer"></div>
@@ -1175,33 +1225,48 @@ onUnmounted(() => {
                   <span>{{ directRunning ? "◈" : "◇" }}</span>
                 </div>
               </div>
-              
+
               <svg class="orbit-lines" viewBox="0 0 400 260">
                 <defs>
                   <linearGradient id="lineGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#6366F1" stop-opacity="0"/>
-                    <stop offset="50%" stop-color="#6366F1" stop-opacity="0.4"/>
-                    <stop offset="100%" stop-color="#6366F1" stop-opacity="0"/>
+                    <stop offset="0%" stop-color="#6366F1" stop-opacity="0" />
+                    <stop offset="50%" stop-color="#6366F1" stop-opacity="0.4" />
+                    <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
                   </linearGradient>
                   <linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0"/>
-                    <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.3"/>
-                    <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+                    <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0" />
+                    <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.3" />
+                    <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0" />
                   </linearGradient>
                 </defs>
-                <line x1="0" y1="130" x2="400" y2="130" stroke="url(#lineGrad1)" stroke-width="1"/>
-                <line x1="200" y1="0" x2="200" y2="260" stroke="url(#lineGrad2)" stroke-width="1"/>
-                <line x1="60" y1="40" x2="340" y2="220" stroke="url(#lineGrad1)" stroke-width="0.5"/>
-                <line x1="340" y1="40" x2="60" y2="220" stroke="url(#lineGrad2)" stroke-width="0.5"/>
+                <line x1="0" y1="130" x2="400" y2="130" stroke="url(#lineGrad1)" stroke-width="1" />
+                <line x1="200" y1="0" x2="200" y2="260" stroke="url(#lineGrad2)" stroke-width="1" />
+                <line
+                  x1="60"
+                  y1="40"
+                  x2="340"
+                  y2="220"
+                  stroke="url(#lineGrad1)"
+                  stroke-width="0.5"
+                />
+                <line
+                  x1="340"
+                  y1="40"
+                  x2="60"
+                  y2="220"
+                  stroke="url(#lineGrad2)"
+                  stroke-width="0.5"
+                />
               </svg>
             </div>
 
             <div class="visual-status">
               <span :class="['status-dot', { pulse: directRunning }]"></span>
-              <span class="status-text">{{ direct.phase === "ready" ? "LIVE" : direct.phase.toUpperCase() }}</span>
+              <span class="status-text">{{
+                direct.phase === "ready" ? "LIVE" : direct.phase.toUpperCase()
+              }}</span>
             </div>
           </div>
-
 
           <div class="capture-counts">
             <div>
@@ -1235,7 +1300,23 @@ onUnmounted(() => {
           >
             <span class="action-symbol" aria-hidden="true">
               <span v-if="directRunning">■</span>
-              <svg v-else t="1785488611476" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="24598" width="14" height="14"><path d="M893.035 463.821679C839.00765 429.699141 210.584253 28.759328 179.305261 8.854514 139.495634-16.737389 99.686007 17.385148 99.686007 57.194775v909.934329c0 45.496716 42.653172 68.245075 76.775709 48.340262 45.496716-28.435448 676.763657-429.375262 716.573284-454.967165 34.122537-22.748358 34.122537-76.775709 0-96.680522z" fill="currentColor" p-id="24599"></path></svg>
+              <svg
+                v-else
+                t="1785488611476"
+                class="icon"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                p-id="24598"
+                width="14"
+                height="14"
+              >
+                <path
+                  d="M893.035 463.821679C839.00765 429.699141 210.584253 28.759328 179.305261 8.854514 139.495634-16.737389 99.686007 17.385148 99.686007 57.194775v909.934329c0 45.496716 42.653172 68.245075 76.775709 48.340262 45.496716-28.435448 676.763657-429.375262 716.573284-454.967165 34.122537-22.748358 34.122537-76.775709 0-96.680522z"
+                  fill="currentColor"
+                  p-id="24599"
+                ></path>
+              </svg>
             </span>
             <span class="action-text-wrapper">
               <small>GAME DATA SYNC</small>
@@ -1265,15 +1346,23 @@ onUnmounted(() => {
                 ><strong>{{ summary.relics + summary.lightCones + summary.characters }} 条</strong>
               </div>
             </div>
-            <Button
-              class="capture-action-btn"
-              type="button"
-              :disabled="busy"
-              @click="exportData"
-            >
-              <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
-                <path d="M0 841.142857m66.742857 0l890.514286 0q66.742857 0 66.742857 66.742857l0 49.371429q0 66.742857-66.742857 66.742857l-890.514286 0q-66.742857 0-66.742857-66.742857l0-49.371429q0-66.742857 66.742857-66.742857Z" fill="currentColor"></path>
-                <path d="M900.937143 249.234286L600.137143 3.84a16.457143 16.457143 0 0 0-26.88 12.617143v91.428571a16.64 16.64 0 0 1-14.994286 16.274286c-389.485714 38.4-438.857143 358.4-441.234286 509.805714a16.457143 16.457143 0 0 0 31.268572 7.314286c73.142857-150.674286 227.84-230.4 407.771428-237.714286a16.64 16.64 0 0 1 17.188572 16.64v88.137143a16.457143 16.457143 0 0 0 26.88 12.8L900.937143 274.285714a16.64 16.64 0 0 0 0-25.051428z" fill="currentColor"></path>
+            <Button class="capture-action-btn" type="button" :disabled="busy" @click="exportData">
+              <svg
+                class="crop-icon"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                width="1.2em"
+                height="1.2em"
+              >
+                <path
+                  d="M0 841.142857m66.742857 0l890.514286 0q66.742857 0 66.742857 66.742857l0 49.371429q0 66.742857-66.742857 66.742857l-890.514286 0q-66.742857 0-66.742857-66.742857l0-49.371429q0-66.742857 66.742857-66.742857Z"
+                  fill="currentColor"
+                ></path>
+                <path
+                  d="M900.937143 249.234286L600.137143 3.84a16.457143 16.457143 0 0 0-26.88 12.617143v91.428571a16.64 16.64 0 0 1-14.994286 16.274286c-389.485714 38.4-438.857143 358.4-441.234286 509.805714a16.457143 16.457143 0 0 0 31.268572 7.314286c73.142857-150.674286 227.84-230.4 407.771428-237.714286a16.64 16.64 0 0 1 17.188572 16.64v88.137143a16.457143 16.457143 0 0 0 26.88 12.8L900.937143 274.285714a16.64 16.64 0 0 0 0-25.051428z"
+                  fill="currentColor"
+                ></path>
               </svg>
               <span>导出数据</span>
             </Button>
@@ -1297,14 +1386,38 @@ onUnmounted(() => {
               </p>
             </div>
             <div v-else class="empty-output">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="empty-image-icon"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="empty-image-icon"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
               <p>识别结果仅供核对</p>
               <small>点击下方按钮开始截图</small>
             </div>
-            
+
             <Button class="capture-action-btn" :disabled="busy" @click="runOcrScreenshot">
-              <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
-                <path d="M119.579981 119.560026l185.746448 0c16.074094 0 29.283953-13.134135 29.283953-29.322839 0-16.303314-13.113669-29.321816-29.283953-29.321816l-215.107149 0c-8.037047 0-15.34857 3.282766-20.655436 8.590656-5.383614 5.307889-8.629541 12.619412-8.629541 20.694321L60.934303 305.306474c0 16.074094 13.134135 29.283953 29.321816 29.283953 16.303314 0 29.322839-13.114692 29.322839-29.283953L119.578957 119.560026zM901.51076 119.560026 715.764312 119.560026c-16.093537 0-29.283953-13.134135-29.283953-29.322839 0-16.303314 13.114692-29.321816 29.283953-29.321816l215.107149 0c8.037047 0 15.34857 3.282766 20.655436 8.590656 5.384637 5.307889 8.629541 12.619412 8.629541 20.694321L960.156438 305.306474c0 16.074094-13.134135 29.283953-29.321816 29.283953-16.303314 0-29.322839-13.114692-29.322839-29.283953L901.511783 119.560026zM119.579981 901.489782l185.746448 0c16.074094 0 29.283953 13.133112 29.283953 29.321816 0 16.303314-13.113669 29.321816-29.283953 29.321816l-215.107149 0c-8.037047 0-15.34857-3.28379-20.655436-8.590656-5.383614-5.306866-8.629541-12.619412-8.629541-20.694321L60.934303 715.744357c0-16.075117 13.134135-29.286 29.321816-29.286 16.303314 0 29.322839 13.114692 29.322839 29.286L119.578957 901.489782zM901.51076 901.489782 715.764312 901.489782c-16.093537 0-29.283953 13.133112-29.283953 29.321816 0 16.303314 13.114692 29.321816 29.283953 29.321816l215.107149 0c8.037047 0 15.34857-3.28379 20.655436-8.590656 5.384637-5.306866 8.629541-12.619412 8.629541-20.694321L960.156438 715.744357c0-16.075117-13.134135-29.286-29.321816-29.286-16.303314 0-29.322839 13.114692-29.322839 29.286L901.511783 901.489782z" fill="currentColor"></path>
+              <svg
+                class="crop-icon"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                width="1.2em"
+                height="1.2em"
+              >
+                <path
+                  d="M119.579981 119.560026l185.746448 0c16.074094 0 29.283953-13.134135 29.283953-29.322839 0-16.303314-13.113669-29.321816-29.283953-29.321816l-215.107149 0c-8.037047 0-15.34857 3.282766-20.655436 8.590656-5.383614 5.307889-8.629541 12.619412-8.629541 20.694321L60.934303 305.306474c0 16.074094 13.134135 29.283953 29.321816 29.283953 16.303314 0 29.322839-13.114692 29.322839-29.283953L119.578957 119.560026zM901.51076 119.560026 715.764312 119.560026c-16.093537 0-29.283953-13.134135-29.283953-29.322839 0-16.303314 13.114692-29.321816 29.283953-29.321816l215.107149 0c8.037047 0 15.34857 3.282766 20.655436 8.590656 5.384637 5.307889 8.629541 12.619412 8.629541 20.694321L960.156438 305.306474c0 16.074094-13.134135 29.283953-29.321816 29.283953-16.303314 0-29.322839-13.114692-29.322839-29.283953L901.511783 119.560026zM119.579981 901.489782l185.746448 0c16.074094 0 29.283953 13.133112 29.283953 29.321816 0 16.303314-13.113669 29.321816-29.283953 29.321816l-215.107149 0c-8.037047 0-15.34857-3.28379-20.655436-8.590656-5.383614-5.306866-8.629541-12.619412-8.629541-20.694321L60.934303 715.744357c0-16.075117 13.134135-29.286 29.321816-29.286 16.303314 0 29.322839 13.114692 29.322839 29.286L119.578957 901.489782zM901.51076 901.489782 715.764312 901.489782c-16.093537 0-29.283953 13.133112-29.283953 29.321816 0 16.303314 13.114692 29.321816 29.283953 29.321816l215.107149 0c8.037047 0 15.34857-3.28379 20.655436-8.590656 5.384637-5.306866 8.629541-12.619412 8.629541-20.694321L960.156438 715.744357c0-16.075117-13.134135-29.286-29.321816-29.286-16.303314 0-29.322839 13.114692-29.322839 29.286L901.511783 901.489782z"
+                  fill="currentColor"
+                ></path>
               </svg>
               <span>{{ busy ? "正在截图 / 识别" : "截图并框选" }}</span>
             </Button>
@@ -1339,27 +1452,43 @@ onUnmounted(() => {
           <div class="archive-meta">
             <span>最近同步</span><strong>{{ formatTime(summary.lastSyncAt) }}</strong>
           </div>
-          <Button
-            class="capture-action-btn"
-            type="button"
-            :disabled="busy"
-            @click="exportData"
-          >
-            <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
-              <path d="M0 841.142857m66.742857 0l890.514286 0q66.742857 0 66.742857 66.742857l0 49.371429q0 66.742857-66.742857 66.742857l-890.514286 0q-66.742857 0-66.742857-66.742857l0-49.371429q0-66.742857 66.742857-66.742857Z" fill="currentColor"></path>
-              <path d="M900.937143 249.234286L600.137143 3.84a16.457143 16.457143 0 0 0-26.88 12.617143v91.428571a16.64 16.64 0 0 1-14.994286 16.274286c-389.485714 38.4-438.857143 358.4-441.234286 509.805714a16.457143 16.457143 0 0 0 31.268572 7.314286c73.142857-150.674286 227.84-230.4 407.771428-237.714286a16.64 16.64 0 0 1 17.188572 16.64v88.137143a16.457143 16.457143 0 0 0 26.88 12.8L900.937143 274.285714a16.64 16.64 0 0 0 0-25.051428z" fill="currentColor"></path>
+          <Button class="capture-action-btn" type="button" :disabled="busy" @click="exportData">
+            <svg
+              class="crop-icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              width="1.2em"
+              height="1.2em"
+            >
+              <path
+                d="M0 841.142857m66.742857 0l890.514286 0q66.742857 0 66.742857 66.742857l0 49.371429q0 66.742857-66.742857 66.742857l-890.514286 0q-66.742857 0-66.742857-66.742857l0-49.371429q0-66.742857 66.742857-66.742857Z"
+                fill="currentColor"
+              ></path>
+              <path
+                d="M900.937143 249.234286L600.137143 3.84a16.457143 16.457143 0 0 0-26.88 12.617143v91.428571a16.64 16.64 0 0 1-14.994286 16.274286c-389.485714 38.4-438.857143 358.4-441.234286 509.805714a16.457143 16.457143 0 0 0 31.268572 7.314286c73.142857-150.674286 227.84-230.4 407.771428-237.714286a16.64 16.64 0 0 1 17.188572 16.64v88.137143a16.457143 16.457143 0 0 0 26.88 12.8L900.937143 274.285714a16.64 16.64 0 0 0 0-25.051428z"
+                fill="currentColor"
+              ></path>
             </svg>
             <span>导出数据</span>
           </Button>
-          <Button
-            class="capture-action-btn"
-            type="button"
-            :disabled="busy"
-            @click="importData"
-          >
-            <svg class="crop-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em">
-              <path d="M0 841.264833m66.698336 0l889.920264 0q66.698336 0 66.698336 66.698336l0 49.338495q0 66.698336-66.698336 66.698336l-889.920264 0q-66.698336 0-66.698336-66.698336l0-49.338495q0-66.698336 66.698336-66.698336Z" fill="currentColor"></path>
-              <path d="M571.412868 698.000462L798.18721 420.973948a19.187193 19.187193 0 0 0-14.984284-31.430448h-99.590666C683.61226 66.102254 395.987107 8.357941 240.84495 0.683064a18.273517 18.273517 0 0 0-10.050434 36.547033c115.30589 61.947222 166.106267 167.202678 172.136528 332.212534A19.187193 19.187193 0 0 1 383.743851 388.812559h-79.672533a19.187193 19.187193 0 0 0-14.801548 32.161389l226.774342 277.757455a36.547033 36.547033 0 0 0 55.368756-0.730941z" fill="currentColor"></path>
+          <Button class="capture-action-btn" type="button" :disabled="busy" @click="importData">
+            <svg
+              class="crop-icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              width="1.2em"
+              height="1.2em"
+            >
+              <path
+                d="M0 841.264833m66.698336 0l889.920264 0q66.698336 0 66.698336 66.698336l0 49.338495q0 66.698336-66.698336 66.698336l-889.920264 0q-66.698336 0-66.698336-66.698336l0-49.338495q0-66.698336 66.698336-66.698336Z"
+                fill="currentColor"
+              ></path>
+              <path
+                d="M571.412868 698.000462L798.18721 420.973948a19.187193 19.187193 0 0 0-14.984284-31.430448h-99.590666C683.61226 66.102254 395.987107 8.357941 240.84495 0.683064a18.273517 18.273517 0 0 0-10.050434 36.547033c115.30589 61.947222 166.106267 167.202678 172.136528 332.212534A19.187193 19.187193 0 0 1 383.743851 388.812559h-79.672533a19.187193 19.187193 0 0 0-14.801548 32.161389l226.774342 277.757455a36.547033 36.547033 0 0 0 55.368756-0.730941z"
+                fill="currentColor"
+              ></path>
             </svg>
             <span>导入 JSON</span>
           </Button>
@@ -1422,7 +1551,16 @@ onUnmounted(() => {
                   <small>选择需要的条件，未选择即代表不限。</small>
                 </div>
                 <Button type="button" aria-label="关闭筛选" text @click="filterOpen = false">
-                  <svg viewBox="0 0 24 24" width="1.2em" height="1.2em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="1.2em"
+                    height="1.2em"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
@@ -1543,19 +1681,27 @@ onUnmounted(() => {
                   <fieldset class="filter-group filter-group-wide">
                     <legend>命途 <em>可多选</em></legend>
                     <div class="filter-chips">
-                      <label v-for="path in [
-                        { label: '毁灭', value: 'Destruction' },
-                        { label: '巡猎', value: 'Hunt' },
-                        { label: '智识', value: 'Erudition' },
-                        { label: '同谐', value: 'Harmony' },
-                        { label: '虚无', value: 'Nihility' },
-                        { label: '存护', value: 'Preservation' },
-                        { label: '丰饶', value: 'Abundance' },
-                        { label: '记忆', value: 'Remembrance' },
-                      ]" :key="path.value" class="filter-chip filter-path-chip">
+                      <label
+                        v-for="path in [
+                          { label: '毁灭', value: 'Destruction' },
+                          { label: '巡猎', value: 'Hunt' },
+                          { label: '智识', value: 'Erudition' },
+                          { label: '同谐', value: 'Harmony' },
+                          { label: '虚无', value: 'Nihility' },
+                          { label: '存护', value: 'Preservation' },
+                          { label: '丰饶', value: 'Abundance' },
+                          { label: '记忆', value: 'Remembrance' },
+                        ]"
+                        :key="path.value"
+                        class="filter-chip filter-path-chip"
+                      >
                         <input v-model="filters.path" type="checkbox" :value="path.value" />
                         <span>
-                          <img :src="`/character-icons/paths/${path.label}.webp`" class="filter-chip-img" alt="" />
+                          <img
+                            :src="`/character-icons/paths/${path.label}.webp`"
+                            class="filter-chip-img"
+                            alt=""
+                          />
                           {{ path.label }}
                         </span>
                       </label>
@@ -1611,10 +1757,8 @@ onUnmounted(() => {
                   </template>
                   <template v-else-if="inventoryKind === 'lightCone'">
                     <th>等级</th>
-                    <th>突破</th>
                     <th>叠影</th>
                     <th>装备角色</th>
-                    <th>状态</th>
                   </template>
                   <th class="detail-cell">详情</th>
                 </tr>
@@ -1649,9 +1793,24 @@ onUnmounted(() => {
                         </div>
                       </div>
                     </template>
+                    <template v-else-if="inventoryKind === 'lightCone'">
+                      <div class="relic-name-cell">
+                        <div class="relic-icon-box">
+                          <img
+                            v-if="lightConeImage(item as LightConeListItem)"
+                            :src="lightConeImage(item as LightConeListItem)!"
+                            :alt="itemTitle(item)"
+                            class="light-cone-image"
+                          />
+                          <span v-else class="relic-icon-star">☆</span>
+                        </div>
+                        <div class="relic-name-info">
+                          <strong class="item-name">{{ itemTitle(item) }}</strong>
+                        </div>
+                      </div>
+                    </template>
                     <template v-else>
                       <strong class="item-name">{{ itemTitle(item) }}</strong>
-                      <small class="item-id">#{{ idFor(item) }}</small>
                     </template>
                   </td>
                   <template v-if="inventoryKind === 'relic'">
@@ -1711,15 +1870,31 @@ onUnmounted(() => {
                     <td>
                       <b>Lv.{{ (item as LightConeListItem).level }}</b>
                     </td>
-                    <td>{{ (item as LightConeListItem).ascension }}</td>
-                    <td>叠影 {{ (item as LightConeListItem).superimposition }}</td>
-                    <td>{{ (item as LightConeListItem).location || "—" }}</td>
                     <td>
-                      <Tag
-                        v-if="(item as LightConeListItem).locked"
-                        value="锁定"
-                        class="data-tag"
-                      />
+                      <span
+                        :class="[
+                          'relic-substat-item',
+                          'light-cone-superimposition',
+                          `hit-${(item as LightConeListItem).superimposition}`,
+                        ]"
+                      >
+                        <span class="substat-name">叠影</span>
+                        <strong class="substat-value">{{
+                          (item as LightConeListItem).superimposition
+                        }}</strong>
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        v-if="(item as LightConeListItem).location"
+                        :class="[
+                          'relic-equip-tag',
+                          'element-' + getCharacterElement((item as LightConeListItem).location),
+                        ]"
+                      >
+                        {{ (item as LightConeListItem).location }}
+                      </span>
+                      <span v-else class="relic-equip-tag unequipped">未装备</span>
                     </td>
                   </template>
                   <td class="detail-cell">
@@ -1729,7 +1904,7 @@ onUnmounted(() => {
                   </td>
                 </tr>
                 <tr v-if="!result.items.length">
-                  <td colspan="7" class="table-empty">
+                  <td :colspan="inventoryKind === 'lightCone' ? 6 : 7" class="table-empty">
                     <span>◇</span>
                     <strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong>
                     <small>启动游戏数据直读并重新登录后，档案会自动出现</small>
@@ -1752,7 +1927,11 @@ onUnmounted(() => {
                     :src="characterAvatar(item.name)!"
                     :alt="`${item.name} 头像`"
                   />
-                  <div v-else class="character-card-avatar-fallback" :style="{ background: avatarColor(item.name) }">
+                  <div
+                    v-else
+                    class="character-card-avatar-fallback"
+                    :style="{ background: avatarColor(item.name) }"
+                  >
                     {{ item.name.charAt(0) }}
                   </div>
                   <div class="character-path">
@@ -1760,9 +1939,7 @@ onUnmounted(() => {
                     <span class="path-text">{{ pathLabel((item as CharacterListItem).path) }}</span>
                   </div>
                   <div class="character-name">{{ item.name }}</div>
-                  <div class="character-stars">
-                    ★★★★★
-                  </div>
+                  <div class="character-stars">★★★★★</div>
                 </div>
                 <div class="character-card-stats">
                   <div class="stat-col">
@@ -1776,14 +1953,19 @@ onUnmounted(() => {
                   <div class="stat-col">
                     <span class="stat-label">星魂</span>
                     <strong
-                      :class="['stat-val', { 'is-active': (item as CharacterListItem).eidolon > 0 }]"
+                      :class="[
+                        'stat-val',
+                        { 'is-active': (item as CharacterListItem).eidolon > 0 },
+                      ]"
                     >
                       E{{ (item as CharacterListItem).eidolon }}
                     </strong>
                   </div>
                   <div class="stat-col">
                     <span class="stat-label">版本</span>
-                    <strong class="stat-val">V{{ (item as CharacterListItem).abilityVersion }}</strong>
+                    <strong class="stat-val"
+                      >V{{ (item as CharacterListItem).abilityVersion }}</strong
+                    >
                   </div>
                 </div>
               </div>

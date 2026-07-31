@@ -53,6 +53,11 @@ export interface InventorySummary {
   protocolVersion: string;
 }
 
+export interface InventoryImportResult {
+  summary: InventorySummary;
+  warnings: string[];
+}
+
 export type InventoryKind = "relic" | "lightCone" | "character";
 
 export interface PageQuery {
@@ -119,6 +124,7 @@ export interface RelicListItem {
   mainStat: string;
   mainStatValue: number;
   location: string;
+  equippedCharacterId: number | null;
   locked: boolean;
   discard: boolean;
   source: string;
@@ -134,6 +140,7 @@ export interface LightConeListItem {
   ascension: number;
   superimposition: number;
   location: string;
+  equippedCharacterId: number | null;
   locked: boolean;
   source: string;
   updatedAt: number;

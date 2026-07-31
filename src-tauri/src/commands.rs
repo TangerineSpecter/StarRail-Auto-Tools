@@ -6,9 +6,9 @@ use crate::{
     error::AppError,
     inventory::{
         BuildRecommendation, BuildRecommendationRequest, CharacterBuildPlan, CharacterFilter,
-        ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryKind, InventoryStore,
-        InventorySummary, LightConeFilter, LightConeListItem, PagedResult, RelicFilter,
-        RelicListItem,
+        ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryImportResult,
+        InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
+        PagedResult, RelicFilter, RelicListItem,
     },
     scanner::ScannerState,
     screenshot,
@@ -252,7 +252,7 @@ pub async fn export_inventory(
 pub async fn import_inventory(
     app: AppHandle,
     store: State<'_, InventoryStore>,
-) -> Result<Option<InventorySummary>, AppError> {
+) -> Result<Option<InventoryImportResult>, AppError> {
     let Some(file) = rfd::AsyncFileDialog::new()
         .set_title("导入星穹铁道数据")
         .add_filter("JSON", &["json"])
@@ -263,13 +263,17 @@ pub async fn import_inventory(
     };
     let path = file.path();
     let file = std::fs::File::open(path)?;
-    let import: crate::inventory::InventoryImport = serde_json::from_reader(file)
+    let mut import: crate::inventory::InventoryImport = serde_json::from_reader(file)
         .map_err(|error| AppError::Database(format!("JSON 格式无效：{error}")))?;
+    let report = crate::inventory::normalize_import(&mut import);
     let summary = match store.apply_full_snapshot(&import)? {
         Ok(summary) => summary,
         Err(_) => return Err(AppError::AccountMismatch),
     };
     direct_read::inventory_changed(&app, &summary, false)?;
     let _ = app.emit("inventory://changed", &summary);
-    Ok(Some(summary))
+    Ok(Some(InventoryImportResult {
+        summary,
+        warnings: report.warnings(),
+    }))
 }

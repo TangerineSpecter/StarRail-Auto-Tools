@@ -3,6 +3,7 @@ import type {
   CharacterFilter,
   CharacterListItem,
   InventoryDetail,
+  InventoryImportResult,
   InventoryKind,
   InventorySummary,
   LightConeFilter,
@@ -27,5 +28,5 @@ export const inventoryApi = {
   clear: (kind: InventoryKind | null) =>
     invoke<InventorySummary>("clear_inventory", { request: { kind } }),
   export: () => invoke<string | null>("export_inventory"),
-  import: () => invoke<InventorySummary | null>("import_inventory"),
+  import: () => invoke<InventoryImportResult | null>("import_inventory"),
 };

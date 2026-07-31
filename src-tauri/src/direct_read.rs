@@ -8,7 +8,9 @@ use tauri::{AppHandle, Emitter, Manager};
 
 use crate::{
     error::AppError,
-    inventory::{InventoryImport, InventoryStore, InventorySummary, PROTOCOL_VERSION},
+    inventory::{
+        normalize_import, InventoryImport, InventoryStore, InventorySummary, PROTOCOL_VERSION,
+    },
 };
 
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
@@ -277,9 +279,10 @@ fn apply_summary(snapshot: &mut DirectReadSnapshot, summary: &InventorySummary) 
 }
 
 #[cfg_attr(not(windows), allow(dead_code))]
-fn handle_import(app: &AppHandle, import: InventoryImport) -> Result<(), AppError> {
+fn handle_import(app: &AppHandle, mut import: InventoryImport) -> Result<(), AppError> {
     let store = app.state::<InventoryStore>();
     let state = app.state::<DirectReadState>();
+    let report = normalize_import(&mut import);
     match store.apply_full_snapshot(&import)? {
         Ok(summary) => {
             let uid = import.metadata.uid;
@@ -294,6 +297,9 @@ fn handle_import(app: &AppHandle, import: InventoryImport) -> Result<(), AppErro
                     "同步完成：{} 件遗器 · {} 件光锥 · {} 名角色",
                     summary.relics, summary.light_cones, summary.characters
                 );
+                if !report.warnings().is_empty() {
+                    snapshot.message.push_str("（存在待更新图鉴项）");
+                }
                 snapshot.current_uid = uid;
                 snapshot.incoming_uid = None;
                 snapshot.requires_account_switch = false;

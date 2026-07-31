@@ -13,6 +13,10 @@ use rusqlite::{
 use serde_json::{json, Value};
 
 use super::models::*;
+use super::{
+    canonical_character_name, canonical_light_cone_name, canonical_relic_name, location_id,
+    normalize_main_stat, normalize_slot,
+};
 use crate::error::AppError;
 
 #[derive(Debug, Clone)]
@@ -77,6 +81,7 @@ impl InventoryStore {
                 main_stat TEXT NOT NULL,
                 main_stat_value REAL NOT NULL DEFAULT 0,
                 location TEXT NOT NULL,
+                equipped_character_id INTEGER,
                 locked INTEGER NOT NULL,
                 discard INTEGER NOT NULL,
                 source TEXT NOT NULL,
@@ -103,6 +108,7 @@ impl InventoryStore {
                 ascension INTEGER NOT NULL,
                 superimposition INTEGER NOT NULL,
                 location TEXT NOT NULL,
+                equipped_character_id INTEGER,
                 locked INTEGER NOT NULL,
                 source TEXT NOT NULL,
                 updated_at INTEGER NOT NULL,
@@ -165,11 +171,26 @@ impl InventoryStore {
             "ALTER TABLE character_build_targets ADD COLUMN minimum REAL NOT NULL DEFAULT 0",
             [],
         );
+        let _ = connection.execute(
+            "ALTER TABLE relics ADD COLUMN equipped_character_id INTEGER",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE light_cones ADD COLUMN equipped_character_id INTEGER",
+            [],
+        );
         connection.execute(
             "UPDATE character_build_targets SET minimum = target - max_gap",
             [],
         )?;
-        backfill_main_stat_values(connection)?;
+        let schema_version =
+            connection.query_row("SELECT version FROM schema_meta LIMIT 1", [], |row| {
+                row.get::<_, i64>(0)
+            })?;
+        if schema_version < SCHEMA_VERSION {
+            normalize_existing_records(connection)?;
+            backfill_main_stat_values(connection)?;
+        }
         connection.execute("UPDATE schema_meta SET version = ?1", [SCHEMA_VERSION])?;
         Ok(())
     }
@@ -377,8 +398,8 @@ impl InventoryStore {
                 r#"
                 INSERT INTO light_cones(
                     item_id, template_id, name, level, ascension, superimposition,
-                    location, locked, source, updated_at, last_seen_run
-                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'network', ?9, ?10)
+                    location, equipped_character_id, locked, source, updated_at, last_seen_run
+                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'network', ?10, ?11)
                 ON CONFLICT(item_id) DO UPDATE SET
                     template_id = excluded.template_id,
                     name = excluded.name,
@@ -386,6 +407,7 @@ impl InventoryStore {
                     ascension = excluded.ascension,
                     superimposition = excluded.superimposition,
                     location = excluded.location,
+                    equipped_character_id = excluded.equipped_character_id,
                     locked = excluded.locked,
                     source = excluded.source,
                     updated_at = excluded.updated_at,
@@ -399,6 +421,7 @@ impl InventoryStore {
                     light_cone.ascension,
                     light_cone.superimposition,
                     light_cone.location,
+                    light_cone.equipped_character_id,
                     light_cone.lock,
                     now,
                     run_id
@@ -535,9 +558,9 @@ impl InventoryStore {
         push_bool_filter(&mut clauses, &mut values, "discard", filter.discard);
         if let Some(equipped) = filter.equipped {
             clauses.push(if equipped {
-                "location <> ''".to_owned()
+                "equipped_character_id IS NOT NULL".to_owned()
             } else {
-                "location = ''".to_owned()
+                "equipped_character_id IS NULL".to_owned()
             });
         }
 
@@ -550,7 +573,7 @@ impl InventoryStore {
         ));
         let sql = format!(
             "SELECT item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
-                    location, locked, discard, source, updated_at
+                    location, equipped_character_id, locked, discard, source, updated_at
              FROM relics {where_sql}
              ORDER BY rarity DESC, level DESC, item_id DESC LIMIT ? OFFSET ?"
         );
@@ -618,9 +641,9 @@ impl InventoryStore {
         push_bool_filter(&mut clauses, &mut values, "locked", filter.locked);
         if let Some(equipped) = filter.equipped {
             clauses.push(if equipped {
-                "location <> ''".to_owned()
+                "equipped_character_id IS NOT NULL".to_owned()
             } else {
-                "location = ''".to_owned()
+                "equipped_character_id IS NULL".to_owned()
             });
         }
         let where_sql = make_where(&clauses);
@@ -632,7 +655,7 @@ impl InventoryStore {
         ));
         let sql = format!(
             "SELECT item_id, template_id, name, level, ascension, superimposition,
-                    location, locked, source, updated_at
+                    location, equipped_character_id, locked, source, updated_at
              FROM light_cones {where_sql}
              ORDER BY level DESC, superimposition DESC, item_id DESC LIMIT ? OFFSET ?"
         );
@@ -779,6 +802,76 @@ impl InventoryStore {
         ));
         Self::initialize(path).expect("test database")
     }
+}
+
+fn normalize_existing_records(connection: &Connection) -> Result<(), AppError> {
+    let relic_rows = {
+        let mut statement =
+            connection.prepare("SELECT item_id, set_id, slot, main_stat, location FROM relics")?;
+        let rows = statement
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, u32>(0)?,
+                    row.get::<_, u32>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, String>(4)?,
+                ))
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        rows
+    };
+    for (id, set_id, slot, main_stat, location) in relic_rows {
+        let slot = normalize_slot(&slot);
+        let main_stat = normalize_main_stat(slot, &main_stat);
+        let location_id = location_id(&location);
+        let location = location_id
+            .and_then(canonical_character_name)
+            .unwrap_or(&location);
+        connection.execute(
+            "UPDATE relics SET name = COALESCE(?2, name), set_name = COALESCE(?2, set_name), slot = ?3, main_stat = ?4, location = ?5, equipped_character_id = ?6 WHERE item_id = ?1",
+            params![id, canonical_relic_name(set_id), slot, main_stat, location, location_id],
+        )?;
+    }
+    let cone_rows = {
+        let mut statement =
+            connection.prepare("SELECT item_id, template_id, location FROM light_cones")?;
+        let rows = statement
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, u32>(0)?,
+                    row.get::<_, u32>(1)?,
+                    row.get::<_, String>(2)?,
+                ))
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        rows
+    };
+    for (id, template_id, location) in cone_rows {
+        let location_id = location_id(&location);
+        let location = location_id
+            .and_then(canonical_character_name)
+            .unwrap_or(&location);
+        connection.execute(
+            "UPDATE light_cones SET name = COALESCE(?2, name), location = ?3, equipped_character_id = ?4 WHERE item_id = ?1",
+            params![id, canonical_light_cone_name(template_id), location, location_id],
+        )?;
+    }
+    let character_rows = {
+        let mut statement = connection.prepare("SELECT character_id FROM characters")?;
+        let rows = statement
+            .query_map([], |row| row.get::<_, u32>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        rows
+    };
+    for id in character_rows {
+        connection.execute(
+            "UPDATE characters SET name = COALESCE(?2, name) WHERE character_id = ?1",
+            params![id, canonical_character_name(id)],
+        )?;
+    }
+    connection.execute("UPDATE relic_substats SET stat_key = CASE stat_key WHEN 'HP_' THEN 'HP%' WHEN 'ATK_' THEN 'ATK%' WHEN 'DEF_' THEN 'DEF%' WHEN 'CRIT Rate_' THEN 'CRIT Rate' WHEN 'CRIT Rate%' THEN 'CRIT Rate' WHEN 'CRIT DMG_' THEN 'CRIT DMG' WHEN 'CRIT DMG%' THEN 'CRIT DMG' WHEN 'Effect Hit Rate_' THEN 'Effect Hit Rate' WHEN 'Effect Hit Rate%' THEN 'Effect Hit Rate' WHEN 'Effect RES_' THEN 'Effect RES' WHEN 'Effect RES%' THEN 'Effect RES' WHEN 'Break Effect_' THEN 'Break Effect' WHEN 'Break Effect%' THEN 'Break Effect' ELSE stat_key END", [])?;
+    Ok(())
 }
 
 #[derive(Debug, Clone)]
@@ -1076,8 +1169,8 @@ fn upsert_relic(
         r#"
         INSERT INTO relics(
             item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
-            location, locked, discard, source, updated_at, last_seen_run
-        ) VALUES (?1, ?2, ?3, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'network', ?12, ?13)
+            location, equipped_character_id, locked, discard, source, updated_at, last_seen_run
+        ) VALUES (?1, ?2, ?3, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, 'network', ?13, ?14)
         ON CONFLICT(item_id) DO UPDATE SET
             set_id = excluded.set_id,
             name = excluded.name,
@@ -1088,6 +1181,7 @@ fn upsert_relic(
             main_stat = excluded.main_stat,
             main_stat_value = excluded.main_stat_value,
             location = excluded.location,
+            equipped_character_id = excluded.equipped_character_id,
             locked = excluded.locked,
             discard = excluded.discard,
             source = excluded.source,
@@ -1104,6 +1198,7 @@ fn upsert_relic(
             relic.mainstat,
             main_stat_value(relic.rarity, relic.level, &relic.mainstat),
             relic.location,
+            relic.equipped_character_id,
             relic.lock,
             relic.discard,
             now,
@@ -1192,18 +1287,6 @@ fn clean_filter(value: &Option<String>) -> Option<String> {
         .map(|value| value.trim())
         .filter(|value| !value.is_empty())
         .map(str::to_owned)
-}
-
-fn push_text_filter(
-    clauses: &mut Vec<String>,
-    values: &mut Vec<SqlValue>,
-    column: &str,
-    value: &Option<String>,
-) {
-    if let Some(value) = clean_filter(value) {
-        clauses.push(format!("{column} = ?"));
-        values.push(SqlValue::Text(value));
-    }
 }
 
 fn clean_filters(value: &Option<Vec<String>>) -> Option<Vec<String>> {
@@ -1310,10 +1393,11 @@ fn map_relic(row: &Row<'_>) -> rusqlite::Result<RelicListItem> {
         main_stat: row.get(7)?,
         main_stat_value: row.get(8)?,
         location: row.get(9)?,
-        locked: row.get(10)?,
-        discard: row.get(11)?,
-        source: row.get(12)?,
-        updated_at: row.get(13)?,
+        equipped_character_id: row.get(10)?,
+        locked: row.get(11)?,
+        discard: row.get(12)?,
+        source: row.get(13)?,
+        updated_at: row.get(14)?,
         substats: vec![],
     })
 }
@@ -1327,9 +1411,10 @@ fn map_light_cone(row: &Row<'_>) -> rusqlite::Result<LightConeListItem> {
         ascension: row.get(4)?,
         superimposition: row.get(5)?,
         location: row.get(6)?,
-        locked: row.get(7)?,
-        source: row.get(8)?,
-        updated_at: row.get(9)?,
+        equipped_character_id: row.get(7)?,
+        locked: row.get(8)?,
+        source: row.get(9)?,
+        updated_at: row.get(10)?,
     })
 }
 
@@ -1351,7 +1436,7 @@ fn relic_detail(connection: &Connection, id: u32) -> Result<Option<Value>, AppEr
     let relic = connection
         .query_row(
             "SELECT item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
-                    location, locked, discard, source, updated_at
+                    location, equipped_character_id, locked, discard, source, updated_at
              FROM relics WHERE item_id = ?1",
             [id],
             map_relic,
@@ -1386,7 +1471,7 @@ fn light_cone_detail(connection: &Connection, id: u32) -> Result<Option<Value>, 
     let item = connection
         .query_row(
             "SELECT item_id, template_id, name, level, ascension, superimposition,
-                    location, locked, source, updated_at
+                    location, equipped_character_id, locked, source, updated_at
              FROM light_cones WHERE item_id = ?1",
             [id],
             map_light_cone,
@@ -1598,6 +1683,7 @@ mod tests {
                     reroll_substats: None,
                     preview_substats: None,
                     location: String::new(),
+                    equipped_character_id: None,
                     lock: true,
                     discard: false,
                     _uid: *id,
@@ -1767,6 +1853,86 @@ mod tests {
         assert_eq!(payload.relics[0]._uid, 90001);
         assert_eq!(payload.light_cones[0].id, 20001);
         assert_eq!(payload.characters[0].id, 1001);
+    }
+
+    #[test]
+    fn real_export_is_normalized_before_sqlite_filters() {
+        let store = InventoryStore::test_store();
+        let mut snapshot: InventoryImport =
+            serde_json::from_str(include_str!("../../../examples/starrail-inventory.json"))
+                .unwrap();
+        let report = super::super::normalize_import(&mut snapshot);
+        assert!(report.warnings().is_empty());
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let links = store
+            .list_relics(&RelicFilter {
+                page: PageQuery {
+                    page: 1,
+                    page_size: 10,
+                },
+                slots: Some(vec!["LinkRope".to_owned()]),
+                ..Default::default()
+            })
+            .unwrap();
+        assert!(links.total > 0);
+        assert!(links.items.iter().all(|item| item.slot == "LinkRope"));
+
+        let chinese_set = store
+            .list_relics(&RelicFilter {
+                page: PageQuery {
+                    page: 1,
+                    page_size: 10,
+                },
+                search: Some("晨昏交界的翔鹰".to_owned()),
+                ..Default::default()
+            })
+            .unwrap();
+        assert!(chinese_set.total > 0);
+    }
+
+    #[test]
+    fn migration_normalizes_existing_exporter_records() {
+        let store = InventoryStore::test_store();
+        let raw = InventoryImport {
+            metadata: ImportMetadata {
+                uid: None,
+                trailblazer: None,
+            },
+            relics: vec![ImportRelic {
+                set_id: 110,
+                name: "Eagle of Twilight Line".to_owned(),
+                slot: "Link Rope".to_owned(),
+                rarity: 5,
+                level: 15,
+                mainstat: "ATK".to_owned(),
+                substats: vec![ImportSubstat {
+                    key: "Effect Hit Rate%".to_owned(),
+                    value: 3.2,
+                    count: 1,
+                    step: 0,
+                }],
+                reroll_substats: None,
+                preview_substats: None,
+                location: "1220".to_owned(),
+                equipped_character_id: None,
+                lock: false,
+                discard: false,
+                _uid: 99,
+            }],
+            light_cones: Vec::new(),
+            characters: Vec::new(),
+        };
+        store.apply_full_snapshot(&raw).unwrap().unwrap();
+        let connection = store.connect().unwrap();
+        normalize_existing_records(&connection).unwrap();
+        let item = store.detail(InventoryKind::Relic, 99).unwrap();
+        assert_eq!(item.data["setName"], "晨昏交界的翔鹰");
+        assert_eq!(item.data["slot"], "LinkRope");
+        assert_eq!(item.data["mainStat"], "ATK%");
+        assert_eq!(item.data["location"], "飞霄");
+        assert_eq!(item.data["equippedCharacterId"], 1220);
+        assert_eq!(item.data["substats"][0]["key"], "Effect Hit Rate");
     }
 
     #[test]

@@ -110,7 +110,10 @@ function parseCharacter(slug, fragment) {
   const visibleName = parts.filter((part) => !labels.has(part)).join(" ");
   // The list page has changed between server-rendered text cards and image-only
   // cards. Image alt text is the stable fallback for the latter.
-  const name = (visibleName || imageAlt).replace(/^New\s*/i, "").trim();
+  const name = (visibleName || imageAlt)
+    .replace(/[\u0000-\u001F\u007F]/g, "")
+    .replace(/^New\s*/i, "")
+    .trim();
   const backgrounds = [
     ...fragment.matchAll(/(?:background(?:-image)?\s*:\s*)?url\(\s*["']?([^"')\s]+)["']?\s*\)/gi),
   ]

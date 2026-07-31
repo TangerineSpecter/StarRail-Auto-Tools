@@ -3422,6 +3422,13 @@ td {
   transform: scale(1.12);
   filter: drop-shadow(0 2px 3px rgba(36, 86, 166, 0.15));
 }
+.light-cone-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.08);
+  filter: drop-shadow(0 2px 3px rgba(36, 86, 166, 0.15));
+}
 .relic-name-info {
   display: flex;
   flex-direction: column;
@@ -3556,6 +3563,22 @@ td {
   background: #fff;
   color: #d6371c;
   box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.relic-substat-item.light-cone-superimposition.hit-5 {
+  background: #fdf0cf;
+  border-color: rgba(181, 107, 18, 0.3);
+  box-shadow: 0 1px 4px rgba(181, 107, 18, 0.18);
+  animation: none;
+  transform: none;
+}
+.relic-substat-item.light-cone-superimposition.hit-5 .substat-name {
+  color: #8a5108;
+  text-shadow: none;
+}
+.relic-substat-item.light-cone-superimposition.hit-5 .substat-value {
+  color: #6d3d00;
+  text-shadow: none;
 }
 
 @keyframes mythic-glow {
