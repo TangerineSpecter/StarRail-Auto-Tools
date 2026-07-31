@@ -120,6 +120,12 @@ h2 {
   pointer-events: none;
   border: 1px solid rgba(45, 84, 137, 0.09);
   border-radius: 50%;
+  animation: slow-spin 60s linear infinite;
+}
+
+@keyframes slow-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .orbit::before,
@@ -155,6 +161,8 @@ h2 {
   height: 430px;
   bottom: -310px;
   left: -170px;
+  animation-direction: reverse;
+  animation-duration: 45s;
 }
 
 .app-shell {
@@ -629,6 +637,11 @@ h2 {
   background-size: 28px 28px;
 }
 
+@keyframes orbit-travel {
+  0% { offset-distance: 0%; }
+  100% { offset-distance: 100%; }
+}
+
 .signal-ring {
   position: absolute;
   width: 360px;
@@ -646,11 +659,39 @@ h2 {
   content: "";
 }
 
+.ring-a::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--cyan);
+  border-radius: 50%;
+  offset-path: path('M 180, 0 A 180,65 0 1,1 180,130 A 180,65 0 1,1 180,0');
+  animation: orbit-travel 4s linear infinite;
+  box-shadow: 0 0 8px var(--cyan);
+  top: 0;
+  left: 0;
+}
+
 .ring-b {
   width: 270px;
   height: 84px;
   border-color: rgba(199, 165, 90, 0.25);
   transform: rotate(28deg);
+}
+
+.ring-b::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  border-radius: 50%;
+  offset-path: path('M 135, 0 A 135,42 0 1,1 135,84 A 135,42 0 1,1 135,0');
+  animation: orbit-travel 3.2s linear infinite reverse;
+  box-shadow: 0 0 8px var(--gold);
+  top: 0;
+  left: 0;
 }
 
 .signal-core {
@@ -674,6 +715,8 @@ h2 {
   position: absolute;
   content: "";
   background: rgba(36, 86, 166, 0.2);
+  -webkit-mask-image: radial-gradient(circle at center, transparent 22px, black 22px);
+  mask-image: radial-gradient(circle at center, transparent 22px, black 22px);
 }
 
 .signal-core::before {
