@@ -1209,10 +1209,8 @@ onUnmounted(() => {
               </div>
 
               <div class="astral-core">
-                <div class="core-glow"></div>
-                <div class="core-reticle"></div>
-                <div class="core-diamond">
-                  <span>{{ directRunning ? "◈" : "◇" }}</span>
+                <div class="core-diamond" aria-label="数据星体">
+                  <img src="/illustrations/soft-planet-core.png" alt="" class="planet-core-image" />
                 </div>
               </div>
             </div>
