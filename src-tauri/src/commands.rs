@@ -8,7 +8,7 @@ use crate::{
         BuildRecommendation, BuildRecommendationRequest, CharacterBuildPlan, CharacterFilter,
         ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryImportResult,
         InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
-        PagedResult, RelicFilter, RelicListItem,
+        PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatScanResult,
     },
     scanner::ScannerState,
     screenshot,
@@ -140,6 +140,21 @@ pub fn list_relics(
 }
 
 #[tauri::command]
+pub fn get_relic_main_stat_scan_plan_count(
+    store: State<'_, InventoryStore>,
+) -> Result<u64, AppError> {
+    store.build_plan_count()
+}
+
+#[tauri::command]
+pub fn scan_relics_by_main_stat(
+    page: PageQuery,
+    store: State<'_, InventoryStore>,
+) -> Result<RelicMainStatScanResult, AppError> {
+    store.scan_relics_by_main_stat(&page)
+}
+
+#[tauri::command]
 pub fn list_light_cones(
     filter: LightConeFilter,
     store: State<'_, InventoryStore>,
@@ -177,6 +192,13 @@ pub fn get_character_build_plan(
     store: State<'_, InventoryStore>,
 ) -> Result<Option<CharacterBuildPlan>, AppError> {
     store.build_plan(character_id)
+}
+
+#[tauri::command]
+pub fn get_build_dashboard(
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<crate::inventory::BuildDashboardEntry>, AppError> {
+    store.build_dashboard()
 }
 
 #[tauri::command]

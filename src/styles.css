@@ -3055,6 +3055,22 @@ summary i {
   font-size: 8px;
   font-weight: 400;
 }
+.effective-substats-config {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.effective-substats-config h4 {
+  margin: 0 0 7px;
+  color: var(--ink);
+  font-size: 11px;
+}
+.effective-substats-config h4 small {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 400;
+}
 .build-section-heading {
   display: flex;
   align-items: center;

@@ -138,6 +138,7 @@ impl InventoryStore {
                 cavern_set_b INTEGER,
                 planar_set_id INTEGER NOT NULL,
                 main_stats_json TEXT NOT NULL,
+                effective_substats_json TEXT NOT NULL DEFAULT '[]',
                 updated_at INTEGER NOT NULL
             );
 
@@ -169,6 +170,10 @@ impl InventoryStore {
         );
         let _ = connection.execute(
             "ALTER TABLE character_build_targets ADD COLUMN minimum REAL NOT NULL DEFAULT 0",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN effective_substats_json TEXT NOT NULL DEFAULT '[]'",
             [],
         );
         let _ = connection.execute(
@@ -219,10 +224,17 @@ impl InventoryStore {
     pub fn build_plan(&self, character_id: u32) -> Result<Option<CharacterBuildPlan>, AppError> {
         let connection = self.connect()?;
         let row = connection.query_row(
-            "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json FROM character_build_plans WHERE character_id = ?1",
-            [character_id], |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?, row.get::<_, Option<u32>>(2)?, row.get::<_, u32>(3)?, row.get::<_, String>(4)?))
+            "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json, effective_substats_json FROM character_build_plans WHERE character_id = ?1",
+            [character_id], |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?, row.get::<_, Option<u32>>(2)?, row.get::<_, u32>(3)?, row.get::<_, String>(4)?, row.get::<_, String>(5)?))
         ).optional()?;
-        let Some((cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json)) = row
+        let Some((
+            cavern_mode,
+            cavern_set_a,
+            cavern_set_b,
+            planar_set_id,
+            main_stats_json,
+            effective_substats_json,
+        )) = row
         else {
             return Ok(None);
         };
@@ -245,7 +257,27 @@ impl InventoryStore {
             planar_set_id,
             main_stats: serde_json::from_str(&main_stats_json).unwrap_or_default(),
             targets,
+            effective_substats: serde_json::from_str(&effective_substats_json).unwrap_or_default(),
         }))
+    }
+
+    pub fn build_dashboard(&self) -> Result<Vec<BuildDashboardEntry>, AppError> {
+        let connection = self.connect()?;
+        let character_ids = connection
+            .prepare("SELECT character_id FROM character_build_plans ORDER BY updated_at DESC")?
+            .query_map([], |row| row.get::<_, u32>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut entries = Vec::new();
+        for character_id in character_ids {
+            let Some(plan) = self.build_plan(character_id)? else {
+                continue;
+            };
+            let Some(character) = character_detail(&connection, character_id)? else {
+                continue;
+            };
+            entries.push(BuildDashboardEntry { plan, character });
+        }
+        Ok(entries)
     }
 
     pub fn save_build_plan(&self, plan: &CharacterBuildPlan) -> Result<(), AppError> {
@@ -258,7 +290,7 @@ impl InventoryStore {
         }
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
-        transaction.execute("INSERT INTO character_build_plans(character_id,cavern_mode,cavern_set_a,cavern_set_b,planar_set_id,main_stats_json,updated_at) VALUES(?1,?2,?3,?4,?5,?6,?7) ON CONFLICT(character_id) DO UPDATE SET cavern_mode=excluded.cavern_mode,cavern_set_a=excluded.cavern_set_a,cavern_set_b=excluded.cavern_set_b,planar_set_id=excluded.planar_set_id,main_stats_json=excluded.main_stats_json,updated_at=excluded.updated_at", params![plan.character_id, plan.cavern_mode, plan.cavern_set_a, plan.cavern_set_b, plan.planar_set_id, serde_json::to_string(&plan.main_stats).map_err(|e| AppError::Database(e.to_string()))?, now_millis()])?;
+        transaction.execute("INSERT INTO character_build_plans(character_id,cavern_mode,cavern_set_a,cavern_set_b,planar_set_id,main_stats_json,effective_substats_json,updated_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8) ON CONFLICT(character_id) DO UPDATE SET cavern_mode=excluded.cavern_mode,cavern_set_a=excluded.cavern_set_a,cavern_set_b=excluded.cavern_set_b,planar_set_id=excluded.planar_set_id,main_stats_json=excluded.main_stats_json,effective_substats_json=excluded.effective_substats_json,updated_at=excluded.updated_at", params![plan.character_id, plan.cavern_mode, plan.cavern_set_a, plan.cavern_set_b, plan.planar_set_id, serde_json::to_string(&plan.main_stats).map_err(|e| AppError::Database(e.to_string()))?, serde_json::to_string(&plan.effective_substats).map_err(|e| AppError::Database(e.to_string()))?, now_millis()])?;
         transaction.execute(
             "DELETE FROM character_build_targets WHERE character_id = ?1",
             [plan.character_id],
@@ -607,6 +639,82 @@ impl InventoryStore {
             total,
             page: filter.page.page,
             page_size: filter.page.page_size,
+        })
+    }
+
+    pub fn build_plan_count(&self) -> Result<u64, AppError> {
+        let connection = self.connect()?;
+        Ok(
+            connection.query_row("SELECT COUNT(*) FROM character_build_plans", [], |row| {
+                row.get(0)
+            })?,
+        )
+    }
+
+    pub fn scan_relics_by_main_stat(
+        &self,
+        page: &PageQuery,
+    ) -> Result<RelicMainStatScanResult, AppError> {
+        validate_page(page)?;
+        let connection = self.connect()?;
+        let plans = connection
+            .prepare("SELECT main_stats_json FROM character_build_plans")?
+            .query_map([], |row| row.get::<_, String>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        let plan_count = plans.len() as u64;
+        let mut allowed_main_stats = HashMap::<String, Vec<String>>::new();
+        for main_stats_json in plans {
+            let main_stats = serde_json::from_str::<HashMap<String, Vec<String>>>(&main_stats_json)
+                .unwrap_or_default();
+            for (slot, stats) in main_stats {
+                if stats.is_empty() {
+                    continue;
+                }
+                let allowed = allowed_main_stats.entry(slot).or_default();
+                for stat in stats {
+                    if !allowed.contains(&stat) {
+                        allowed.push(stat);
+                    }
+                }
+            }
+        }
+        for stats in allowed_main_stats.values_mut() {
+            stats.sort();
+        }
+
+        let mut clauses = vec!["equipped_character_id IS NULL".to_owned()];
+        let mut values = Vec::new();
+        for (slot, stats) in &allowed_main_stats {
+            let placeholders = std::iter::repeat_n("?", stats.len())
+                .collect::<Vec<_>>()
+                .join(", ");
+            clauses.push(format!("(slot != ? OR main_stat NOT IN ({placeholders}))"));
+            values.push(SqlValue::Text(slot.clone()));
+            values.extend(stats.iter().cloned().map(SqlValue::Text));
+        }
+        let where_sql = make_where(&clauses);
+        let total = query_count(&connection, "relics", &where_sql, &values)?;
+        let mut paged_values = values.clone();
+        paged_values.push(SqlValue::Integer(page.page_size as i64));
+        paged_values.push(SqlValue::Integer(((page.page - 1) * page.page_size) as i64));
+        let sql = format!(
+            "SELECT item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
+                    location, equipped_character_id, locked, discard, source, updated_at
+             FROM relics {where_sql}
+             ORDER BY rarity DESC, level DESC, item_id DESC LIMIT ? OFFSET ?"
+        );
+        let mut statement = connection.prepare(&sql)?;
+        let items = statement
+            .query_map(params_from_iter(paged_values.iter()), map_relic)?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(RelicMainStatScanResult {
+            items,
+            total,
+            page: page.page,
+            page_size: page.page_size,
+            plan_count,
+            allowed_main_stats,
         })
     }
 
@@ -1778,6 +1886,143 @@ mod tests {
     }
 
     #[test]
+    fn build_dashboard_returns_saved_plan_with_character_equipment() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[1]);
+        snapshot.relics[0].equipped_character_id = Some(1220);
+        snapshot.characters = vec![ImportCharacter {
+            id: 1220,
+            name: "飞霄".to_owned(),
+            path: "Hunt".to_owned(),
+            level: 80,
+            ascension: 6,
+            eidolon: 0,
+            skills: json!({}),
+            traces: json!({}),
+            memosprite: None,
+            ability_version: 1,
+        }];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let plan = CharacterBuildPlan {
+            character_id: 1220,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 160.0,
+                priority: 1,
+                minimum: 140.0,
+            }],
+            effective_substats: vec!["SPD".to_owned()],
+        };
+        store.save_build_plan(&plan).unwrap();
+        let mut missing_character_plan = plan.clone();
+        missing_character_plan.character_id = 9999;
+        store.save_build_plan(&missing_character_plan).unwrap();
+
+        let entries = store.build_dashboard().unwrap();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].plan.character_id, 1220);
+        assert_eq!(entries[0].character["equippedRelics"][0]["itemId"], 1);
+    }
+
+    #[test]
+    fn relic_main_stat_scan_unions_targets_and_excludes_equipped_relics() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[1, 2, 3, 4]);
+        snapshot.relics[1].slot = "Body".to_owned();
+        snapshot.relics[1].mainstat = "CRIT Rate".to_owned();
+        snapshot.relics[2].slot = "Body".to_owned();
+        snapshot.relics[2].mainstat = "DEF%".to_owned();
+        snapshot.relics[3].slot = "Feet".to_owned();
+        snapshot.relics[3].mainstat = "SPD".to_owned();
+        snapshot.relics[3].equipped_character_id = Some(1001);
+        snapshot.relics[3].location = "测试角色".to_owned();
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let mut first_plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::from([
+                ("Head".to_owned(), vec!["HP".to_owned()]),
+                ("Body".to_owned(), vec!["CRIT Rate".to_owned()]),
+            ]),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 160.0,
+                priority: 1,
+                minimum: 140.0,
+            }],
+            effective_substats: vec![],
+        };
+        store.save_build_plan(&first_plan).unwrap();
+        first_plan.character_id = 1002;
+        first_plan.main_stats = HashMap::from([
+            ("Body".to_owned(), vec!["ATK%".to_owned()]),
+            ("Feet".to_owned(), vec!["SPD".to_owned()]),
+        ]);
+        store.save_build_plan(&first_plan).unwrap();
+
+        let scan = store
+            .scan_relics_by_main_stat(&PageQuery::default())
+            .unwrap();
+        assert_eq!(scan.plan_count, 2);
+        assert_eq!(scan.total, 1);
+        assert_eq!(scan.items[0].item_id, 3);
+        assert_eq!(scan.allowed_main_stats["Body"], ["ATK%", "CRIT Rate"]);
+    }
+
+    #[test]
+    fn relic_main_stat_scan_returns_unconfigured_slots_and_paginates() {
+        let store = InventoryStore::test_store();
+        store
+            .apply_full_snapshot(&import(10001, &[1, 2]))
+            .unwrap()
+            .unwrap();
+        let plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 160.0,
+                priority: 1,
+                minimum: 140.0,
+            }],
+            effective_substats: vec![],
+        };
+        store.save_build_plan(&plan).unwrap();
+
+        let first_page = store
+            .scan_relics_by_main_stat(&PageQuery {
+                page: 1,
+                page_size: 1,
+            })
+            .unwrap();
+        assert_eq!(first_page.total, 2);
+        assert_eq!(first_page.items.len(), 1);
+        assert!(!first_page.allowed_main_stats.contains_key("Head"));
+        let second_page = store
+            .scan_relics_by_main_stat(&PageQuery {
+                page: 2,
+                page_size: 1,
+            })
+            .unwrap();
+        assert_eq!(second_page.items.len(), 1);
+        assert_ne!(first_page.items[0].item_id, second_page.items[0].item_id);
+    }
+
+    #[test]
     fn blocks_account_mixing_until_replaced() {
         let store = InventoryStore::test_store();
         store
@@ -2017,12 +2262,17 @@ mod tests {
                 priority: 1,
                 minimum: 170.0,
             }],
+            effective_substats: vec!["SPD".to_owned(), "CRIT Rate".to_owned()],
         };
         store.save_build_plan(&plan).unwrap();
         store.clear(None).unwrap();
         assert_eq!(
             store.build_plan(1001).unwrap().unwrap().targets[0].target,
             180.0
+        );
+        assert_eq!(
+            store.build_plan(1001).unwrap().unwrap().effective_substats,
+            vec!["SPD".to_owned(), "CRIT Rate".to_owned()]
         );
     }
 
@@ -2041,6 +2291,7 @@ mod tests {
                 priority: 1,
                 minimum: 0.0,
             }],
+            effective_substats: vec![],
         };
         let mut candidates = Vec::new();
         for (index, slot) in BUILD_SLOTS.iter().enumerate() {

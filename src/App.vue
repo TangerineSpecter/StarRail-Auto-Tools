@@ -36,17 +36,24 @@ import { captureApi } from "@/shared/api/capture";
 import { directReadApi } from "@/shared/api/direct-read";
 import { inventoryApi } from "@/shared/api/inventory";
 import { systemApi } from "@/shared/api/system";
+import {
+  loadDisabledTraceNodes,
+  traceNodeEnabled as isTraceNodeEnabled,
+  traceSettingsStorageKey,
+} from "@/shared/utils/trace-settings";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import AppNavigation, { type AppView } from "@/app/AppNavigation.vue";
 import ExpressPassage from "@/features/capture/ExpressPassage.vue";
+import BuildDashboard from "@/features/build-planner/BuildDashboard.vue";
+import RelicMainStatScanner from "@/features/relic-scanner/RelicMainStatScanner.vue";
 import { characterSkillEntries } from "@/features/inventory/character-skills";
 import { buildInventoryFilter, createInventoryFilterForm } from "@/features/inventory/filter";
 import {
   calculateStandingStats,
   formatStandingStat,
   isMaxStandingEquipment,
-} from "@/features/inventory/standing-stats";
-import { primaryTraceNodes } from "@/features/inventory/trace-stats";
+} from "@/shared/utils/standing-stats";
+import { primaryTraceNodes } from "@/shared/utils/trace-stats";
 import relicCatalogueJson from "./data/relic-sets.json";
 import characterCatalogueJson from "./data/characters.json";
 import lightConeCatalogueJson from "./data/light-cones.json";
@@ -189,6 +196,10 @@ function getDetailRelicImage(detail: RelicDetailData): string | undefined {
   return relicPieceImages.get(`${detail.setId}_${detail.slot}`);
 }
 
+function getRelicImage(relic: RelicListItem): string | undefined {
+  return relicPieceImages.get(`${relic.setId}_${relic.slot}`);
+}
+
 const relicSetOptions = ref<RelicSetOption[]>(
   relicCatalogue.sets.map((set) => ({ setId: set.id, name: set.name, kind: set.kind })),
 );
@@ -204,9 +215,15 @@ const buildPlan = reactive<CharacterBuildPlan>({
   planarSetId: 0,
   mainStats: { Head: [], Hands: [], Body: [], Feet: [], PlanarSphere: [], LinkRope: [] },
   targets: [],
+  effectiveSubstats: [],
 });
 
-const filters = reactive(createInventoryFilterForm());
+const filtersByKind = reactive({
+  relic: createInventoryFilterForm(),
+  lightCone: createInventoryFilterForm(),
+  character: createInventoryFilterForm(),
+});
+const filters = computed(() => filtersByKind[inventoryKind.value]);
 
 const substatCountOptions = [
   { label: "不限", value: "" },
@@ -297,12 +314,13 @@ const catalogueGroups = computed(() => ({
 }));
 
 const availableMainStats = computed(() => {
-  const slots = filters.slots.length ? filters.slots : relicSlots.map((slot) => slot.value);
+  const slots = filters.value.slots.length
+    ? filters.value.slots
+    : relicSlots.map((slot) => slot.value);
   return [...new Set(slots.flatMap((slot) => relicMainStats[slot] ?? []))];
 });
 const catalogueTab = ref<"cavern" | "planar" | "character">("cavern");
 const selectedCatalogueCharacter = ref<CharacterCatalogueEntry | null>(null);
-const traceSettingsStorageKey = "starrail-auto-tools.trace-disabled.v1";
 const disabledTraceNodes = ref<Record<string, number[]>>(loadDisabledTraceNodes());
 const detailRelic = computed<RelicDetailData | null>(() =>
   detail.value?.kind === "relic" ? (detail.value.data as unknown as RelicDetailData) : null,
@@ -368,25 +386,37 @@ const characterStandingStats = computed(() => {
 });
 const activeFilterCount = computed(() => {
   const kind = inventoryKind.value;
-  let activeFilters: any[] = [];
+  let activeFilters: unknown[] = [];
   if (kind === "relic") {
     activeFilters = [
-      filters.slots.length,
-      filters.mainStats.length,
-      filters.subStats.length,
-      filters.minSubstatCount,
-      filters.maxSubstatCount,
-      filters.locked,
-      filters.discard,
-      filters.equipped,
+      filters.value.slots.length,
+      filters.value.mainStats.length,
+      filters.value.subStats.length,
+      filters.value.minSubstatCount,
+      filters.value.maxSubstatCount,
+      filters.value.locked,
+      filters.value.discard,
+      filters.value.equipped,
     ];
   } else if (kind === "lightCone") {
-    activeFilters = [filters.superimposition.length, filters.locked, filters.equipped];
+    activeFilters = [
+      filters.value.superimposition.length,
+      filters.value.locked,
+      filters.value.equipped,
+    ];
   } else if (kind === "character") {
-    activeFilters = [filters.path.length, filters.eidolon.length, filters.element.length];
+    activeFilters = [
+      filters.value.path.length,
+      filters.value.eidolon.length,
+      filters.value.element.length,
+    ];
   }
   return activeFilters.filter(Boolean).length;
 });
+
+const hasActiveSearchOrFilters = computed(
+  () => filters.value.search.trim().length > 0 || activeFilterCount.value > 0,
+);
 
 let unlistenDirect: UnlistenFn | undefined;
 let unlistenInventory: UnlistenFn | undefined;
@@ -433,7 +463,7 @@ const kindTitle = computed(() => {
 function currentFilter(): RelicFilter | LightConeFilter | CharacterFilter {
   return buildInventoryFilter(
     inventoryKind.value,
-    filters,
+    filters.value,
     result.value.page,
     result.value.pageSize,
   );
@@ -671,25 +701,7 @@ function onTableScroll(e: Event) {
 }
 
 function resetFilters() {
-  Object.assign(filters, {
-    search: "",
-    slots: [],
-    rarities: [],
-    minLevel: "",
-    maxLevel: "",
-    mainStats: [],
-    subStats: [],
-    minSubstatCount: "",
-    maxSubstatCount: "",
-    locked: "",
-    discard: "",
-    equipped: "",
-    minAscension: "",
-    superimposition: [],
-    path: [],
-    eidolon: [],
-    element: [],
-  });
+  Object.assign(filters.value, createInventoryFilterForm());
   result.value.page = 1;
   void loadInventory();
 }
@@ -723,12 +735,12 @@ function toggleAll() {
   selectedIds.value = allSelected.value ? new Set() : new Set(result.value.items.map(idFor));
 }
 
-async function openDetail(item: InventoryListItem) {
+async function openInventoryDetail(kind: InventoryKind, id: number) {
   const requestId = ++detailRequestId;
   detail.value = null;
   detailLoading.value = true;
   try {
-    const nextDetail = await inventoryApi.detail(inventoryKind.value, idFor(item));
+    const nextDetail = await inventoryApi.detail(kind, id);
     if (requestId === detailRequestId) {
       detail.value = nextDetail;
     }
@@ -741,6 +753,14 @@ async function openDetail(item: InventoryListItem) {
       detailLoading.value = false;
     }
   }
+}
+
+async function openDetail(item: InventoryListItem) {
+  await openInventoryDetail(inventoryKind.value, idFor(item));
+}
+
+async function openRelicDetail(item: RelicListItem) {
+  await openInventoryDetail("relic", item.itemId);
 }
 
 function closeDetail() {
@@ -757,18 +777,8 @@ function closeCharacterBaseStats() {
   selectedCatalogueCharacter.value = null;
 }
 
-function loadDisabledTraceNodes(): Record<string, number[]> {
-  try {
-    const saved = window.localStorage.getItem(traceSettingsStorageKey);
-    const parsed = saved ? JSON.parse(saved) : {};
-    return typeof parsed === "object" && parsed ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
 function traceNodeEnabled(characterId: number, traceId: number): boolean {
-  return !disabledTraceNodes.value[String(characterId)]?.includes(traceId);
+  return isTraceNodeEnabled(disabledTraceNodes.value, characterId, traceId);
 }
 
 function toggleTraceNode(characterId: number, traceId: number) {
@@ -813,6 +823,7 @@ function resetBuildPlan(characterId: number) {
     planarSetId: 0,
     mainStats: Object.fromEntries(relicSlots.map((slot) => [slot.value, []])),
     targets: [],
+    effectiveSubstats: [],
   });
 }
 
@@ -1200,7 +1211,7 @@ watch(activeView, (view) => {
 });
 
 watch(availableMainStats, (options) => {
-  filters.mainStats = filters.mainStats.filter((stat) => options.includes(stat));
+  filters.value.mainStats = filters.value.mainStats.filter((stat) => options.includes(stat));
 });
 
 onMounted(async () => {
@@ -1240,15 +1251,15 @@ onUnmounted(() => {
           </div>
           <div class="topbar-right" style="-webkit-app-region: no-drag">
             <div class="window-controls">
-              <button class="win-btn minimize" @click="minimizeWindow" title="最小化">
+              <button class="win-btn minimize" title="最小化" @click="minimizeWindow">
                 <svg viewBox="0 0 10 10" width="10" height="10">
                   <rect y="4.5" width="10" height="1" fill="currentColor" />
                 </svg>
               </button>
               <button
                 class="win-btn maximize"
-                @click="toggleMaximize"
                 :title="isMaximized ? '还原' : '最大化'"
+                @click="toggleMaximize"
               >
                 <svg v-if="!isMaximized" viewBox="0 0 10 10" width="10" height="10">
                   <rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" />
@@ -1258,7 +1269,7 @@ onUnmounted(() => {
                   <rect x="0.5" y="2" width="7.5" height="7.5" fill="none" stroke="currentColor" />
                 </svg>
               </button>
-              <button class="win-btn close" @click="closeWindow" title="关闭">
+              <button class="win-btn close" title="关闭" @click="closeWindow">
                 <svg viewBox="0 0 10 10" width="10" height="10">
                   <line
                     x1="0.5"
@@ -1624,12 +1635,13 @@ onUnmounted(() => {
                 <b v-if="activeFilterCount">{{ activeFilterCount }}</b>
               </Button>
               <Button
-                v-if="activeFilterCount"
+                v-if="hasActiveSearchOrFilters"
                 class="clear-filter"
                 type="button"
                 text
+                aria-label="清空搜索和筛选条件"
                 @click="resetFilters"
-                >清除筛选</Button
+                >清空</Button
               >
               <span class="toolbar-spacer"></span>
               <span class="result-count">{{ result.total }} 条记录</span>
@@ -2121,6 +2133,14 @@ onUnmounted(() => {
         </article>
       </section>
 
+      <BuildDashboard v-else-if="activeView === 'builds'" :key="summary.lastSyncAt ?? 0" />
+
+      <RelicMainStatScanner
+        v-else-if="activeView === 'scanner'"
+        :image-for="getRelicImage"
+        @open-relic="openRelicDetail"
+      />
+
       <section v-else class="catalogue-workspace">
         <header class="catalogue-heading" style="align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 24px;">
           <div>
@@ -2139,7 +2159,6 @@ onUnmounted(() => {
               :key="tab.key"
               :class="['catalogue-tab-btn', { active: catalogueTab === tab.key }]"
               type="button"
-              @click="catalogueTab = tab.key"
               :style="{
                 display: 'flex', 
                 alignItems: 'center', 
@@ -2155,6 +2174,7 @@ onUnmounted(() => {
                 transition: 'all 0.2s',
                 minWidth: '150px'
               }"
+              @click="catalogueTab = tab.key"
             >
               <span style="display: flex; flex-direction: column; gap: 2px;">
                 <small style="font-size: 10px; opacity: 0.6; letter-spacing: 0.05em; line-height: 1;">{{ tab.code }}</small>
@@ -2522,6 +2542,15 @@ onUnmounted(() => {
                 @click="removeBuildTarget(index)"
                 >×</Button
               >
+            </div>
+            <div class="effective-substats-config">
+              <h4>有效副词条 <small>用于毕业管理页统计当前装备的强化次数</small></h4>
+              <div class="filter-chips">
+                <label v-for="stat in relicSubStats" :key="stat" class="filter-chip">
+                  <input v-model="buildPlan.effectiveSubstats" type="checkbox" :value="stat" />
+                  <span>{{ statLabel(stat) }}</span>
+                </label>
+              </div>
             </div>
           </section>
 

@@ -133,6 +133,12 @@ export interface RelicListItem {
   substats: RelicSubstatItem[];
 }
 
+export interface RelicMainStatScanResult extends PagedResult<RelicListItem> {
+  planCount: number;
+  /** Per-slot union of main stats allowed by saved build plans. */
+  allowedMainStats: Record<string, string[]>;
+}
+
 export interface LightConeListItem {
   itemId: number;
   templateId: number;
@@ -181,6 +187,41 @@ export interface CharacterBuildPlan {
   planarSetId: number;
   mainStats: Record<string, string[]>;
   targets: BuildTarget[];
+  effectiveSubstats: string[];
+}
+
+export interface BuildDashboardEntry {
+  plan: CharacterBuildPlan;
+  character: BuildDashboardCharacter;
+}
+
+export interface BuildDashboardSubstat {
+  kind: string;
+  key: string;
+  value: number;
+  count: number;
+}
+
+export interface BuildDashboardRelic {
+  setId: number;
+  mainStat: string;
+  mainStatValue: number;
+  substats?: BuildDashboardSubstat[];
+}
+
+export interface BuildDashboardLightCone {
+  templateId: number;
+  level: number;
+  ascension: number;
+}
+
+export interface BuildDashboardCharacter {
+  characterId: number;
+  name: string;
+  level: number;
+  ascension: number;
+  equippedRelics?: BuildDashboardRelic[];
+  equippedLightCone?: BuildDashboardLightCone | null;
 }
 
 export type RelicSetKind = "cavern" | "planar";

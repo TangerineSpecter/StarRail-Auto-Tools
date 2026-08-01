@@ -8,15 +8,20 @@ import type {
   InventorySummary,
   LightConeFilter,
   LightConeListItem,
+  PageQuery,
   PagedResult,
   RelicFilter,
   RelicListItem,
+  RelicMainStatScanResult,
 } from "@/types";
 
 export const inventoryApi = {
   summary: () => invoke<InventorySummary>("get_inventory_summary"),
   listRelics: (filter: RelicFilter) =>
     invoke<PagedResult<RelicListItem>>("list_relics", { filter }),
+  relicMainStatScanPlanCount: () => invoke<number>("get_relic_main_stat_scan_plan_count"),
+  scanRelicsByMainStat: (page: PageQuery) =>
+    invoke<RelicMainStatScanResult>("scan_relics_by_main_stat", { page }),
   listLightCones: (filter: LightConeFilter) =>
     invoke<PagedResult<LightConeListItem>>("list_light_cones", { filter }),
   listCharacters: (filter: CharacterFilter) =>

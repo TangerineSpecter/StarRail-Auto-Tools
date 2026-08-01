@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 5;
+pub(crate) const SCHEMA_VERSION: i64 = 6;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]
@@ -152,6 +152,17 @@ pub struct RelicListItem {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RelicMainStatScanResult {
+    pub items: Vec<RelicListItem>,
+    pub total: u64,
+    pub page: u32,
+    pub page_size: u32,
+    pub plan_count: u64,
+    pub allowed_main_stats: HashMap<String, Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LightConeListItem {
     pub item_id: u32,
     pub template_id: u32,
@@ -266,6 +277,15 @@ pub struct CharacterBuildPlan {
     pub main_stats: HashMap<String, Vec<String>>,
     #[serde(default)]
     pub targets: Vec<BuildTarget>,
+    #[serde(default)]
+    pub effective_substats: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildDashboardEntry {
+    pub plan: CharacterBuildPlan,
+    pub character: Value,
 }
 
 #[derive(Debug, Clone, Serialize)]

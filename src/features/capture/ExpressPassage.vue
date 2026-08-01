@@ -212,23 +212,21 @@ function render() {
     const trainRect = trainEl.getBoundingClientRect();
     const laneRect = rect;
 
-    let engineX = 0;
-    let engineY = 0;
-    let dir = 1;
+    const engine = movingLeft
+      ? {
+          // 向左行驶，尾巴在右侧 (trainRect.right)
+          x: trainRect.right - laneRect.left,
+          y: trainRect.top - laneRect.top + trainRect.height * 0.5,
+          dir: 1,
+        }
+      : {
+          // 向右行驶，尾巴在左侧 (trainRect.left)
+          x: trainRect.left - laneRect.left,
+          y: trainRect.top - laneRect.top + trainRect.height * 0.5,
+          dir: -1,
+        };
 
-    if (movingLeft) {
-      // 向左行驶，尾巴在右侧 (trainRect.right)
-      engineX = trainRect.right - laneRect.left;
-      engineY = trainRect.top - laneRect.top + trainRect.height * 0.5;
-      dir = 1;
-    } else {
-      // 向右行驶，尾巴在左侧 (trainRect.left)
-      engineX = trainRect.left - laneRect.left;
-      engineY = trainRect.top - laneRect.top + trainRect.height * 0.5;
-      dir = -1;
-    }
-
-    spawnParticles(engineX, engineY, dir);
+    spawnParticles(engine.x, engine.y, engine.dir);
   }
 
   // 渲染并更新粒子
