@@ -177,7 +177,7 @@ function level80BaseStats(levelData) {
     if (!Number.isFinite(base) || !Number.isFinite(growth)) {
       throw new Error(`80 级属性字段无效：${baseKey}/${growthKey}`);
     }
-    return Math.floor(base + growth * 79);
+    return Math.round((base + growth * 79) * 1_000_000) / 1_000_000;
   };
 
   if (!Number.isFinite(level80.speedBase) || !Number.isFinite(level80.aggro)) {
@@ -188,7 +188,7 @@ function level80BaseStats(levelData) {
     hp: statAtLevel80("hpBase", "hpAdd"),
     attack: statAtLevel80("attackBase", "attackAdd"),
     defense: statAtLevel80("defenseBase", "defenseAdd"),
-    speed: Math.floor(level80.speedBase + (level80.speedAdd ?? 0) * 79),
+    speed: Math.round((level80.speedBase + (level80.speedAdd ?? 0) * 79) * 1_000_000) / 1_000_000,
     taunt: level80.aggro,
   };
 }
@@ -211,7 +211,12 @@ function collectTraceStats(nodes, result = []) {
 
 function parseCharacterTraceStats(html) {
   const config = parseAssignedJson(html, "window.PAGE_CONFIG=");
-  return collectTraceStats(config.skillTreePoints);
+  const stats = collectTraceStats(config.skillTreePoints);
+  // Some legacy pages additionally expose a mirrored tree whose node IDs are
+  // the original IDs with a leading `1`. The listener only has one set of
+  // stat_1…stat_10 flags, so keep the original, shortest-ID tree.
+  const primaryIdLength = Math.min(...stats.map((stat) => String(stat.id).length));
+  return stats.filter((stat) => String(stat.id).length === primaryIdLength);
 }
 
 async function forEachConcurrent(entries, worker, concurrency = 8) {

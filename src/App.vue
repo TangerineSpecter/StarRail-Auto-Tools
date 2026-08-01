@@ -46,6 +46,7 @@ import {
   formatStandingStat,
   isMaxStandingEquipment,
 } from "@/features/inventory/standing-stats";
+import { primaryTraceNodes } from "@/features/inventory/trace-stats";
 import relicCatalogueJson from "./data/relic-sets.json";
 import characterCatalogueJson from "./data/characters.json";
 import lightConeCatalogueJson from "./data/light-cones.json";
@@ -317,13 +318,24 @@ const detailCharacterCatalogue = computed(() => {
   return characterCatalogue.characters.find((character) => character.name === detailCharacter.value?.name) ?? null;
 });
 const detailCharacterTraceStats = computed(() => {
-  return detailCharacterCatalogue.value?.traceStats ?? [];
+  return primaryTraceNodes(detailCharacterCatalogue.value?.traceStats ?? []);
 });
 const selectedDetailTraceStats = computed(() => {
   if (!detailCharacter.value) return [];
   return detailCharacterTraceStats.value
     .filter((trace) => traceNodeEnabled(detailCharacter.value!.characterId, trace.id))
     .flatMap((trace) => trace.stats);
+});
+const detailCharacterStaticSetEffects = computed(() => {
+  const relics = detailCharacter.value?.equippedRelics ?? [];
+  const pieceCounts = new Map<number, number>();
+  for (const relic of relics) {
+    pieceCounts.set(relic.setId, (pieceCounts.get(relic.setId) ?? 0) + 1);
+  }
+  return relicCatalogue.sets
+    .filter((set) => (pieceCounts.get(set.id) ?? 0) >= 2)
+    .map((set) => set.effects.twoPiece)
+    .filter(Boolean);
 });
 const characterStandingStats = computed(() => {
   const character = detailCharacter.value;
@@ -350,6 +362,7 @@ const characterStandingStats = computed(() => {
       lightConeBase,
       relics: character.equippedRelics ?? [],
       traces: selectedDetailTraceStats.value,
+      setEffects: detailCharacterStaticSetEffects.value,
     }),
   };
 });
@@ -769,6 +782,10 @@ function toggleTraceNode(characterId: number, traceId: number) {
 
 function formatTraceStat(value: number): string {
   return Math.abs(value) < 1 ? `+${(value * 100).toFixed(1).replace(/\.0$/, "")}%` : `+${value}`;
+}
+
+function formatBaseStat(value: number): number {
+  return Math.floor(value + 1e-6);
 }
 
 function closeDrawerOnEscape(event: KeyboardEvent) {
@@ -2304,12 +2321,12 @@ onUnmounted(() => {
           </header>
           <div v-if="selectedCatalogueCharacter.baseStats" class="base-stat-grid">
             <div>
-              <span>生命值</span><b>{{ selectedCatalogueCharacter.baseStats.hp }}</b><small>HP</small>
+              <span>生命值</span><b>{{ formatBaseStat(selectedCatalogueCharacter.baseStats.hp) }}</b><small>HP</small>
             </div>
-            <div><span>攻击力</span><b>{{ selectedCatalogueCharacter.baseStats.attack }}</b><small>ATK</small></div>
-            <div><span>防御力</span><b>{{ selectedCatalogueCharacter.baseStats.defense }}</b><small>DEF</small></div>
-            <div><span>速度</span><b>{{ selectedCatalogueCharacter.baseStats.speed }}</b><small>SPD</small></div>
-            <div><span>嘲讽</span><b>{{ selectedCatalogueCharacter.baseStats.taunt }}</b><small>TAUNT</small></div>
+            <div><span>攻击力</span><b>{{ formatBaseStat(selectedCatalogueCharacter.baseStats.attack) }}</b><small>ATK</small></div>
+            <div><span>防御力</span><b>{{ formatBaseStat(selectedCatalogueCharacter.baseStats.defense) }}</b><small>DEF</small></div>
+            <div><span>速度</span><b>{{ formatBaseStat(selectedCatalogueCharacter.baseStats.speed) }}</b><small>SPD</small></div>
+            <div><span>嘲讽</span><b>{{ formatBaseStat(selectedCatalogueCharacter.baseStats.taunt) }}</b><small>TAUNT</small></div>
           </div>
           <p v-else class="base-stat-empty">该角色的基础属性尚未同步。</p>
           <footer>不含光锥、遗器、行迹、星魂和战斗内增益</footer>
@@ -2706,7 +2723,7 @@ onUnmounted(() => {
                 <h3>站街属性</h3>
               </div>
               <small v-if="characterStandingStats.available">
-                遗器 {{ detailCharacter.equippedRelics?.length ?? 0 }} 件 · 已选行迹 {{ selectedDetailTraceStats.length }} 条
+                遗器 {{ detailCharacter.equippedRelics?.length ?? 0 }} 件 · 行迹 {{ selectedDetailTraceStats.length }} 条 · 静态套装 {{ detailCharacterStaticSetEffects.length }} 项
               </small>
               <small v-else>满级后可计算</small>
             </header>
@@ -2716,7 +2733,7 @@ onUnmounted(() => {
               </div>
             </div>
             <p v-else class="standing-stat-unavailable">{{ characterStandingStats.reason }}</p>
-            <footer>已计入基础属性、光锥三围、遗器主/副属性与当前勾选行迹；不计套装、光锥技能、星魂和战斗增益。</footer>
+            <footer>已计入基础属性、光锥三围、遗器主/副属性、无条件 2 件套与当前勾选行迹；不计条件式套装、光锥技能、星魂和战斗增益。</footer>
           </section>
           <section class="character-data-section">
             <header>
@@ -2827,13 +2844,13 @@ onUnmounted(() => {
             </header>
             <div class="lightcone-base-stat-grid">
               <div>
-                <span>生命值</span><b>{{ lightConeBaseStats.get(detailLightCone.templateId)!.hp }}</b>
+                <span>生命值</span><b>{{ formatBaseStat(lightConeBaseStats.get(detailLightCone.templateId)!.hp) }}</b>
               </div>
               <div>
-                <span>攻击力</span><b>{{ lightConeBaseStats.get(detailLightCone.templateId)!.attack }}</b>
+                <span>攻击力</span><b>{{ formatBaseStat(lightConeBaseStats.get(detailLightCone.templateId)!.attack) }}</b>
               </div>
               <div>
-                <span>防御力</span><b>{{ lightConeBaseStats.get(detailLightCone.templateId)!.defense }}</b>
+                <span>防御力</span><b>{{ formatBaseStat(lightConeBaseStats.get(detailLightCone.templateId)!.defense) }}</b>
               </div>
             </div>
           </section>

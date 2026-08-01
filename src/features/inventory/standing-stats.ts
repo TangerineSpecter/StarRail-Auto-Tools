@@ -14,6 +14,7 @@ export type StandingStatsInput = {
   lightConeBase: { hp: number; attack: number; defense: number };
   relics: EquippedRelicForStats[];
   traces: StaticStatValue[];
+  setEffects?: string[];
 };
 
 export type StandingStat = {
@@ -31,6 +32,7 @@ type Accumulator = {
   defenseFlat: number;
   defensePercent: number;
   speed: number;
+  speedPercent: number;
   percent: Record<string, number>;
 };
 
@@ -90,6 +92,7 @@ function addStat(accumulator: Accumulator, rawKey: string, value: number) {
   else if (key === "DEF") accumulator.defenseFlat += value;
   else if (key === "DEF%") accumulator.defensePercent += value / 100;
   else if (key === "SPD") accumulator.speed += value;
+  else if (key === "SPD%") accumulator.speedPercent += value / 100;
   else if (percentLabels[key])
     accumulator.percent[key] = (accumulator.percent[key] ?? 0) + value / 100;
 }
@@ -101,8 +104,97 @@ function addTraceStat(accumulator: Accumulator, stat: StaticStatValue) {
   addStat(accumulator, key, value);
 }
 
-function round(value: number): number {
-  return Math.round(value * 10) / 10;
+const setStatPatterns: Array<{ pattern: RegExp; key: string }> = [
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?(?:生命值|生命上限)提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "HP%",
+  },
+  { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?攻击力提高\s*(\d+(?:\.\d+)?)\s*%/, key: "ATK%" },
+  { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?防御力提高\s*(\d+(?:\.\d+)?)\s*%/, key: "DEF%" },
+  { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?速度提高\s*(\d+(?:\.\d+)?)\s*%/, key: "SPD%" },
+  { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?暴击率提高\s*(\d+(?:\.\d+)?)\s*%/, key: "CRIT Rate" },
+  { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?暴击伤害提高\s*(\d+(?:\.\d+)?)\s*%/, key: "CRIT DMG" },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?效果命中提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Effect Hit Rate",
+  },
+  { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?效果抵抗提高\s*(\d+(?:\.\d+)?)\s*%/, key: "Effect RES" },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?击破特攻提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Break Effect",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?治疗量提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Outgoing Healing Boost",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?能量恢复效率提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Energy Regeneration Rate",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?物理\s*属性伤害提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Physical DMG Boost",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?火\s*属性伤害提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Fire DMG Boost",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?冰\s*属性伤害提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Ice DMG Boost",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?雷\s*属性伤害提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Lightning DMG Boost",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?风\s*属性伤害提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Wind DMG Boost",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?量子\s*属性伤害提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Quantum DMG Boost",
+  },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?虚数\s*属性伤害提高\s*(\d+(?:\.\d+)?)\s*%/,
+    key: "Imaginary DMG Boost",
+  },
+];
+
+export function staticSetStats(effects: string[]): StaticStatValue[] {
+  return effects.flatMap((effect) => {
+    const leadingClause = effect.trim().split(/[。；，]/u, 1)[0] ?? "";
+    const definition = setStatPatterns.find(({ pattern }) => pattern.test(leadingClause));
+    if (!definition) return [];
+
+    const value = Number(leadingClause.match(definition.pattern)?.[1]);
+    return Number.isFinite(value) ? [{ key: definition.key, value: value / 100 }] : [];
+  });
+}
+
+function addStaticSetConversions(accumulator: Accumulator, effects: string[]) {
+  for (const effect of effects) {
+    const match = effect.match(
+      /提高装备者等同于当前效果命中\s*(\d+(?:\.\d+)?)\s*%\s*的攻击力，最多提高\s*(\d+(?:\.\d+)?)\s*%/u,
+    );
+    if (!match) continue;
+
+    const ratio = Number(match[1]) / 100;
+    const cap = Number(match[2]) / 100;
+    if (!Number.isFinite(ratio) || !Number.isFinite(cap)) continue;
+    accumulator.attackPercent += Math.min(
+      (accumulator.percent["Effect Hit Rate"] ?? 0) * ratio,
+      cap,
+    );
+  }
+}
+
+function floorToInteger(value: number): number {
+  return Math.floor(value + 1e-6);
+}
+
+function truncatePercent(value: number): number {
+  return Math.floor((value + 1e-6) * 10) / 10;
 }
 
 export function calculateStandingStats(input: StandingStatsInput): StandingStat[] {
@@ -114,6 +206,7 @@ export function calculateStandingStats(input: StandingStatsInput): StandingStat[
     defenseFlat: 0,
     defensePercent: 0,
     speed: 0,
+    speedPercent: 0,
     percent: {},
   };
 
@@ -124,6 +217,8 @@ export function calculateStandingStats(input: StandingStatsInput): StandingStat[
     }
   }
   for (const trace of input.traces) addTraceStat(accumulator, trace);
+  for (const stat of staticSetStats(input.setEffects ?? [])) addTraceStat(accumulator, stat);
+  addStaticSetConversions(accumulator, input.setEffects ?? []);
 
   const baseHp = input.characterBase.hp + input.lightConeBase.hp;
   const baseAttack = input.characterBase.attack + input.lightConeBase.attack;
@@ -132,49 +227,54 @@ export function calculateStandingStats(input: StandingStatsInput): StandingStat[
     {
       key: "hp",
       label: "生命值",
-      value: round(baseHp * (1 + accumulator.hpPercent) + accumulator.hpFlat),
+      value: floorToInteger(baseHp * (1 + accumulator.hpPercent) + accumulator.hpFlat),
       unit: "flat",
     },
     {
       key: "attack",
       label: "攻击力",
-      value: round(baseAttack * (1 + accumulator.attackPercent) + accumulator.attackFlat),
+      value: floorToInteger(baseAttack * (1 + accumulator.attackPercent) + accumulator.attackFlat),
       unit: "flat",
     },
     {
       key: "defense",
       label: "防御力",
-      value: round(baseDefense * (1 + accumulator.defensePercent) + accumulator.defenseFlat),
+      value: floorToInteger(
+        baseDefense * (1 + accumulator.defensePercent) + accumulator.defenseFlat,
+      ),
       unit: "flat",
     },
     {
       key: "speed",
       label: "速度",
-      value: round(input.characterBase.speed + accumulator.speed),
+      value: floorToInteger(
+        input.characterBase.speed * (1 + accumulator.speedPercent) + accumulator.speed,
+      ),
       unit: "flat",
     },
     {
       key: "critRate",
       label: "暴击率",
-      value: round((0.05 + (accumulator.percent["CRIT Rate"] ?? 0)) * 100),
+      value: truncatePercent((0.05 + (accumulator.percent["CRIT Rate"] ?? 0)) * 100),
       unit: "percent",
     },
     {
       key: "critDmg",
       label: "暴击伤害",
-      value: round((0.5 + (accumulator.percent["CRIT DMG"] ?? 0)) * 100),
+      value: truncatePercent((0.5 + (accumulator.percent["CRIT DMG"] ?? 0)) * 100),
       unit: "percent",
     },
   ];
 
   for (const [sourceKey, definition] of Object.entries(percentLabels)) {
     if (sourceKey === "CRIT Rate" || sourceKey === "CRIT DMG") continue;
-    const value = accumulator.percent[sourceKey] ?? 0;
+    const base = sourceKey === "Energy Regeneration Rate" ? 1 : 0;
+    const value = base + (accumulator.percent[sourceKey] ?? 0);
     if (value)
       stats.push({
         key: definition.key,
         label: definition.label,
-        value: round(value * 100),
+        value: truncatePercent(value * 100),
         unit: "percent",
       });
   }

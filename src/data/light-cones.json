@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/equipment",
-    "syncedAt": "2026-08-01T09:30:26.185Z"
+    "syncedAt": "2026-08-01T11:51:22.467Z"
   },
   "lightCones": [
     {
@@ -12,9 +12,9 @@
       "rarity": 3,
       "path": "巡猎",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20000.webp"
     },
@@ -24,9 +24,9 @@
       "rarity": 3,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 264,
-        "defense": 264
+        "hp": 952.56,
+        "attack": 264.6,
+        "defense": 264.6
       },
       "image": "/light-cones/20001.webp"
     },
@@ -36,9 +36,9 @@
       "rarity": 3,
       "path": "毁灭",
       "baseStats": {
-        "hp": 846,
-        "attack": 370,
-        "defense": 198
+        "hp": 846.72,
+        "attack": 370.44,
+        "defense": 198.45
       },
       "image": "/light-cones/20002.webp"
     },
@@ -48,9 +48,9 @@
       "rarity": 3,
       "path": "存护",
       "baseStats": {
-        "hp": 846,
-        "attack": 264,
-        "defense": 330
+        "hp": 846.72,
+        "attack": 264.6,
+        "defense": 330.75
       },
       "image": "/light-cones/20003.webp"
     },
@@ -60,9 +60,9 @@
       "rarity": 3,
       "path": "虚无",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20004.webp"
     },
@@ -72,9 +72,9 @@
       "rarity": 3,
       "path": "同谐",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20005.webp"
     },
@@ -84,9 +84,9 @@
       "rarity": 3,
       "path": "智识",
       "baseStats": {
-        "hp": 740,
-        "attack": 370,
-        "defense": 264
+        "hp": 740.88,
+        "attack": 370.44,
+        "defense": 264.6
       },
       "image": "/light-cones/20006.webp"
     },
@@ -96,9 +96,9 @@
       "rarity": 3,
       "path": "巡猎",
       "baseStats": {
-        "hp": 740,
-        "attack": 370,
-        "defense": 264
+        "hp": 740.88,
+        "attack": 370.44,
+        "defense": 264.6
       },
       "image": "/light-cones/20007.webp"
     },
@@ -108,9 +108,9 @@
       "rarity": 3,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 317,
-        "defense": 198
+        "hp": 952.56,
+        "attack": 317.52,
+        "defense": 198.45
       },
       "image": "/light-cones/20008.webp"
     },
@@ -120,9 +120,9 @@
       "rarity": 3,
       "path": "毁灭",
       "baseStats": {
-        "hp": 846,
-        "attack": 370,
-        "defense": 198
+        "hp": 846.72,
+        "attack": 370.44,
+        "defense": 198.45
       },
       "image": "/light-cones/20009.webp"
     },
@@ -132,9 +132,9 @@
       "rarity": 3,
       "path": "存护",
       "baseStats": {
-        "hp": 952,
-        "attack": 264,
-        "defense": 264
+        "hp": 952.56,
+        "attack": 264.6,
+        "defense": 264.6
       },
       "image": "/light-cones/20010.webp"
     },
@@ -144,9 +144,9 @@
       "rarity": 3,
       "path": "虚无",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20011.webp"
     },
@@ -156,9 +156,9 @@
       "rarity": 3,
       "path": "同谐",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20012.webp"
     },
@@ -168,9 +168,9 @@
       "rarity": 3,
       "path": "智识",
       "baseStats": {
-        "hp": 740,
-        "attack": 370,
-        "defense": 264
+        "hp": 740.88,
+        "attack": 370.44,
+        "defense": 264.6
       },
       "image": "/light-cones/20013.webp"
     },
@@ -180,9 +180,9 @@
       "rarity": 3,
       "path": "巡猎",
       "baseStats": {
-        "hp": 740,
-        "attack": 370,
-        "defense": 264
+        "hp": 740.88,
+        "attack": 370.44,
+        "defense": 264.6
       },
       "image": "/light-cones/20014.webp"
     },
@@ -192,9 +192,9 @@
       "rarity": 3,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 317,
-        "defense": 198
+        "hp": 952.56,
+        "attack": 317.52,
+        "defense": 198.45
       },
       "image": "/light-cones/20015.webp"
     },
@@ -204,9 +204,9 @@
       "rarity": 3,
       "path": "毁灭",
       "baseStats": {
-        "hp": 846,
-        "attack": 370,
-        "defense": 198
+        "hp": 846.72,
+        "attack": 370.44,
+        "defense": 198.45
       },
       "image": "/light-cones/20016.webp"
     },
@@ -216,9 +216,9 @@
       "rarity": 3,
       "path": "存护",
       "baseStats": {
-        "hp": 952,
-        "attack": 264,
-        "defense": 264
+        "hp": 952.56,
+        "attack": 264.6,
+        "defense": 264.6
       },
       "image": "/light-cones/20017.webp"
     },
@@ -228,9 +228,9 @@
       "rarity": 3,
       "path": "虚无",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20018.webp"
     },
@@ -240,9 +240,9 @@
       "rarity": 3,
       "path": "同谐",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20019.webp"
     },
@@ -252,9 +252,9 @@
       "rarity": 3,
       "path": "智识",
       "baseStats": {
-        "hp": 740,
-        "attack": 370,
-        "defense": 264
+        "hp": 740.88,
+        "attack": 370.44,
+        "defense": 264.6
       },
       "image": "/light-cones/20020.webp"
     },
@@ -264,9 +264,9 @@
       "rarity": 3,
       "path": "记忆",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20021.webp"
     },
@@ -276,9 +276,9 @@
       "rarity": 3,
       "path": "记忆",
       "baseStats": {
-        "hp": 635,
-        "attack": 423,
-        "defense": 264
+        "hp": 635.04,
+        "attack": 423.36,
+        "defense": 264.6
       },
       "image": "/light-cones/20022.webp"
     },
@@ -288,9 +288,9 @@
       "rarity": 3,
       "path": "欢愉",
       "baseStats": {
-        "hp": 740,
-        "attack": 370,
-        "defense": 264
+        "hp": 740.88,
+        "attack": 370.44,
+        "defense": 264.6
       },
       "image": "/light-cones/20023.webp"
     },
@@ -300,9 +300,9 @@
       "rarity": 3,
       "path": "欢愉",
       "baseStats": {
-        "hp": 846,
-        "attack": 317,
-        "defense": 264
+        "hp": 846.72,
+        "attack": 317.52,
+        "defense": 264.6
       },
       "image": "/light-cones/20024.webp"
     },
@@ -312,9 +312,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1058,
-        "attack": 423,
-        "defense": 330
+        "hp": 1058.4,
+        "attack": 423.36,
+        "defense": 330.75
       },
       "image": "/light-cones/21000.webp"
     },
@@ -324,9 +324,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21001.webp"
     },
@@ -336,9 +336,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 952,
-        "attack": 370,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 370.44,
+        "defense": 463.05
       },
       "image": "/light-cones/21002.webp"
     },
@@ -348,9 +348,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21003.webp"
     },
@@ -360,9 +360,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21004.webp"
     },
@@ -372,9 +372,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 264
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 264.6
       },
       "image": "/light-cones/21005.webp"
     },
@@ -384,9 +384,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21006.webp"
     },
@@ -396,9 +396,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21007.webp"
     },
@@ -408,9 +408,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21008.webp"
     },
@@ -420,9 +420,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21009.webp"
     },
@@ -432,9 +432,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21010.webp"
     },
@@ -444,9 +444,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 1058,
-        "attack": 423,
-        "defense": 330
+        "hp": 1058.4,
+        "attack": 423.36,
+        "defense": 330.75
       },
       "image": "/light-cones/21011.webp"
     },
@@ -456,9 +456,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 264
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 264.6
       },
       "image": "/light-cones/21012.webp"
     },
@@ -468,9 +468,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21013.webp"
     },
@@ -480,9 +480,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21014.webp"
     },
@@ -492,9 +492,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21015.webp"
     },
@@ -504,9 +504,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 1058,
-        "attack": 370,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 370.44,
+        "defense": 396.9
       },
       "image": "/light-cones/21016.webp"
     },
@@ -516,9 +516,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21017.webp"
     },
@@ -528,9 +528,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21018.webp"
     },
@@ -540,9 +540,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21019.webp"
     },
@@ -552,9 +552,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21020.webp"
     },
@@ -564,9 +564,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21021.webp"
     },
@@ -576,9 +576,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21022.webp"
     },
@@ -588,9 +588,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 740,
-        "attack": 476,
-        "defense": 463
+        "hp": 740.88,
+        "attack": 476.28,
+        "defense": 463.05
       },
       "image": "/light-cones/21023.webp"
     },
@@ -600,9 +600,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21024.webp"
     },
@@ -612,9 +612,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21025.webp"
     },
@@ -624,9 +624,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21026.webp"
     },
@@ -636,9 +636,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21027.webp"
     },
@@ -648,9 +648,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1058,
-        "attack": 370,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 370.44,
+        "defense": 396.9
       },
       "image": "/light-cones/21028.webp"
     },
@@ -660,9 +660,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 846,
-        "attack": 529,
-        "defense": 330
+        "hp": 846.72,
+        "attack": 529.2,
+        "defense": 330.75
       },
       "image": "/light-cones/21029.webp"
     },
@@ -672,9 +672,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 846,
-        "attack": 370,
-        "defense": 529
+        "hp": 846.72,
+        "attack": 370.44,
+        "defense": 529.2
       },
       "image": "/light-cones/21030.webp"
     },
@@ -684,9 +684,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 846,
-        "attack": 529,
-        "defense": 330
+        "hp": 846.72,
+        "attack": 529.2,
+        "defense": 330.75
       },
       "image": "/light-cones/21031.webp"
     },
@@ -696,9 +696,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21032.webp"
     },
@@ -708,9 +708,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 952,
-        "attack": 529,
-        "defense": 264
+        "hp": 952.56,
+        "attack": 529.2,
+        "defense": 264.6
       },
       "image": "/light-cones/21033.webp"
     },
@@ -720,9 +720,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 846,
-        "attack": 529,
-        "defense": 330
+        "hp": 846.72,
+        "attack": 529.2,
+        "defense": 330.75
       },
       "image": "/light-cones/21034.webp"
     },
@@ -732,9 +732,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1058,
-        "attack": 423,
-        "defense": 330
+        "hp": 1058.4,
+        "attack": 423.36,
+        "defense": 330.75
       },
       "image": "/light-cones/21035.webp"
     },
@@ -744,9 +744,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21036.webp"
     },
@@ -756,9 +756,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21037.webp"
     },
@@ -768,9 +768,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 264
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 264.6
       },
       "image": "/light-cones/21038.webp"
     },
@@ -780,9 +780,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 952,
-        "attack": 370,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 370.44,
+        "defense": 463.05
       },
       "image": "/light-cones/21039.webp"
     },
@@ -792,9 +792,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21040.webp"
     },
@@ -804,9 +804,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 264
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 264.6
       },
       "image": "/light-cones/21041.webp"
     },
@@ -816,9 +816,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21042.webp"
     },
@@ -828,9 +828,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 952,
-        "attack": 370,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 370.44,
+        "defense": 463.05
       },
       "image": "/light-cones/21043.webp"
     },
@@ -840,9 +840,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21044.webp"
     },
@@ -852,9 +852,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21045.webp"
     },
@@ -864,9 +864,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21046.webp"
     },
@@ -876,9 +876,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21047.webp"
     },
@@ -888,9 +888,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/21048.webp"
     },
@@ -900,9 +900,9 @@
       "rarity": 4,
       "path": "记忆",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21050.webp"
     },
@@ -912,9 +912,9 @@
       "rarity": 4,
       "path": "记忆",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/21051.webp"
     },
@@ -924,9 +924,9 @@
       "rarity": 4,
       "path": "记忆",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 198
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 198.45
       },
       "image": "/light-cones/21052.webp"
     },
@@ -936,9 +936,9 @@
       "rarity": 4,
       "path": "存护",
       "baseStats": {
-        "hp": 1058,
-        "attack": 370,
-        "defense": 529
+        "hp": 1058.4,
+        "attack": 370.44,
+        "defense": 529.2
       },
       "image": "/light-cones/21053.webp"
     },
@@ -948,9 +948,9 @@
       "rarity": 4,
       "path": "记忆",
       "baseStats": {
-        "hp": 1058,
-        "attack": 370,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 370.44,
+        "defense": 396.9
       },
       "image": "/light-cones/21054.webp"
     },
@@ -960,9 +960,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21055.webp"
     },
@@ -972,9 +972,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21056.webp"
     },
@@ -984,9 +984,9 @@
       "rarity": 4,
       "path": "记忆",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 330
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 330.75
       },
       "image": "/light-cones/21057.webp"
     },
@@ -996,9 +996,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 330
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 330.75
       },
       "image": "/light-cones/21058.webp"
     },
@@ -1008,9 +1008,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 529,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/21060.webp"
     },
@@ -1020,9 +1020,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 330
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 330.75
       },
       "image": "/light-cones/21061.webp"
     },
@@ -1032,9 +1032,9 @@
       "rarity": 4,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 529,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/21062.webp"
     },
@@ -1044,9 +1044,9 @@
       "rarity": 4,
       "path": "欢愉",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/21064.webp"
     },
@@ -1056,9 +1056,9 @@
       "rarity": 4,
       "path": "欢愉",
       "baseStats": {
-        "hp": 952,
-        "attack": 529,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/21065.webp"
     },
@@ -1068,9 +1068,9 @@
       "rarity": 4,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/22000.webp"
     },
@@ -1080,9 +1080,9 @@
       "rarity": 4,
       "path": "丰饶",
       "baseStats": {
-        "hp": 952,
-        "attack": 423,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 423.36,
+        "defense": 396.9
       },
       "image": "/light-cones/22001.webp"
     },
@@ -1092,9 +1092,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/22002.webp"
     },
@@ -1104,9 +1104,9 @@
       "rarity": 4,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 264
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 264.6
       },
       "image": "/light-cones/22003.webp"
     },
@@ -1116,9 +1116,9 @@
       "rarity": 4,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/22004.webp"
     },
@@ -1128,9 +1128,9 @@
       "rarity": 4,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/22005.webp"
     },
@@ -1140,9 +1140,9 @@
       "rarity": 4,
       "path": "记忆",
       "baseStats": {
-        "hp": 846,
-        "attack": 476,
-        "defense": 396
+        "hp": 846.72,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/22006.webp"
     },
@@ -1152,9 +1152,9 @@
       "rarity": 4,
       "path": "欢愉",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 330
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 330.75
       },
       "image": "/light-cones/22007.webp"
     },
@@ -1164,9 +1164,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 1164,
-        "attack": 582,
-        "defense": 396
+        "hp": 1164.24,
+        "attack": 582.12,
+        "defense": 396.9
       },
       "image": "/light-cones/23000.webp"
     },
@@ -1176,9 +1176,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23001.webp"
     },
@@ -1188,9 +1188,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1164,
-        "attack": 582,
-        "defense": 396
+        "hp": 1164.24,
+        "attack": 582.12,
+        "defense": 396.9
       },
       "image": "/light-cones/23002.webp"
     },
@@ -1200,9 +1200,9 @@
       "rarity": 5,
       "path": "同谐",
       "baseStats": {
-        "hp": 1164,
-        "attack": 529,
-        "defense": 463
+        "hp": 1164.24,
+        "attack": 529.2,
+        "defense": 463.05
       },
       "image": "/light-cones/23003.webp"
     },
@@ -1212,9 +1212,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23004.webp"
     },
@@ -1224,9 +1224,9 @@
       "rarity": 5,
       "path": "存护",
       "baseStats": {
-        "hp": 1058,
-        "attack": 476,
-        "defense": 595
+        "hp": 1058.4,
+        "attack": 476.28,
+        "defense": 595.35
       },
       "image": "/light-cones/23005.webp"
     },
@@ -1236,9 +1236,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23006.webp"
     },
@@ -1248,9 +1248,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23007.webp"
     },
@@ -1260,9 +1260,9 @@
       "rarity": 5,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1164,
-        "attack": 582,
-        "defense": 396
+        "hp": 1164.24,
+        "attack": 582.12,
+        "defense": 396.9
       },
       "image": "/light-cones/23008.webp"
     },
@@ -1272,9 +1272,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1270,
-        "attack": 582,
-        "defense": 330
+        "hp": 1270.08,
+        "attack": 582.12,
+        "defense": 330.75
       },
       "image": "/light-cones/23009.webp"
     },
@@ -1284,9 +1284,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23010.webp"
     },
@@ -1296,9 +1296,9 @@
       "rarity": 5,
       "path": "存护",
       "baseStats": {
-        "hp": 1270,
-        "attack": 423,
-        "defense": 529
+        "hp": 1270.08,
+        "attack": 423.36,
+        "defense": 529.2
       },
       "image": "/light-cones/23011.webp"
     },
@@ -1308,9 +1308,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23012.webp"
     },
@@ -1320,9 +1320,9 @@
       "rarity": 5,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1270,
-        "attack": 476,
-        "defense": 463
+        "hp": 1270.08,
+        "attack": 476.28,
+        "defense": 463.05
       },
       "image": "/light-cones/23013.webp"
     },
@@ -1332,9 +1332,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1164,
-        "attack": 582,
-        "defense": 396
+        "hp": 1164.24,
+        "attack": 582.12,
+        "defense": 396.9
       },
       "image": "/light-cones/23014.webp"
     },
@@ -1344,9 +1344,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 635,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 635.04,
+        "defense": 396.9
       },
       "image": "/light-cones/23015.webp"
     },
@@ -1356,9 +1356,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23016.webp"
     },
@@ -1368,9 +1368,9 @@
       "rarity": 5,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1164,
-        "attack": 476,
-        "defense": 529
+        "hp": 1164.24,
+        "attack": 476.28,
+        "defense": 529.2
       },
       "image": "/light-cones/23017.webp"
     },
@@ -1380,9 +1380,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23018.webp"
     },
@@ -1392,9 +1392,9 @@
       "rarity": 5,
       "path": "同谐",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 529
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 529.2
       },
       "image": "/light-cones/23019.webp"
     },
@@ -1404,9 +1404,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23020.webp"
     },
@@ -1416,9 +1416,9 @@
       "rarity": 5,
       "path": "同谐",
       "baseStats": {
-        "hp": 1164,
-        "attack": 529,
-        "defense": 463
+        "hp": 1164.24,
+        "attack": 529.2,
+        "defense": 463.05
       },
       "image": "/light-cones/23021.webp"
     },
@@ -1428,9 +1428,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23022.webp"
     },
@@ -1440,9 +1440,9 @@
       "rarity": 5,
       "path": "存护",
       "baseStats": {
-        "hp": 1058,
-        "attack": 423,
-        "defense": 661
+        "hp": 1058.4,
+        "attack": 423.36,
+        "defense": 661.5
       },
       "image": "/light-cones/23023.webp"
     },
@@ -1452,9 +1452,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 635,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 635.04,
+        "defense": 396.9
       },
       "image": "/light-cones/23024.webp"
     },
@@ -1464,9 +1464,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1164,
-        "attack": 476,
-        "defense": 529
+        "hp": 1164.24,
+        "attack": 476.28,
+        "defense": 529.2
       },
       "image": "/light-cones/23025.webp"
     },
@@ -1476,9 +1476,9 @@
       "rarity": 5,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 635,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 635.04,
+        "defense": 463.05
       },
       "image": "/light-cones/23026.webp"
     },
@@ -1488,9 +1488,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23027.webp"
     },
@@ -1500,9 +1500,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23028.webp"
     },
@@ -1512,9 +1512,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23029.webp"
     },
@@ -1524,9 +1524,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23030.webp"
     },
@@ -1536,9 +1536,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 635,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 635.04,
+        "defense": 463.05
       },
       "image": "/light-cones/23031.webp"
     },
@@ -1548,9 +1548,9 @@
       "rarity": 5,
       "path": "丰饶",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 529
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 529.2
       },
       "image": "/light-cones/23032.webp"
     },
@@ -1560,9 +1560,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23033.webp"
     },
@@ -1572,9 +1572,9 @@
       "rarity": 5,
       "path": "同谐",
       "baseStats": {
-        "hp": 1164,
-        "attack": 476,
-        "defense": 529
+        "hp": 1164.24,
+        "attack": 476.28,
+        "defense": 529.2
       },
       "image": "/light-cones/23034.webp"
     },
@@ -1584,9 +1584,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 476,
-        "defense": 661
+        "hp": 952.56,
+        "attack": 476.28,
+        "defense": 661.5
       },
       "image": "/light-cones/23035.webp"
     },
@@ -1596,9 +1596,9 @@
       "rarity": 5,
       "path": "记忆",
       "baseStats": {
-        "hp": 1058,
-        "attack": 635,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 635.04,
+        "defense": 396.9
       },
       "image": "/light-cones/23036.webp"
     },
@@ -1608,9 +1608,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 635,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 635.04,
+        "defense": 463.05
       },
       "image": "/light-cones/23037.webp"
     },
@@ -1620,9 +1620,9 @@
       "rarity": 5,
       "path": "同谐",
       "baseStats": {
-        "hp": 1270,
-        "attack": 529,
-        "defense": 396
+        "hp": 1270.08,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/23038.webp"
     },
@@ -1632,9 +1632,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1375,
-        "attack": 476,
-        "defense": 396
+        "hp": 1375.92,
+        "attack": 476.28,
+        "defense": 396.9
       },
       "image": "/light-cones/23039.webp"
     },
@@ -1644,9 +1644,9 @@
       "rarity": 5,
       "path": "记忆",
       "baseStats": {
-        "hp": 1270,
-        "attack": 529,
-        "defense": 396
+        "hp": 1270.08,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/23040.webp"
     },
@@ -1656,9 +1656,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23041.webp"
     },
@@ -1668,9 +1668,9 @@
       "rarity": 5,
       "path": "记忆",
       "baseStats": {
-        "hp": 1164,
-        "attack": 476,
-        "defense": 529
+        "hp": 1164.24,
+        "attack": 476.28,
+        "defense": 529.2
       },
       "image": "/light-cones/23042.webp"
     },
@@ -1680,9 +1680,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23043.webp"
     },
@@ -1692,9 +1692,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 952,
-        "attack": 687,
-        "defense": 396
+        "hp": 952.56,
+        "attack": 687.96,
+        "defense": 396.9
       },
       "image": "/light-cones/23044.webp"
     },
@@ -1704,9 +1704,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23045.webp"
     },
@@ -1716,9 +1716,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 529
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 529.2
       },
       "image": "/light-cones/23046.webp"
     },
@@ -1728,9 +1728,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 952,
-        "attack": 635,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 635.04,
+        "defense": 463.05
       },
       "image": "/light-cones/23047.webp"
     },
@@ -1740,9 +1740,9 @@
       "rarity": 5,
       "path": "同谐",
       "baseStats": {
-        "hp": 952,
-        "attack": 635,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 635.04,
+        "defense": 463.05
       },
       "image": "/light-cones/23048.webp"
     },
@@ -1752,9 +1752,9 @@
       "rarity": 5,
       "path": "记忆",
       "baseStats": {
-        "hp": 1164,
-        "attack": 529,
-        "defense": 463
+        "hp": 1164.24,
+        "attack": 529.2,
+        "defense": 463.05
       },
       "image": "/light-cones/23049.webp"
     },
@@ -1764,9 +1764,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1164,
-        "attack": 529,
-        "defense": 463
+        "hp": 1164.24,
+        "attack": 529.2,
+        "defense": 463.05
       },
       "image": "/light-cones/23050.webp"
     },
@@ -1776,9 +1776,9 @@
       "rarity": 5,
       "path": "存护",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23051.webp"
     },
@@ -1788,9 +1788,9 @@
       "rarity": 5,
       "path": "记忆",
       "baseStats": {
-        "hp": 1270,
-        "attack": 476,
-        "defense": 463
+        "hp": 1270.08,
+        "attack": 476.28,
+        "defense": 463.05
       },
       "image": "/light-cones/23052.webp"
     },
@@ -1800,9 +1800,9 @@
       "rarity": 5,
       "path": "欢愉",
       "baseStats": {
-        "hp": 1058,
-        "attack": 582,
-        "defense": 463
+        "hp": 1058.4,
+        "attack": 582.12,
+        "defense": 463.05
       },
       "image": "/light-cones/23053.webp"
     },
@@ -1812,9 +1812,9 @@
       "rarity": 5,
       "path": "欢愉",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 529
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 529.2
       },
       "image": "/light-cones/23054.webp"
     },
@@ -1824,9 +1824,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 846,
-        "attack": 635,
-        "defense": 529
+        "hp": 846.72,
+        "attack": 635.04,
+        "defense": 529.2
       },
       "image": "/light-cones/23056.webp"
     },
@@ -1836,9 +1836,9 @@
       "rarity": 5,
       "path": "欢愉",
       "baseStats": {
-        "hp": 1164,
-        "attack": 476,
-        "defense": 529
+        "hp": 1164.24,
+        "attack": 476.28,
+        "defense": 529.2
       },
       "image": "/light-cones/23057.webp"
     },
@@ -1848,9 +1848,9 @@
       "rarity": 5,
       "path": "欢愉",
       "baseStats": {
-        "hp": 952,
-        "attack": 635,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 635.04,
+        "defense": 463.05
       },
       "image": "/light-cones/23058.webp"
     },
@@ -1860,9 +1860,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1375,
-        "attack": 423,
-        "defense": 463
+        "hp": 1375.92,
+        "attack": 423.36,
+        "defense": 463.05
       },
       "image": "/light-cones/23059.webp"
     },
@@ -1872,9 +1872,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 846,
-        "attack": 635,
-        "defense": 529
+        "hp": 846.72,
+        "attack": 635.04,
+        "defense": 529.2
       },
       "image": "/light-cones/23060.webp"
     },
@@ -1884,9 +1884,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 846,
-        "attack": 635,
-        "defense": 529
+        "hp": 846.72,
+        "attack": 635.04,
+        "defense": 529.2
       },
       "image": "/light-cones/23061.webp"
     },
@@ -1896,9 +1896,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 952,
-        "attack": 635,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 635.04,
+        "defense": 463.05
       },
       "image": "/light-cones/23062.webp"
     },
@@ -1908,9 +1908,9 @@
       "rarity": 5,
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/24000.webp"
     },
@@ -1920,9 +1920,9 @@
       "rarity": 5,
       "path": "巡猎",
       "baseStats": {
-        "hp": 952,
-        "attack": 529,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 529.2,
+        "defense": 463.05
       },
       "image": "/light-cones/24001.webp"
     },
@@ -1932,9 +1932,9 @@
       "rarity": 5,
       "path": "存护",
       "baseStats": {
-        "hp": 1058,
-        "attack": 423,
-        "defense": 529
+        "hp": 1058.4,
+        "attack": 423.36,
+        "defense": 529.2
       },
       "image": "/light-cones/24002.webp"
     },
@@ -1944,9 +1944,9 @@
       "rarity": 5,
       "path": "虚无",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/24003.webp"
     },
@@ -1956,9 +1956,9 @@
       "rarity": 5,
       "path": "智识",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/24004.webp"
     },
@@ -1968,9 +1968,9 @@
       "rarity": 5,
       "path": "记忆",
       "baseStats": {
-        "hp": 1058,
-        "attack": 529,
-        "defense": 396
+        "hp": 1058.4,
+        "attack": 529.2,
+        "defense": 396.9
       },
       "image": "/light-cones/24005.webp"
     },
@@ -1980,9 +1980,9 @@
       "rarity": 5,
       "path": "欢愉",
       "baseStats": {
-        "hp": 952,
-        "attack": 529,
-        "defense": 463
+        "hp": 952.56,
+        "attack": 529.2,
+        "defense": 463.05
       },
       "image": "/light-cones/24006.webp"
     }

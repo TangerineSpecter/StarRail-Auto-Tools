@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/characters",
-    "syncedAt": "2026-08-01T10:31:00.631Z"
+    "syncedAt": "2026-08-01T13:43:37.583Z"
   },
   "characters": [
     {
@@ -12,9 +12,9 @@
       "element": "雷",
       "path": "记忆",
       "baseStats": {
-        "hp": 1241,
-        "attack": 698,
-        "defense": 485,
+        "hp": 1241.856,
+        "attack": 698.544,
+        "defense": 485.1,
         "speed": 102,
         "taunt": 100
       },
@@ -131,9 +131,9 @@
       "element": "雷",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1199,
-        "attack": 599,
-        "defense": 330,
+        "hp": 1199.52,
+        "attack": 599.76,
+        "defense": 330.75,
         "speed": 102,
         "taunt": 125
       },
@@ -250,9 +250,9 @@
       "element": "火",
       "path": "同谐",
       "baseStats": {
-        "hp": 1023,
-        "attack": 511,
-        "defense": 463,
+        "hp": 1023.12,
+        "attack": 511.56,
+        "defense": 463.05,
         "speed": 106,
         "taunt": 100
       },
@@ -369,9 +369,9 @@
       "element": "物理",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1435,
-        "attack": 582,
-        "defense": 703,
+        "hp": 1435.896,
+        "attack": 582.12,
+        "defense": 703.395,
         "speed": 94,
         "taunt": 125
       },
@@ -488,9 +488,9 @@
       "element": "雷",
       "path": "丰饶",
       "baseStats": {
-        "hp": 1319,
-        "attack": 562,
-        "defense": 485,
+        "hp": 1319.472,
+        "attack": 562.716,
+        "defense": 485.1,
         "speed": 98,
         "taunt": 100
       },
@@ -607,9 +607,9 @@
       "element": "物理",
       "path": "巡猎",
       "baseStats": {
-        "hp": 1203,
-        "attack": 620,
-        "defense": 436,
+        "hp": 1203.048,
+        "attack": 620.928,
+        "defense": 436.59,
         "speed": 107,
         "taunt": 75
       },
@@ -726,9 +726,9 @@
       "element": "雷",
       "path": "巡猎",
       "baseStats": {
-        "hp": 853,
-        "attack": 776,
-        "defense": 388,
+        "hp": 853.776,
+        "attack": 776.16,
+        "defense": 388.08,
         "speed": 106,
         "taunt": 75
       },
@@ -845,9 +845,9 @@
       "element": "风",
       "path": "同谐",
       "baseStats": {
-        "hp": 1241,
-        "attack": 582,
-        "defense": 533,
+        "hp": 1241.856,
+        "attack": 582.12,
+        "defense": 533.61,
         "speed": 99,
         "taunt": 100
       },
@@ -964,9 +964,9 @@
       "element": "冰",
       "path": "智识",
       "baseStats": {
-        "hp": 1164,
-        "attack": 679,
-        "defense": 485,
+        "hp": 1164.24,
+        "attack": 679.14,
+        "defense": 485.1,
         "speed": 99,
         "taunt": 75
       },
@@ -1083,9 +1083,9 @@
       "element": "火",
       "path": "虚无",
       "baseStats": {
-        "hp": 1086,
-        "attack": 679,
-        "defense": 606,
+        "hp": 1086.624,
+        "attack": 679.14,
+        "defense": 606.375,
         "speed": 96,
         "taunt": 100
       },
@@ -1203,8 +1203,8 @@
       "path": "巡猎",
       "baseStats": {
         "hp": 882,
-        "attack": 546,
-        "defense": 396,
+        "attack": 546.84,
+        "defense": 396.9,
         "speed": 110,
         "taunt": 75
       },
@@ -1321,9 +1321,9 @@
       "element": "物理",
       "path": "存护",
       "baseStats": {
-        "hp": 1047,
-        "attack": 582,
-        "defense": 776,
+        "hp": 1047.816,
+        "attack": 582.12,
+        "defense": 776.16,
         "speed": 97,
         "taunt": 150
       },
@@ -1440,9 +1440,9 @@
       "element": "虚数",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1241,
-        "attack": 698,
-        "defense": 363,
+        "hp": 1241.856,
+        "attack": 698.544,
+        "defense": 363.825,
         "speed": 102,
         "taunt": 125
       },
@@ -1559,9 +1559,9 @@
       "element": "风",
       "path": "巡猎",
       "baseStats": {
-        "hp": 1047,
-        "attack": 601,
-        "defense": 388,
+        "hp": 1047.816,
+        "attack": 601.524,
+        "defense": 388.08,
         "speed": 112,
         "taunt": 75
       },
@@ -1678,9 +1678,9 @@
       "element": "物理",
       "path": "欢愉",
       "baseStats": {
-        "hp": 1047,
-        "attack": 737,
-        "defense": 460,
+        "hp": 1047.816,
+        "attack": 737.352,
+        "defense": 460.845,
         "speed": 104,
         "taunt": 100
       },
@@ -1797,9 +1797,9 @@
       "element": "量子",
       "path": "智识",
       "baseStats": {
-        "hp": 1086,
-        "attack": 659,
-        "defense": 509,
+        "hp": 1086.624,
+        "attack": 659.736,
+        "defense": 509.355,
         "speed": 103,
         "taunt": 75
       },
@@ -1916,9 +1916,9 @@
       "element": "风",
       "path": "记忆",
       "baseStats": {
-        "hp": 1086,
-        "attack": 388,
-        "defense": 630,
+        "hp": 1086.624,
+        "attack": 388.08,
+        "defense": 630.63,
         "speed": 110,
         "taunt": 100
       },
@@ -2035,9 +2035,9 @@
       "element": "量子",
       "path": "存护",
       "baseStats": {
-        "hp": 1474,
-        "attack": 465,
-        "defense": 606,
+        "hp": 1474.704,
+        "attack": 465.696,
+        "defense": 606.375,
         "speed": 100,
         "taunt": 150
       },
@@ -2155,7 +2155,7 @@
       "path": "虚无",
       "baseStats": {
         "hp": 882,
-        "attack": 582,
+        "attack": 582.12,
         "defense": 441,
         "speed": 106,
         "taunt": 100
@@ -2273,9 +2273,9 @@
       "element": "物理",
       "path": "虚无",
       "baseStats": {
-        "hp": 1203,
-        "attack": 601,
-        "defense": 485,
+        "hp": 1203.048,
+        "attack": 601.524,
+        "defense": 485.1,
         "speed": 102,
         "taunt": 100
       },
@@ -2392,9 +2392,9 @@
       "element": "物理",
       "path": "同谐",
       "baseStats": {
-        "hp": 917,
-        "attack": 564,
-        "defense": 352,
+        "hp": 917.28,
+        "attack": 564.48,
+        "defense": 352.8,
         "speed": 110,
         "taunt": 100
       },
@@ -2511,9 +2511,9 @@
       "element": "冰",
       "path": "智识",
       "baseStats": {
-        "hp": 952,
-        "attack": 582,
-        "defense": 396,
+        "hp": 952.56,
+        "attack": 582.12,
+        "defense": 396.9,
         "speed": 100,
         "taunt": 75
       },
@@ -2630,9 +2630,9 @@
       "element": "风",
       "path": "虚无",
       "baseStats": {
-        "hp": 1086,
-        "attack": 659,
-        "defense": 485,
+        "hp": 1086.624,
+        "attack": 659.736,
+        "defense": 485.1,
         "speed": 102,
         "taunt": 100
       },
@@ -2736,106 +2736,6 @@
               "value": 0.08
             }
           ]
-        },
-        {
-          "id": 11307202,
-          "name": "伤害强化•风",
-          "stats": [
-            {
-              "key": "风 属性伤害提高",
-              "value": 0.032
-            }
-          ]
-        },
-        {
-          "id": 11307203,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11307204,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11307205,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11307206,
-          "name": "伤害强化•风",
-          "stats": [
-            {
-              "key": "风 属性伤害提高",
-              "value": 0.048
-            }
-          ]
-        },
-        {
-          "id": 11307207,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11307208,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11307209,
-          "name": "伤害强化•风",
-          "stats": [
-            {
-              "key": "风 属性伤害提高",
-              "value": 0.064
-            }
-          ]
-        },
-        {
-          "id": 11307201,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11307210,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.08
-            }
-          ]
         }
       ],
       "image": "/characters/blackswan.webp",
@@ -2849,9 +2749,9 @@
       "element": "火",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1340,
-        "attack": 617,
-        "defense": 352,
+        "hp": 1340.64,
+        "attack": 617.4,
+        "defense": 352.8,
         "speed": 94,
         "taunt": 125
       },
@@ -2968,9 +2868,9 @@
       "element": "量子",
       "path": "同谐",
       "baseStats": {
-        "hp": 1397,
-        "attack": 523,
-        "defense": 485,
+        "hp": 1397.088,
+        "attack": 523.908,
+        "defense": 485.1,
         "speed": 101,
         "taunt": 100
       },
@@ -3074,106 +2974,6 @@
               "value": 0.06
             }
           ]
-        },
-        {
-          "id": 11306202,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.053
-            }
-          ]
-        },
-        {
-          "id": 11306203,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11306205,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11306206,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11306208,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11306209,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.107
-            }
-          ]
-        },
-        {
-          "id": 11306210,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11306201,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11306204,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11306207,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
         }
       ],
       "image": "/characters/sparkle.webp",
@@ -3187,9 +2987,9 @@
       "element": "雷",
       "path": "虚无",
       "baseStats": {
-        "hp": 1125,
-        "attack": 698,
-        "defense": 436,
+        "hp": 1125.432,
+        "attack": 698.544,
+        "defense": 436.59,
         "speed": 101,
         "taunt": 100
       },
@@ -3306,9 +3106,9 @@
       "element": "火",
       "path": "欢愉",
       "baseStats": {
-        "hp": 1047,
-        "attack": 640,
-        "defense": 460,
+        "hp": 1047.816,
+        "attack": 640.332,
+        "defense": 460.845,
         "speed": 107,
         "taunt": 100
       },
@@ -3425,9 +3225,9 @@
       "element": "风",
       "path": "丰饶",
       "baseStats": {
-        "hp": 1358,
-        "attack": 601,
-        "defense": 509,
+        "hp": 1358.28,
+        "attack": 601.524,
+        "defense": 509.355,
         "speed": 98,
         "taunt": 100
       },
@@ -3531,106 +3331,6 @@
               "value": 0.08
             }
           ]
-        },
-        {
-          "id": 11217202,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11217203,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11217204,
-          "name": "速度强化",
-          "stats": [
-            {
-              "key": "速度",
-              "value": 2
-            }
-          ]
-        },
-        {
-          "id": 11217205,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11217206,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11217207,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11217208,
-          "name": "速度强化",
-          "stats": [
-            {
-              "key": "速度",
-              "value": 3
-            }
-          ]
-        },
-        {
-          "id": 11217209,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11217201,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11217210,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.08
-            }
-          ]
         }
       ],
       "image": "/characters/huohuo.webp",
@@ -3644,9 +3344,9 @@
       "element": "火",
       "path": "智识",
       "baseStats": {
-        "hp": 1047,
-        "attack": 756,
-        "defense": 436,
+        "hp": 1047.816,
+        "attack": 756.756,
+        "defense": 436.59,
         "speed": 96,
         "taunt": 75
       },
@@ -3763,9 +3463,9 @@
       "element": "火",
       "path": "智识",
       "baseStats": {
-        "hp": 1125,
-        "attack": 756,
-        "defense": 485,
+        "hp": 1125.432,
+        "attack": 756.756,
+        "defense": 485.1,
         "speed": 98,
         "taunt": 75
       },
@@ -3882,9 +3582,9 @@
       "element": "雷",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1125,
-        "attack": 717,
-        "defense": 509,
+        "hp": 1125.432,
+        "attack": 717.948,
+        "defense": 509.355,
         "speed": 97,
         "taunt": 125
       },
@@ -4001,8 +3701,8 @@
       "element": "火",
       "path": "丰饶",
       "baseStats": {
-        "hp": 1305,
-        "attack": 529,
+        "hp": 1305.36,
+        "attack": 529.2,
         "defense": 441,
         "speed": 98,
         "taunt": 100
@@ -4120,9 +3820,9 @@
       "element": "火",
       "path": "虚无",
       "baseStats": {
-        "hp": 1358,
-        "attack": 601,
-        "defense": 509,
+        "hp": 1358.28,
+        "attack": 601.524,
+        "defense": 509.355,
         "speed": 98,
         "taunt": 100
       },
@@ -4239,9 +3939,9 @@
       "element": "冰",
       "path": "存护",
       "baseStats": {
-        "hp": 1397,
-        "attack": 543,
-        "defense": 654,
+        "hp": 1397.088,
+        "attack": 543.312,
+        "defense": 654.885,
         "speed": 92,
         "taunt": 150
       },
@@ -4358,9 +4058,9 @@
       "element": "雷",
       "path": "智识",
       "baseStats": {
-        "hp": 1164,
-        "attack": 698,
-        "defense": 485,
+        "hp": 1164.24,
+        "attack": 698.544,
+        "defense": 485.1,
         "speed": 99,
         "taunt": 75
       },
@@ -4477,9 +4177,9 @@
       "element": "冰",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1435,
-        "attack": 679,
-        "defense": 485,
+        "hp": 1435.896,
+        "attack": 679.14,
+        "defense": 485.1,
         "speed": 96,
         "taunt": 125
       },
@@ -4583,106 +4283,6 @@
               "value": 0.053
             }
           ]
-        },
-        {
-          "id": 11212202,
-          "name": "速度强化",
-          "stats": [
-            {
-              "key": "速度",
-              "value": 2
-            }
-          ]
-        },
-        {
-          "id": 11212203,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.053
-            }
-          ]
-        },
-        {
-          "id": 11212204,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11212205,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11212206,
-          "name": "速度强化",
-          "stats": [
-            {
-              "key": "速度",
-              "value": 3
-            }
-          ]
-        },
-        {
-          "id": 11212207,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11212208,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11212209,
-          "name": "速度强化",
-          "stats": [
-            {
-              "key": "速度",
-              "value": 4
-            }
-          ]
-        },
-        {
-          "id": 11212210,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.107
-            }
-          ]
-        },
-        {
-          "id": 11212201,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.053
-            }
-          ]
         }
       ],
       "image": "/characters/jingliu.webp",
@@ -4696,9 +4296,9 @@
       "element": "雷",
       "path": "虚无",
       "baseStats": {
-        "hp": 1086,
-        "attack": 679,
-        "defense": 485,
+        "hp": 1086.624,
+        "attack": 679.14,
+        "defense": 485.1,
         "speed": 100,
         "taunt": 100
       },
@@ -4802,106 +4402,6 @@
               "value": 0.08
             }
           ]
-        },
-        {
-          "id": 11005202,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11005203,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11005204,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11005205,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11005206,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11005207,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11005208,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11005209,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11005201,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11005210,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.08
-            }
-          ]
         }
       ],
       "image": "/characters/kafka.webp",
@@ -4915,9 +4415,9 @@
       "element": "物理",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1203,
-        "attack": 620,
-        "defense": 460,
+        "hp": 1203.048,
+        "attack": 620.928,
+        "defense": 460.845,
         "speed": 100,
         "taunt": 125
       },
@@ -5034,9 +4534,9 @@
       "element": "物理",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1203,
-        "attack": 620,
-        "defense": 460,
+        "hp": 1203.048,
+        "attack": 620.928,
+        "defense": 460.845,
         "speed": 100,
         "taunt": 125
       },
@@ -5153,9 +4653,9 @@
       "element": "火",
       "path": "存护",
       "baseStats": {
-        "hp": 1241,
-        "attack": 601,
-        "defense": 606,
+        "hp": 1241.856,
+        "attack": 601.524,
+        "defense": 606.375,
         "speed": 95,
         "taunt": 150
       },
@@ -5272,9 +4772,9 @@
       "element": "火",
       "path": "存护",
       "baseStats": {
-        "hp": 1241,
-        "attack": 601,
-        "defense": 606,
+        "hp": 1241.856,
+        "attack": 601.524,
+        "defense": 606.375,
         "speed": 95,
         "taunt": 150
       },
@@ -5391,9 +4891,9 @@
       "element": "虚数",
       "path": "同谐",
       "baseStats": {
-        "hp": 1086,
-        "attack": 446,
-        "defense": 679,
+        "hp": 1086.624,
+        "attack": 446.292,
+        "defense": 679.14,
         "speed": 105,
         "taunt": 100
       },
@@ -5510,9 +5010,9 @@
       "element": "虚数",
       "path": "同谐",
       "baseStats": {
-        "hp": 1086,
-        "attack": 446,
-        "defense": 679,
+        "hp": 1086.624,
+        "attack": 446.292,
+        "defense": 679.14,
         "speed": 105,
         "taunt": 100
       },
@@ -5629,9 +5129,9 @@
       "element": "冰",
       "path": "记忆",
       "baseStats": {
-        "hp": 1047,
-        "attack": 543,
-        "defense": 630,
+        "hp": 1047.816,
+        "attack": 543.312,
+        "defense": 630.63,
         "speed": 103,
         "taunt": 100
       },
@@ -5748,9 +5248,9 @@
       "element": "冰",
       "path": "记忆",
       "baseStats": {
-        "hp": 1047,
-        "attack": 543,
-        "defense": 630,
+        "hp": 1047.816,
+        "attack": 543.312,
+        "defense": 630.63,
         "speed": 103,
         "taunt": 100
       },
@@ -5867,9 +5367,9 @@
       "element": "雷",
       "path": "欢愉",
       "baseStats": {
-        "hp": 1086,
-        "attack": 465,
-        "defense": 630,
+        "hp": 1086.624,
+        "attack": 465.696,
+        "defense": 630.63,
         "speed": 106,
         "taunt": 100
       },
@@ -5986,9 +5486,9 @@
       "element": "雷",
       "path": "欢愉",
       "baseStats": {
-        "hp": 1086,
-        "attack": 465,
-        "defense": 630,
+        "hp": 1086.624,
+        "attack": 465.696,
+        "defense": 630.63,
         "speed": 106,
         "taunt": 100
       },
@@ -6105,9 +5605,9 @@
       "element": "物理",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1241,
-        "attack": 737,
-        "defense": 485,
+        "hp": 1241.856,
+        "attack": 737.352,
+        "defense": 485.1,
         "speed": 90,
         "taunt": 125
       },
@@ -6224,9 +5724,9 @@
       "element": "风",
       "path": "同谐",
       "baseStats": {
-        "hp": 1358,
-        "attack": 620,
-        "defense": 485,
+        "hp": 1358.28,
+        "attack": 620.928,
+        "defense": 485.1,
         "speed": 99,
         "taunt": 100
       },
@@ -6343,9 +5843,9 @@
       "element": "火",
       "path": "丰饶",
       "baseStats": {
-        "hp": 1358,
-        "attack": 679,
-        "defense": 436,
+        "hp": 1358.28,
+        "attack": 679.14,
+        "defense": 436.59,
         "speed": 98,
         "taunt": 100
       },
@@ -6462,9 +5962,9 @@
       "element": "量子",
       "path": "丰饶",
       "baseStats": {
-        "hp": 1058,
-        "attack": 493,
-        "defense": 551,
+        "hp": 1058.4,
+        "attack": 493.92,
+        "defense": 551.25,
         "speed": 100,
         "taunt": 100
       },
@@ -6581,9 +6081,9 @@
       "element": "火",
       "path": "毁灭",
       "baseStats": {
-        "hp": 814,
-        "attack": 523,
-        "defense": 776,
+        "hp": 814.968,
+        "attack": 523.908,
+        "defense": 776.16,
         "speed": 104,
         "taunt": 125
       },
@@ -6687,106 +6187,6 @@
               "value": 0.053
             }
           ]
-        },
-        {
-          "id": 11310202,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11310203,
-          "name": "击破强化",
-          "stats": [
-            {
-              "key": "击破特攻",
-              "value": 0.053
-            }
-          ]
-        },
-        {
-          "id": 11310204,
-          "name": "速度强化",
-          "stats": [
-            {
-              "key": "速度",
-              "value": 2
-            }
-          ]
-        },
-        {
-          "id": 11310205,
-          "name": "击破强化",
-          "stats": [
-            {
-              "key": "击破特攻",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11310206,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11310207,
-          "name": "击破强化",
-          "stats": [
-            {
-              "key": "击破特攻",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11310208,
-          "name": "速度强化",
-          "stats": [
-            {
-              "key": "速度",
-              "value": 3
-            }
-          ]
-        },
-        {
-          "id": 11310209,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11310210,
-          "name": "击破强化",
-          "stats": [
-            {
-              "key": "击破特攻",
-              "value": 0.107
-            }
-          ]
-        },
-        {
-          "id": 11310201,
-          "name": "击破强化",
-          "stats": [
-            {
-              "key": "击破特攻",
-              "value": 0.053
-            }
-          ]
         }
       ],
       "image": "/characters/sam.webp",
@@ -6800,9 +6200,9 @@
       "element": "物理",
       "path": "虚无",
       "baseStats": {
-        "hp": 917,
-        "attack": 582,
-        "defense": 485,
+        "hp": 917.28,
+        "attack": 582.12,
+        "defense": 485.1,
         "speed": 103,
         "taunt": 100
       },
@@ -6919,9 +6319,9 @@
       "element": "虚数",
       "path": "智识",
       "baseStats": {
-        "hp": 1086,
-        "attack": 717,
-        "defense": 460,
+        "hp": 1086.624,
+        "attack": 717.948,
+        "defense": 460.845,
         "speed": 96,
         "taunt": 75
       },
@@ -7038,9 +6438,9 @@
       "element": "虚数",
       "path": "丰饶",
       "baseStats": {
-        "hp": 1280,
-        "attack": 756,
-        "defense": 363,
+        "hp": 1280.664,
+        "attack": 756.756,
+        "defense": 363.825,
         "speed": 101,
         "taunt": 100
       },
@@ -7157,9 +6557,9 @@
       "element": "冰",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1270,
-        "attack": 599,
-        "defense": 396,
+        "hp": 1270.08,
+        "attack": 599.76,
+        "defense": 396.9,
         "speed": 96,
         "taunt": 125
       },
@@ -7276,9 +6676,9 @@
       "element": "雷",
       "path": "巡猎",
       "baseStats": {
-        "hp": 811,
-        "attack": 599,
-        "defense": 352,
+        "hp": 811.44,
+        "attack": 599.76,
+        "defense": 352.8,
         "speed": 111,
         "taunt": 75
       },
@@ -7395,9 +6795,9 @@
       "element": "风",
       "path": "智识",
       "baseStats": {
-        "hp": 970,
-        "attack": 756,
-        "defense": 557,
+        "hp": 970.2,
+        "attack": 756.756,
+        "defense": 557.865,
         "speed": 97,
         "taunt": 75
       },
@@ -7514,9 +6914,9 @@
       "element": "物理",
       "path": "丰饶",
       "baseStats": {
-        "hp": 1164,
-        "attack": 476,
-        "defense": 507,
+        "hp": 1164.24,
+        "attack": 476.28,
+        "defense": 507.15,
         "speed": 98,
         "taunt": 100
       },
@@ -7633,9 +7033,9 @@
       "element": "冰",
       "path": "虚无",
       "baseStats": {
-        "hp": 987,
-        "attack": 546,
-        "defense": 463,
+        "hp": 987.84,
+        "attack": 546.84,
+        "defense": 463.05,
         "speed": 105,
         "taunt": 100
       },
@@ -7752,9 +7152,9 @@
       "element": "火",
       "path": "虚无",
       "baseStats": {
-        "hp": 1358,
-        "attack": 543,
-        "defense": 485,
+        "hp": 1358.28,
+        "attack": 543.312,
+        "defense": 485.1,
         "speed": 107,
         "taunt": 100
       },
@@ -7871,8 +7271,8 @@
       "element": "量子",
       "path": "智识",
       "baseStats": {
-        "hp": 1023,
-        "attack": 652,
+        "hp": 1023.12,
+        "attack": 652.68,
         "defense": 441,
         "speed": 98,
         "taunt": 75
@@ -7990,9 +7390,9 @@
       "element": "风",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1358,
-        "attack": 543,
-        "defense": 485,
+        "hp": 1358.28,
+        "attack": 543.312,
+        "defense": 485.1,
         "speed": 97,
         "taunt": 125
       },
@@ -8096,106 +7496,6 @@
               "value": 0.04
             }
           ]
-        },
-        {
-          "id": 11205202,
-          "name": "暴击率强化",
-          "stats": [
-            {
-              "key": "暴击率",
-              "value": 0.026999999
-            }
-          ]
-        },
-        {
-          "id": 11205203,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11205204,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11205205,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11205206,
-          "name": "暴击率强化",
-          "stats": [
-            {
-              "key": "暴击率",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11205207,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11205208,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11205209,
-          "name": "暴击率强化",
-          "stats": [
-            {
-              "key": "暴击率",
-              "value": 0.053
-            }
-          ]
-        },
-        {
-          "id": 11205210,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11205201,
-          "name": "生命强化",
-          "stats": [
-            {
-              "key": "生命值",
-              "value": 0.04
-            }
-          ]
         }
       ],
       "image": "/characters/blade.webp",
@@ -8209,9 +7509,9 @@
       "element": "冰",
       "path": "同谐",
       "baseStats": {
-        "hp": 1086,
-        "attack": 659,
-        "defense": 485,
+        "hp": 1086.624,
+        "attack": 659.736,
+        "defense": 485.1,
         "speed": 104,
         "taunt": 100
       },
@@ -8328,9 +7628,9 @@
       "element": "量子",
       "path": "虚无",
       "baseStats": {
-        "hp": 931,
-        "attack": 640,
-        "defense": 509,
+        "hp": 931.392,
+        "attack": 640.332,
+        "defense": 509.355,
         "speed": 106,
         "taunt": 100
       },
@@ -8447,8 +7747,8 @@
       "element": "虚数",
       "path": "巡猎",
       "baseStats": {
-        "hp": 1058,
-        "attack": 564,
+        "hp": 1058.4,
+        "attack": 564.48,
         "defense": 441,
         "speed": 102,
         "taunt": 75
@@ -8566,9 +7866,9 @@
       "element": "冰",
       "path": "存护",
       "baseStats": {
-        "hp": 1058,
-        "attack": 511,
-        "defense": 573,
+        "hp": 1058.4,
+        "attack": 511.56,
+        "defense": 573.3,
         "speed": 101,
         "taunt": 150
       },
@@ -8685,9 +7985,9 @@
       "element": "风",
       "path": "虚无",
       "baseStats": {
-        "hp": 1023,
-        "attack": 617,
-        "defense": 396,
+        "hp": 1023.12,
+        "attack": 617.4,
+        "defense": 396.9,
         "speed": 102,
         "taunt": 100
       },
@@ -8804,9 +8104,9 @@
       "element": "虚数",
       "path": "存护",
       "baseStats": {
-        "hp": 1203,
-        "attack": 446,
-        "defense": 654,
+        "hp": 1203.048,
+        "attack": 446.292,
+        "defense": 654.885,
         "speed": 106,
         "taunt": 150
       },
@@ -8923,9 +8223,9 @@
       "element": "物理",
       "path": "巡猎",
       "baseStats": {
-        "hp": 917,
-        "attack": 564,
-        "defense": 418,
+        "hp": 917.28,
+        "attack": 564.48,
+        "defense": 418.95,
         "speed": 107,
         "taunt": 75
       },
@@ -9042,9 +8342,9 @@
       "element": "量子",
       "path": "同谐",
       "baseStats": {
-        "hp": 1047,
-        "attack": 523,
-        "defense": 727,
+        "hp": 1047.816,
+        "attack": 523.908,
+        "defense": 727.65,
         "speed": 96,
         "taunt": 100
       },
@@ -9161,9 +8461,9 @@
       "element": "雷",
       "path": "同谐",
       "baseStats": {
-        "hp": 846,
-        "attack": 529,
-        "defense": 396,
+        "hp": 846.72,
+        "attack": 529.2,
+        "defense": 396.9,
         "speed": 112,
         "taunt": 100
       },
@@ -9280,9 +8580,9 @@
       "element": "火",
       "path": "巡猎",
       "baseStats": {
-        "hp": 931,
-        "attack": 620,
-        "defense": 412,
+        "hp": 931.392,
+        "attack": 620.928,
+        "defense": 412.335,
         "speed": 110,
         "taunt": 75
       },
@@ -9399,9 +8699,9 @@
       "element": "虚数",
       "path": "虚无",
       "baseStats": {
-        "hp": 1125,
-        "attack": 620,
-        "defense": 509,
+        "hp": 1125.432,
+        "attack": 620.928,
+        "defense": 509.355,
         "speed": 102,
         "taunt": 100
       },
@@ -9505,106 +8805,6 @@
               "value": 0.08
             }
           ]
-        },
-        {
-          "id": 11004202,
-          "name": "伤害强化•虚数",
-          "stats": [
-            {
-              "key": "虚数 属性伤害提高",
-              "value": 0.032
-            }
-          ]
-        },
-        {
-          "id": 11004203,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11004204,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11004205,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11004206,
-          "name": "伤害强化•虚数",
-          "stats": [
-            {
-              "key": "虚数 属性伤害提高",
-              "value": 0.048
-            }
-          ]
-        },
-        {
-          "id": 11004207,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11004208,
-          "name": "效果抵抗强化",
-          "stats": [
-            {
-              "key": "效果抵抗",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11004209,
-          "name": "伤害强化•虚数",
-          "stats": [
-            {
-              "key": "虚数 属性伤害提高",
-              "value": 0.064
-            }
-          ]
-        },
-        {
-          "id": 11004201,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11004210,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.08
-            }
-          ]
         }
       ],
       "image": "/characters/welt.webp",
@@ -9618,9 +8818,9 @@
       "element": "虚数",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1552,
-        "attack": 426,
-        "defense": 194,
+        "hp": 1552.32,
+        "attack": 426.888,
+        "defense": 194.04,
         "speed": 95,
         "taunt": 125
       },
@@ -9737,9 +8937,9 @@
       "element": "火",
       "path": "虚无",
       "baseStats": {
-        "hp": 1125,
-        "attack": 582,
-        "defense": 557,
+        "hp": 1125.432,
+        "attack": 582.12,
+        "defense": 557.865,
         "speed": 102,
         "taunt": 100
       },
@@ -9856,9 +9056,9 @@
       "element": "量子",
       "path": "巡猎",
       "baseStats": {
-        "hp": 931,
-        "attack": 640,
-        "defense": 363,
+        "hp": 931.392,
+        "attack": 640.332,
+        "defense": 363.825,
         "speed": 115,
         "taunt": 75
       },
@@ -9962,106 +9162,6 @@
               "value": 0.06
             }
           ]
-        },
-        {
-          "id": 11102202,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.053
-            }
-          ]
-        },
-        {
-          "id": 11102203,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11102205,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11102206,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11102208,
-          "name": "防御强化",
-          "stats": [
-            {
-              "key": "防御力",
-              "value": 0.075
-            }
-          ]
-        },
-        {
-          "id": 11102209,
-          "name": "暴击伤害强化",
-          "stats": [
-            {
-              "key": "暴击伤害",
-              "value": 0.107
-            }
-          ]
-        },
-        {
-          "id": 11102210,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11102201,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11102204,
-          "name": "防御强化",
-          "stats": [
-            {
-              "key": "防御力",
-              "value": 0.05
-            }
-          ]
-        },
-        {
-          "id": 11102207,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
         }
       ],
       "image": "/characters/seele.webp",
@@ -10075,9 +9175,9 @@
       "element": "雷",
       "path": "智识",
       "baseStats": {
-        "hp": 917,
-        "attack": 652,
-        "defense": 374,
+        "hp": 917.28,
+        "attack": 652.68,
+        "defense": 374.85,
         "speed": 104,
         "taunt": 75
       },
@@ -10194,9 +9294,9 @@
       "element": "冰",
       "path": "记忆",
       "baseStats": {
-        "hp": 1397,
-        "attack": 446,
-        "defense": 582,
+        "hp": 1397.088,
+        "attack": 446.292,
+        "defense": 582.12,
         "speed": 101,
         "taunt": 100
       },
@@ -10313,9 +9413,9 @@
       "element": "量子",
       "path": "记忆",
       "baseStats": {
-        "hp": 1629,
-        "attack": 523,
-        "defense": 485,
+        "hp": 1629.936,
+        "attack": 523.908,
+        "defense": 485.1,
         "speed": 95,
         "taunt": 100
       },
@@ -10432,9 +9532,9 @@
       "element": "虚数",
       "path": "同谐",
       "baseStats": {
-        "hp": 1241,
-        "attack": 640,
-        "defense": 533,
+        "hp": 1241.856,
+        "attack": 640.332,
+        "defense": 533.61,
         "speed": 96,
         "taunt": 100
       },
@@ -10551,9 +9651,9 @@
       "element": "量子",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1058,
-        "attack": 599,
-        "defense": 396,
+        "hp": 1058.4,
+        "attack": 599.76,
+        "defense": 396.9,
         "speed": 103,
         "taunt": 125
       },
@@ -10670,9 +9770,9 @@
       "element": "冰",
       "path": "巡猎",
       "baseStats": {
-        "hp": 892,
-        "attack": 679,
-        "defense": 412,
+        "hp": 892.584,
+        "attack": 679.14,
+        "defense": 412.335,
         "speed": 109,
         "taunt": 75
       },
@@ -10789,9 +9889,9 @@
       "element": "物理",
       "path": "欢愉",
       "baseStats": {
-        "hp": 1241,
-        "attack": 465,
-        "defense": 654,
+        "hp": 1241.856,
+        "attack": 465.696,
+        "defense": 654.885,
         "speed": 101,
         "taunt": 100
       },
@@ -10908,9 +10008,9 @@
       "element": "量子",
       "path": "虚无",
       "baseStats": {
-        "hp": 1047,
-        "attack": 640,
-        "defense": 460,
+        "hp": 1047.816,
+        "attack": 640.332,
+        "defense": 460.845,
         "speed": 107,
         "taunt": 100
       },
@@ -11014,106 +10114,6 @@
               "value": 0.08
             }
           ]
-        },
-        {
-          "id": 11006202,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11006203,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11006204,
-          "name": "伤害强化•量子",
-          "stats": [
-            {
-              "key": "量子 属性伤害提高",
-              "value": 0.032
-            }
-          ]
-        },
-        {
-          "id": 11006205,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11006206,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11006207,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.06
-            }
-          ]
-        },
-        {
-          "id": 11006208,
-          "name": "伤害强化•量子",
-          "stats": [
-            {
-              "key": "量子 属性伤害提高",
-              "value": 0.048
-            }
-          ]
-        },
-        {
-          "id": 11006209,
-          "name": "效果命中强化",
-          "stats": [
-            {
-              "key": "效果命中",
-              "value": 0.08
-            }
-          ]
-        },
-        {
-          "id": 11006201,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.04
-            }
-          ]
-        },
-        {
-          "id": 11006210,
-          "name": "攻击强化",
-          "stats": [
-            {
-              "key": "攻击力",
-              "value": 0.08
-            }
-          ]
         }
       ],
       "image": "/characters/silverwolf.webp",
@@ -11127,9 +10127,9 @@
       "element": "虚数",
       "path": "欢愉",
       "baseStats": {
-        "hp": 1047,
-        "attack": 388,
-        "defense": 654,
+        "hp": 1047.816,
+        "attack": 388.08,
+        "defense": 654.885,
         "speed": 110,
         "taunt": 100
       },
@@ -11246,9 +10246,9 @@
       "element": "物理",
       "path": "智识",
       "baseStats": {
-        "hp": 1047,
-        "attack": 737,
-        "defense": 363,
+        "hp": 1047.816,
+        "attack": 737.352,
+        "defense": 363.825,
         "speed": 103,
         "taunt": 75
       },
@@ -11365,9 +10365,9 @@
       "element": "虚数",
       "path": "同谐",
       "baseStats": {
-        "hp": 917,
-        "attack": 599,
-        "defense": 374,
+        "hp": 917.28,
+        "attack": 599.76,
+        "defense": 374.85,
         "speed": 107,
         "taunt": 100
       },
@@ -11484,9 +10484,9 @@
       "element": "量子",
       "path": "智识",
       "baseStats": {
-        "hp": 1047,
-        "attack": 698,
-        "defense": 460,
+        "hp": 1047.816,
+        "attack": 698.544,
+        "defense": 460.845,
         "speed": 102,
         "taunt": 75
       },
@@ -11603,9 +10603,9 @@
       "element": "物理",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1358,
-        "attack": 679,
-        "defense": 460,
+        "hp": 1358.28,
+        "attack": 679.14,
+        "defense": 460.845,
         "speed": 94,
         "taunt": 125
       },
@@ -11722,9 +10722,9 @@
       "element": "冰",
       "path": "记忆",
       "baseStats": {
-        "hp": 1319,
-        "attack": 543,
-        "defense": 582,
+        "hp": 1319.472,
+        "attack": 543.312,
+        "defense": 582.12,
         "speed": 99,
         "taunt": 100
       },
@@ -11841,9 +10841,9 @@
       "element": "虚数",
       "path": "巡猎",
       "baseStats": {
-        "hp": 1047,
-        "attack": 776,
-        "defense": 460,
+        "hp": 1047.816,
+        "attack": 776.16,
+        "defense": 460.845,
         "speed": 103,
         "taunt": 75
       },
@@ -11960,9 +10960,9 @@
       "element": "物理",
       "path": "同谐",
       "baseStats": {
-        "hp": 1280,
-        "attack": 640,
-        "defense": 485,
+        "hp": 1280.664,
+        "attack": 640.332,
+        "defense": 485.1,
         "speed": 102,
         "taunt": 100
       },
@@ -12079,9 +11079,9 @@
       "element": "量子",
       "path": "巡猎",
       "baseStats": {
-        "hp": 1164,
-        "attack": 620,
-        "defense": 485,
+        "hp": 1164.24,
+        "attack": 620.928,
+        "defense": 485.1,
         "speed": 105,
         "taunt": 75
       },
@@ -12198,9 +11198,9 @@
       "element": "风",
       "path": "毁灭",
       "baseStats": {
-        "hp": 1241,
-        "attack": 601,
-        "defense": 654,
+        "hp": 1241.856,
+        "attack": 601.524,
+        "defense": 654.885,
         "speed": 101,
         "taunt": 125
       },

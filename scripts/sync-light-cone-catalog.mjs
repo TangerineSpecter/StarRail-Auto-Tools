@@ -101,7 +101,7 @@ function level80BaseStats(levelData) {
     if (!Number.isFinite(base) || !Number.isFinite(growth)) {
       throw new Error(`80 级属性字段无效：${baseKey}/${growthKey}`);
     }
-    return Math.floor(base + growth * 79);
+    return Math.round((base + growth * 79) * 1_000_000) / 1_000_000;
   };
 
   return {
