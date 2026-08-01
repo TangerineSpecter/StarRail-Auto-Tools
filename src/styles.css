@@ -4794,8 +4794,8 @@ td {
   width: min(600px, 56vw);
 }
 .character-detail-card {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 14px;
   padding-top: 18px;
 }
@@ -4807,45 +4807,70 @@ td {
   grid-column: 1 / -1;
 }
 .character-identity {
+  display: grid;
   grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
   gap: 14px;
   padding: 18px;
   border: 1px solid rgba(36, 86, 166, 0.26);
   background: linear-gradient(120deg, #e9f3ff, #f8fbff 70%);
+  border-radius: 8px;
 }
 .path-seal {
   width: 62px;
   height: 62px;
   border-radius: 10px;
   font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.character-detail-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 .character-identity p {
   font-size: 11px;
+  color: var(--blue);
+  margin: 0;
+  margin-bottom: 4px;
 }
 .character-identity h3 {
   font-size: 23px;
-}
-.character-identity small {
-  font-size: 12px;
+  color: var(--ink);
+  margin: 0;
 }
 .character-identity > b {
   padding: 10px 13px;
   border-radius: 6px;
   font-size: 15px;
+  background: rgba(36, 86, 166, 0.8);
+  color: #fff;
 }
 .character-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin: 0;
 }
 .character-metrics div {
   padding: 12px 14px;
   border-radius: 5px;
+  background: #f4f6fa;
+  border: 1px solid rgba(46, 78, 119, 0.08);
+  display: flex;
+  flex-direction: column;
 }
 .character-metrics span {
   font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
 }
 .character-metrics b {
   font-size: 21px;
+  color: var(--ink);
 }
 .character-data-section {
   min-width: 0;
@@ -4857,26 +4882,51 @@ td {
 }
 .character-data-section > header {
   padding-bottom: 9px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 .character-data-section h3 {
   font-size: 15px;
+  color: var(--ink);
+  margin: 0;
+}
+.character-data-section p.eyebrow {
+  margin: 0;
+  margin-bottom: 2px;
 }
 .character-data-section > header small {
   font-size: 12px;
+  color: var(--muted);
 }
 .character-data-section .empty-substats {
   min-height: 70px;
   padding: 20px 0 0;
   font-size: 13px;
 }
-.character-data-list {
-  grid-template-columns: 1fr;
+.character-data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 8px;
 }
-.character-data-list div {
+.character-data-grid div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
 }
-.character-data-list b {
-  font-size: 13px;
+.character-data-grid span {
+  color: var(--ink-soft);
+  text-transform: capitalize;
+}
+.character-data-grid b {
+  font-size: 14px;
+  color: var(--blue);
 }
 .character-detail-card > .relic-detail-footer {
   grid-template-columns: repeat(2, 1fr);

@@ -2497,7 +2497,6 @@ onUnmounted(() => {
             <div>
               <p>{{ pathLabel(detailCharacter.path) }} · PATH</p>
               <h3>{{ detailCharacter.name }}</h3>
-              <small>#{{ detailCharacter.characterId }}</small>
             </div>
             <b>Lv.{{ detailCharacter.level }}</b>
           </div>
@@ -2520,34 +2519,18 @@ onUnmounted(() => {
               </div>
               <small>{{ recordEntries(detailCharacter.skills).length }} 项</small>
             </header>
-            <div v-if="recordEntries(detailCharacter.skills).length" class="character-data-list">
+            <div v-if="recordEntries(detailCharacter.skills).length" class="character-data-grid">
               <div v-for="[key, value] in recordEntries(detailCharacter.skills)" :key="key">
-                <span>{{ key }}</span
-                ><b>{{ value }}</b>
+                <span>{{ key }}</span><b>{{ value }}</b>
               </div>
             </div>
             <p v-else class="empty-substats">未同步技能数据。</p>
           </section>
-          <section class="character-data-section">
-            <header>
-              <div>
-                <p class="eyebrow">TRACE STATUS</p>
-                <h3>行迹数据</h3>
-              </div>
-              <small>{{ recordEntries(detailCharacter.traces).length }} 项</small>
-            </header>
-            <div v-if="recordEntries(detailCharacter.traces).length" class="character-data-list">
-              <div v-for="[key, value] in recordEntries(detailCharacter.traces)" :key="key">
-                <span>{{ key }}</span
-                ><b>{{ value }}</b>
-              </div>
-            </div>
-            <p v-else class="empty-substats">未同步行迹数据。</p>
-          </section>
+          
           <section v-if="detailCharacter.memosprite" class="memosprite-note">
-            <span>忆灵</span
-            ><b>已同步 {{ recordEntries(detailCharacter.memosprite).length }} 项数据</b>
+            <span>忆灵</span><b>已同步 {{ recordEntries(detailCharacter.memosprite).length }} 项数据</b>
           </section>
+          
           <footer class="relic-detail-footer">
             <div>
               <span>更新于</span><b>{{ formatTime(detailCharacter.updatedAt) }}</b>
