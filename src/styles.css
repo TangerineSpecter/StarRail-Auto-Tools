@@ -1229,26 +1229,104 @@ h2 {
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
-.track-inner { width: 92px; height: 92px; border-color: rgba(45, 212, 191, 0.42); animation: orbital-turn 16s linear infinite; }
-.track-middle { width: 184px; height: 72px; border-color: rgba(129, 140, 248, 0.34); animation: orbital-turn 27s linear infinite reverse; }
-.track-outer { width: 290px; height: 148px; border-color: rgba(167, 139, 250, 0.2); border-style: dashed; animation: orbital-turn 42s linear infinite; }
-@keyframes orbital-turn {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+.track-inner {
+  width: 180px;
+  height: 180px;
+  border-color: rgba(45, 212, 191, 0.8);
 }
+.track-middle {
+  width: 280px;
+  height: 120px;
+  border-color: rgba(129, 140, 248, 0.7);
+  transform: translate(-50%, -50%) rotate(-12deg);
+}
+.track-outer {
+  width: 400px;
+  height: 200px;
+  border-color: rgba(167, 139, 250, 0.6);
+  border-style: dashed;
+  transform: translate(-50%, -50%) rotate(15deg);
+}
+
 .satellite {
   position: absolute;
+  top: 50%;
+  left: 50%;
   height: auto;
   border-radius: 50%;
   aspect-ratio: 1;
   box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.72), 0 0 8px currentColor;
 }
-.sat-march7 { top: -5px; left: 50%; width: 10px; transform: translateX(-50%); background: #f9a8d4; color: #ec4899; }
-.sat-danheng { top: -4px; left: 32%; width: 8px; transform: none; background: #5eead4; color: #14b8a6; }
-.sat-himeko { right: 9%; bottom: -4px; left: auto; width: 9px; transform: none; background: #fdba74; color: #f97316; }
-.sat-welt { top: 7%; right: 19%; width: 9px; transform: none; background: #a5b4fc; color: #818cf8; }
-.sat-bronya { bottom: 6%; left: 25%; width: 7px; transform: none; background: #e2e8f0; color: #cbd5e1; }
-.sat-seele { top: 48%; left: -4px; width: 8px; transform: none; background: #d8b4fe; color: #a855f7; }
+
+/* Pure 2D Parametric Translation Animations (Zero Rotation, Zero Scale - 100% Round Balls) */
+@keyframes orbit-anim-180-180 {
+  0%   { transform: translate(calc(-50% + 90px), -50%); }
+  6.25% { transform: translate(calc(-50% + 83.15px), calc(-50% + 34.44px)); }
+  12.5% { transform: translate(calc(-50% + 63.64px), calc(-50% + 63.64px)); }
+  18.75%{ transform: translate(calc(-50% + 34.44px), calc(-50% + 83.15px)); }
+  25%  { transform: translate(-50%, calc(-50% + 90px)); }
+  31.25%{ transform: translate(calc(-50% - 34.44px), calc(-50% + 83.15px)); }
+  37.5% { transform: translate(calc(-50% - 63.64px), calc(-50% + 63.64px)); }
+  43.75%{ transform: translate(calc(-50% - 83.15px), calc(-50% + 34.44px)); }
+  50%  { transform: translate(calc(-50% - 90px), -50%); }
+  56.25%{ transform: translate(calc(-50% - 83.15px), calc(-50% - 34.44px)); }
+  62.5% { transform: translate(calc(-50% - 63.64px), calc(-50% - 63.64px)); }
+  68.75%{ transform: translate(calc(-50% - 34.44px), calc(-50% - 83.15px)); }
+  75%  { transform: translate(-50%, calc(-50% - 90px)); }
+  81.25%{ transform: translate(calc(-50% + 34.44px), calc(-50% - 83.15px)); }
+  87.5% { transform: translate(calc(-50% + 63.64px), calc(-50% - 63.64px)); }
+  93.75%{ transform: translate(calc(-50% + 83.15px), calc(-50% - 34.44px)); }
+  100% { transform: translate(calc(-50% + 90px), -50%); }
+}
+
+@keyframes orbit-anim-280-120 {
+  0%   { transform: translate(calc(-50% + 140px), -50%); }
+  6.25% { transform: translate(calc(-50% + 129.33px), calc(-50% + 22.96px)); }
+  12.5% { transform: translate(calc(-50% + 98.99px), calc(-50% + 42.43px)); }
+  18.75%{ transform: translate(calc(-50% + 53.58px), calc(-50% + 55.43px)); }
+  25%  { transform: translate(-50%, calc(-50% + 60px)); }
+  31.25%{ transform: translate(calc(-50% - 53.58px), calc(-50% + 55.43px)); }
+  37.5% { transform: translate(calc(-50% - 98.99px), calc(-50% + 42.43px)); }
+  43.75%{ transform: translate(calc(-50% - 129.33px), calc(-50% + 22.96px)); }
+  50%  { transform: translate(calc(-50% - 140px), -50%); }
+  56.25%{ transform: translate(calc(-50% - 129.33px), calc(-50% - 22.96px)); }
+  62.5% { transform: translate(calc(-50% - 98.99px), calc(-50% - 42.43px)); }
+  68.75%{ transform: translate(calc(-50% - 53.58px), calc(-50% - 55.43px)); }
+  75%  { transform: translate(-50%, calc(-50% - 60px)); }
+  81.25%{ transform: translate(calc(-50% + 53.58px), calc(-50% - 55.43px)); }
+  87.5% { transform: translate(calc(-50% + 98.99px), calc(-50% - 42.43px)); }
+  93.75%{ transform: translate(calc(-50% + 129.33px), calc(-50% - 22.96px)); }
+  100% { transform: translate(calc(-50% + 140px), -50%); }
+}
+
+@keyframes orbit-anim-400-200 {
+  0%   { transform: translate(calc(-50% + 200px), -50%); }
+  6.25% { transform: translate(calc(-50% + 184.78px), calc(-50% + 38.27px)); }
+  12.5% { transform: translate(calc(-50% + 141.42px), calc(-50% + 70.71px)); }
+  18.75%{ transform: translate(calc(-50% + 76.54px), calc(-50% + 92.39px)); }
+  25%  { transform: translate(-50%, calc(-50% + 100px)); }
+  31.25%{ transform: translate(calc(-50% - 76.54px), calc(-50% + 92.39px)); }
+  37.5% { transform: translate(calc(-50% - 141.42px), calc(-50% + 70.71px)); }
+  43.75%{ transform: translate(calc(-50% - 184.78px), calc(-50% + 38.27px)); }
+  50%  { transform: translate(calc(-50% - 200px), -50%); }
+  56.25%{ transform: translate(calc(-50% - 184.78px), calc(-50% - 38.27px)); }
+  62.5% { transform: translate(calc(-50% - 141.42px), calc(-50% - 70.71px)); }
+  68.75%{ transform: translate(calc(-50% - 76.54px), calc(-50% - 92.39px)); }
+  75%  { transform: translate(-50%, calc(-50% - 100px)); }
+  81.25%{ transform: translate(calc(-50% + 76.54px), calc(-50% - 92.39px)); }
+  87.5% { transform: translate(calc(-50% + 141.42px), calc(-50% - 70.71px)); }
+  93.75%{ transform: translate(calc(-50% + 184.78px), calc(-50% - 38.27px)); }
+  100% { transform: translate(calc(-50% + 200px), -50%); }
+}
+
+.sat-march7 { width: 10px; background: #f9a8d4; color: #ec4899; animation: orbit-anim-180-180 14s linear infinite; }
+
+.sat-danheng { width: 8px; background: #5eead4; color: #14b8a6; animation: orbit-anim-280-120 22s linear infinite; }
+.sat-himeko { width: 9px; background: #fdba74; color: #f97316; animation: orbit-anim-280-120 22s linear infinite -11s; }
+
+.sat-welt { width: 9px; background: #a5b4fc; color: #818cf8; animation: orbit-anim-400-200 32s linear infinite; }
+.sat-bronya { width: 7px; background: #e2e8f0; color: #cbd5e1; animation: orbit-anim-400-200 32s linear infinite -10.66s; }
+.sat-seele { width: 8px; background: #d8b4fe; color: #a855f7; animation: orbit-anim-400-200 32s linear infinite -21.33s; }
 
 .core-ring { display: none; }
 .core-glow {
@@ -1584,9 +1662,9 @@ h2 {
 }
 .meteor { display: none; }
 .orbit-track { border-color: rgba(53, 171, 161, 0.44); }
-.track-inner { border-color: rgba(248, 179, 105, 0.58); }
-.track-middle { border-color: rgba(52, 172, 178, 0.5); }
-.track-outer { border-color: rgba(105, 169, 143, 0.36); }
+.track-inner { border-color: rgba(248, 179, 105, 0.8); }
+.track-middle { border-color: rgba(52, 172, 178, 0.7); }
+.track-outer { border-color: rgba(105, 169, 143, 0.6); }
 .satellite {
   box-shadow: 0 2px 5px rgba(69, 112, 105, 0.23), inset -1px -1px 1px rgba(66, 93, 83, 0.22);
 }
@@ -1717,9 +1795,9 @@ h2 {
 }
 .meteor { display: block; }
 .orbit-track { border-color: rgba(129, 140, 248, 0.28); }
-.track-inner { border-color: rgba(45, 212, 191, 0.42); }
-.track-middle { border-color: rgba(129, 140, 248, 0.34); }
-.track-outer { border-color: rgba(167, 139, 250, 0.2); }
+.track-inner { border-color: rgba(45, 212, 191, 0.8); }
+.track-middle { border-color: rgba(129, 140, 248, 0.7); }
+.track-outer { border-color: rgba(167, 139, 250, 0.6); }
 .satellite { box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.72), 0 0 8px currentColor; }
 .sat-march7 { background: #f9a8d4; color: #ec4899; }
 .sat-danheng { background: #5eead4; color: #14b8a6; }
