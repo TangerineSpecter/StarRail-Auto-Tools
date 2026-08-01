@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/equipment",
-    "syncedAt": "2026-07-31T16:40:25.027Z"
+    "syncedAt": "2026-08-01T09:30:26.185Z"
   },
   "lightCones": [
     {
@@ -11,6 +11,11 @@
       "name": "锋镝",
       "rarity": 3,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20000.webp"
     },
     {
@@ -18,6 +23,11 @@
       "name": "物穰",
       "rarity": 3,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 264,
+        "defense": 264
+      },
       "image": "/light-cones/20001.webp"
     },
     {
@@ -25,6 +35,11 @@
       "name": "天倾",
       "rarity": 3,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 846,
+        "attack": 370,
+        "defense": 198
+      },
       "image": "/light-cones/20002.webp"
     },
     {
@@ -32,6 +47,11 @@
       "name": "琥珀",
       "rarity": 3,
       "path": "存护",
+      "baseStats": {
+        "hp": 846,
+        "attack": 264,
+        "defense": 330
+      },
       "image": "/light-cones/20003.webp"
     },
     {
@@ -39,6 +59,11 @@
       "name": "幽邃",
       "rarity": 3,
       "path": "虚无",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20004.webp"
     },
     {
@@ -46,6 +71,11 @@
       "name": "齐颂",
       "rarity": 3,
       "path": "同谐",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20005.webp"
     },
     {
@@ -53,6 +83,11 @@
       "name": "智库",
       "rarity": 3,
       "path": "智识",
+      "baseStats": {
+        "hp": 740,
+        "attack": 370,
+        "defense": 264
+      },
       "image": "/light-cones/20006.webp"
     },
     {
@@ -60,6 +95,11 @@
       "name": "离弦",
       "rarity": 3,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 740,
+        "attack": 370,
+        "defense": 264
+      },
       "image": "/light-cones/20007.webp"
     },
     {
@@ -67,6 +107,11 @@
       "name": "嘉果",
       "rarity": 3,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 317,
+        "defense": 198
+      },
       "image": "/light-cones/20008.webp"
     },
     {
@@ -74,6 +119,11 @@
       "name": "乐圮",
       "rarity": 3,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 846,
+        "attack": 370,
+        "defense": 198
+      },
       "image": "/light-cones/20009.webp"
     },
     {
@@ -81,6 +131,11 @@
       "name": "戍御",
       "rarity": 3,
       "path": "存护",
+      "baseStats": {
+        "hp": 952,
+        "attack": 264,
+        "defense": 264
+      },
       "image": "/light-cones/20010.webp"
     },
     {
@@ -88,6 +143,11 @@
       "name": "渊环",
       "rarity": 3,
       "path": "虚无",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20011.webp"
     },
     {
@@ -95,6 +155,11 @@
       "name": "轮契",
       "rarity": 3,
       "path": "同谐",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20012.webp"
     },
     {
@@ -102,6 +167,11 @@
       "name": "灵钥",
       "rarity": 3,
       "path": "智识",
+      "baseStats": {
+        "hp": 740,
+        "attack": 370,
+        "defense": 264
+      },
       "image": "/light-cones/20013.webp"
     },
     {
@@ -109,6 +179,11 @@
       "name": "相抗",
       "rarity": 3,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 740,
+        "attack": 370,
+        "defense": 264
+      },
       "image": "/light-cones/20014.webp"
     },
     {
@@ -116,6 +191,11 @@
       "name": "蕃息",
       "rarity": 3,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 317,
+        "defense": 198
+      },
       "image": "/light-cones/20015.webp"
     },
     {
@@ -123,6 +203,11 @@
       "name": "俱殁",
       "rarity": 3,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 846,
+        "attack": 370,
+        "defense": 198
+      },
       "image": "/light-cones/20016.webp"
     },
     {
@@ -130,6 +215,11 @@
       "name": "开疆",
       "rarity": 3,
       "path": "存护",
+      "baseStats": {
+        "hp": 952,
+        "attack": 264,
+        "defense": 264
+      },
       "image": "/light-cones/20017.webp"
     },
     {
@@ -137,6 +227,11 @@
       "name": "匿影",
       "rarity": 3,
       "path": "虚无",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20018.webp"
     },
     {
@@ -144,6 +239,11 @@
       "name": "调和",
       "rarity": 3,
       "path": "同谐",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20019.webp"
     },
     {
@@ -151,6 +251,11 @@
       "name": "睿见",
       "rarity": 3,
       "path": "智识",
+      "baseStats": {
+        "hp": 740,
+        "attack": 370,
+        "defense": 264
+      },
       "image": "/light-cones/20020.webp"
     },
     {
@@ -158,6 +263,11 @@
       "name": "焚影",
       "rarity": 3,
       "path": "记忆",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20021.webp"
     },
     {
@@ -165,6 +275,11 @@
       "name": "溯忆",
       "rarity": 3,
       "path": "记忆",
+      "baseStats": {
+        "hp": 635,
+        "attack": 423,
+        "defense": 264
+      },
       "image": "/light-cones/20022.webp"
     },
     {
@@ -172,6 +287,11 @@
       "name": "嗤笑",
       "rarity": 3,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 740,
+        "attack": 370,
+        "defense": 264
+      },
       "image": "/light-cones/20023.webp"
     },
     {
@@ -179,6 +299,11 @@
       "name": "残泪",
       "rarity": 3,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 846,
+        "attack": 317,
+        "defense": 264
+      },
       "image": "/light-cones/20024.webp"
     },
     {
@@ -186,6 +311,11 @@
       "name": "一场术后对话",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 423,
+        "defense": 330
+      },
       "image": "/light-cones/21000.webp"
     },
     {
@@ -193,6 +323,11 @@
       "name": "晚安与睡颜",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21001.webp"
     },
     {
@@ -200,6 +335,11 @@
       "name": "余生的第一天",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 952,
+        "attack": 370,
+        "defense": 463
+      },
       "image": "/light-cones/21002.webp"
     },
     {
@@ -207,6 +347,11 @@
       "name": "唯有沉默",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21003.webp"
     },
     {
@@ -214,6 +359,11 @@
       "name": "记忆中的模样",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21004.webp"
     },
     {
@@ -221,6 +371,11 @@
       "name": "鼹鼠党欢迎你",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 264
+      },
       "image": "/light-cones/21005.webp"
     },
     {
@@ -228,6 +383,11 @@
       "name": "「我」的诞生",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21006.webp"
     },
     {
@@ -235,6 +395,11 @@
       "name": "同一种心情",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21007.webp"
     },
     {
@@ -242,6 +407,11 @@
       "name": "猎物的视线",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21008.webp"
     },
     {
@@ -249,6 +419,11 @@
       "name": "朗道的选择",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21009.webp"
     },
     {
@@ -256,6 +431,11 @@
       "name": "论剑",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21010.webp"
     },
     {
@@ -263,6 +443,11 @@
       "name": "与行星相会",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 423,
+        "defense": 330
+      },
       "image": "/light-cones/21011.webp"
     },
     {
@@ -270,6 +455,11 @@
       "name": "秘密誓心",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 264
+      },
       "image": "/light-cones/21012.webp"
     },
     {
@@ -277,6 +467,11 @@
       "name": "别让世界静下来",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21013.webp"
     },
     {
@@ -284,6 +479,11 @@
       "name": "此时恰好",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21014.webp"
     },
     {
@@ -291,6 +491,11 @@
       "name": "决心如汗珠般闪耀",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21015.webp"
     },
     {
@@ -298,6 +503,11 @@
       "name": "宇宙市场趋势",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 370,
+        "defense": 396
+      },
       "image": "/light-cones/21016.webp"
     },
     {
@@ -305,6 +515,11 @@
       "name": "点个关注吧！",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21017.webp"
     },
     {
@@ -312,6 +527,11 @@
       "name": "舞！舞！舞！",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21018.webp"
     },
     {
@@ -319,6 +539,11 @@
       "name": "在蓝天下",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21019.webp"
     },
     {
@@ -326,6 +551,11 @@
       "name": "天才们的休憩",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21020.webp"
     },
     {
@@ -333,6 +563,11 @@
       "name": "等价交换",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21021.webp"
     },
     {
@@ -340,6 +575,11 @@
       "name": "延长记号",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21022.webp"
     },
     {
@@ -347,6 +587,11 @@
       "name": "我们是地火",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 740,
+        "attack": 476,
+        "defense": 463
+      },
       "image": "/light-cones/21023.webp"
     },
     {
@@ -354,6 +599,11 @@
       "name": "春水初生",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21024.webp"
     },
     {
@@ -361,6 +611,11 @@
       "name": "过往未来",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21025.webp"
     },
     {
@@ -368,6 +623,11 @@
       "name": "汪！散步时间！",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21026.webp"
     },
     {
@@ -375,6 +635,11 @@
       "name": "早餐的仪式感",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21027.webp"
     },
     {
@@ -382,6 +647,11 @@
       "name": "暖夜不会漫长",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 370,
+        "defense": 396
+      },
       "image": "/light-cones/21028.webp"
     },
     {
@@ -389,6 +659,11 @@
       "name": "后会有期",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 846,
+        "attack": 529,
+        "defense": 330
+      },
       "image": "/light-cones/21029.webp"
     },
     {
@@ -396,6 +671,11 @@
       "name": "这就是我啦！",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 846,
+        "attack": 370,
+        "defense": 529
+      },
       "image": "/light-cones/21030.webp"
     },
     {
@@ -403,6 +683,11 @@
       "name": "重返幽冥",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 846,
+        "attack": 529,
+        "defense": 330
+      },
       "image": "/light-cones/21031.webp"
     },
     {
@@ -410,6 +695,11 @@
       "name": "镂月裁云之意",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21032.webp"
     },
     {
@@ -417,6 +707,11 @@
       "name": "无处可逃",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 952,
+        "attack": 529,
+        "defense": 264
+      },
       "image": "/light-cones/21033.webp"
     },
     {
@@ -424,6 +719,11 @@
       "name": "今日亦是和平的一日",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 846,
+        "attack": 529,
+        "defense": 330
+      },
       "image": "/light-cones/21034.webp"
     },
     {
@@ -431,6 +731,11 @@
       "name": "何物为真",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 423,
+        "defense": 330
+      },
       "image": "/light-cones/21035.webp"
     },
     {
@@ -438,6 +743,11 @@
       "name": "美梦小镇大冒险",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21036.webp"
     },
     {
@@ -445,6 +755,11 @@
       "name": "最后的赢家",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21037.webp"
     },
     {
@@ -452,6 +767,11 @@
       "name": "在火的远处",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 264
+      },
       "image": "/light-cones/21038.webp"
     },
     {
@@ -459,6 +779,11 @@
       "name": "织造命运之线",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 952,
+        "attack": 370,
+        "defense": 463
+      },
       "image": "/light-cones/21039.webp"
     },
     {
@@ -466,6 +791,11 @@
       "name": "银河沦陷日",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21040.webp"
     },
     {
@@ -473,6 +803,11 @@
       "name": "好戏开演",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 264
+      },
       "image": "/light-cones/21041.webp"
     },
     {
@@ -480,6 +815,11 @@
       "name": "铭记于心的约定",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21042.webp"
     },
     {
@@ -487,6 +827,11 @@
       "name": "两个人的演唱会",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 952,
+        "attack": 370,
+        "defense": 463
+      },
       "image": "/light-cones/21043.webp"
     },
     {
@@ -494,6 +839,11 @@
       "name": "无边曼舞",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21044.webp"
     },
     {
@@ -501,6 +851,11 @@
       "name": "谐乐静默之后",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21045.webp"
     },
     {
@@ -508,6 +863,11 @@
       "name": "芳华待灼",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21046.webp"
     },
     {
@@ -515,6 +875,11 @@
       "name": "黑夜如影随行",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21047.webp"
     },
     {
@@ -522,6 +887,11 @@
       "name": "梦的蒙太奇",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/21048.webp"
     },
     {
@@ -529,6 +899,11 @@
       "name": "胜利只在朝夕间",
       "rarity": 4,
       "path": "记忆",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21050.webp"
     },
     {
@@ -536,6 +911,11 @@
       "name": "天才们的问候",
       "rarity": 4,
       "path": "记忆",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/21051.webp"
     },
     {
@@ -543,6 +923,11 @@
       "name": "多流汗，少流泪",
       "rarity": 4,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 198
+      },
       "image": "/light-cones/21052.webp"
     },
     {
@@ -550,6 +935,11 @@
       "name": "愿旅途永远坦然",
       "rarity": 4,
       "path": "存护",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 370,
+        "defense": 529
+      },
       "image": "/light-cones/21053.webp"
     },
     {
@@ -557,6 +947,11 @@
       "name": "故事的下一页",
       "rarity": 4,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 370,
+        "defense": 396
+      },
       "image": "/light-cones/21054.webp"
     },
     {
@@ -564,6 +959,11 @@
       "name": "直到明天的明天",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21055.webp"
     },
     {
@@ -571,6 +971,11 @@
       "name": "追逐风的时候",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21056.webp"
     },
     {
@@ -578,6 +983,11 @@
       "name": "花儿不会忘记",
       "rarity": 4,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 330
+      },
       "image": "/light-cones/21057.webp"
     },
     {
@@ -585,6 +995,11 @@
       "name": "一行往日的血",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 330
+      },
       "image": "/light-cones/21058.webp"
     },
     {
@@ -592,6 +1007,11 @@
       "name": "氤氲麦香的梦",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/21060.webp"
     },
     {
@@ -599,6 +1019,11 @@
       "name": "假日浴场大冒险",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 330
+      },
       "image": "/light-cones/21061.webp"
     },
     {
@@ -606,6 +1031,11 @@
       "name": "于那终点再见",
       "rarity": 4,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/21062.webp"
     },
     {
@@ -613,6 +1043,11 @@
       "name": "菇菇嘎嘎历险记",
       "rarity": 4,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/21064.webp"
     },
     {
@@ -620,6 +1055,11 @@
       "name": "今日好手气",
       "rarity": 4,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 952,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/21065.webp"
     },
     {
@@ -627,6 +1067,11 @@
       "name": "新手任务开始前",
       "rarity": 4,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/22000.webp"
     },
     {
@@ -634,6 +1079,11 @@
       "name": "嘿，我在这儿",
       "rarity": 4,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 952,
+        "attack": 423,
+        "defense": 396
+      },
       "image": "/light-cones/22001.webp"
     },
     {
@@ -641,6 +1091,11 @@
       "name": "为了明日的旅途",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/22002.webp"
     },
     {
@@ -648,6 +1103,11 @@
       "name": "忍事录•音律狩猎",
       "rarity": 4,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 264
+      },
       "image": "/light-cones/22003.webp"
     },
     {
@@ -655,6 +1115,11 @@
       "name": "宇宙大生意",
       "rarity": 4,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/22004.webp"
     },
     {
@@ -662,6 +1127,11 @@
       "name": "永远的迷境饭",
       "rarity": 4,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/22005.webp"
     },
     {
@@ -669,6 +1139,11 @@
       "name": "飞向粉色的明天",
       "rarity": 4,
       "path": "记忆",
+      "baseStats": {
+        "hp": 846,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/22006.webp"
     },
     {
@@ -676,6 +1151,11 @@
       "name": "未来，有我们一起",
       "rarity": 4,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 330
+      },
       "image": "/light-cones/22007.webp"
     },
     {
@@ -683,6 +1163,11 @@
       "name": "银河铁道之夜",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 582,
+        "defense": 396
+      },
       "image": "/light-cones/23000.webp"
     },
     {
@@ -690,6 +1175,11 @@
       "name": "于夜色中",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23001.webp"
     },
     {
@@ -697,6 +1187,11 @@
       "name": "无可取代的东西",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 582,
+        "defense": 396
+      },
       "image": "/light-cones/23002.webp"
     },
     {
@@ -704,6 +1199,11 @@
       "name": "但战斗还未结束",
       "rarity": 5,
       "path": "同谐",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 529,
+        "defense": 463
+      },
       "image": "/light-cones/23003.webp"
     },
     {
@@ -711,6 +1211,11 @@
       "name": "以世界之名",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23004.webp"
     },
     {
@@ -718,6 +1223,11 @@
       "name": "制胜的瞬间",
       "rarity": 5,
       "path": "存护",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 476,
+        "defense": 595
+      },
       "image": "/light-cones/23005.webp"
     },
     {
@@ -725,6 +1235,11 @@
       "name": "只需等待",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23006.webp"
     },
     {
@@ -732,6 +1247,11 @@
       "name": "雨一直下",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23007.webp"
     },
     {
@@ -739,6 +1259,11 @@
       "name": "棺的回响",
       "rarity": 5,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 582,
+        "defense": 396
+      },
       "image": "/light-cones/23008.webp"
     },
     {
@@ -746,6 +1271,11 @@
       "name": "到不了的彼岸",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1270,
+        "attack": 582,
+        "defense": 330
+      },
       "image": "/light-cones/23009.webp"
     },
     {
@@ -753,6 +1283,11 @@
       "name": "拂晓之前",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23010.webp"
     },
     {
@@ -760,6 +1295,11 @@
       "name": "她已闭上双眼",
       "rarity": 5,
       "path": "存护",
+      "baseStats": {
+        "hp": 1270,
+        "attack": 423,
+        "defense": 529
+      },
       "image": "/light-cones/23011.webp"
     },
     {
@@ -767,6 +1307,11 @@
       "name": "如泥酣眠",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23012.webp"
     },
     {
@@ -774,6 +1319,11 @@
       "name": "时节不居",
       "rarity": 5,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1270,
+        "attack": 476,
+        "defense": 463
+      },
       "image": "/light-cones/23013.webp"
     },
     {
@@ -781,6 +1331,11 @@
       "name": "此身为剑",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 582,
+        "defense": 396
+      },
       "image": "/light-cones/23014.webp"
     },
     {
@@ -788,6 +1343,11 @@
       "name": "比阳光更明亮的",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 635,
+        "defense": 396
+      },
       "image": "/light-cones/23015.webp"
     },
     {
@@ -795,6 +1355,11 @@
       "name": "烦恼着，幸福着",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23016.webp"
     },
     {
@@ -802,6 +1367,11 @@
       "name": "惊魂夜",
       "rarity": 5,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 476,
+        "defense": 529
+      },
       "image": "/light-cones/23017.webp"
     },
     {
@@ -809,6 +1379,11 @@
       "name": "片刻，留在眼底",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23018.webp"
     },
     {
@@ -816,6 +1391,11 @@
       "name": "镜中故我",
       "rarity": 5,
       "path": "同谐",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 529
+      },
       "image": "/light-cones/23019.webp"
     },
     {
@@ -823,6 +1403,11 @@
       "name": "纯粹思维的洗礼",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23020.webp"
     },
     {
@@ -830,6 +1415,11 @@
       "name": "游戏尘寰",
       "rarity": 5,
       "path": "同谐",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 529,
+        "defense": 463
+      },
       "image": "/light-cones/23021.webp"
     },
     {
@@ -837,6 +1427,11 @@
       "name": "重塑时光之忆",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23022.webp"
     },
     {
@@ -844,6 +1439,11 @@
       "name": "命运从未公平",
       "rarity": 5,
       "path": "存护",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 423,
+        "defense": 661
+      },
       "image": "/light-cones/23023.webp"
     },
     {
@@ -851,6 +1451,11 @@
       "name": "行于流逝的岸",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 635,
+        "defense": 396
+      },
       "image": "/light-cones/23024.webp"
     },
     {
@@ -858,6 +1463,11 @@
       "name": "梦应归于何处",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 476,
+        "defense": 529
+      },
       "image": "/light-cones/23025.webp"
     },
     {
@@ -865,6 +1475,11 @@
       "name": "夜色流光溢彩",
       "rarity": 5,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 635,
+        "defense": 463
+      },
       "image": "/light-cones/23026.webp"
     },
     {
@@ -872,6 +1487,11 @@
       "name": "驶向第二次生命",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23027.webp"
     },
     {
@@ -879,6 +1499,11 @@
       "name": "偏偏希望无价",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23028.webp"
     },
     {
@@ -886,6 +1511,11 @@
       "name": "那无数个春天",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23029.webp"
     },
     {
@@ -893,6 +1523,11 @@
       "name": "落日时起舞",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23030.webp"
     },
     {
@@ -900,6 +1535,11 @@
       "name": "我将，巡征追猎",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 635,
+        "defense": 463
+      },
       "image": "/light-cones/23031.webp"
     },
     {
@@ -907,6 +1547,11 @@
       "name": "唯有香如故",
       "rarity": 5,
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 529
+      },
       "image": "/light-cones/23032.webp"
     },
     {
@@ -914,6 +1559,11 @@
       "name": "忍法帖•缭乱破魔",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23033.webp"
     },
     {
@@ -921,6 +1571,11 @@
       "name": "回到大地的飞行",
       "rarity": 5,
       "path": "同谐",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 476,
+        "defense": 529
+      },
       "image": "/light-cones/23034.webp"
     },
     {
@@ -928,6 +1583,11 @@
       "name": "长路终有归途",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 476,
+        "defense": 661
+      },
       "image": "/light-cones/23035.webp"
     },
     {
@@ -935,6 +1595,11 @@
       "name": "将光阴织成黄金",
       "rarity": 5,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 635,
+        "defense": 396
+      },
       "image": "/light-cones/23036.webp"
     },
     {
@@ -942,6 +1607,11 @@
       "name": "向着不可追问处",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 635,
+        "defense": 463
+      },
       "image": "/light-cones/23037.webp"
     },
     {
@@ -949,6 +1619,11 @@
       "name": "如果时间是一朵花",
       "rarity": 5,
       "path": "同谐",
+      "baseStats": {
+        "hp": 1270,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/23038.webp"
     },
     {
@@ -956,6 +1631,11 @@
       "name": "血火啊，燃烧前路",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1375,
+        "attack": 476,
+        "defense": 396
+      },
       "image": "/light-cones/23039.webp"
     },
     {
@@ -963,6 +1643,11 @@
       "name": "让告别，更美一些",
       "rarity": 5,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1270,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/23040.webp"
     },
     {
@@ -970,6 +1655,11 @@
       "name": "生命当付之一炬",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23041.webp"
     },
     {
@@ -977,6 +1667,11 @@
       "name": "愿虹光永驻天空",
       "rarity": 5,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 476,
+        "defense": 529
+      },
       "image": "/light-cones/23042.webp"
     },
     {
@@ -984,6 +1679,11 @@
       "name": "谎言在风中飘扬",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23043.webp"
     },
     {
@@ -991,6 +1691,11 @@
       "name": "黎明恰如此燃烧",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 952,
+        "attack": 687,
+        "defense": 396
+      },
       "image": "/light-cones/23044.webp"
     },
     {
@@ -998,6 +1703,11 @@
       "name": "没有回报的加冕",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23045.webp"
     },
     {
@@ -1005,6 +1715,11 @@
       "name": "理想燃烧的地狱",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 529
+      },
       "image": "/light-cones/23046.webp"
     },
     {
@@ -1012,6 +1727,11 @@
       "name": "海洋为何而歌",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 952,
+        "attack": 635,
+        "defense": 463
+      },
       "image": "/light-cones/23047.webp"
     },
     {
@@ -1019,6 +1739,11 @@
       "name": "金血铭刻的时代",
       "rarity": 5,
       "path": "同谐",
+      "baseStats": {
+        "hp": 952,
+        "attack": 635,
+        "defense": 463
+      },
       "image": "/light-cones/23048.webp"
     },
     {
@@ -1026,6 +1751,11 @@
       "name": "致长夜的星光",
       "rarity": 5,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 529,
+        "defense": 463
+      },
       "image": "/light-cones/23049.webp"
     },
     {
@@ -1033,6 +1763,11 @@
       "name": "勿忘她的火焰",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 529,
+        "defense": 463
+      },
       "image": "/light-cones/23050.webp"
     },
     {
@@ -1040,6 +1775,11 @@
       "name": "纵然山河万程",
       "rarity": 5,
       "path": "存护",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23051.webp"
     },
     {
@@ -1047,6 +1787,11 @@
       "name": "爱如此刻永恒",
       "rarity": 5,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1270,
+        "attack": 476,
+        "defense": 463
+      },
       "image": "/light-cones/23052.webp"
     },
     {
@@ -1054,6 +1799,11 @@
       "name": "花花世界迷人眼",
       "rarity": 5,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 582,
+        "defense": 463
+      },
       "image": "/light-cones/23053.webp"
     },
     {
@@ -1061,6 +1811,11 @@
       "name": "当她决定看见",
       "rarity": 5,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 529
+      },
       "image": "/light-cones/23054.webp"
     },
     {
@@ -1068,6 +1823,11 @@
       "name": "一场谎言的终幕",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 846,
+        "attack": 635,
+        "defense": 529
+      },
       "image": "/light-cones/23056.webp"
     },
     {
@@ -1075,6 +1835,11 @@
       "name": "欢迎来到银河城",
       "rarity": 5,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 476,
+        "defense": 529
+      },
       "image": "/light-cones/23057.webp"
     },
     {
@@ -1082,6 +1847,11 @@
       "name": "邂逅于下一个花季",
       "rarity": 5,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 952,
+        "attack": 635,
+        "defense": 463
+      },
       "image": "/light-cones/23058.webp"
     },
     {
@@ -1089,6 +1859,11 @@
       "name": "灼尽炼狱的新骸",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1375,
+        "attack": 423,
+        "defense": 463
+      },
       "image": "/light-cones/23059.webp"
     },
     {
@@ -1096,6 +1871,11 @@
       "name": "当一颗星照亮夜空",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 846,
+        "attack": 635,
+        "defense": 529
+      },
       "image": "/light-cones/23060.webp"
     },
     {
@@ -1103,6 +1883,11 @@
       "name": "星火悄然闪耀",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 846,
+        "attack": 635,
+        "defense": 529
+      },
       "image": "/light-cones/23061.webp"
     },
     {
@@ -1110,6 +1895,11 @@
       "name": "所见即我",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 952,
+        "attack": 635,
+        "defense": 463
+      },
       "image": "/light-cones/23062.webp"
     },
     {
@@ -1117,6 +1907,11 @@
       "name": "记一位星神的陨落",
       "rarity": 5,
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/24000.webp"
     },
     {
@@ -1124,6 +1919,11 @@
       "name": "星海巡航",
       "rarity": 5,
       "path": "巡猎",
+      "baseStats": {
+        "hp": 952,
+        "attack": 529,
+        "defense": 463
+      },
       "image": "/light-cones/24001.webp"
     },
     {
@@ -1131,6 +1931,11 @@
       "name": "记忆的质料",
       "rarity": 5,
       "path": "存护",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 423,
+        "defense": 529
+      },
       "image": "/light-cones/24002.webp"
     },
     {
@@ -1138,6 +1943,11 @@
       "name": "孤独的疗愈",
       "rarity": 5,
       "path": "虚无",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/24003.webp"
     },
     {
@@ -1145,6 +1955,11 @@
       "name": "不息的演算",
       "rarity": 5,
       "path": "智识",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/24004.webp"
     },
     {
@@ -1152,6 +1967,11 @@
       "name": "记忆永不落幕",
       "rarity": 5,
       "path": "记忆",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 529,
+        "defense": 396
+      },
       "image": "/light-cones/24005.webp"
     },
     {
@@ -1159,6 +1979,11 @@
       "name": "欢愉满溢祝福",
       "rarity": 5,
       "path": "欢愉",
+      "baseStats": {
+        "hp": 952,
+        "attack": 529,
+        "defense": 463
+      },
       "image": "/light-cones/24006.webp"
     }
   ]

@@ -173,6 +173,9 @@ const lightConeRarities = new Map(
 const lightConePaths = new Map(
   lightConeCatalogue.lightCones.map((lightCone) => [lightCone.id, lightCone.path]),
 );
+const lightConeBaseStats = new Map(
+  lightConeCatalogue.lightCones.map((lightCone) => [lightCone.id, lightCone.baseStats]),
+);
 
 function getDetailRelicImage(detail: RelicDetailData): string | undefined {
   return relicPieceImages.get(`${detail.setId}_${detail.slot}`);
@@ -2690,6 +2693,30 @@ onUnmounted(() => {
               <span>状态</span><b>{{ detailLightCone.locked ? "已锁定" : "正常" }}</b>
             </div>
           </div>
+
+          <section
+            v-if="lightConeBaseStats.get(detailLightCone.templateId)"
+            class="character-data-section"
+          >
+            <header>
+              <div>
+                <p class="eyebrow">LEVEL 80 · MAX ASCENSION</p>
+                <h3>基础属性</h3>
+              </div>
+              <small>满级</small>
+            </header>
+            <div class="lightcone-base-stat-grid">
+              <div>
+                <span>生命值</span><b>{{ lightConeBaseStats.get(detailLightCone.templateId)!.hp }}</b>
+              </div>
+              <div>
+                <span>攻击力</span><b>{{ lightConeBaseStats.get(detailLightCone.templateId)!.attack }}</b>
+              </div>
+              <div>
+                <span>防御力</span><b>{{ lightConeBaseStats.get(detailLightCone.templateId)!.defense }}</b>
+              </div>
+            </div>
+          </section>
           
           <footer class="relic-detail-footer">
             <div>

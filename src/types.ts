@@ -234,6 +234,12 @@ export interface LightConeCatalogueEntry {
   name: string;
   rarity: number;
   path: string;
+  /** 光锥在 80 级、满突破时的基础面板。 */
+  baseStats?: {
+    hp: number;
+    attack: number;
+    defense: number;
+  };
   image: string | null;
 }
 export interface LightConeCatalogue {

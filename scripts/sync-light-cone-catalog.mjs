@@ -91,6 +91,39 @@ function parsePageConfig(html) {
   }
 }
 
+function level80BaseStats(levelData) {
+  const level80 = levelData?.find((entry) => entry.maxLevel === 80);
+  if (!level80) throw new Error("未找到 80 级光锥成长数据。");
+
+  const statAtLevel80 = (baseKey, growthKey) => {
+    const base = level80[baseKey];
+    const growth = level80[growthKey] ?? 0;
+    if (!Number.isFinite(base) || !Number.isFinite(growth)) {
+      throw new Error(`80 级属性字段无效：${baseKey}/${growthKey}`);
+    }
+    return Math.floor(base + growth * 79);
+  };
+
+  return {
+    hp: statAtLevel80("hpBase", "hpAdd"),
+    attack: statAtLevel80("attackBase", "attackAdd"),
+    defense: statAtLevel80("defenseBase", "defenseAdd"),
+  };
+}
+
+async function forEachConcurrent(entries, worker, concurrency = 8) {
+  let nextIndex = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, entries.length) }, async () => {
+      while (nextIndex < entries.length) {
+        const index = nextIndex;
+        nextIndex += 1;
+        await worker(entries[index]);
+      }
+    }),
+  );
+}
+
 const html = await (await fetchOrThrow(sourceUrl)).text();
 const config = parsePageConfig(html);
 const entries = config.entries ?? [];
@@ -111,6 +144,16 @@ const lightCones = entries
   }))
   .filter((lc) => lc.name && lc.id)
   .sort((a, b) => a.id - b.id);
+
+await forEachConcurrent(lightCones, async (lightCone) => {
+  try {
+    const detailUrl = new URL(`/cn/lightcone/${lightCone.id}`, sourceUrl).toString();
+    const detailConfig = parsePageConfig(await (await fetchOrThrow(detailUrl)).text());
+    lightCone.baseStats = level80BaseStats(detailConfig.levelData);
+  } catch (error) {
+    throw new Error(`无法同步光锥「${lightCone.name}」的 80 级基础属性：${error.message}`);
+  }
+});
 
 await mkdir(imageRoot, { recursive: true });
 
@@ -143,6 +186,4 @@ const catalogue = {
 };
 
 await writeFile(outputFile, `${JSON.stringify(catalogue, null, 2)}\n`, "utf8");
-console.log(
-  `已更新 ${lightCones.length} 个光锥${skipImages ? "（已跳过图片）" : "及图片"}。`,
-);
+console.log(`已更新 ${lightCones.length} 个光锥${skipImages ? "（已跳过图片）" : "及图片"}。`);

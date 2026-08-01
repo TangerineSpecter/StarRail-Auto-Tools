@@ -4946,6 +4946,29 @@ td {
   font-size: 14px;
   color: var(--blue);
 }
+.lightcone-base-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 8px;
+}
+.lightcone-base-stat-grid div {
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+}
+.lightcone-base-stat-grid span {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.lightcone-base-stat-grid b {
+  color: var(--blue);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
 .character-detail-card > .relic-detail-footer {
   grid-template-columns: repeat(2, 1fr);
   margin-top: 0;
@@ -5370,6 +5393,9 @@ td {
   }
   .base-stat-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .lightcone-base-stat-grid {
+    grid-template-columns: 1fr;
   }
 }
 
