@@ -595,9 +595,10 @@ function resetFilters() {
     discard: "",
     equipped: "",
     minAscension: "",
-    superimposition: "",
-    path: "",
-    eidolon: "",
+    superimposition: [],
+    path: [],
+    eidolon: [],
+    element: [],
   });
   result.value.page = 1;
   void loadInventory();
@@ -1504,60 +1505,59 @@ onUnmounted(() => {
           <Drawer v-model:visible="filterOpen" position="right" class="filter-drawer">
             <form @submit.prevent="applyFilters">
               <header class="filter-drawer-heading">
-                <div>
-                  <p class="eyebrow">FILTERS</p>
+                <div class="filter-drawer-title-row">
                   <h2>筛选条件</h2>
-                  <small>选择需要的条件，未选择即代表不限。</small>
+                  <Button class="filter-reset-btn" type="button" text @click="resetFilters">
+                    <svg viewBox="0 0 24 24" width="1.2em" height="1.2em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    重置
+                  </Button>
                 </div>
-                <Button type="button" aria-label="关闭筛选" text @click="filterOpen = false">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="1.2em"
-                    height="1.2em"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </Button>
+                <small>可多选 · 未选即不限</small>
               </header>
               <div class="filter-scroll">
                 <template v-if="inventoryKind === 'relic'">
                   <fieldset class="filter-group filter-group-wide">
                     <legend>部位 <em>可多选</em></legend>
                     <div class="filter-chips">
-                      <label v-for="slot in relicSlots" :key="slot.value" class="filter-chip"
-                        ><input
+                      <label v-for="slot in relicSlots" :key="slot.value" class="filter-chip">
+                        <input
                           v-model="filters.slots"
                           type="checkbox"
                           :value="slot.value"
-                        /><span>{{ slot.label }}</span></label
-                      >
+                        />
+                        <span>
+                          {{ slot.label }}
+                          <svg v-if="filters.slots.includes(slot.value)" class="filter-chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </span>
+                      </label>
                     </div>
                   </fieldset>
 
                   <fieldset class="filter-group filter-group-wide">
                     <legend>主词条 <em>随部位更新 · 可多选</em></legend>
                     <div class="filter-chips">
-                      <label v-for="stat in availableMainStats" :key="stat" class="filter-chip"
-                        ><input v-model="filters.mainStats" type="checkbox" :value="stat" /><span>{{
-                          statLabel(stat)
-                        }}</span></label
-                      >
+                      <label v-for="stat in availableMainStats" :key="stat" class="filter-chip">
+                        <input v-model="filters.mainStats" type="checkbox" :value="stat" />
+                        <span>
+                          {{ statLabel(stat) }}
+                          <svg v-if="filters.mainStats.includes(stat)" class="filter-chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </span>
+                      </label>
                     </div>
                   </fieldset>
                   <fieldset class="filter-group filter-group-wide">
                     <legend>副词条 <em>可多选</em></legend>
                     <div class="filter-chips">
-                      <label v-for="stat in relicSubStats" :key="stat" class="filter-chip"
-                        ><input v-model="filters.subStats" type="checkbox" :value="stat" /><span>{{
-                          statLabel(stat)
-                        }}</span></label
-                      >
+                      <label v-for="stat in relicSubStats" :key="stat" class="filter-chip">
+                        <input v-model="filters.subStats" type="checkbox" :value="stat" />
+                        <span>
+                          {{ statLabel(stat) }}
+                          <svg v-if="filters.subStats.includes(stat)" class="filter-chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </span>
+                      </label>
                     </div>
                   </fieldset>
                   <fieldset class="filter-group filter-group-wide">
@@ -1638,8 +1638,8 @@ onUnmounted(() => {
                 </template>
                 <template v-else>
                   <fieldset class="filter-group filter-group-wide">
-                    <legend>命途 <em>可多选</em></legend>
-                    <div class="filter-chips">
+                    <legend>命途 <em class="filter-count">{{ filters.path.length || 8 }} 个</em></legend>
+                    <div class="filter-chips filter-grid-3">
                       <label
                         v-for="path in [
                           { label: '毁灭', value: 'Destruction' },
@@ -1662,16 +1662,47 @@ onUnmounted(() => {
                             alt=""
                           />
                           {{ path.label }}
+                          <svg v-if="filters.path.includes(path.value)" class="filter-chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </span>
                       </label>
                     </div>
                   </fieldset>
+
                   <fieldset class="filter-group filter-group-wide">
-                    <legend>星魂 <em>可多选</em></legend>
-                    <div class="filter-chips">
+                    <legend>星魂 <a href="#" class="filter-select-all" @click.prevent="filters.eidolon = [0, 1, 2, 3, 4, 5, 6]">全选</a></legend>
+                    <div class="filter-chips filter-grid-4">
                       <label v-for="e in 7" :key="e" class="filter-chip">
                         <input v-model="filters.eidolon" type="checkbox" :value="e - 1" />
-                        <span>{{ e - 1 }} 魂</span>
+                        <span>
+                          {{ e - 1 }} 魂
+                          <svg v-if="filters.eidolon.includes(e - 1)" class="filter-chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="filter-group filter-group-wide">
+                    <legend>元素</legend>
+                    <div class="filter-chips filter-grid-3">
+                      <label
+                        v-for="element in [
+                          { label: '物理', color: '#888888' },
+                          { label: '火', color: '#f44336' },
+                          { label: '冰', color: '#29b6f6' },
+                          { label: '雷', color: '#ab47bc' },
+                          { label: '风', color: '#26a69a' },
+                          { label: '量子', color: '#26c6da' },
+                          { label: '虚数', color: '#ffa726' },
+                        ]"
+                        :key="element.label"
+                        class="filter-chip filter-element-chip"
+                      >
+                        <input v-model="filters.element" type="checkbox" :value="element.label" />
+                        <span>
+                          <i class="filter-element-dot" :style="{ backgroundColor: element.color }"></i>
+                          {{ element.label }}
+                          <svg v-if="filters.element.includes(element.label)" class="filter-chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </span>
                       </label>
                     </div>
                   </fieldset>

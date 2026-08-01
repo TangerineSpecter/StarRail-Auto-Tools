@@ -2740,10 +2740,17 @@ summary i {
 
 .filter-drawer-heading {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
   padding: 22px 22px 16px;
   border-bottom: 1px solid var(--line);
+}
+
+.filter-drawer-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .filter-drawer-heading h2 {
@@ -2754,21 +2761,20 @@ summary i {
   display: block;
   margin-top: 5px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
-.filter-drawer-heading button {
-  display: grid;
-  width: 29px;
-  height: 29px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid var(--line);
-  color: var(--blue);
-  background: #fff;
-  font-size: 18px;
-  line-height: 0;
-  border-radius: var(--control-radius);
+.filter-reset-btn {
+  font-size: 11px;
+  color: var(--muted) !important;
+  gap: 4px;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.filter-reset-btn:hover {
+  color: var(--ink) !important;
 }
 
 .filter-scroll {
@@ -2830,10 +2836,27 @@ summary i {
 }
 
 .filter-group legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
   margin-bottom: 5px;
   padding: 0;
   color: var(--ink-soft);
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.filter-count, .filter-select-all {
+  color: var(--muted);
+  font-size: 10px;
+  text-decoration: none;
+  font-weight: normal;
+}
+
+.filter-select-all:hover {
+  color: #7b61ff;
+  text-decoration: underline;
 }
 
 .filter-group legend em {
@@ -2864,8 +2887,23 @@ summary i {
   display: flex;
   min-height: 32px;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
   align-content: flex-start;
+}
+
+.filter-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.filter-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.filter-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .filter-chip {
@@ -2877,6 +2915,11 @@ summary i {
   cursor: pointer;
 }
 
+[class*="filter-grid-"] .filter-chip {
+  display: flex !important;
+  width: 100% !important;
+}
+
 .filter-chip input {
   position: absolute;
   width: 1px !important;
@@ -2885,13 +2928,18 @@ summary i {
 }
 
 .filter-chip span {
-  display: block;
-  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  width: auto;
+  min-height: 30px;
+  box-sizing: border-box;
+  padding: 8px 12px;
   border: 1px solid rgba(46, 78, 119, 0.14);
+  border-radius: 8px;
   color: var(--ink-soft);
   background: rgba(255, 255, 255, 0.58);
-  font-size: 8px;
-  line-height: 1;
+  font-size: 12px;
+  line-height: 14px;
   transition:
     border-color 150ms ease,
     color 150ms ease,
@@ -2899,9 +2947,31 @@ summary i {
 }
 
 .filter-chip input:checked + span {
-  border-color: rgba(36, 86, 166, 0.48);
-  color: var(--blue);
-  background: var(--blue-soft);
+  border-color: #7b61ff;
+  color: #7b61ff;
+  background: #f6f5ff;
+}
+
+[class*="filter-grid-"] .filter-chip span {
+  width: 100%;
+}
+
+.filter-chip-check {
+  width: 14px;
+  height: 14px;
+  margin-left: 8px;
+}
+
+[class*="filter-grid-"] .filter-chip-check {
+  margin-left: auto;
+}
+
+.filter-element-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
 }
 
 .filter-path-chip span {

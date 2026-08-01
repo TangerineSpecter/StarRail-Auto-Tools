@@ -631,12 +631,11 @@ impl InventoryStore {
             ">=",
             filter.min_ascension,
         );
-        push_number_filter(
+        push_number_filters(
             &mut clauses,
             &mut values,
             "superimposition",
-            "=",
-            filter.superimposition,
+            &filter.superimposition,
         );
         push_bool_filter(&mut clauses, &mut values, "locked", filter.locked);
         if let Some(equipped) = filter.equipped {
@@ -683,6 +682,7 @@ impl InventoryStore {
             clauses.push("name LIKE ?".to_owned());
             values.push(SqlValue::Text(format!("%{search}%")));
         }
+        push_text_filters(&mut clauses, &mut values, "name", &filter.names);
         push_text_filters(&mut clauses, &mut values, "path", &filter.path);
         push_number_filter(&mut clauses, &mut values, "level", ">=", filter.min_level);
         push_number_filter(&mut clauses, &mut values, "level", "<=", filter.max_level);

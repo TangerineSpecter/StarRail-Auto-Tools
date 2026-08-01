@@ -99,7 +99,7 @@ pub struct LightConeFilter {
     pub min_level: Option<u32>,
     pub max_level: Option<u32>,
     pub min_ascension: Option<u32>,
-    pub superimposition: Option<u32>,
+    pub superimposition: Option<Vec<u32>>,
     pub locked: Option<bool>,
     pub equipped: Option<bool>,
 }
@@ -110,6 +110,7 @@ pub struct CharacterFilter {
     #[serde(flatten)]
     pub page: PageQuery,
     pub search: Option<String>,
+    pub names: Option<Vec<String>>,
     pub path: Option<Vec<String>>,
     pub min_level: Option<u32>,
     pub max_level: Option<u32>,

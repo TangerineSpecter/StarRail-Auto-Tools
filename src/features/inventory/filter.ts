@@ -1,3 +1,4 @@
+import characterCatalogueJson from "@/data/characters.json";
 import type { CharacterFilter, InventoryKind, LightConeFilter, RelicFilter } from "@/types";
 
 export interface InventoryFilterForm {
@@ -14,9 +15,10 @@ export interface InventoryFilterForm {
   discard: string;
   equipped: string;
   minAscension: string;
-  superimposition: string;
+  superimposition: number[];
   path: string[];
   eidolon: number[];
+  element: string[];
 }
 
 export const createInventoryFilterForm = (): InventoryFilterForm => ({
@@ -33,9 +35,10 @@ export const createInventoryFilterForm = (): InventoryFilterForm => ({
   discard: "",
   equipped: "",
   minAscension: "",
-  superimposition: "",
+  superimposition: [],
   path: [],
   eidolon: [],
+  element: [],
 });
 
 const asNumber = (value: string): number | undefined => {
@@ -75,13 +78,23 @@ export function buildInventoryFilter(
   if (kind === "lightCone") {
     return compact({
       ...shared,
-      superimposition: asNumber(form.superimposition),
+      superimposition: form.superimposition.length ? form.superimposition : undefined,
       locked: asBoolean(form.locked),
       equipped: asBoolean(form.equipped),
     });
   }
+  
+  let names: string[] | undefined = undefined;
+  if (form.element.length > 0) {
+    names = characterCatalogueJson.characters
+      .filter((c) => form.element.includes(c.element))
+      .map((c) => c.name);
+    if (names.length === 0) names = ["__NO_MATCH__"];
+  }
+
   return compact({
     ...shared,
+    names,
     path: form.path.length ? form.path : undefined,
     eidolon: form.eidolon.length ? form.eidolon : undefined,
   });

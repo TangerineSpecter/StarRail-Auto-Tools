@@ -90,13 +90,14 @@ export interface LightConeFilter extends PageQuery {
   minLevel?: number;
   maxLevel?: number;
   minAscension?: number;
-  superimposition?: number;
+  superimposition?: number[];
   locked?: boolean;
   equipped?: boolean;
 }
 
 export interface CharacterFilter extends PageQuery {
   search?: string;
+  names?: string[];
   path?: string[];
   minLevel?: number;
   maxLevel?: number;
