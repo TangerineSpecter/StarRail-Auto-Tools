@@ -198,6 +198,22 @@ function parseCharacterBaseStats(html) {
   return level80BaseStats(config.levelData);
 }
 
+function collectTraceStats(nodes, result = []) {
+  for (const node of nodes ?? []) {
+    const stats = node.embedBuff?.statusList
+      ?.filter((status) => typeof status.key === "string" && Number.isFinite(status.value))
+      .map((status) => ({ key: decodeHtml(status.key), value: status.value }));
+    if (stats?.length) result.push({ id: node.id, name: node.embedBuff.name, stats });
+    collectTraceStats(node.children, result);
+  }
+  return result;
+}
+
+function parseCharacterTraceStats(html) {
+  const config = parseAssignedJson(html, "window.PAGE_CONFIG=");
+  return collectTraceStats(config.skillTreePoints);
+}
+
 async function forEachConcurrent(entries, worker, concurrency = 8) {
   let nextIndex = 0;
   await Promise.all(
@@ -322,7 +338,9 @@ if (characters.length < 50) {
 await forEachConcurrent(characters, async (character) => {
   try {
     const detailUrl = new URL(`/cn/character/${character.slug}`, characterSourceUrl).toString();
-    character.baseStats = parseCharacterBaseStats(await (await fetchOrThrow(detailUrl)).text());
+    const detailHtml = await (await fetchOrThrow(detailUrl)).text();
+    character.baseStats = parseCharacterBaseStats(detailHtml);
+    character.traceStats = parseCharacterTraceStats(detailHtml);
   } catch (error) {
     throw new Error(`无法同步角色「${character.name}」的 80 级基础属性：${error.message}`);
   }

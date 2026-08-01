@@ -41,6 +41,11 @@ import AppNavigation, { type AppView } from "@/app/AppNavigation.vue";
 import ExpressPassage from "@/features/capture/ExpressPassage.vue";
 import { characterSkillEntries } from "@/features/inventory/character-skills";
 import { buildInventoryFilter, createInventoryFilterForm } from "@/features/inventory/filter";
+import {
+  calculateStandingStats,
+  formatStandingStat,
+  isMaxStandingEquipment,
+} from "@/features/inventory/standing-stats";
 import relicCatalogueJson from "./data/relic-sets.json";
 import characterCatalogueJson from "./data/characters.json";
 import lightConeCatalogueJson from "./data/light-cones.json";
@@ -109,6 +114,8 @@ type CharacterDetailData = {
   skills: Record<string, unknown>;
   traces: Record<string, unknown>;
   memosprite?: Record<string, unknown> | null;
+  equippedRelics?: RelicDetailData[];
+  equippedLightCone?: LightConeDetailData | null;
   abilityVersion: number;
   updatedAt: number;
 };
@@ -294,6 +301,8 @@ const availableMainStats = computed(() => {
 });
 const catalogueTab = ref<"cavern" | "planar" | "character">("cavern");
 const selectedCatalogueCharacter = ref<CharacterCatalogueEntry | null>(null);
+const traceSettingsStorageKey = "starrail-auto-tools.trace-disabled.v1";
+const disabledTraceNodes = ref<Record<string, number[]>>(loadDisabledTraceNodes());
 const detailRelic = computed<RelicDetailData | null>(() =>
   detail.value?.kind === "relic" ? (detail.value.data as unknown as RelicDetailData) : null,
 );
@@ -303,6 +312,47 @@ const detailCharacter = computed<CharacterDetailData | null>(() =>
 const detailLightCone = computed<LightConeDetailData | null>(() =>
   detail.value?.kind === "lightCone" ? (detail.value.data as unknown as LightConeDetailData) : null,
 );
+const detailCharacterCatalogue = computed(() => {
+  if (!detailCharacter.value) return null;
+  return characterCatalogue.characters.find((character) => character.name === detailCharacter.value?.name) ?? null;
+});
+const detailCharacterTraceStats = computed(() => {
+  return detailCharacterCatalogue.value?.traceStats ?? [];
+});
+const selectedDetailTraceStats = computed(() => {
+  if (!detailCharacter.value) return [];
+  return detailCharacterTraceStats.value
+    .filter((trace) => traceNodeEnabled(detailCharacter.value!.characterId, trace.id))
+    .flatMap((trace) => trace.stats);
+});
+const characterStandingStats = computed(() => {
+  const character = detailCharacter.value;
+  const catalogue = detailCharacterCatalogue.value;
+  const lightCone = character?.equippedLightCone ?? null;
+  if (!character || !catalogue?.baseStats) {
+    return { available: false, reason: "该角色的满级基础属性尚未同步。", stats: [] };
+  }
+  if (!lightCone) {
+    return { available: false, reason: "未装备光锥，无法汇总完整站街属性。", stats: [] };
+  }
+  const lightConeBase = lightConeBaseStats.get(lightCone.templateId);
+  if (!lightConeBase) {
+    return { available: false, reason: "该光锥的满级基础属性尚未同步。", stats: [] };
+  }
+  if (!isMaxStandingEquipment(character, lightCone)) {
+    return { available: false, reason: "角色与已装备光锥需均为 Lv.80、满突破后展示。", stats: [] };
+  }
+  return {
+    available: true,
+    reason: "",
+    stats: calculateStandingStats({
+      characterBase: catalogue.baseStats,
+      lightConeBase,
+      relics: character.equippedRelics ?? [],
+      traces: selectedDetailTraceStats.value,
+    }),
+  };
+});
 const activeFilterCount = computed(() => {
   const kind = inventoryKind.value;
   let activeFilters: any[] = [];
@@ -692,6 +742,33 @@ function openCharacterBaseStats(character: CharacterCatalogueEntry) {
 
 function closeCharacterBaseStats() {
   selectedCatalogueCharacter.value = null;
+}
+
+function loadDisabledTraceNodes(): Record<string, number[]> {
+  try {
+    const saved = window.localStorage.getItem(traceSettingsStorageKey);
+    const parsed = saved ? JSON.parse(saved) : {};
+    return typeof parsed === "object" && parsed ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function traceNodeEnabled(characterId: number, traceId: number): boolean {
+  return !disabledTraceNodes.value[String(characterId)]?.includes(traceId);
+}
+
+function toggleTraceNode(characterId: number, traceId: number) {
+  const key = String(characterId);
+  const current = new Set(disabledTraceNodes.value[key] ?? []);
+  if (current.has(traceId)) current.delete(traceId);
+  else current.add(traceId);
+  disabledTraceNodes.value = { ...disabledTraceNodes.value, [key]: [...current] };
+  window.localStorage.setItem(traceSettingsStorageKey, JSON.stringify(disabledTraceNodes.value));
+}
+
+function formatTraceStat(value: number): string {
+  return Math.abs(value) < 1 ? `+${(value * 100).toFixed(1).replace(/\.0$/, "")}%` : `+${value}`;
 }
 
 function closeDrawerOnEscape(event: KeyboardEvent) {
@@ -2506,8 +2583,9 @@ onUnmounted(() => {
           </div>
           <button type="button" aria-label="关闭详情" @click="closeDetail">×</button>
         </header>
-        <div v-if="detailLoading" class="detail-loading">正在读取 SQLite 记录…</div>
-        <section v-else-if="detailRelic" class="relic-detail-card">
+        <div class="detail-drawer-content">
+          <div v-if="detailLoading" class="detail-loading">正在读取 SQLite 记录…</div>
+          <section v-else-if="detailRelic" class="relic-detail-card">
           <div class="relic-detail-identity">
             <div :class="['detail-icon-box', `rarity-${detailRelic.rarity}`]">
               <img
@@ -2594,8 +2672,8 @@ onUnmounted(() => {
               <span>更新于</span><b>{{ formatTime(detailRelic.updatedAt) }}</b>
             </div>
           </footer>
-        </section>
-        <section v-else-if="detailCharacter" class="character-detail-card">
+          </section>
+          <section v-else-if="detailCharacter" class="character-detail-card">
           <div class="character-identity">
             <img
               v-if="characterAvatar(detailCharacter.name)"
@@ -2621,6 +2699,25 @@ onUnmounted(() => {
               <span>能力版本</span><b>V{{ detailCharacter.abilityVersion }}</b>
             </div>
           </div>
+          <section class="character-data-section standing-stat-section">
+            <header>
+              <div>
+                <p class="eyebrow">STATIC PROFILE</p>
+                <h3>站街属性</h3>
+              </div>
+              <small v-if="characterStandingStats.available">
+                遗器 {{ detailCharacter.equippedRelics?.length ?? 0 }} 件 · 已选行迹 {{ selectedDetailTraceStats.length }} 条
+              </small>
+              <small v-else>满级后可计算</small>
+            </header>
+            <div v-if="characterStandingStats.available" class="standing-stat-grid">
+              <div v-for="stat in characterStandingStats.stats" :key="stat.key">
+                <span>{{ stat.label }}</span><b>{{ formatStandingStat(stat) }}</b>
+              </div>
+            </div>
+            <p v-else class="standing-stat-unavailable">{{ characterStandingStats.reason }}</p>
+            <footer>已计入基础属性、光锥三围、遗器主/副属性与当前勾选行迹；不计套装、光锥技能、星魂和战斗增益。</footer>
+          </section>
           <section class="character-data-section">
             <header>
               <div>
@@ -2635,6 +2732,29 @@ onUnmounted(() => {
               </div>
             </div>
             <p v-else class="empty-substats">未同步技能数据。</p>
+          </section>
+
+          <section v-if="detailCharacterTraceStats.length" class="character-data-section trace-stat-section">
+            <header>
+              <div>
+                <p class="eyebrow">TRACE ATTRIBUTES</p>
+                <h3>行迹属性</h3>
+              </div>
+              <small>默认全选 · 可取消</small>
+            </header>
+            <div class="trace-stat-list">
+              <button
+                v-for="trace in detailCharacterTraceStats"
+                :key="trace.id"
+                type="button"
+                :class="{ disabled: !traceNodeEnabled(detailCharacter.characterId, trace.id) }"
+                :aria-pressed="traceNodeEnabled(detailCharacter.characterId, trace.id)"
+                @click="toggleTraceNode(detailCharacter.characterId, trace.id)"
+              >
+                <span><b>{{ trace.name }}</b><small>{{ trace.stats.map((stat) => stat.key).join(' · ') }}</small></span>
+                <em>{{ trace.stats.map((stat) => formatTraceStat(stat.value)).join(' / ') }}</em>
+              </button>
+            </div>
           </section>
           
           <section v-if="detailCharacter.memosprite" class="memosprite-note">
@@ -2661,8 +2781,8 @@ onUnmounted(() => {
             </div>
             <div><span>数据来源</span><b>游戏同步</b></div>
           </footer>
-        </section>
-        <section v-else-if="detailLightCone" class="character-detail-card">
+          </section>
+          <section v-else-if="detailLightCone" class="character-detail-card">
           <div class="character-identity">
             <img
               v-if="lightConeImages.get(detailLightCone.templateId)"
@@ -2727,8 +2847,9 @@ onUnmounted(() => {
             </div>
             <div><span>数据来源</span><b>{{ detailLightCone.source === 'network' ? '游戏同步' : '识别导入' }}</b></div>
           </footer>
-        </section>
-        <pre v-else>{{ detailJson() }}</pre>
+          </section>
+          <pre v-else>{{ detailJson() }}</pre>
+        </div>
       </aside>
     </div>
 

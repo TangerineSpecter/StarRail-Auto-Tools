@@ -219,6 +219,12 @@ export interface CharacterCatalogueEntry {
     speed: number;
     taunt: number;
   };
+  /** 角色行迹中可直接计入静态面板的属性节点。 */
+  traceStats?: Array<{
+    id: number;
+    name: string;
+    stats: Array<{ key: string; value: number }>;
+  }>;
   image: string | null;
   backgroundImage?: string;
   elementIcon?: string;

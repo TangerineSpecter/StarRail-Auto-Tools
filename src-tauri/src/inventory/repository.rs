@@ -1484,7 +1484,7 @@ fn light_cone_detail(connection: &Connection, id: u32) -> Result<Option<Value>, 
 }
 
 fn character_detail(connection: &Connection, id: u32) -> Result<Option<Value>, AppError> {
-    connection
+    let detail = connection
         .query_row(
             "SELECT character_id, name, path, level, ascension, eidolon,
                     skills_json, traces_json, memosprite_json, ability_version,
@@ -1513,7 +1513,36 @@ fn character_detail(connection: &Connection, id: u32) -> Result<Option<Value>, A
             },
         )
         .optional()
-        .map_err(AppError::from)
+        .map_err(AppError::from)?;
+    let Some(mut detail) = detail else {
+        return Ok(None);
+    };
+
+    let relic_ids = connection
+        .prepare("SELECT item_id FROM relics WHERE equipped_character_id = ?1 ORDER BY slot")?
+        .query_map([id], |row| row.get::<_, u32>(0))?
+        .collect::<Result<Vec<_>, _>>()?;
+    let equipped_relics = relic_ids
+        .into_iter()
+        .map(|item_id| relic_detail(connection, item_id))
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .flatten()
+        .collect();
+    let light_cone_id = connection
+        .query_row(
+            "SELECT item_id FROM light_cones WHERE equipped_character_id = ?1 LIMIT 1",
+            [id],
+            |row| row.get::<_, u32>(0),
+        )
+        .optional()?;
+    detail["equippedRelics"] = Value::Array(equipped_relics);
+    detail["equippedLightCone"] = light_cone_id
+        .map(|item_id| light_cone_detail(connection, item_id))
+        .transpose()?
+        .flatten()
+        .unwrap_or(Value::Null);
+    Ok(Some(detail))
 }
 
 fn export_relics(connection: &Connection) -> Result<Vec<Value>, AppError> {
@@ -1709,6 +1738,43 @@ mod tests {
         assert_eq!(summary.relics, 2);
         assert!(store.detail(InventoryKind::Relic, 1).is_err());
         assert!(store.detail(InventoryKind::Relic, 3).is_ok());
+    }
+
+    #[test]
+    fn character_detail_includes_equipped_relics_and_light_cone() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[1]);
+        snapshot.relics[0].equipped_character_id = Some(1220);
+        snapshot.light_cones = vec![ImportLightCone {
+            id: 23062,
+            name: "所见即我".to_owned(),
+            level: 80,
+            ascension: 6,
+            superimposition: 1,
+            location: "飞霄".to_owned(),
+            equipped_character_id: Some(1220),
+            lock: true,
+            _uid: 2,
+        }];
+        snapshot.characters = vec![ImportCharacter {
+            id: 1220,
+            name: "飞霄".to_owned(),
+            path: "Hunt".to_owned(),
+            level: 80,
+            ascension: 6,
+            eidolon: 0,
+            skills: json!({}),
+            traces: json!({}),
+            memosprite: None,
+            ability_version: 1,
+        }];
+
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+        let detail = store.detail(InventoryKind::Character, 1220).unwrap();
+
+        assert_eq!(detail.data["equippedRelics"].as_array().unwrap().len(), 1);
+        assert_eq!(detail.data["equippedRelics"][0]["itemId"], 1);
+        assert_eq!(detail.data["equippedLightCone"]["templateId"], 23062);
     }
 
     #[test]
