@@ -291,9 +291,9 @@ const activeFilterCount = computed(() => {
       filters.equipped,
     ];
   } else if (kind === "lightCone") {
-    activeFilters = [filters.superimposition, filters.locked, filters.equipped];
+    activeFilters = [filters.superimposition.length, filters.locked, filters.equipped];
   } else if (kind === "character") {
-    activeFilters = [filters.path.length, filters.eidolon.length];
+    activeFilters = [filters.path.length, filters.eidolon.length, filters.element.length];
   }
   return activeFilters.filter(Boolean).length;
 });
@@ -1613,14 +1613,18 @@ onUnmounted(() => {
                   </label>
                 </template>
                 <template v-else-if="inventoryKind === 'lightCone'">
-                  <label
-                    ><span>叠影</span
-                    ><Select
-                      v-model="filters.superimposition"
-                      :options="['', 1, 2, 3, 4, 5]"
-                      :option-label="(value) => (value === '' ? '不限' : `${value} 阶`)"
-                      placeholder="不限"
-                  /></label>
+                  <fieldset class="filter-group filter-group-wide">
+                    <legend>叠影 <a href="#" class="filter-select-all" @click.prevent="filters.superimposition = [1, 2, 3, 4, 5]">全选</a></legend>
+                    <div class="filter-chips filter-grid-4">
+                      <label v-for="s in 5" :key="s" class="filter-chip">
+                        <input v-model="filters.superimposition" type="checkbox" :value="s" />
+                        <span>
+                          {{ s }} 阶
+                          <svg v-if="filters.superimposition.includes(s)" class="filter-chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
                   <label
                     ><span>锁定</span>
                     <Select
