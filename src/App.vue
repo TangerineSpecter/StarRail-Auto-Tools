@@ -39,6 +39,7 @@ import { systemApi } from "@/shared/api/system";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import AppNavigation, { type AppView } from "@/app/AppNavigation.vue";
 import ExpressPassage from "@/features/capture/ExpressPassage.vue";
+import { characterSkillEntries } from "@/features/inventory/character-skills";
 import { buildInventoryFilter, createInventoryFilterForm } from "@/features/inventory/filter";
 import relicCatalogueJson from "./data/relic-sets.json";
 import characterCatalogueJson from "./data/characters.json";
@@ -84,6 +85,18 @@ type RelicDetailData = {
   discard: boolean;
   updatedAt: number;
   substats?: Array<{ kind: string; key: string; value: number; count: number }>;
+};
+type LightConeDetailData = {
+  itemId: number;
+  templateId: number;
+  name: string;
+  level: number;
+  ascension: number;
+  superimposition: number;
+  location: string;
+  locked: boolean;
+  source: string;
+  updatedAt: number;
 };
 type CharacterDetailData = {
   characterId: number;
@@ -152,6 +165,12 @@ const relicPieceImages = new Map(
 );
 const lightConeImages = new Map(
   lightConeCatalogue.lightCones.map((lightCone) => [lightCone.id, lightCone.image]),
+);
+const lightConeRarities = new Map(
+  lightConeCatalogue.lightCones.map((lightCone) => [lightCone.id, lightCone.rarity]),
+);
+const lightConePaths = new Map(
+  lightConeCatalogue.lightCones.map((lightCone) => [lightCone.id, lightCone.path]),
 );
 
 function getDetailRelicImage(detail: RelicDetailData): string | undefined {
@@ -275,6 +294,9 @@ const detailRelic = computed<RelicDetailData | null>(() =>
 );
 const detailCharacter = computed<CharacterDetailData | null>(() =>
   detail.value?.kind === "character" ? (detail.value.data as unknown as CharacterDetailData) : null,
+);
+const detailLightCone = computed<LightConeDetailData | null>(() =>
+  detail.value?.kind === "lightCone" ? (detail.value.data as unknown as LightConeDetailData) : null,
 );
 const activeFilterCount = computed(() => {
   const kind = inventoryKind.value;
@@ -657,6 +679,17 @@ function closeDetail() {
   detailRequestId += 1;
   detail.value = null;
   detailLoading.value = false;
+}
+
+function closeDrawerOnEscape(event: KeyboardEvent) {
+  if (event.key !== "Escape" || event.isComposing) return;
+
+  if (detail.value || detailLoading.value) {
+    closeDetail();
+    return;
+  }
+
+  if (buildOpen.value) closeBuild();
 }
 
 function resetBuildPlan(characterId: number) {
@@ -1042,16 +1075,6 @@ function lightConeImage(item: LightConeListItem): string | null {
   return lightConeImages.get(item.templateId) ?? null;
 }
 
-function recordEntries(value: Record<string, unknown> | null | undefined): Array<[string, string]> {
-  if (!value) return [];
-  return Object.entries(value).map(([key, item]) => {
-    if (typeof item === "number" || typeof item === "string") return [key, String(item)];
-    if (typeof item === "boolean") return [key, item ? "已激活" : "未激活"];
-    if (Array.isArray(item)) return [key, `${item.length} 项`];
-    return [key, "已同步"];
-  });
-}
-
 function itemTitle(item: InventoryListItem): string {
   return item.name;
 }
@@ -1072,6 +1095,7 @@ watch(availableMainStats, (options) => {
 });
 
 onMounted(async () => {
+  window.addEventListener("keydown", closeDrawerOnEscape);
   await loadInitialState();
   unlistenDirect = await listen<DirectReadSnapshot>("direct-read://status", (event) => {
     direct.value = event.payload;
@@ -1083,6 +1107,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener("keydown", closeDrawerOnEscape);
   unlistenDirect?.();
   unlistenInventory?.();
   targetDragCleanup?.();
@@ -2376,7 +2401,7 @@ onUnmounted(() => {
       <aside
         :class="[
           'detail-drawer',
-          { 'relic-detail-drawer': detailRelic, 'character-detail-drawer': detailCharacter },
+          { 'relic-detail-drawer': detailRelic, 'character-detail-drawer': detailCharacter, 'lightcone-detail-drawer': detailLightCone },
         ]"
       >
         <header>
@@ -2387,11 +2412,13 @@ onUnmounted(() => {
                   ? "RELIC ANALYSIS"
                   : detailCharacter
                     ? "CHARACTER DOSSIER"
-                    : "RECORD DETAIL"
+                    : detailLightCone
+                      ? "LIGHT CONE DATA"
+                      : "RECORD DETAIL"
               }}
             </p>
             <h2>
-              {{ detailRelic ? "遗器档案详情" : detailCharacter ? "角色档案详情" : "结构化详情" }}
+              {{ detailRelic ? "遗器档案详情" : detailCharacter ? "角色档案详情" : detailLightCone ? "光锥档案详情" : "结构化详情" }}
             </h2>
           </div>
           <button type="button" aria-label="关闭详情" @click="closeDetail">×</button>
@@ -2517,18 +2544,32 @@ onUnmounted(() => {
                 <p class="eyebrow">SKILL LEVELS</p>
                 <h3>技能等级</h3>
               </div>
-              <small>{{ recordEntries(detailCharacter.skills).length }} 项</small>
+              <small>{{ characterSkillEntries(detailCharacter.skills).length }} 项</small>
             </header>
-            <div v-if="recordEntries(detailCharacter.skills).length" class="character-data-grid">
-              <div v-for="[key, value] in recordEntries(detailCharacter.skills)" :key="key">
-                <span>{{ key }}</span><b>{{ value }}</b>
+            <div v-if="characterSkillEntries(detailCharacter.skills).length" class="character-data-grid">
+              <div v-for="skill in characterSkillEntries(detailCharacter.skills)" :key="skill.key">
+                <span>{{ skill.label }}</span><b>{{ skill.value }}</b>
               </div>
             </div>
             <p v-else class="empty-substats">未同步技能数据。</p>
           </section>
           
           <section v-if="detailCharacter.memosprite" class="memosprite-note">
-            <span>忆灵</span><b>已同步 {{ recordEntries(detailCharacter.memosprite).length }} 项数据</b>
+            <header>
+              <div>
+                <p class="eyebrow">MEMOSPRITE SKILLS</p>
+                <h3>忆灵技能等级</h3>
+              </div>
+              <small>{{ characterSkillEntries(detailCharacter.memosprite).length }} 项</small>
+            </header>
+            <div class="character-data-grid">
+              <div
+                v-for="skill in characterSkillEntries(detailCharacter.memosprite)"
+                :key="skill.key"
+              >
+                <span>{{ skill.label }}</span><b>{{ skill.value }}</b>
+              </div>
+            </div>
           </section>
           
           <footer class="relic-detail-footer">
@@ -2536,6 +2577,48 @@ onUnmounted(() => {
               <span>更新于</span><b>{{ formatTime(detailCharacter.updatedAt) }}</b>
             </div>
             <div><span>数据来源</span><b>游戏同步</b></div>
+          </footer>
+        </section>
+        <section v-else-if="detailLightCone" class="character-detail-card">
+          <div class="character-identity">
+            <img
+              v-if="lightConeImages.get(detailLightCone.templateId)"
+              class="lightcone-detail-avatar"
+              :src="lightConeImages.get(detailLightCone.templateId)!"
+              :alt="detailLightCone.name"
+            />
+            <div v-else class="path-seal">{{ pathLabel(lightConePaths.get(detailLightCone.templateId) || '').slice(0, 1) }}</div>
+            <div>
+              <p>{{ pathLabel(lightConePaths.get(detailLightCone.templateId) || '') }} · PATH</p>
+              <h3>{{ detailLightCone.name }}</h3>
+            </div>
+            <b :class="{'is-max': detailLightCone.level === 80}">Lv.{{ detailLightCone.level }}</b>
+          </div>
+
+          <div class="detail-rarity-stars" :aria-label="`${lightConeRarities.get(detailLightCone.templateId) || 5} 星`">
+            <i v-for="n in (lightConeRarities.get(detailLightCone.templateId) || 5)" :key="n">✦</i>
+          </div>
+
+          <div class="character-metrics">
+            <div>
+              <span>突破</span><b>{{ detailLightCone.ascension }}</b>
+            </div>
+            <div>
+              <span>叠影</span><b>{{ detailLightCone.superimposition }}</b>
+            </div>
+            <div>
+              <span>状态</span><b>{{ detailLightCone.locked ? "已锁定" : "正常" }}</b>
+            </div>
+          </div>
+          
+          <footer class="relic-detail-footer">
+            <div>
+              <span>装备归属</span><b>{{ detailLightCone.location || "未装备" }}</b>
+            </div>
+            <div>
+              <span>更新于</span><b>{{ formatTime(detailLightCone.updatedAt) }}</b>
+            </div>
+            <div><span>数据来源</span><b>{{ detailLightCone.source === 'network' ? '游戏同步' : '识别导入' }}</b></div>
           </footer>
         </section>
         <pre v-else>{{ detailJson() }}</pre>

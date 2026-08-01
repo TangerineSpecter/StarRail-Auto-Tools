@@ -4093,18 +4093,12 @@ input[type="checkbox"] {
     sans-serif;
 }
 .memosprite-note {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: block;
   margin-top: 15px;
-  padding: 10px;
+  padding: 14px;
   border: 1px solid #d8c8ae;
   color: #735b36;
   background: #fffaf2;
-  font-size: 9px;
-}
-.memosprite-note b {
-  font-size: 9px;
 }
 
 .toast {
@@ -4831,6 +4825,12 @@ td {
   border-radius: 8px;
   object-fit: cover;
 }
+.lightcone-detail-avatar {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  transform: scale(1.15);
+}
 .character-identity p {
   font-size: 11px;
   color: var(--blue);
@@ -4885,6 +4885,24 @@ td {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+}
+.memosprite-note > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 9px;
+}
+.memosprite-note h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink);
+}
+.memosprite-note p.eyebrow {
+  margin: 0 0 2px;
+}
+.memosprite-note > header small {
+  font-size: 12px;
+  color: var(--muted);
 }
 .character-data-section h3 {
   font-size: 15px;
