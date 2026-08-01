@@ -1,95 +1,320 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
 
-type StarParticle = {
+type ParticleType = "sparkle" | "dust" | "nebula";
+
+interface Particle {
   id: number;
+  type: ParticleType;
   x: number;
   y: number;
+  baseY: number;
+  vx: number;
+  vy: number;
   size: number;
-  duration: number;
-  driftX: number;
-  driftY: number;
+  maxSize: number;
+  spikes: number;
+  rotation: number;
+  rotSpeed: number;
   color: string;
-};
+  alpha: number;
+  maxAlpha: number;
+  age: number;
+  maxAge: number;
+  waveOffset: number;
+}
 
 const CROSSING_DURATION_MS = 40_000;
-const particles = ref<StarParticle[]>([]);
 const lane = ref<HTMLElement | null>(null);
 const train = ref<HTMLElement | null>(null);
+const canvas = ref<HTMLCanvasElement | null>(null);
 
 let firstFrameAt = 0;
-let particleId = 0;
-let spawnTimer: number | undefined;
+let animFrameId: number | undefined;
+let nextParticleId = 0;
+let frameCounter = 0;
 
-function createParticle() {
-  const laneRect = lane.value?.getBoundingClientRect();
-  const trainRect = train.value?.getBoundingClientRect();
-  if (!laneRect || !trainRect || firstFrameAt === 0) return;
+const particles: Particle[] = [];
 
-  const phase = ((performance.now() - firstFrameAt) % CROSSING_DURATION_MS) / CROSSING_DURATION_MS;
+// 崩坏：星穹铁道 银河星轨主题色系
+const PALETTE = [
+  "#38bdf8", // 蔚蓝
+  "#60a5fa", // 亮蓝
+  "#818cf8", // 幻紫
+  "#c084fc", // 晶紫
+  "#fbbf24", // 璀璨金
+  "#fef08a", // 浅金
+  "#ffffff", // 晶白
+];
+
+function drawSparkleStar(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  spikes: number,
+  outerRadius: number,
+  innerRadius: number,
+  rotation: number,
+  color: string,
+  alpha: number,
+) {
+  if (outerRadius <= 0.5 || alpha <= 0.01) return;
+
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+
+  ctx.beginPath();
+  const step = Math.PI / spikes;
+  let rot = -Math.PI / 2;
+  for (let i = 0; i < spikes; i++) {
+    ctx.lineTo(Math.cos(rot) * outerRadius, Math.sin(rot) * outerRadius);
+    rot += step;
+    ctx.lineTo(Math.cos(rot) * innerRadius, Math.sin(rot) * innerRadius);
+    rot += step;
+  }
+  ctx.closePath();
+
+  ctx.shadowColor = color;
+  ctx.shadowBlur = outerRadius * 1.5;
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  // 核心微亮点
+  ctx.beginPath();
+  ctx.arc(0, 0, Math.max(0.6, outerRadius * 0.2), 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function spawnParticles(engineX: number, engineY: number, dir: number) {
+  // 减少生成频率，避免车尾处密集堆积
+  // 1. 光芒星 (Sparkle)：降低概率，分散在车尾后方
+  if (frameCounter % 3 === 0 && Math.random() < 0.6) {
+    const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+    const isEightSpike = Math.random() < 0.2;
+    particles.push({
+      id: nextParticleId++,
+      type: "sparkle",
+      x: engineX + dir * (Math.random() * 8), // 微偏移
+      y: engineY + (Math.random() - 0.5) * 12,
+      baseY: engineY + (Math.random() - 0.5) * 12,
+      vx: dir * (1.2 + Math.random() * 2.2), // 往车后漂移
+      vy: (Math.random() - 0.5) * 0.8,
+      size: 2,
+      maxSize: 4 + Math.random() * 9,
+      spikes: isEightSpike ? 8 : 4,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.05,
+      color,
+      alpha: 0,
+      maxAlpha: 0.7 + Math.random() * 0.3,
+      age: 0,
+      maxAge: 50 + Math.floor(Math.random() * 40),
+      waveOffset: Math.random() * Math.PI * 2,
+    });
+  }
+
+  // 2. 星尘细微点 (Dust)：轻盈散落
+  if (frameCounter % 2 === 0) {
+    const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+    particles.push({
+      id: nextParticleId++,
+      type: "dust",
+      x: engineX + dir * (Math.random() * 6),
+      y: engineY + (Math.random() - 0.5) * 10,
+      baseY: engineY + (Math.random() - 0.5) * 10,
+      vx: dir * (0.8 + Math.random() * 2.0),
+      vy: (Math.random() - 0.5) * 1.2,
+      size: 1,
+      maxSize: 1.5 + Math.random() * 2.5,
+      spikes: 4,
+      rotation: 0,
+      rotSpeed: 0,
+      color,
+      alpha: 0,
+      maxAlpha: 0.6 + Math.random() * 0.35,
+      age: 0,
+      maxAge: 40 + Math.floor(Math.random() * 35),
+      waveOffset: Math.random() * Math.PI * 2,
+    });
+  }
+
+  // 3. 超柔云雾光斑 (Nebula)：代替原先生硬的折线，在背景衬托浪漫星辉
+  if (frameCounter % 6 === 0) {
+    const color = PALETTE[Math.floor(Math.random() * (PALETTE.length - 2))];
+    particles.push({
+      id: nextParticleId++,
+      type: "nebula",
+      x: engineX,
+      y: engineY + (Math.random() - 0.5) * 8,
+      baseY: engineY,
+      vx: dir * (0.6 + Math.random() * 1.4),
+      vy: (Math.random() - 0.5) * 0.6,
+      size: 4,
+      maxSize: 14 + Math.random() * 16,
+      spikes: 0,
+      rotation: 0,
+      rotSpeed: 0,
+      color,
+      alpha: 0,
+      maxAlpha: 0.15 + Math.random() * 0.15, // 非常透亮的软晕
+      age: 0,
+      maxAge: 60 + Math.floor(Math.random() * 30),
+      waveOffset: Math.random() * Math.PI * 2,
+    });
+  }
+}
+
+function render() {
+  const cvs = canvas.value;
+  const laneEl = lane.value;
+  const trainEl = train.value;
+
+  if (!cvs || !laneEl || !trainEl) {
+    animFrameId = requestAnimationFrame(render);
+    return;
+  }
+
+  const ctx = cvs.getContext("2d");
+  if (!ctx) return;
+
+  // 处理 Canvas 视口大小与 Retina 缩放
+  const rect = laneEl.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const width = Math.floor(rect.width);
+  const height = Math.floor(rect.height);
+
+  if (cvs.width !== width * dpr || cvs.height !== height * dpr) {
+    cvs.width = width * dpr;
+    cvs.height = height * dpr;
+  }
+
+  ctx.save();
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, width, height);
+
+  frameCounter++;
+
+  // 计算列车运行阶段
+  const now = performance.now();
+  if (firstFrameAt === 0) firstFrameAt = now;
+  const phase = ((now - firstFrameAt) % CROSSING_DURATION_MS) / CROSSING_DURATION_MS;
+
   const movingLeft = phase >= 0.06 && phase <= 0.44;
   const movingRight = phase >= 0.56 && phase <= 0.94;
-  if (!movingLeft && !movingRight) return;
+  const isMoving = movingLeft || movingRight;
 
-  const travelDirection = movingLeft ? 1 : -1;
-  const colors = ["#fff8bd", "#d9f7ff", "#9cddff", "#ffe2a8"];
-  const duration = 3000 + Math.round(Math.random() * 2200);
-  const particle: StarParticle = {
-    id: particleId++,
-    x: (movingLeft ? trainRect.right : trainRect.left) - laneRect.left,
-    y: trainRect.top - laneRect.top + trainRect.height * (0.42 + Math.random() * 0.2),
-    size: 4 + Math.random() * 5,
-    duration,
-    driftX: travelDirection * (5 + Math.random() * 24),
-    driftY: -14 + Math.random() * 28,
-    color: colors[Math.floor(Math.random() * colors.length)],
-  };
+  if (isMoving) {
+    const trainRect = trainEl.getBoundingClientRect();
+    const laneRect = rect;
 
-  particles.value.push(particle);
-  window.setTimeout(() => {
-    particles.value = particles.value.filter(({ id }) => id !== particle.id);
-  }, duration);
-}
+    let engineX = 0;
+    let engineY = 0;
+    let dir = 1;
 
-function scheduleParticle() {
-  createParticle();
-  spawnTimer = window.setTimeout(scheduleParticle, 45 + Math.random() * 90);
-}
+    if (movingLeft) {
+      // 向左行驶，尾巴在右侧 (trainRect.right)
+      engineX = trainRect.right - laneRect.left;
+      engineY = trainRect.top - laneRect.top + trainRect.height * 0.5;
+      dir = 1;
+    } else {
+      // 向右行驶，尾巴在左侧 (trainRect.left)
+      engineX = trainRect.left - laneRect.left;
+      engineY = trainRect.top - laneRect.top + trainRect.height * 0.5;
+      dir = -1;
+    }
 
-function particleStyle(particle: StarParticle) {
-  return {
-    "--particle-x": `${particle.x}px`,
-    "--particle-y": `${particle.y}px`,
-    "--particle-size": `${particle.size}px`,
-    "--particle-duration": `${particle.duration}ms`,
-    "--particle-drift-x": `${particle.driftX}px`,
-    "--particle-drift-y": `${particle.driftY}px`,
-    "--particle-color": particle.color,
-  };
+    spawnParticles(engineX, engineY, dir);
+  }
+
+  // 渲染并更新粒子
+  ctx.save();
+  ctx.globalCompositeOperation = "screen";
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.age++;
+    p.x += p.vx;
+    p.y += p.vy + Math.sin(frameCounter * 0.04 + p.waveOffset) * 0.25;
+    p.rotation += p.rotSpeed;
+
+    const progress = p.age / p.maxAge;
+
+    // 平滑正弦透明度曲线：刚从车尾出来时透明度为 0，慢慢升起并在中段绽放，随后自然隐去
+    p.alpha = Math.sin(progress * Math.PI) * p.maxAlpha;
+
+    if (p.age >= p.maxAge) {
+      particles.splice(i, 1);
+      continue;
+    }
+
+    if (p.type === "nebula") {
+      // 柔和背景气云圆斑
+      const curSize = p.size + (p.maxSize - p.size) * Math.sin(progress * Math.PI);
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, curSize);
+      grad.addColorStop(0, p.color);
+      grad.addColorStop(1, "transparent");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, curSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else if (p.type === "sparkle") {
+      // 四角/八角光芒星 (从车尾离开后在空中自然放大闪烁)
+      const curSize = p.size + (p.maxSize - p.size) * Math.sin(progress * Math.PI);
+      drawSparkleStar(
+        ctx,
+        p.x,
+        p.y,
+        p.spikes,
+        curSize,
+        curSize * 0.2,
+        p.rotation,
+        p.color,
+        p.alpha,
+      );
+    } else if (p.type === "dust") {
+      // 飘散星尘点
+      const curSize = p.size + (p.maxSize - p.size) * Math.sin(progress * Math.PI);
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 4;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, curSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  ctx.restore(); // 还原 compositeOperation
+  ctx.restore(); // 还原 dpr scale
+
+  animFrameId = requestAnimationFrame(render);
 }
 
 onMounted(() => {
-  requestAnimationFrame(() => {
-    firstFrameAt = performance.now();
-    scheduleParticle();
-  });
+  animFrameId = requestAnimationFrame(render);
 });
 
 onUnmounted(() => {
-  if (spawnTimer !== undefined) window.clearTimeout(spawnTimer);
+  if (animFrameId !== undefined) {
+    cancelAnimationFrame(animFrameId);
+  }
 });
 </script>
 
 <template>
   <div ref="lane" class="express-lane" aria-hidden="true">
-    <div class="express-particle-layer">
-      <i
-        v-for="particle in particles"
-        :key="particle.id"
-        class="express-particle"
-        :style="particleStyle(particle)"
-      ></i>
-    </div>
+    <canvas ref="canvas" class="express-canvas"></canvas>
     <div ref="train" class="express-pass">
       <img src="/illustrations/express-sprite.png" alt="" />
     </div>
@@ -97,59 +322,16 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.express-particle-layer {
+.express-canvas {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.express-particle {
-  position: absolute;
-  top: var(--particle-y);
-  left: var(--particle-x);
-  width: var(--particle-size);
-  height: var(--particle-size);
-  background: transparent;
-  isolation: isolate;
-  mix-blend-mode: screen;
-  animation: star-route var(--particle-duration) ease-out forwards;
-}
-
-.express-particle::before,
-.express-particle::after {
-  position: absolute;
-  content: "";
-}
-
-.express-particle::before {
-  z-index: -1;
-  inset: -3px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--particle-color) 58%, transparent);
-  filter: blur(2.5px);
-  opacity: 0.62;
-}
-
-.express-particle::after {
-  inset: 0;
-  background: var(--particle-color);
-  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
-  filter: drop-shadow(0 0 1px #fffef0) drop-shadow(0 0 3px var(--particle-color));
-}
-
-@keyframes star-route {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.25) rotate(0deg);
-  }
-  13% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1.15) rotate(20deg);
-  }
-  55% { opacity: 0.74; }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--particle-drift-x), var(--particle-drift-y), 0) scale(0.2) rotate(90deg);
-  }
+.express-pass {
+  z-index: 2;
 }
 </style>
