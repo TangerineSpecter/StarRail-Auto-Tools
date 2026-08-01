@@ -280,6 +280,30 @@ impl InventoryStore {
         Ok(entries)
     }
 
+    pub fn recommended_characters_for_relic_set(
+        &self,
+        set_id: u32,
+    ) -> Result<Vec<RelicSetRecommendedCharacter>, AppError> {
+        let connection = self.connect()?;
+        let mut statement = connection.prepare(
+            "SELECT characters.character_id, characters.name
+             FROM character_build_plans
+             INNER JOIN characters ON characters.character_id = character_build_plans.character_id
+             WHERE cavern_set_a = ?1 OR cavern_set_b = ?1 OR planar_set_id = ?1
+             ORDER BY character_build_plans.updated_at DESC, characters.character_id ASC",
+        )?;
+        let characters = statement
+            .query_map([set_id], |row| {
+                Ok(RelicSetRecommendedCharacter {
+                    character_id: row.get(0)?,
+                    name: row.get(1)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(AppError::from)?;
+        Ok(characters)
+    }
+
     pub fn save_build_plan(&self, plan: &CharacterBuildPlan) -> Result<(), AppError> {
         if !matches!(plan.cavern_mode.as_str(), "fourPiece" | "twoPlusTwo")
             || plan.targets.is_empty()
@@ -1928,6 +1952,83 @@ mod tests {
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].plan.character_id, 1220);
         assert_eq!(entries[0].character["equippedRelics"][0]["itemId"], 1);
+    }
+
+    #[test]
+    fn recommended_characters_for_relic_set_includes_cavern_and_planar_targets() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[1]);
+        snapshot.characters = vec![
+            ImportCharacter {
+                id: 1220,
+                name: "飞霄".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 0,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+            ImportCharacter {
+                id: 1001,
+                name: "测试角色".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 0,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+        ];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let base_plan = CharacterBuildPlan {
+            character_id: 1220,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 160.0,
+                priority: 1,
+                minimum: 140.0,
+            }],
+            effective_substats: vec![],
+        };
+        store.save_build_plan(&base_plan).unwrap();
+        let second_plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "twoPlusTwo".to_owned(),
+            cavern_set_a: 102,
+            cavern_set_b: Some(101),
+            planar_set_id: 202,
+            ..base_plan
+        };
+        store.save_build_plan(&second_plan).unwrap();
+
+        let cavern_names = store
+            .recommended_characters_for_relic_set(101)
+            .unwrap()
+            .into_iter()
+            .map(|character| character.name)
+            .collect::<Vec<_>>();
+        assert_eq!(cavern_names.len(), 2);
+        assert!(cavern_names.contains(&"飞霄".to_owned()));
+        assert!(cavern_names.contains(&"测试角色".to_owned()));
+        assert_eq!(
+            store.recommended_characters_for_relic_set(201).unwrap()[0].name,
+            "飞霄"
+        );
+        assert!(store
+            .recommended_characters_for_relic_set(999)
+            .unwrap()
+            .is_empty());
     }
 
     #[test]

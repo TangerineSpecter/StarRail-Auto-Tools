@@ -9,6 +9,7 @@ use crate::{
         ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryImportResult,
         InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
         PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatScanResult,
+        RelicSetRecommendedCharacter,
     },
     scanner::ScannerState,
     screenshot,
@@ -199,6 +200,14 @@ pub fn get_build_dashboard(
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<crate::inventory::BuildDashboardEntry>, AppError> {
     store.build_dashboard()
+}
+
+#[tauri::command]
+pub fn list_relic_set_recommended_characters(
+    set_id: u32,
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<RelicSetRecommendedCharacter>, AppError> {
+    store.recommended_characters_for_relic_set(set_id)
 }
 
 #[tauri::command]

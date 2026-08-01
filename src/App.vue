@@ -45,6 +45,7 @@ import { useRuntimeStore } from "@/app/stores/runtime";
 import AppNavigation, { type AppView } from "@/app/AppNavigation.vue";
 import ExpressPassage from "@/features/capture/ExpressPassage.vue";
 import BuildDashboard from "@/features/build-planner/BuildDashboard.vue";
+import SetRecommendationModal from "@/features/catalogue/SetRecommendationModal.vue";
 import RelicMainStatScanner from "@/features/relic-scanner/RelicMainStatScanner.vue";
 import { characterSkillEntries } from "@/features/inventory/character-skills";
 import { buildInventoryFilter, createInventoryFilterForm } from "@/features/inventory/filter";
@@ -321,6 +322,7 @@ const availableMainStats = computed(() => {
 });
 const catalogueTab = ref<"cavern" | "planar" | "character">("cavern");
 const selectedCatalogueCharacter = ref<CharacterCatalogueEntry | null>(null);
+const selectedCatalogueSet = ref<RelicSetCatalogueEntry | null>(null);
 const disabledTraceNodes = ref<Record<string, number[]>>(loadDisabledTraceNodes());
 const detailRelic = computed<RelicDetailData | null>(() =>
   detail.value?.kind === "relic" ? (detail.value.data as unknown as RelicDetailData) : null,
@@ -777,6 +779,19 @@ function closeCharacterBaseStats() {
   selectedCatalogueCharacter.value = null;
 }
 
+function openSetRecommendations(set: RelicSetCatalogueEntry) {
+  selectedCatalogueSet.value = set;
+}
+
+function closeSetRecommendations() {
+  selectedCatalogueSet.value = null;
+}
+
+function openRecommendedCharacter(character: CharacterCatalogueEntry) {
+  closeSetRecommendations();
+  openCharacterBaseStats(character);
+}
+
 function traceNodeEnabled(characterId: number, traceId: number): boolean {
   return isTraceNodeEnabled(disabledTraceNodes.value, characterId, traceId);
 }
@@ -803,6 +818,11 @@ function closeDrawerOnEscape(event: KeyboardEvent) {
 
   if (selectedCatalogueCharacter.value) {
     closeCharacterBaseStats();
+    return;
+  }
+
+  if (selectedCatalogueSet.value) {
+    closeSetRecommendations();
     return;
   }
 
@@ -2193,10 +2213,14 @@ onUnmounted(() => {
             class="catalogue-group"
           >
             <div class="catalogue-grid">
-              <article
+              <button
                 v-for="set in catalogueGroups.cavern"
                 :key="set.id"
                 class="catalogue-card"
+                type="button"
+                aria-haspopup="dialog"
+                :aria-label="`查看推荐使用${set.name}的角色`"
+                @click="openSetRecommendations(set)"
               >
                 <img v-if="set.image" :src="set.image" :alt="set.name" />
                 <span v-else class="catalogue-placeholder">◇</span>
@@ -2206,7 +2230,7 @@ onUnmounted(() => {
                   <p><b>2 件</b>{{ set.effects.twoPiece }}</p>
                   <p v-if="set.effects.fourPiece"><b>4 件</b>{{ set.effects.fourPiece }}</p>
                 </div>
-              </article>
+              </button>
             </div>
           </section>
           
@@ -2215,10 +2239,14 @@ onUnmounted(() => {
             class="catalogue-group"
           >
             <div class="catalogue-grid">
-              <article
+              <button
                 v-for="set in catalogueGroups.planar"
                 :key="set.id"
                 class="catalogue-card"
+                type="button"
+                aria-haspopup="dialog"
+                :aria-label="`查看推荐使用${set.name}的角色`"
+                @click="openSetRecommendations(set)"
               >
                 <img v-if="set.image" :src="set.image" :alt="set.name" />
                 <span v-else class="catalogue-placeholder">◇</span>
@@ -2228,7 +2256,7 @@ onUnmounted(() => {
                   <p><b>2 件</b>{{ set.effects.twoPiece }}</p>
                   <p v-if="set.effects.fourPiece"><b>4 件</b>{{ set.effects.fourPiece }}</p>
                 </div>
-              </article>
+              </button>
             </div>
           </section>
           <section v-show="catalogueTab === 'character'" class="catalogue-group character-catalogue-group">
@@ -2359,6 +2387,14 @@ onUnmounted(() => {
         </div>
       </section>
     </div>
+
+    <SetRecommendationModal
+      v-if="selectedCatalogueSet"
+      :set="selectedCatalogueSet"
+      :characters="characterCatalogue.characters"
+      @close="closeSetRecommendations"
+      @open-character="openRecommendedCharacter"
+    />
 
     <div v-if="screenshotPreviewUrl" class="crop-backdrop" @click.self="closeCropPicker()">
       <section class="crop-picker" aria-label="截图区域选择">

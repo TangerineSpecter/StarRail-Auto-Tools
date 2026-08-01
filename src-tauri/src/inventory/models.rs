@@ -290,6 +290,13 @@ pub struct BuildDashboardEntry {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RelicSetRecommendedCharacter {
+    pub character_id: u32,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RelicSetOption {
     pub set_id: u32,
     pub name: String,

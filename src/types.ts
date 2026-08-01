@@ -195,6 +195,12 @@ export interface BuildDashboardEntry {
   character: BuildDashboardCharacter;
 }
 
+/** A character whose saved build plan targets a relic or planar ornament set. */
+export interface RelicSetRecommendedCharacter {
+  characterId: number;
+  name: string;
+}
+
 export interface BuildDashboardSubstat {
   kind: string;
   key: string;

@@ -5204,6 +5204,21 @@ td {
   border: 1px solid var(--line);
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.66);
+  color: inherit;
+  text-align: left;
+}
+button.catalogue-card {
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+button.catalogue-card:hover,
+button.catalogue-card:focus-visible {
+  border-color: rgba(58, 108, 181, 0.78);
+  box-shadow: 0 10px 25px rgba(35, 75, 128, 0.12);
+  outline: none;
+  transform: translateY(-2px);
 }
 .catalogue-card img,
 .catalogue-placeholder {

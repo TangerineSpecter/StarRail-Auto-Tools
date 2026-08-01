@@ -49,6 +49,7 @@ pub fn run() {
             commands::list_relic_sets,
             commands::get_character_build_plan,
             commands::get_build_dashboard,
+            commands::list_relic_set_recommended_characters,
             commands::save_character_build_plan,
             commands::delete_character_build_plan,
             commands::recommend_character_build,
