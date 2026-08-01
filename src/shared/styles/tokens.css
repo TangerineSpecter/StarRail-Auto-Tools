@@ -1,0 +1,20 @@
+:root {
+  --font-ui:
+    "HarmonyOS Sans SC", "MiSans", "Source Han Sans SC", "Microsoft YaHei UI", "PingFang SC",
+    sans-serif;
+  --font-display: "MiSans", "HarmonyOS Sans SC", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+  --ink: #172643;
+  --ink-soft: #52627b;
+  --muted: #8794a8;
+  --blue: #2456a6;
+  --blue-deep: #173d7a;
+  --blue-soft: #e8f0fb;
+  --cyan: #45aeb7;
+  --gold: #c7a55a;
+  --gold-light: #ead9aa;
+  --paper: rgba(252, 253, 255, 0.95);
+  --line: rgba(48, 75, 117, 0.16);
+  --shadow: 0 22px 55px rgba(42, 63, 96, 0.12);
+  --control-radius: 5px;
+  --control-height: 34px;
+}

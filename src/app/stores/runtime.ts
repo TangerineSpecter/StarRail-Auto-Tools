@@ -33,6 +33,11 @@ export const useRuntimeStore = defineStore("runtime", () => {
   const busy = ref(false);
   const error = ref("");
   const notice = ref("");
+  const inventoryRevision = ref(0);
 
-  return { direct, summary, busy, error, notice };
+  function markInventoryChanged() {
+    inventoryRevision.value += 1;
+  }
+
+  return { direct, summary, busy, error, notice, inventoryRevision, markInventoryChanged };
 });

@@ -1,0 +1,149 @@
+:root {
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: #e8eef5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-width: 1240px;
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow: hidden;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  border: 0;
+  border-radius: var(--control-radius);
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    filter 150ms ease;
+}
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+h1,
+h2,
+p {
+  margin: 0;
+}
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.25;
+}
+h1 {
+  font-size: 21px;
+  letter-spacing: 0.045em;
+}
+h2 {
+  font-size: 20px;
+  letter-spacing: 0.025em;
+}
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--blue);
+  font:
+    600 9px/1.2 "Bahnschrift",
+    "DIN Alternate",
+    sans-serif;
+  letter-spacing: 0.21em;
+  text-transform: uppercase;
+}
+.panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(42, 72, 113, 0.13);
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 15px) 0,
+    100% 15px,
+    100% 100%,
+    15px 100%,
+    0 calc(100% - 15px)
+  );
+}
+.panel::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 76px;
+  content: "";
+  background: linear-gradient(var(--blue), var(--gold));
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+.archive-heading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 32px;
+  margin-bottom: 15px;
+}
+.panel-description {
+  margin-top: 7px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+.panel-corner {
+  position: absolute;
+  top: 14px;
+  right: 21px;
+  color: rgba(36, 86, 166, 0.2);
+  font:
+    600 8px/1 "Bahnschrift",
+    sans-serif;
+  letter-spacing: 0.18em;
+}
+.stage-badge,
+.local-badge {
+  padding: 7px 10px;
+  border: 1px solid rgba(36, 86, 166, 0.14);
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-size: 9px;
+}
+.phase-ready,
+.phase-connected,
+.phase-syncing {
+  border-color: rgba(69, 174, 183, 0.25);
+  color: #247b84;
+  background: rgba(69, 174, 183, 0.1);
+}
+.phase-error {
+  color: #a45d4f;
+  background: #fff2ee;
+}

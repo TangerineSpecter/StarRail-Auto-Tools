@@ -9,8 +9,8 @@ export interface InventoryFilterForm {
   maxLevel: string;
   mainStats: string[];
   subStats: string[];
-  minSubstatCount: string;
-  maxSubstatCount: string;
+  minSubstatCount: string | number;
+  maxSubstatCount: string | number;
   locked: string;
   discard: string;
   equipped: string;
@@ -41,8 +41,8 @@ export const createInventoryFilterForm = (): InventoryFilterForm => ({
   element: [],
 });
 
-const asNumber = (value: string): number | undefined => {
-  const normalized = value.trim();
+const asNumber = (value: string | number): number | undefined => {
+  const normalized = String(value).trim();
   return normalized === "" ? undefined : Number(normalized);
 };
 
@@ -83,7 +83,7 @@ export function buildInventoryFilter(
       equipped: asBoolean(form.equipped),
     });
   }
-  
+
   let names: string[] | undefined = undefined;
   if (form.element.length > 0) {
     names = characterCatalogueJson.characters

@@ -2,6 +2,16 @@ import { describe, expect, it } from "vitest";
 import { buildInventoryFilter, createInventoryFilterForm } from "@/features/inventory/filter";
 
 describe("buildInventoryFilter", () => {
+  it("accepts numeric substat counts emitted by PrimeVue Select", () => {
+    const form = createInventoryFilterForm();
+    form.minSubstatCount = 2;
+    form.maxSubstatCount = 5;
+
+    expect(buildInventoryFilter("relic", form, 1, 50)).toMatchObject({
+      minSubstatCount: 2,
+      maxSubstatCount: 5,
+    });
+  });
   it("omits unset relic filters and preserves multi-select values", () => {
     const form = createInventoryFilterForm();
     form.search = "  信使  ";

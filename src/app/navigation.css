@@ -1,0 +1,85 @@
+.module-nav {
+  position: relative;
+  display: flex;
+  height: 54px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 20px;
+  overflow: hidden;
+  border: 1px solid rgba(45, 77, 120, 0.12);
+  background: rgba(250, 252, 254, 0.79);
+  box-shadow: 0 13px 32px rgba(53, 77, 112, 0.07);
+  backdrop-filter: blur(16px);
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+}
+.module-index {
+  margin-right: 15px;
+  color: var(--gold);
+  font:
+    600 18px/1 "Bahnschrift",
+    sans-serif;
+}
+.nav-item {
+  position: relative;
+  display: grid;
+  min-width: 108px;
+  gap: 3px;
+  padding: 0 17px;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+}
+.nav-item small {
+  color: var(--muted);
+  font:
+    600 7px/1 "Bahnschrift",
+    sans-serif;
+  letter-spacing: 0.17em;
+}
+.nav-item.active {
+  color: var(--blue);
+}
+.nav-item.active::after {
+  position: absolute;
+  width: 35px;
+  height: 2px;
+  left: 17px;
+  bottom: -12px;
+  content: "";
+  background: var(--gold);
+}
+.nav-divider {
+  width: 1px;
+  height: 25px;
+  background: var(--line);
+}
+.route-line {
+  display: flex;
+  flex: 1;
+  height: 1px;
+  align-items: center;
+  justify-content: space-around;
+  margin-left: 27px;
+  background: linear-gradient(90deg, var(--gold-light), transparent);
+}
+.route-line i {
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--gold);
+  background: #fff;
+  transform: rotate(45deg);
+}
+.nav-counts {
+  display: flex;
+  gap: 18px;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.nav-counts b {
+  margin-left: 4px;
+  color: var(--blue);
+  font:
+    600 12px/1 "Bahnschrift",
+    sans-serif;
+}

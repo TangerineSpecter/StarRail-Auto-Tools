@@ -1,0 +1,45 @@
+/* Shared PrimeVue density and focus treatment. Feature-specific overrides stay
+   beside the component that owns them. */
+.p-inputtext,
+.p-select {
+  width: 100%;
+  border-color: rgba(46, 78, 119, 0.17);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: none;
+  font-size: 10px;
+}
+
+.p-inputtext {
+  min-height: 32px;
+}
+
+.p-select {
+  min-height: 33px;
+}
+
+.p-select-label {
+  padding-block: 0.45rem;
+}
+
+.p-select-overlay {
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(30, 49, 79, 0.16);
+}
+
+.p-select-option {
+  font-size: 10px;
+}
+
+.p-button {
+  box-shadow: none;
+  font-family: var(--font-ui);
+}
+
+.p-button:focus-visible,
+.p-inputtext:focus-visible,
+.p-select:focus-visible {
+  outline: 2px solid rgba(36, 86, 166, 0.3);
+  outline-offset: 2px;
+}

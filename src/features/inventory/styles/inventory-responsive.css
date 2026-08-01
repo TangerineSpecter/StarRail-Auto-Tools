@@ -1,0 +1,484 @@
+/* Keep the management sidebar fully within the application frame. The page is
+   a desktop control surface, not a document that should acquire a second
+   scrollbar. */
+.archive-sidebar {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.archive-sidebar .kind-switcher {
+  margin-bottom: 16px;
+}
+.archive-sidebar .archive-meta {
+  margin-bottom: 14px;
+  padding-block: 9px;
+}
+.archive-sidebar .secondary-action {
+  flex: 0 0 auto;
+}
+
+@media (max-height: 900px) {
+  .archive-sidebar {
+    padding: 17px 18px;
+  }
+  .archive-sidebar h2 {
+    font-size: 21px;
+  }
+  .archive-sidebar .sidebar-copy {
+    margin: 5px 0 11px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .archive-sidebar .kind-switcher {
+    margin-bottom: 10px;
+  }
+  .archive-sidebar .kind-switcher button {
+    min-height: 62px;
+  }
+  .archive-sidebar .archive-meta {
+    margin-bottom: 9px;
+    padding-block: 7px;
+  }
+  .archive-sidebar .capture-action-btn,
+  .archive-sidebar .danger-action {
+    min-height: 38px;
+    height: 38px;
+  }
+  .archive-sidebar .capture-action-btn + .capture-action-btn {
+    margin-top: 6px;
+  }
+  .archive-sidebar .sidebar-clear {
+    margin-top: 8px;
+  }
+}
+
+/* Target rows are an editable grid: numeric fields align with the attribute
+   selector, while deletion is a quiet icon action instead of a full button. */
+.target-column-headings,
+.target-row {
+  grid-template-columns:
+    22px 42px minmax(180px, 1fr) minmax(110px, 0.7fr) minmax(140px, 0.86fr)
+    42px;
+  gap: 12px;
+}
+
+.target-column-headings {
+  font-size: 12px;
+  margin: 14px 0 6px;
+}
+.target-row {
+  min-height: 52px;
+  margin-top: 10px;
+}
+.target-row > b {
+  padding: 0;
+  font-size: 13px;
+}
+.target-row .p-select,
+.target-row .p-inputnumber,
+.target-row .p-inputnumber-input {
+  height: 46px;
+  min-height: 46px;
+}
+.target-row .p-inputnumber-input {
+  padding-inline: 13px;
+}
+.target-remove.p-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(170, 82, 67, 0.22);
+  color: #a2584b;
+  background: #fff8f6;
+  font-size: 22px;
+}
+.target-remove.p-button:hover {
+  border-color: rgba(170, 82, 67, 0.4);
+  background: #fff0eb;
+}
+
+.target-drag-preview {
+  box-sizing: border-box;
+  grid-template-columns:
+    22px 42px minmax(180px, 1fr) minmax(110px, 0.7fr) minmax(140px, 0.86fr)
+    42px;
+  gap: 12px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  transform: rotate(0.15deg);
+}
+
+/* Attribute target density: compact enough for a plan drawer, while inputs
+   retain equal visual weight and the lifted row has breathing room. */
+.target-row {
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 5px 0;
+  box-sizing: border-box;
+}
+
+.target-row .p-select,
+.target-row .p-inputnumber,
+.target-row .p-inputnumber-input {
+  height: 38px;
+  min-height: 38px;
+}
+
+.target-row .p-select-label,
+.target-row .p-inputnumber-input {
+  font-size: 14px !important;
+  line-height: 1.2;
+}
+
+.target-row .p-select-label {
+  padding-block: 0.55rem;
+}
+.target-row .p-inputnumber-input {
+  font-weight: 600;
+}
+.target-remove.p-button {
+  width: 38px;
+  height: 38px;
+  font-size: 19px;
+}
+
+/* Keep the plan editor left-aligned. Fractional columns made the form drift
+   right as the drawer widened and pushed the remove action against its edge. */
+.target-column-headings,
+.target-row {
+  width: min(100%, 696px);
+  margin-left: 0;
+  margin-right: auto;
+  grid-template-columns:
+    20px 34px minmax(180px, 260px) minmax(90px, 130px) minmax(110px, 170px)
+    38px;
+  gap: 8px;
+}
+
+.target-drag-preview {
+  padding: 5px 12px;
+}
+
+/* Character records use a compact dossier layout so empty skill/traces do not
+   leave large, unrelated whitespace. */
+.character-detail-drawer {
+  width: min(600px, 56vw);
+}
+.character-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 18px;
+}
+
+.character-identity,
+.character-metrics,
+.character-detail-card > .relic-detail-footer,
+.memosprite-note {
+  grid-column: 1 / -1;
+}
+.character-identity {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(36, 86, 166, 0.26);
+  background: linear-gradient(120deg, #e9f3ff, #f8fbff 70%);
+  border-radius: 8px;
+}
+.path-seal {
+  width: 62px;
+  height: 62px;
+  border-radius: 10px;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.character-detail-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.lightcone-detail-avatar {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  transform: scale(1.15);
+}
+.character-identity p {
+  font-size: 11px;
+  color: var(--blue);
+  margin: 0;
+  margin-bottom: 4px;
+}
+.character-identity h3 {
+  font-size: 23px;
+  color: var(--ink);
+  margin: 0;
+}
+.character-identity > b {
+  padding: 10px 13px;
+  border-radius: 6px;
+  font-size: 15px;
+  background: rgba(36, 86, 166, 0.8);
+  color: #fff;
+}
+.character-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0;
+}
+.character-metrics div {
+  padding: 12px 14px;
+  border-radius: 5px;
+  background: #f4f6fa;
+  border: 1px solid rgba(46, 78, 119, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+.character-metrics span {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.character-metrics b {
+  font-size: 21px;
+  color: var(--ink);
+}
+.character-data-section {
+  min-width: 0;
+  margin-top: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.55);
+}
+.character-data-section > header {
+  padding-bottom: 9px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.memosprite-note > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 9px;
+}
+.memosprite-note h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink);
+}
+.memosprite-note p.eyebrow {
+  margin: 0 0 2px;
+}
+.memosprite-note > header small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.character-data-section h3 {
+  font-size: 15px;
+  color: var(--ink);
+  margin: 0;
+}
+.character-data-section p.eyebrow {
+  margin: 0;
+  margin-bottom: 2px;
+}
+.character-data-section > header small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.character-data-section .empty-substats {
+  min-height: 70px;
+  padding: 20px 0 0;
+  font-size: 13px;
+}
+.character-data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 8px;
+}
+.character-data-grid div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+}
+.character-data-grid span {
+  color: var(--ink-soft);
+  text-transform: capitalize;
+}
+.character-data-grid b {
+  font-size: 14px;
+  color: var(--blue);
+}
+.lightcone-base-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 8px;
+}
+.lightcone-base-stat-grid div {
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+}
+.lightcone-base-stat-grid span {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.lightcone-base-stat-grid b {
+  color: var(--blue);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+.standing-stat-section {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(34, 86, 165, 0.32);
+  background:
+    linear-gradient(120deg, rgba(222, 235, 251, 0.78), rgba(255, 255, 255, 0.78) 48%),
+    rgba(255, 255, 255, 0.55);
+}
+.standing-stat-section::after {
+  position: absolute;
+  right: -26px;
+  bottom: -43px;
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgba(46, 91, 164, 0.16);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+.standing-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  padding-top: 10px;
+}
+.standing-stat-grid > div {
+  display: grid;
+  position: relative;
+  z-index: 1;
+  min-height: 60px;
+  align-content: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(37, 83, 153, 0.2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.76);
+}
+.standing-stat-grid span {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+.standing-stat-grid b {
+  color: var(--blue);
+  font-family: "Bahnschrift", sans-serif;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.standing-stat-unavailable,
+.standing-stat-section > footer {
+  position: relative;
+  z-index: 1;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.standing-stat-unavailable {
+  padding: 10px;
+  border: 1px dashed rgba(36, 86, 166, 0.32);
+  border-radius: 4px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.55);
+}
+.trace-stat-section > header small {
+  font-size: 10px;
+}
+.trace-stat-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 8px;
+}
+.trace-stat-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 62px;
+  padding: 8px 10px;
+  border: 1px solid rgba(36, 86, 166, 0.25);
+  border-radius: 4px;
+  color: var(--ink);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+.trace-stat-list button:hover {
+  border-color: var(--blue);
+}
+.trace-stat-list button.disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  background: rgba(245, 247, 250, 0.72);
+  text-decoration: line-through;
+}
+.trace-stat-list span {
+  display: grid;
+  gap: 2px;
+}
+.trace-stat-list b {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trace-stat-list small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.trace-stat-list em {
+  color: var(--blue);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.trace-stat-list button.disabled em {
+  color: var(--muted);
+}
+.character-detail-card > .relic-detail-footer {
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 0;
+}
+.character-detail-card > .relic-detail-footer div {
+  padding: 12px;
+  border-radius: 5px;
+}
+.character-detail-card > .relic-detail-footer span {
+  font-size: 11px;
+}
+.character-detail-card > .relic-detail-footer b {
+  font-size: 13px;
+}

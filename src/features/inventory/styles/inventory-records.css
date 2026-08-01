@@ -1,0 +1,363 @@
+/* Keep the inventory readable within the available workspace instead of
+   making the application acquire a horizontal scrollbar. */
+.inventory-col-select {
+  width: 5%;
+}
+.inventory-col-name {
+  width: 20%;
+}
+.inventory-col-level {
+  width: 9%;
+}
+.inventory-col-primary {
+  width: 11%;
+}
+.inventory-col-secondary {
+  width: 34%;
+}
+.inventory-col-equipped {
+  width: 13%;
+}
+.inventory-col-action {
+  width: 8%;
+}
+
+.inventory-table--lightCone .inventory-col-name {
+  width: 42%;
+}
+.inventory-table--lightCone .inventory-col-level {
+  width: 13%;
+}
+.inventory-table--lightCone .inventory-col-primary {
+  width: 15%;
+}
+.inventory-table--lightCone .inventory-col-secondary {
+  width: 17%;
+}
+.inventory-table--lightCone .inventory-col-action {
+  width: 8%;
+}
+
+.inventory-table th:nth-child(2) {
+  text-align: center;
+}
+
+tbody tr {
+  transition: background 130ms ease;
+}
+
+tbody tr:hover {
+  background: rgba(232, 240, 251, 0.62);
+}
+
+.check-cell {
+  text-align: center;
+}
+
+input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--blue);
+}
+
+.item-name {
+  display: block;
+  max-width: 185px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 10px;
+  text-overflow: ellipsis;
+}
+
+.relic-name-cell,
+.relic-name-info,
+.relic-main-stat {
+  min-width: 0;
+}
+
+.relic-name-info .item-name,
+.relic-subtitle,
+.relic-main-stat .stat-name,
+.relic-main-stat .stat-value {
+  white-space: nowrap;
+}
+
+.item-id {
+  display: block;
+  margin-top: 3px;
+  color: #a0aab7;
+  font:
+    600 7px/1 "Bahnschrift",
+    sans-serif;
+}
+
+.rarity {
+  color: var(--gold);
+  font-size: 8px;
+  letter-spacing: -0.08em;
+}
+
+.data-tag {
+  display: inline-block;
+  margin-right: 3px;
+  padding: 3px 5px;
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-size: 7px;
+}
+
+.data-tag.cyan {
+  color: #267c84;
+  background: rgba(69, 174, 183, 0.11);
+}
+
+.data-tag.danger {
+  color: #9c5a4e;
+  background: #fff0eb;
+}
+
+.detail-cell {
+  text-align: center;
+}
+
+.inventory-table tbody .detail-cell {
+  padding-right: 20px;
+  text-align: right;
+}
+
+.inventory-table th:last-child,
+.inventory-table .detail-cell,
+.row-action {
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.row-action {
+  padding: 5px 0;
+  color: var(--blue);
+  background: transparent;
+  font-size: 8px;
+}
+
+.table-empty {
+  height: 350px;
+  text-align: center;
+}
+
+.table-empty span,
+.table-empty strong,
+.table-empty small {
+  display: block;
+}
+
+.table-empty span {
+  color: var(--gold);
+  font-size: 26px;
+}
+
+.table-empty strong {
+  margin: 8px 0 5px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.table-empty small {
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 2px 0;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination button {
+  display: grid;
+  width: 28px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--blue);
+  background: #fff;
+}
+
+.pagination b {
+  color: var(--ink-soft);
+  font:
+    600 9px/1 "Bahnschrift",
+    sans-serif;
+}
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  color: var(--blue);
+  font-size: 10px;
+}
+.loading-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  font-size: 14px;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.app-footer {
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  padding: 9px 3px 0;
+  color: #7f8d9f;
+  font-size: 8px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.app-version {
+  padding-left: 9px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font:
+    600 10px/1 "Bahnschrift",
+    sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-meta .platform-label {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
+}
+
+.footer-meta .runtime-pill {
+  min-width: 86px;
+  gap: 7px;
+  padding: 5px 9px;
+  font-size: 9px;
+  box-shadow: 0 3px 8px rgba(51, 74, 110, 0.04);
+}
+
+.footer-meta .status-dot {
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 3px rgba(151, 164, 178, 0.12);
+}
+
+.footer-meta .status-dot.active {
+  box-shadow: 0 0 0 3px rgba(69, 174, 183, 0.14);
+}
+
+.detail-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(23, 38, 67, 0.22);
+  backdrop-filter: blur(3px);
+}
+
+.detail-drawer {
+  display: flex;
+  flex-direction: column;
+  width: min(470px, 48vw);
+  height: 100%;
+  box-sizing: border-box;
+  padding: 24px;
+  overflow: hidden;
+  border-left: 1px solid rgba(42, 72, 113, 0.18);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(241, 246, 251, 0.98)),
+    linear-gradient(90deg, transparent 39px, rgba(36, 86, 166, 0.05) 40px);
+  box-shadow: -25px 0 55px rgba(30, 49, 79, 0.14);
+  animation: drawer-in 220ms ease-out;
+}
+
+.detail-drawer > header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 17px;
+  border-bottom: 1px solid var(--line);
+}
+
+.detail-drawer > header button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  color: var(--blue);
+  background: #fff;
+  font-size: 19px;
+}
+
+.detail-drawer-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 4px 28px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-color: rgba(36, 86, 166, 0.45) transparent;
+  scrollbar-width: thin;
+}
+.detail-drawer-content::-webkit-scrollbar {
+  width: 7px;
+}
+.detail-drawer-content::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(36, 86, 166, 0.45);
+  background-clip: padding-box;
+}
+.detail-drawer-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.detail-drawer-content pre {
+  min-height: 100%;
+  height: auto;
+  margin: 0;
+  padding: 18px 4px;
+  overflow: auto;
+  color: #334866;
+  font:
+    10px/1.65 "SFMono-Regular",
+    Consolas,
+    monospace;
+  white-space: pre-wrap;
+}
+
+.detail-loading {
+  padding: 40px 0;
+  color: var(--muted);
+  font-size: 10px;
+}

@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import type {
   CharacterFilter,
   CharacterListItem,
@@ -34,4 +35,6 @@ export const inventoryApi = {
     invoke<InventorySummary>("clear_inventory", { request: { kind } }),
   export: () => invoke<string | null>("export_inventory"),
   import: () => invoke<InventoryImportResult | null>("import_inventory"),
+  onChanged: (handler: (summary: InventorySummary) => void) =>
+    listen<InventorySummary>("inventory://changed", (event) => handler(event.payload)),
 };

@@ -1,0 +1,706 @@
+/* Nebula clouds - richer starfield atmosphere */
+.nebula {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(35px);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.nebula-1 {
+  width: 220px;
+  height: 220px;
+  top: -40px;
+  right: -30px;
+  background: radial-gradient(
+    circle,
+    rgba(167, 139, 250, 0.7) 0%,
+    rgba(99, 102, 241, 0.3) 35%,
+    transparent 70%
+  );
+  animation: nebula-drift 18s ease-in-out infinite;
+}
+.nebula-2 {
+  width: 240px;
+  height: 240px;
+  bottom: -50px;
+  left: -40px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.6) 0%,
+    rgba(139, 92, 246, 0.25) 40%,
+    transparent 70%
+  );
+  animation: nebula-drift 22s ease-in-out infinite reverse;
+}
+.nebula-3 {
+  width: 160px;
+  height: 160px;
+  top: 40%;
+  left: 30%;
+  background: radial-gradient(
+    circle,
+    rgba(236, 72, 153, 0.3) 0%,
+    rgba(139, 92, 246, 0.15) 40%,
+    transparent 70%
+  );
+  animation: nebula-drift 25s ease-in-out infinite;
+  animation-delay: -5s;
+}
+@keyframes nebula-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(15px, -12px) scale(1.08);
+  }
+  66% {
+    transform: translate(-10px, 8px) scale(0.95);
+  }
+}
+
+/* Stars background - 3 layers for depth */
+.stellar-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Far stars - distant, small, subtle twinkle */
+.star-far {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle-far 4s ease-in-out infinite;
+}
+.star-far.sf1 {
+  width: 0.8px;
+  height: 0.8px;
+  top: 8%;
+  left: 5%;
+  animation-delay: 0s;
+  opacity: 0.4;
+}
+.star-far.sf2 {
+  width: 0.6px;
+  height: 0.6px;
+  top: 18%;
+  left: 15%;
+  animation-delay: 0.7s;
+  opacity: 0.3;
+}
+.star-far.sf3 {
+  width: 0.8px;
+  height: 0.8px;
+  top: 28%;
+  left: 25%;
+  animation-delay: 1.4s;
+  opacity: 0.5;
+}
+.star-far.sf4 {
+  width: 0.6px;
+  height: 0.6px;
+  top: 12%;
+  left: 35%;
+  animation-delay: 2.1s;
+  opacity: 0.35;
+}
+.star-far.sf5 {
+  width: 0.8px;
+  height: 0.8px;
+  top: 22%;
+  left: 45%;
+  animation-delay: 2.8s;
+  opacity: 0.4;
+}
+.star-far.sf6 {
+  width: 0.6px;
+  height: 0.6px;
+  top: 32%;
+  left: 55%;
+  animation-delay: 0.3s;
+  opacity: 0.45;
+}
+.star-far.sf7 {
+  width: 0.8px;
+  height: 0.8px;
+  top: 5%;
+  left: 65%;
+  animation-delay: 1s;
+  opacity: 0.3;
+}
+.star-far.sf8 {
+  width: 0.6px;
+  height: 0.6px;
+  top: 38%;
+  left: 75%;
+  animation-delay: 1.7s;
+  opacity: 0.4;
+}
+.star-far.sf9 {
+  width: 0.8px;
+  height: 0.8px;
+  top: 45%;
+  left: 88%;
+  animation-delay: 2.4s;
+  opacity: 0.5;
+}
+.star-far.sf10 {
+  width: 0.6px;
+  height: 0.6px;
+  top: 55%;
+  left: 3%;
+  animation-delay: 3.1s;
+  opacity: 0.35;
+}
+@keyframes twinkle-far {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Mid stars - medium size */
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+.star.s1 {
+  width: 2px;
+  height: 2px;
+  top: 15%;
+  left: 12%;
+  animation-delay: 0s;
+}
+.star.s2 {
+  width: 1.5px;
+  height: 1.5px;
+  top: 25%;
+  left: 78%;
+  animation-delay: 0.5s;
+}
+.star.s3 {
+  width: 2.5px;
+  height: 2.5px;
+  top: 60%;
+  left: 8%;
+  animation-delay: 1s;
+}
+.star.s4 {
+  width: 1px;
+  height: 1px;
+  top: 70%;
+  left: 85%;
+  animation-delay: 1.5s;
+}
+.star.s5 {
+  width: 2px;
+  height: 2px;
+  top: 40%;
+  left: 92%;
+  animation-delay: 2s;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+/* Bright near stars - prominent with glow */
+.star-bright {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 8px 2px rgba(255, 255, 255, 0.9),
+    0 0 16px 4px rgba(167, 139, 250, 0.4);
+  animation: twinkle-bright 2.5s ease-in-out infinite;
+}
+.star-bright.sb1 {
+  top: 20%;
+  left: 25%;
+  animation-delay: 0s;
+}
+.star-bright.sb2 {
+  top: 65%;
+  left: 15%;
+  animation-delay: 0.8s;
+}
+.star-bright.sb3 {
+  top: 15%;
+  left: 70%;
+  animation-delay: 1.5s;
+}
+@keyframes twinkle-bright {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Meteors / Shooting stars - large bright ones (from top-left to bottom-right) */
+.meteor {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 8px 3px rgba(255, 255, 255, 0.9),
+    0 0 16px 6px rgba(167, 139, 250, 0.5),
+    0 0 24px 10px rgba(99, 102, 241, 0.3);
+  opacity: 0;
+  z-index: 2;
+}
+.meteor::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(167, 139, 250, 0.8) 30%,
+    rgba(99, 102, 241, 0.4) 60%,
+    transparent 100%
+  );
+  transform: translateY(-50%) translateX(-100%);
+  border-radius: 2px;
+  filter: blur(0.5px);
+}
+.meteor::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 60px;
+  height: 6px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+  transform: translateY(-50%) translateX(-100%);
+  border-radius: 50%;
+  filter: blur(3px);
+}
+.m1 {
+  top: 8%;
+  left: 10%;
+  animation: meteor-sweep 8s ease-in infinite;
+  animation-delay: 0s;
+}
+.m2 {
+  top: 15%;
+  left: 5%;
+  animation: meteor-sweep 9s ease-in infinite;
+  animation-delay: 2.5s;
+}
+.m3 {
+  top: 3%;
+  left: 25%;
+  animation: meteor-sweep 11s ease-in infinite;
+  animation-delay: 5s;
+}
+
+@keyframes meteor-sweep {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(30deg);
+  }
+  3% {
+    opacity: 1;
+  }
+  18% {
+    opacity: 1;
+    transform: translate(280px, 200px) rotate(30deg);
+  }
+  22% {
+    opacity: 0;
+    transform: translate(320px, 230px) rotate(30deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(320px, 230px) rotate(30deg);
+  }
+}
+
+/* Small faint meteors - distant, quick (from top-left to bottom-right) */
+.meteor-small {
+  position: absolute;
+  width: 1.5px;
+  height: 1.5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.6);
+  opacity: 0;
+}
+.meteor-small::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.7), transparent);
+  transform: translateY(-50%) translateX(-100%);
+  border-radius: 1px;
+}
+.ms1 {
+  top: 30%;
+  left: 8%;
+  animation: meteor-quick 6s ease-in infinite;
+  animation-delay: 1s;
+}
+.ms2 {
+  top: 40%;
+  left: 5%;
+  animation: meteor-quick 5s ease-in infinite;
+  animation-delay: 3s;
+}
+
+@keyframes meteor-quick {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(25deg);
+  }
+  5% {
+    opacity: 0.8;
+  }
+  20% {
+    opacity: 0.8;
+    transform: translate(150px, 100px) rotate(25deg);
+  }
+  25% {
+    opacity: 0;
+    transform: translate(170px, 115px) rotate(25deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(170px, 115px) rotate(25deg);
+  }
+}
+
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 65%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 65%);
+}
+
+/* Orbit System */
+.orbit-system {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orbit-ellipse {
+  position: absolute;
+  border: 1px solid;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.oe-1 {
+  width: 70px;
+  height: 70px;
+  border-color: rgba(236, 72, 153, 0.4);
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.15);
+  animation: spin-slow 12s linear infinite;
+}
+.oe-2 {
+  width: 130px;
+  height: 55px;
+  border-color: rgba(16, 185, 129, 0.35);
+  transform: translate(-50%, -50%) rotateX(70deg);
+  animation: spin-med 20s linear infinite;
+}
+.oe-3 {
+  width: 180px;
+  height: 180px;
+  border-color: rgba(99, 102, 241, 0.2);
+  border-style: dashed;
+  animation: spin-slow 35s linear infinite reverse;
+}
+.oe-4 {
+  width: 250px;
+  height: 90px;
+  border-color: rgba(139, 92, 246, 0.2);
+  transform: translate(-50%, -50%) rotateX(75deg) rotate(15deg);
+  border-style: dotted;
+  animation: spin-med 30s linear infinite;
+}
+.oe-5 {
+  width: 310px;
+  height: 310px;
+  border-color: rgba(168, 85, 247, 0.15);
+  border-style: dashed;
+  animation: spin-slow 50s linear infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+@keyframes spin-med {
+  from {
+    transform: translate(-50%, -50%) rotateX(70deg) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotateX(70deg) rotate(360deg);
+  }
+}
+
+/* Satellites - Astral Express Crew characters */
+.satellite {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* Inner orbit - March 7th (pink) */
+.sat-march7 {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9px;
+  height: 9px;
+  background: #f472b6;
+  box-shadow:
+    0 0 8px rgba(244, 114, 182, 0.9),
+    0 0 16px rgba(236, 72, 153, 0.6);
+}
+
+/* Second orbit - Dan Heng (teal) + Himeko (orange-red) */
+.sat-danheng {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  background: #34d399;
+  box-shadow:
+    0 0 6px rgba(52, 211, 153, 0.9),
+    0 0 12px rgba(16, 185, 129, 0.5);
+}
+.sat-himeko {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: #f97316;
+  box-shadow:
+    0 0 7px rgba(249, 115, 22, 0.9),
+    0 0 14px rgba(239, 68, 68, 0.5);
+}
+
+/* Third orbit - Welt (indigo) + Bronya (silver) */
+.sat-welt {
+  top: 50%;
+  right: -4px;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  background: #818cf8;
+  box-shadow:
+    0 0 6px rgba(129, 140, 248, 0.9),
+    0 0 12px rgba(99, 102, 241, 0.5);
+}
+.sat-bronya {
+  top: 50%;
+  left: -4px;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: #e2e8f0;
+  box-shadow:
+    0 0 5px rgba(226, 232, 240, 0.9),
+    0 0 10px rgba(148, 163, 184, 0.5);
+}
+
+/* Fourth orbit - Seele (violet) + Serval (gold) + Gepard (ice blue) */
+.sat-seele {
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  background: #a855f7;
+  box-shadow:
+    0 0 6px rgba(168, 85, 247, 0.9),
+    0 0 12px rgba(124, 58, 237, 0.5);
+}
+.sat-serval {
+  bottom: -3px;
+  left: 25%;
+  width: 6px;
+  height: 6px;
+  background: #facc15;
+  box-shadow:
+    0 0 5px rgba(250, 204, 21, 0.9),
+    0 0 10px rgba(245, 158, 11, 0.5);
+}
+.sat-gepard {
+  bottom: -3px;
+  right: 25%;
+  width: 6px;
+  height: 6px;
+  background: #38bdf8;
+  box-shadow:
+    0 0 5px rgba(56, 189, 248, 0.9),
+    0 0 10px rgba(14, 165, 233, 0.5);
+}
+
+/* Fifth orbit - Pela (purple) + Natasha (green) */
+.sat-pela {
+  top: 15%;
+  left: -3px;
+  width: 5px;
+  height: 5px;
+  background: #c084fc;
+  box-shadow:
+    0 0 4px rgba(192, 132, 252, 0.8),
+    0 0 8px rgba(168, 85, 247, 0.4);
+}
+.sat-natasha {
+  bottom: 20%;
+  right: -3px;
+  width: 5px;
+  height: 5px;
+  background: #4ade80;
+  box-shadow:
+    0 0 4px rgba(74, 222, 128, 0.8),
+    0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+/* Astral Core */
+.astral-core {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.core-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid;
+}
+.ring-outer {
+  width: 72px;
+  height: 72px;
+  border-color: rgba(139, 92, 246, 0.4);
+  animation: ring-pulse 3s ease-in-out infinite;
+}
+.ring-mid {
+  width: 56px;
+  height: 56px;
+  border-color: rgba(139, 92, 246, 0.6);
+  animation: ring-pulse 3s ease-in-out infinite 0.3s;
+}
+.ring-inner {
+  width: 44px;
+  height: 44px;
+  border-color: rgba(167, 139, 250, 0.8);
+  animation: ring-pulse 3s ease-in-out infinite 0.6s;
+}
+@keyframes ring-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+.core-glow {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.5) 0%,
+    rgba(99, 102, 241, 0.2) 40%,
+    transparent 70%
+  );
+  animation: core-pulse 2.5s ease-in-out infinite;
+}
+@keyframes core-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+.core-diamond {
+  width: 36px;
+  height: 36px;
+  color: #fff;
+  z-index: 4;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+  animation: diamond-spin 20s linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+@keyframes diamond-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Orbit lines SVG overlay */
+.orbit-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}

@@ -1,0 +1,432 @@
+@media (max-width: 1080px) {
+  .protocol-label,
+  .route-line {
+    display: none;
+  }
+
+  .nav-item {
+    min-width: 98px;
+    padding: 0 12px;
+  }
+
+  .nav-item.active::after {
+    left: 12px;
+  }
+
+  .capture-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .archive-workspace {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+}
+
+/* Desktop readability scale: this is a data tool, so body content needs to be
+   comfortable at a normal desktop viewing distance rather than UI-microscopic. */
+body {
+  font-size: 14px;
+}
+h1 {
+  font-size: 27px;
+}
+h2 {
+  font-size: 24px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+.sidebar-copy,
+.panel-description,
+.direct-message strong,
+.sync-ledger span,
+.sync-ledger strong,
+.archive-meta strong,
+.archive-meta span {
+  font-size: 13px;
+}
+.kind-switcher span {
+  font-size: 16px;
+}
+.kind-switcher small,
+.archive-meta span {
+  font-size: 10px;
+}
+.kind-switcher b {
+  font-size: 26px;
+}
+
+.secondary-action,
+.danger-action,
+.ghost-action,
+.filter-submit,
+.filter-reset {
+  min-height: 42px;
+  font-size: 13px;
+}
+.secondary-action {
+  height: 46px;
+  padding-inline: 15px;
+}
+.archive-actions {
+  gap: 10px;
+}
+.archive-actions .p-button {
+  min-width: auto;
+}
+.archive-sidebar .capture-action-btn + .capture-action-btn {
+  margin-top: 10px;
+}
+.archive-sidebar .capture-action-btn span {
+  width: 68px;
+  text-align: left;
+}
+.sidebar-clear {
+  margin-top: 12px;
+}
+
+.p-inputtext,
+.p-select,
+.p-inputnumber-input {
+  font-size: 14px;
+}
+.p-select {
+  min-height: 40px;
+}
+.p-select-label {
+  padding-block: 0.56rem;
+}
+.p-select-option {
+  min-height: 40px;
+  font-size: 14px;
+}
+.result-count {
+  font-size: 12px;
+}
+.filter-scroll > label > span,
+.filter-group legend,
+.filter-group legend em,
+.filter-range label span {
+  font-size: 12px;
+}
+.filter-chip span {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+table {
+  font-size: 14px;
+}
+thead {
+  font-size: 13px;
+}
+th {
+  height: 44px;
+  padding: 0 12px;
+}
+td {
+  height: 56px;
+  padding: 9px 12px;
+}
+.item-name {
+  font-size: 14px;
+}
+.item-id,
+.rarity {
+  font-size: 11px;
+}
+.data-tag {
+  padding: 5px 8px;
+  font-size: 11px;
+}
+.row-action {
+  min-height: 36px;
+  padding: 5px 9px;
+  font-size: 13px;
+}
+
+.relic-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.relic-icon-box {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 18px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f9fbfd, #e6eff7);
+  border: 1px solid rgba(44, 88, 145, 0.12);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(36, 86, 166, 0.06);
+}
+.relic-piece-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.12);
+  filter: drop-shadow(0 2px 3px rgba(36, 86, 166, 0.15));
+}
+.light-cone-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.08);
+  filter: drop-shadow(0 2px 3px rgba(36, 86, 166, 0.15));
+}
+.relic-name-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.relic-name-info .item-name {
+  font-size: 14px;
+  color: var(--ink);
+}
+.relic-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+}
+.relic-level-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #f0f2f5;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.relic-level-badge.is-max {
+  background: linear-gradient(135deg, #f0b751, #e19532);
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(225, 149, 50, 0.25);
+  text-shadow: 0 1px 2px rgba(181, 107, 18, 0.4);
+}
+.relic-main-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.relic-main-stat .stat-name {
+  font-size: 11px;
+  color: var(--muted);
+}
+.relic-main-stat .stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.relic-substats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: 8px;
+  column-gap: 8px;
+  min-width: 0;
+}
+.relic-substat-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 8px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+.relic-substat-item .substat-name {
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.relic-substat-item .substat-value {
+  color: var(--ink);
+  font-weight: 600;
+}
+.hit-count-badge {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 8px;
+  font-weight: 800;
+  font-style: normal;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px 0 4px 0;
+}
+
+.relic-substat-item.hit-3 {
+  background: linear-gradient(135deg, #f3ebfc, #e5d4f7);
+  box-shadow: 0 1px 3px rgba(136, 67, 207, 0.15);
+}
+.relic-substat-item.hit-3 .substat-name {
+  color: #58338e;
+}
+.relic-substat-item.hit-3 .substat-value {
+  color: #431e78;
+}
+.relic-substat-item.hit-3 .hit-count-badge {
+  background: #58338e;
+  color: #fff;
+}
+
+.relic-substat-item.hit-4 {
+  background: linear-gradient(135deg, #fdf5e5, #f5d499);
+  box-shadow: 0 1px 4px rgba(214, 135, 37, 0.25);
+  border: 1px solid rgba(214, 135, 37, 0.3);
+}
+.relic-substat-item.hit-4 .substat-name {
+  color: #a15d04;
+}
+.relic-substat-item.hit-4 .substat-value {
+  color: #874900;
+}
+.relic-substat-item.hit-4 .hit-count-badge {
+  background: #b56b12;
+  color: #fff;
+}
+
+.relic-substat-item.hit-5 {
+  background: linear-gradient(110deg, #ff4e50, #f9d423, #ff4e50);
+  background-size: 200% 200%;
+  animation: mythic-glow 2.5s ease infinite;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 0 10px rgba(249, 212, 35, 0.6),
+    inset 0 0 5px rgba(255, 255, 255, 0.8);
+  transform: scale(1.02);
+}
+.relic-substat-item.hit-5 .substat-name {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(181, 107, 18, 0.8);
+}
+.relic-substat-item.hit-5 .substat-value {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(160, 50, 0, 0.9);
+  font-weight: 800;
+  font-size: 13px;
+}
+.relic-substat-item.hit-5 .hit-count-badge {
+  background: #fff;
+  color: #d6371c;
+  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.relic-substat-item.light-cone-superimposition.hit-5 {
+  background: #fdf0cf;
+  border-color: rgba(181, 107, 18, 0.3);
+  box-shadow: 0 1px 4px rgba(181, 107, 18, 0.18);
+  animation: none;
+  transform: none;
+}
+.relic-substat-item.light-cone-superimposition.hit-5 .substat-name {
+  color: #8a5108;
+  text-shadow: none;
+}
+.relic-substat-item.light-cone-superimposition.hit-5 .substat-value {
+  color: #6d3d00;
+  text-shadow: none;
+}
+
+@keyframes mythic-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.relic-equip-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.relic-equip-tag.unequipped {
+  background: #f0f2f5;
+  color: var(--muted);
+}
+.relic-equip-tag.element-火 {
+  background: #ffebe5;
+  color: #d13d21;
+}
+.relic-equip-tag.element-冰 {
+  background: #e5f5ff;
+  color: #1a7ec2;
+}
+.relic-equip-tag.element-雷 {
+  background: #f3ebfc;
+  color: #8843cf;
+}
+.relic-equip-tag.element-风 {
+  background: #e6f6eb;
+  color: #279447;
+}
+.relic-equip-tag.element-物理 {
+  background: #f0f2f5;
+  color: #5c6470;
+}
+.relic-equip-tag.element-量子 {
+  background: #f1eaf7;
+  color: #58338e;
+}
+.relic-equip-tag.element-虚数 {
+  background: #fdf5e5;
+  color: #c48310;
+}
+.relic-equip-tag.element-null {
+  background: #e8f0fb;
+  color: var(--blue);
+}
+.table-footer,
+.app-footer {
+  font-size: 12px;
+}
+.pagination {
+  gap: 10px;
+}
+.pagination .p-button {
+  width: 36px;
+  height: 36px;
+}
+.pagination b {
+  font-size: 13px;
+}
+
+.build-drawer header small,
+.build-section h3 small,
+.build-grid label,
+.target-row label,
+.main-stat-grid legend,
+.include-equipped,
+.target-column-headings {
+  font-size: 12px;
+}
+.build-section h3 {
+  font-size: 17px;
+}
+.build-grid .p-select,
+.target-row .p-select,
+.target-row .p-inputnumber,
+.target-row .p-inputnumber-input {
+  width: 100%;
+  min-height: 40px;
+}
+.main-stat-grid fieldset {
+  padding: 12px;
+}
+.build-actions {
+  gap: 10px;
+  padding: 16px 22px;
+}
