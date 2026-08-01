@@ -808,14 +808,11 @@ function resetBuildPlan(characterId: number) {
   Object.assign(buildPlan, {
     characterId,
     cavernMode: "fourPiece",
-    cavernSetA: cavernSetOptions.value[0]?.setId ?? 0,
+    cavernSetA: 0,
     cavernSetB: null,
-    planarSetId: planarSetOptions.value[0]?.setId ?? 0,
+    planarSetId: 0,
     mainStats: Object.fromEntries(relicSlots.map((slot) => [slot.value, []])),
-    targets: [
-      { statKey: "SPD", target: 180, priority: 1, minimum: 180 },
-      { statKey: "CRIT Rate", target: 80, priority: 2, minimum: 65 },
-    ],
+    targets: [],
   });
 }
 
@@ -2100,6 +2097,15 @@ onUnmounted(() => {
                       E{{ (item as CharacterListItem).eidolon }}
                     </strong>
                   </div>
+                </div>
+                <div class="character-card-actions">
+                  <button
+                    class="character-build-action"
+                    type="button"
+                    @click.stop="openBuild(item as CharacterListItem)"
+                  >
+                    培养方案 / 毕业目标
+                  </button>
                 </div>
               </div>
               <div v-if="!result.items.length" class="table-empty">

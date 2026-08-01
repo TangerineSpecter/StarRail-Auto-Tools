@@ -5669,6 +5669,40 @@ td {
   border-left: 1px solid rgba(48, 75, 117, 0.1);
 }
 
+.character-card-actions {
+  padding: 0 18px 14px;
+}
+
+.character-build-action {
+  width: 100%;
+  min-height: 32px;
+  overflow: hidden;
+  border: 1px solid rgba(36, 86, 166, 0.38);
+  border-radius: 6px;
+  color: #24569e;
+  background: rgba(244, 248, 255, 0.92);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.character-build-action:hover,
+.character-build-action:focus-visible {
+  border-color: #24569e;
+  color: #fff;
+  background: #24569e;
+  outline: none;
+}
+
+.character-build-action:focus-visible {
+  box-shadow: 0 0 0 3px rgba(36, 86, 166, 0.2);
+}
+
 .stat-col {
   display: flex;
   flex-direction: column;
