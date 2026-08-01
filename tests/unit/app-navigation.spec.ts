@@ -20,4 +20,24 @@ describe("AppNavigation", () => {
     expect(wrapper.emitted("update:activeView")?.[0]).toEqual(["archive"]);
     expect(wrapper.text()).toContain("遗器 3");
   });
+
+  it("includes the about page and emits its view id", async () => {
+    const wrapper = mount(AppNavigation, {
+      props: {
+        activeView: "capture",
+        summary: {
+          relics: 0,
+          lightCones: 0,
+          characters: 0,
+          lastSyncAt: null,
+          protocolVersion: "v",
+        },
+      },
+    });
+
+    const aboutButton = wrapper.findAll("button").find((button) => button.text().includes("关于"));
+    expect(aboutButton?.text()).toContain("ABOUT PROJECT");
+    await aboutButton?.trigger("click");
+    expect(wrapper.emitted("update:activeView")?.[0]).toEqual(["about"]);
+  });
 });

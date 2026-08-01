@@ -43,6 +43,7 @@ import {
 } from "@/shared/utils/trace-settings";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import AppNavigation, { type AppView } from "@/app/AppNavigation.vue";
+import AboutPanel from "@/features/about/AboutPanel.vue";
 import ExpressPassage from "@/features/capture/ExpressPassage.vue";
 import BuildDashboard from "@/features/build-planner/BuildDashboard.vue";
 import SetRecommendationModal from "@/features/catalogue/SetRecommendationModal.vue";
@@ -55,6 +56,7 @@ import {
   isMaxStandingEquipment,
 } from "@/shared/utils/standing-stats";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
+import { APP_VERSION } from "@/shared/app-info";
 import relicCatalogueJson from "./data/relic-sets.json";
 import characterCatalogueJson from "./data/characters.json";
 import lightConeCatalogueJson from "./data/light-cones.json";
@@ -2161,6 +2163,8 @@ onUnmounted(() => {
         @open-relic="openRelicDetail"
       />
 
+      <AboutPanel v-else-if="activeView === 'about'" />
+
       <section v-else class="catalogue-workspace">
         <header class="catalogue-heading" style="align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 24px;">
           <div>
@@ -2316,7 +2320,10 @@ onUnmounted(() => {
       </section>
 
       <footer class="app-footer">
-        <span>StarRail-Auto-Tools</span>
+        <div class="footer-brand">
+          <span>StarRail-Auto-Tools</span>
+          <span class="app-version">v{{ APP_VERSION }}</span>
+        </div>
         <div class="footer-meta">
           <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
           <div :class="['runtime-pill', `tone-${phaseCode}`]">

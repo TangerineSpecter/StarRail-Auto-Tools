@@ -1,8 +1,23 @@
-# StarRail-Auto-Tools
+# 星穹铁道工具箱 · StarRail-Auto-Tools
 
-星穹铁道工具箱：一个使用 Tauri 2、Vue 3 和 Rust 构建的本地游戏自动化与背包 OCR 录入工具。
+[![Version](https://img.shields.io/badge/version-1.0.0-4f7fc4?style=flat-square)](https://github.com/TangerineSpecter/StarRail-Auto-Tools/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-4f7fc4?style=flat-square)](#游戏数据直读)
+[![Tauri](https://img.shields.io/badge/Tauri-2-24c8d8?style=flat-square&logo=tauri&logoColor=white)](https://v2.tauri.app/)
+[![Vue](https://img.shields.io/badge/Vue-3-42b883?style=flat-square&logo=vuedotjs&logoColor=white)](https://vuejs.org/)
+[![Rust](https://img.shields.io/badge/Rust-2021-000000?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![License](https://img.shields.io/badge/license-MIT-c7a453?style=flat-square)](./LICENSE)
 
-## 技术路线
+> 为《崩坏：星穹铁道》打造的本地数据工具。集中管理游戏背包、查看图鉴、规划毕业目标，并支持本地截图 OCR。
+
+## 功能一览
+
+- 📡 **游戏数据直读**：Windows 下监听游戏登录流量，自动归档遗器、光锥与角色数据；不读取游戏进程内存。
+- 🗃️ **本地数据管理**：使用 SQLite 保存数据，支持筛选、查看详情、批量删除和 HSR-Scanner / Fribbels 兼容 JSON 导出。
+- 🗺️ **图鉴与培养规划**：内置遗器、位面饰品、角色与光锥参考数据，支持角色毕业目标和配装推荐。
+- 🔎 **截图识别**：使用本地 PaddleOCR ONNX 模型识别截图，并提供遗器主词条扫描辅助。
+- 🖥️ **跨平台开发**：macOS/Linux 可用于界面开发和图片 OCR；Windows 提供完整的游戏数据直读能力。
+
+## 工作方式
 
 ```text
 Windows Packet Monitor（UDP 23301-23302）
@@ -94,16 +109,3 @@ models/
 默认生成 **NSIS 安装包 EXE**，输出目录为 `src-tauri\target\release\bundle\nsis`。这是推荐的发布形式：它会创建开始菜单/卸载入口，并按当前配置在用户缺少 WebView2 Runtime 时使用轻量下载引导程序安装该运行时。
 
 不建议直接分发 `target\release` 下的裸 EXE：用户仍可能缺少 WebView2，且后续应用资源、模型和升级管理会变得零散。当前 OCR 模型刻意未打入安装包（体积和模型许可待确定）；发布时应单独提供模型下载，或在确认许可和体积后把 `models/` 加入 Tauri bundle resources。
-
-## 当前里程碑
-
-- [x] Tauri 2 + Vue 3 客户端骨架
-- [x] Rust 扫描状态机和领域模型
-- [x] Rust 本地图片 OCR 命令
-- [x] Windows pktmon 游戏数据直读
-- [x] 遗器、光锥和角色 SQLite 持久化
-- [x] 数据分页筛选、详情、删除与 JSON 导出
-- [ ] Windows 游戏窗口帧采集
-- [ ] 背包区域标定与画面变化检测
-- [ ] OCR 字段解析与确认入库
-- [ ] 使用真实游戏截图建立回归样本集

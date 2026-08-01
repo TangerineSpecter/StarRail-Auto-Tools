@@ -389,7 +389,7 @@ h2 {
 .nav-item {
   position: relative;
   display: grid;
-  min-width: 120px;
+  min-width: 108px;
   gap: 3px;
   padding: 0 17px;
   background: transparent;
@@ -3515,6 +3515,20 @@ input[type="checkbox"] {
   font-size: 8px;
 }
 
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.app-version {
+  padding-left: 9px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font: 600 10px/1 "Bahnschrift", sans-serif;
+  letter-spacing: 0.08em;
+}
+
 .footer-meta {
   display: flex;
   align-items: center;
@@ -4241,6 +4255,15 @@ input[type="checkbox"] {
   .protocol-label,
   .route-line {
     display: none;
+  }
+
+  .nav-item {
+    min-width: 98px;
+    padding: 0 12px;
+  }
+
+  .nav-item.active::after {
+    left: 12px;
   }
 
   .capture-workspace {
