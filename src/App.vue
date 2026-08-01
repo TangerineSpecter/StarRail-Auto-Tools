@@ -269,6 +269,7 @@ const availableMainStats = computed(() => {
   const slots = filters.slots.length ? filters.slots : relicSlots.map((slot) => slot.value);
   return [...new Set(slots.flatMap((slot) => relicMainStats[slot] ?? []))];
 });
+const catalogueTab = ref<"cavern" | "planar" | "character">("cavern");
 const detailRelic = computed<RelicDetailData | null>(() =>
   detail.value?.kind === "relic" ? (detail.value.data as unknown as RelicDetailData) : null,
 );
@@ -1943,41 +1944,59 @@ onUnmounted(() => {
       </section>
 
       <section v-else class="catalogue-workspace">
-        <header class="catalogue-heading">
+        <header class="catalogue-heading" style="align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 24px;">
           <div>
             <p class="eyebrow">LOCAL REFERENCE DATA</p>
-            <h2>遗器与位面饰品图鉴</h2>
-            <p>随客户端打包的公共数据，不依赖游戏登录或本地背包。</p>
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+              <h2 style="margin: 0;">遗器与位面饰品图鉴</h2>
+            </div>
           </div>
-          <small v-if="relicCatalogue.source.syncedAt"
-            >更新：{{ new Date(relicCatalogue.source.syncedAt).toLocaleDateString("zh-CN") }}</small
-          >
-          <small v-else>尚未同步图鉴数据</small>
+          <div class="catalogue-tabs" style="display: flex; gap: 8px;">
+            <button
+              v-for="tab in [
+                { key: 'cavern', label: '遗器', code: 'CAVERN', count: catalogueGroups.cavern.length, unit: '套' },
+                { key: 'planar', label: '位面饰品', code: 'PLANAR', count: catalogueGroups.planar.length, unit: '套' },
+                { key: 'character', label: '角色', code: 'AVATAR', count: characterCatalogue.characters.length, unit: '名' }
+              ]"
+              :key="tab.key"
+              :class="['catalogue-tab-btn', { active: catalogueTab === tab.key }]"
+              type="button"
+              @click="catalogueTab = tab.key"
+              :style="{
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                gap: '16px',
+                padding: '8px 16px', 
+                border: catalogueTab === tab.key ? '1px solid transparent' : '1px solid var(--line)', 
+                borderRadius: '8px', 
+                background: catalogueTab === tab.key ? 'var(--p-primary-color)' : 'transparent', 
+                color: catalogueTab === tab.key ? '#fff' : 'inherit',
+                cursor: 'pointer', 
+                textAlign: 'left', 
+                transition: 'all 0.2s',
+                minWidth: '150px'
+              }"
+            >
+              <span style="display: flex; flex-direction: column; gap: 2px;">
+                <small style="font-size: 10px; opacity: 0.6; letter-spacing: 0.05em; line-height: 1;">{{ tab.code }}</small>
+                <span style="font-weight: 500;">{{ tab.label }}</span>
+              </span>
+              <b style="font-size: 16px; font-weight: 600;">{{ tab.count }} <small style="font-size: 12px; font-weight: normal; opacity: 0.8;">{{ tab.unit }}</small></b>
+            </button>
+          </div>
         </header>
         <div
           v-if="relicCatalogue.sets.length || characterCatalogue.characters.length"
           class="catalogue-groups"
         >
           <section
-            v-for="group in [
-              { key: 'cavern', title: '隧洞遗器' },
-              { key: 'planar', title: '位面饰品' },
-            ]"
-            v-show="catalogueGroups[group.key as keyof typeof catalogueGroups].length"
-            :key="group.key"
+            v-show="catalogueTab === 'cavern' && catalogueGroups.cavern.length"
             class="catalogue-group"
           >
-            <h3>
-              {{ group.title }}
-              <small
-                >{{ catalogueGroups[group.key as keyof typeof catalogueGroups].length }} 套</small
-              >
-            </h3>
             <div class="catalogue-grid">
               <article
-                v-for="set in catalogueGroups[
-                  group.key as keyof typeof catalogueGroups
-                ] as RelicSetCatalogueEntry[]"
+                v-for="set in catalogueGroups.cavern"
                 :key="set.id"
                 class="catalogue-card"
               >
@@ -1992,10 +2011,29 @@ onUnmounted(() => {
               </article>
             </div>
           </section>
-          <section class="catalogue-group character-catalogue-group">
-            <h3>
-              角色基础信息 <small>{{ characterCatalogue.characters.length }} 名</small>
-            </h3>
+          
+          <section
+            v-show="catalogueTab === 'planar' && catalogueGroups.planar.length"
+            class="catalogue-group"
+          >
+            <div class="catalogue-grid">
+              <article
+                v-for="set in catalogueGroups.planar"
+                :key="set.id"
+                class="catalogue-card"
+              >
+                <img v-if="set.image" :src="set.image" :alt="set.name" />
+                <span v-else class="catalogue-placeholder">◇</span>
+                <div>
+                  <small>#{{ set.id }}</small>
+                  <h4>{{ set.name }}</h4>
+                  <p><b>2 件</b>{{ set.effects.twoPiece }}</p>
+                  <p v-if="set.effects.fourPiece"><b>4 件</b>{{ set.effects.fourPiece }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
+          <section v-show="catalogueTab === 'character'" class="catalogue-group character-catalogue-group">
             <div v-if="characterCatalogue.characters.length" class="character-catalogue-grid">
               <article
                 v-for="character in characterCatalogue.characters"
