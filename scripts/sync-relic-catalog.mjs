@@ -138,6 +138,79 @@ function parseCharacter(slug, fragment) {
   };
 }
 
+function parseAssignedJson(html, marker) {
+  const markerIndex = html.indexOf(marker);
+  if (markerIndex < 0) throw new Error(`未找到 ${marker} 数据标记。`);
+
+  const source = html.slice(markerIndex + marker.length);
+  const start = source.indexOf("{");
+  if (start < 0) throw new Error(`${marker} 后未找到 JSON 对象。`);
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < source.length; index += 1) {
+    const character = source[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') inString = true;
+    else if (character === "{") depth += 1;
+    else if (character === "}") {
+      depth -= 1;
+      if (depth === 0) return JSON.parse(source.slice(start, index + 1));
+    }
+  }
+  throw new Error(`${marker} JSON 未正确闭合。`);
+}
+
+function level80BaseStats(levelData) {
+  const level80 = levelData?.find((entry) => entry.maxLevel === 80);
+  if (!level80) throw new Error("未找到 80 级角色成长数据。");
+
+  const statAtLevel80 = (baseKey, growthKey) => {
+    const base = level80[baseKey];
+    const growth = level80[growthKey] ?? 0;
+    if (!Number.isFinite(base) || !Number.isFinite(growth)) {
+      throw new Error(`80 级属性字段无效：${baseKey}/${growthKey}`);
+    }
+    return Math.floor(base + growth * 79);
+  };
+
+  if (!Number.isFinite(level80.speedBase) || !Number.isFinite(level80.aggro)) {
+    throw new Error("80 级速度或嘲讽字段无效。");
+  }
+
+  return {
+    hp: statAtLevel80("hpBase", "hpAdd"),
+    attack: statAtLevel80("attackBase", "attackAdd"),
+    defense: statAtLevel80("defenseBase", "defenseAdd"),
+    speed: Math.floor(level80.speedBase + (level80.speedAdd ?? 0) * 79),
+    taunt: level80.aggro,
+  };
+}
+
+function parseCharacterBaseStats(html) {
+  const config = parseAssignedJson(html, "window.PAGE_CONFIG=");
+  return level80BaseStats(config.levelData);
+}
+
+async function forEachConcurrent(entries, worker, concurrency = 8) {
+  let nextIndex = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, entries.length) }, async () => {
+      while (nextIndex < entries.length) {
+        const index = nextIndex;
+        nextIndex += 1;
+        await worker(entries[index]);
+      }
+    }),
+  );
+}
+
 async function fetchOrThrow(url) {
   // Character cards are client-rendered for some non-browser user agents. Keep
   // the fetch close to a normal Chrome navigation so the same page variant is
@@ -246,6 +319,14 @@ if (characters.length < 50) {
     `角色数据页未返回可用的角色卡片（发现 ${linkCount} 个角色链接，解析到 ${characters.length} 名角色）。请稍后重试；现有角色图鉴不会被覆盖。`,
   );
 }
+await forEachConcurrent(characters, async (character) => {
+  try {
+    const detailUrl = new URL(`/cn/character/${character.slug}`, characterSourceUrl).toString();
+    character.baseStats = parseCharacterBaseStats(await (await fetchOrThrow(detailUrl)).text());
+  } catch (error) {
+    throw new Error(`无法同步角色「${character.name}」的 80 级基础属性：${error.message}`);
+  }
+});
 for (const character of characters) {
   if (!character.imageUrl) continue;
   const extension = extname(new URL(character.imageUrl).pathname) || ".webp";

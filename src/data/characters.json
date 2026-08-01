@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/characters",
-    "syncedAt": "2026-07-31T06:33:47.594Z"
+    "syncedAt": "2026-08-01T09:00:25.578Z"
   },
   "characters": [
     {
@@ -11,6 +11,13 @@
       "name": "阿格莱雅",
       "element": "雷",
       "path": "记忆",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 698,
+        "defense": 485,
+        "speed": 102,
+        "taunt": 100
+      },
       "image": "/characters/aglaea.webp",
       "backgroundImage": "/character-backgrounds/aglaea.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -21,6 +28,13 @@
       "name": "阿兰",
       "element": "雷",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1199,
+        "attack": 599,
+        "defense": 330,
+        "speed": 102,
+        "taunt": 125
+      },
       "image": "/characters/arlan.webp",
       "backgroundImage": "/character-backgrounds/arlan.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -31,6 +45,13 @@
       "name": "艾丝妲",
       "element": "火",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1023,
+        "attack": 511,
+        "defense": 463,
+        "speed": 106,
+        "taunt": 100
+      },
       "image": "/characters/asta.webp",
       "backgroundImage": "/character-backgrounds/asta.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -41,6 +62,13 @@
       "name": "白厄",
       "element": "物理",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1435,
+        "attack": 582,
+        "defense": 703,
+        "speed": 94,
+        "taunt": 125
+      },
       "image": "/characters/phainon.webp",
       "backgroundImage": "/character-backgrounds/phainon.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -51,6 +79,13 @@
       "name": "白露",
       "element": "雷",
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1319,
+        "attack": 562,
+        "defense": 485,
+        "speed": 98,
+        "taunt": 100
+      },
       "image": "/characters/bailu.webp",
       "backgroundImage": "/character-backgrounds/bailu.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -61,6 +96,13 @@
       "name": "波提欧",
       "element": "物理",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1203,
+        "attack": 620,
+        "defense": 436,
+        "speed": 107,
+        "taunt": 75
+      },
       "image": "/characters/boothill.webp",
       "backgroundImage": "/character-backgrounds/boothill.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -71,6 +113,13 @@
       "name": "不死途",
       "element": "雷",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 853,
+        "attack": 776,
+        "defense": 388,
+        "speed": 106,
+        "taunt": 75
+      },
       "image": "/characters/ashveil.webp",
       "backgroundImage": "/character-backgrounds/ashveil.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -81,6 +130,13 @@
       "name": "布洛妮娅",
       "element": "风",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 582,
+        "defense": 533,
+        "speed": 99,
+        "taunt": 100
+      },
       "image": "/characters/bronya.webp",
       "backgroundImage": "/character-backgrounds/bronya.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -91,6 +147,13 @@
       "name": "大黑塔",
       "element": "冰",
       "path": "智识",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 679,
+        "defense": 485,
+        "speed": 99,
+        "taunt": 75
+      },
       "image": "/characters/theherta.webp",
       "backgroundImage": "/character-backgrounds/theherta.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -101,6 +164,13 @@
       "name": "大丽花",
       "element": "火",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 679,
+        "defense": 606,
+        "speed": 96,
+        "taunt": 100
+      },
       "image": "/characters/dahlia.webp",
       "backgroundImage": "/character-backgrounds/dahlia.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -111,6 +181,13 @@
       "name": "丹恒",
       "element": "风",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 882,
+        "attack": 546,
+        "defense": 396,
+        "speed": 110,
+        "taunt": 75
+      },
       "image": "/characters/danheng.webp",
       "backgroundImage": "/character-backgrounds/danheng.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -121,6 +198,13 @@
       "name": "丹恒•腾荒",
       "element": "物理",
       "path": "存护",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 582,
+        "defense": 776,
+        "speed": 97,
+        "taunt": 150
+      },
       "image": "/characters/danhengpt.webp",
       "backgroundImage": "/character-backgrounds/danhengpt.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -131,6 +215,13 @@
       "name": "丹恒•饮月",
       "element": "虚数",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 698,
+        "defense": 363,
+        "speed": 102,
+        "taunt": 125
+      },
       "image": "/characters/danhengil.webp",
       "backgroundImage": "/character-backgrounds/danhengil.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -141,6 +232,13 @@
       "name": "飞霄",
       "element": "风",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 601,
+        "defense": 388,
+        "speed": 112,
+        "taunt": 75
+      },
       "image": "/characters/feixiao.webp",
       "backgroundImage": "/character-backgrounds/feixiao.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -151,6 +249,13 @@
       "name": "绯英",
       "element": "物理",
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 737,
+        "defense": 460,
+        "speed": 104,
+        "taunt": 100
+      },
       "image": "/characters/evanescia.webp",
       "backgroundImage": "/character-backgrounds/evanescia.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -161,6 +266,13 @@
       "name": "翡翠",
       "element": "量子",
       "path": "智识",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 659,
+        "defense": 509,
+        "speed": 103,
+        "taunt": 75
+      },
       "image": "/characters/jade.webp",
       "backgroundImage": "/character-backgrounds/jade.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -171,6 +283,13 @@
       "name": "风堇",
       "element": "风",
       "path": "记忆",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 388,
+        "defense": 630,
+        "speed": 110,
+        "taunt": 100
+      },
       "image": "/characters/hyacine.webp",
       "backgroundImage": "/character-backgrounds/hyacine.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -181,6 +300,13 @@
       "name": "符玄",
       "element": "量子",
       "path": "存护",
+      "baseStats": {
+        "hp": 1474,
+        "attack": 465,
+        "defense": 606,
+        "speed": 100,
+        "taunt": 150
+      },
       "image": "/characters/fuxuan.webp",
       "backgroundImage": "/character-backgrounds/fuxuan.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -191,6 +317,13 @@
       "name": "桂乃芬",
       "element": "火",
       "path": "虚无",
+      "baseStats": {
+        "hp": 882,
+        "attack": 582,
+        "defense": 441,
+        "speed": 106,
+        "taunt": 100
+      },
       "image": "/characters/guinaifen.webp",
       "backgroundImage": "/character-backgrounds/guinaifen.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -201,6 +334,13 @@
       "name": "海瑟音",
       "element": "物理",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1203,
+        "attack": 601,
+        "defense": 485,
+        "speed": 102,
+        "taunt": 100
+      },
       "image": "/characters/hysilens.webp",
       "backgroundImage": "/character-backgrounds/hysilens.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -211,6 +351,13 @@
       "name": "寒鸦",
       "element": "物理",
       "path": "同谐",
+      "baseStats": {
+        "hp": 917,
+        "attack": 564,
+        "defense": 352,
+        "speed": 110,
+        "taunt": 100
+      },
       "image": "/characters/hanya.webp",
       "backgroundImage": "/character-backgrounds/hanya.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -221,6 +368,13 @@
       "name": "黑塔",
       "element": "冰",
       "path": "智识",
+      "baseStats": {
+        "hp": 952,
+        "attack": 582,
+        "defense": 396,
+        "speed": 100,
+        "taunt": 75
+      },
       "image": "/characters/herta.webp",
       "backgroundImage": "/character-backgrounds/herta.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -231,6 +385,13 @@
       "name": "黑天鹅",
       "element": "风",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 659,
+        "defense": 485,
+        "speed": 102,
+        "taunt": 100
+      },
       "image": "/characters/blackswan.webp",
       "backgroundImage": "/character-backgrounds/blackswan.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -241,6 +402,13 @@
       "name": "虎克",
       "element": "火",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1340,
+        "attack": 617,
+        "defense": 352,
+        "speed": 94,
+        "taunt": 125
+      },
       "image": "/characters/hook.webp",
       "backgroundImage": "/character-backgrounds/hook.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -251,6 +419,13 @@
       "name": "花火",
       "element": "量子",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1397,
+        "attack": 523,
+        "defense": 485,
+        "speed": 101,
+        "taunt": 100
+      },
       "image": "/characters/sparkle.webp",
       "backgroundImage": "/character-backgrounds/sparkle.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -261,6 +436,13 @@
       "name": "黄泉",
       "element": "雷",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1125,
+        "attack": 698,
+        "defense": 436,
+        "speed": 101,
+        "taunt": 100
+      },
       "image": "/characters/acheron.webp",
       "backgroundImage": "/character-backgrounds/acheron.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -271,6 +453,13 @@
       "name": "火花",
       "element": "火",
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 640,
+        "defense": 460,
+        "speed": 107,
+        "taunt": 100
+      },
       "image": "/characters/sparxie.webp",
       "backgroundImage": "/character-backgrounds/sparxie.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -281,6 +470,13 @@
       "name": "藿藿",
       "element": "风",
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1358,
+        "attack": 601,
+        "defense": 509,
+        "speed": 98,
+        "taunt": 100
+      },
       "image": "/characters/huohuo.webp",
       "backgroundImage": "/character-backgrounds/huohuo.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -291,6 +487,13 @@
       "name": "姬子",
       "element": "火",
       "path": "智识",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 756,
+        "defense": 436,
+        "speed": 96,
+        "taunt": 75
+      },
       "image": "/characters/himeko.webp",
       "backgroundImage": "/character-backgrounds/himeko.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -301,6 +504,13 @@
       "name": "姬子•启行",
       "element": "火",
       "path": "智识",
+      "baseStats": {
+        "hp": 1125,
+        "attack": 756,
+        "defense": 485,
+        "speed": 98,
+        "taunt": 75
+      },
       "image": "/characters/himekonova.webp",
       "backgroundImage": "/character-backgrounds/himekonova.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -311,6 +521,13 @@
       "name": "吉尔伽美什",
       "element": "雷",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1125,
+        "attack": 717,
+        "defense": 509,
+        "speed": 97,
+        "taunt": 125
+      },
       "image": "/characters/gilgamesh.webp",
       "backgroundImage": "/character-backgrounds/gilgamesh.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -321,6 +538,13 @@
       "name": "加拉赫",
       "element": "火",
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1305,
+        "attack": 529,
+        "defense": 441,
+        "speed": 98,
+        "taunt": 100
+      },
       "image": "/characters/gallagher.webp",
       "backgroundImage": "/character-backgrounds/gallagher.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -331,6 +555,13 @@
       "name": "椒丘",
       "element": "火",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1358,
+        "attack": 601,
+        "defense": 509,
+        "speed": 98,
+        "taunt": 100
+      },
       "image": "/characters/jiaoqiu.webp",
       "backgroundImage": "/character-backgrounds/jiaoqiu.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -341,6 +572,13 @@
       "name": "杰帕德",
       "element": "冰",
       "path": "存护",
+      "baseStats": {
+        "hp": 1397,
+        "attack": 543,
+        "defense": 654,
+        "speed": 92,
+        "taunt": 150
+      },
       "image": "/characters/gepard.webp",
       "backgroundImage": "/character-backgrounds/gepard.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -351,6 +589,13 @@
       "name": "景元",
       "element": "雷",
       "path": "智识",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 698,
+        "defense": 485,
+        "speed": 99,
+        "taunt": 75
+      },
       "image": "/characters/jingyuan.webp",
       "backgroundImage": "/character-backgrounds/jingyuan.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -361,6 +606,13 @@
       "name": "镜流",
       "element": "冰",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1435,
+        "attack": 679,
+        "defense": 485,
+        "speed": 96,
+        "taunt": 125
+      },
       "image": "/characters/jingliu.webp",
       "backgroundImage": "/character-backgrounds/jingliu.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -371,6 +623,13 @@
       "name": "卡芙卡",
       "element": "雷",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 679,
+        "defense": 485,
+        "speed": 100,
+        "taunt": 100
+      },
       "image": "/characters/kafka.webp",
       "backgroundImage": "/character-backgrounds/kafka.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -381,6 +640,13 @@
       "name": "开拓者",
       "element": "物理",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1203,
+        "attack": 620,
+        "defense": 460,
+        "speed": 100,
+        "taunt": 125
+      },
       "image": "/characters/playerboy.webp",
       "backgroundImage": "/character-backgrounds/playerboy.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -391,6 +657,13 @@
       "name": "开拓者",
       "element": "物理",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1203,
+        "attack": 620,
+        "defense": 460,
+        "speed": 100,
+        "taunt": 125
+      },
       "image": "/characters/playergirl.webp",
       "backgroundImage": "/character-backgrounds/playergirl.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -401,6 +674,13 @@
       "name": "开拓者",
       "element": "火",
       "path": "存护",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 601,
+        "defense": 606,
+        "speed": 95,
+        "taunt": 150
+      },
       "image": "/characters/playerboy2.webp",
       "backgroundImage": "/character-backgrounds/playerboy2.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -411,6 +691,13 @@
       "name": "开拓者",
       "element": "火",
       "path": "存护",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 601,
+        "defense": 606,
+        "speed": 95,
+        "taunt": 150
+      },
       "image": "/characters/playergirl2.webp",
       "backgroundImage": "/character-backgrounds/playergirl2.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -421,6 +708,13 @@
       "name": "开拓者",
       "element": "虚数",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 446,
+        "defense": 679,
+        "speed": 105,
+        "taunt": 100
+      },
       "image": "/characters/playerboy3.webp",
       "backgroundImage": "/character-backgrounds/playerboy3.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -431,6 +725,13 @@
       "name": "开拓者",
       "element": "虚数",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 446,
+        "defense": 679,
+        "speed": 105,
+        "taunt": 100
+      },
       "image": "/characters/playergirl3.webp",
       "backgroundImage": "/character-backgrounds/playergirl3.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -441,6 +742,13 @@
       "name": "开拓者",
       "element": "冰",
       "path": "记忆",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 543,
+        "defense": 630,
+        "speed": 103,
+        "taunt": 100
+      },
       "image": "/characters/playerboy4.webp",
       "backgroundImage": "/character-backgrounds/playerboy4.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -451,6 +759,13 @@
       "name": "开拓者",
       "element": "冰",
       "path": "记忆",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 543,
+        "defense": 630,
+        "speed": 103,
+        "taunt": 100
+      },
       "image": "/characters/playergirl4.webp",
       "backgroundImage": "/character-backgrounds/playergirl4.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -461,6 +776,13 @@
       "name": "开拓者",
       "element": "雷",
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 465,
+        "defense": 630,
+        "speed": 106,
+        "taunt": 100
+      },
       "image": "/characters/playerboy5.webp",
       "backgroundImage": "/character-backgrounds/playerboy5.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -471,6 +793,13 @@
       "name": "开拓者",
       "element": "雷",
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 465,
+        "defense": 630,
+        "speed": 106,
+        "taunt": 100
+      },
       "image": "/characters/playergirl5.webp",
       "backgroundImage": "/character-backgrounds/playergirl5.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -481,6 +810,13 @@
       "name": "克拉拉",
       "element": "物理",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 737,
+        "defense": 485,
+        "speed": 90,
+        "taunt": 125
+      },
       "image": "/characters/clara.webp",
       "backgroundImage": "/character-backgrounds/clara.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -491,6 +827,13 @@
       "name": "刻律德菈",
       "element": "风",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1358,
+        "attack": 620,
+        "defense": 485,
+        "speed": 99,
+        "taunt": 100
+      },
       "image": "/characters/cerydra.webp",
       "backgroundImage": "/character-backgrounds/cerydra.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -501,6 +844,13 @@
       "name": "灵砂",
       "element": "火",
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1358,
+        "attack": 679,
+        "defense": 436,
+        "speed": 98,
+        "taunt": 100
+      },
       "image": "/characters/lingsha.webp",
       "backgroundImage": "/character-backgrounds/lingsha.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -511,6 +861,13 @@
       "name": "玲可",
       "element": "量子",
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 493,
+        "defense": 551,
+        "speed": 100,
+        "taunt": 100
+      },
       "image": "/characters/lynx.webp",
       "backgroundImage": "/character-backgrounds/lynx.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -521,6 +878,13 @@
       "name": "流萤",
       "element": "火",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 814,
+        "attack": 523,
+        "defense": 776,
+        "speed": 104,
+        "taunt": 125
+      },
       "image": "/characters/sam.webp",
       "backgroundImage": "/character-backgrounds/sam.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -531,6 +895,13 @@
       "name": "卢卡",
       "element": "物理",
       "path": "虚无",
+      "baseStats": {
+        "hp": 917,
+        "attack": 582,
+        "defense": 485,
+        "speed": 103,
+        "taunt": 100
+      },
       "image": "/characters/luka.webp",
       "backgroundImage": "/character-backgrounds/luka.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -541,6 +912,13 @@
       "name": "乱破",
       "element": "虚数",
       "path": "智识",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 717,
+        "defense": 460,
+        "speed": 96,
+        "taunt": 75
+      },
       "image": "/characters/rappa.webp",
       "backgroundImage": "/character-backgrounds/rappa.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -551,6 +929,13 @@
       "name": "罗刹",
       "element": "虚数",
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1280,
+        "attack": 756,
+        "defense": 363,
+        "speed": 101,
+        "taunt": 100
+      },
       "image": "/characters/luocha.webp",
       "backgroundImage": "/character-backgrounds/luocha.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -561,6 +946,13 @@
       "name": "米沙",
       "element": "冰",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1270,
+        "attack": 599,
+        "defense": 396,
+        "speed": 96,
+        "taunt": 125
+      },
       "image": "/characters/misha.webp",
       "backgroundImage": "/character-backgrounds/misha.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -571,6 +963,13 @@
       "name": "貊泽",
       "element": "雷",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 811,
+        "attack": 599,
+        "defense": 352,
+        "speed": 111,
+        "taunt": 75
+      },
       "image": "/characters/moze.webp",
       "backgroundImage": "/character-backgrounds/moze.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -581,6 +980,13 @@
       "name": "那刻夏",
       "element": "风",
       "path": "智识",
+      "baseStats": {
+        "hp": 970,
+        "attack": 756,
+        "defense": 557,
+        "speed": 97,
+        "taunt": 75
+      },
       "image": "/characters/anaxa.webp",
       "backgroundImage": "/character-backgrounds/anaxa.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -591,6 +997,13 @@
       "name": "娜塔莎",
       "element": "物理",
       "path": "丰饶",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 476,
+        "defense": 507,
+        "speed": 98,
+        "taunt": 100
+      },
       "image": "/characters/natasha.webp",
       "backgroundImage": "/character-backgrounds/natasha.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -601,6 +1014,13 @@
       "name": "佩拉",
       "element": "冰",
       "path": "虚无",
+      "baseStats": {
+        "hp": 987,
+        "attack": 546,
+        "defense": 463,
+        "speed": 105,
+        "taunt": 100
+      },
       "image": "/characters/pela.webp",
       "backgroundImage": "/character-backgrounds/pela.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -611,6 +1031,13 @@
       "name": "千冶•刃",
       "element": "火",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1358,
+        "attack": 543,
+        "defense": 485,
+        "speed": 107,
+        "taunt": 100
+      },
       "image": "/characters/mortenaxblade.webp",
       "backgroundImage": "/character-backgrounds/mortenaxblade.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -621,6 +1048,13 @@
       "name": "青雀",
       "element": "量子",
       "path": "智识",
+      "baseStats": {
+        "hp": 1023,
+        "attack": 652,
+        "defense": 441,
+        "speed": 98,
+        "taunt": 75
+      },
       "image": "/characters/qingque.webp",
       "backgroundImage": "/character-backgrounds/qingque.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -631,6 +1065,13 @@
       "name": "刃",
       "element": "风",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1358,
+        "attack": 543,
+        "defense": 485,
+        "speed": 97,
+        "taunt": 125
+      },
       "image": "/characters/blade.webp",
       "backgroundImage": "/character-backgrounds/blade.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -641,6 +1082,13 @@
       "name": "阮•梅",
       "element": "冰",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1086,
+        "attack": 659,
+        "defense": 485,
+        "speed": 104,
+        "taunt": 100
+      },
       "image": "/characters/ruanmei.webp",
       "backgroundImage": "/character-backgrounds/ruanmei.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -651,6 +1099,13 @@
       "name": "赛飞儿",
       "element": "量子",
       "path": "虚无",
+      "baseStats": {
+        "hp": 931,
+        "attack": 640,
+        "defense": 509,
+        "speed": 106,
+        "taunt": 100
+      },
       "image": "/characters/cipher.webp",
       "backgroundImage": "/character-backgrounds/cipher.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -661,6 +1116,13 @@
       "name": "三月七",
       "element": "虚数",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 564,
+        "defense": 441,
+        "speed": 102,
+        "taunt": 75
+      },
       "image": "/characters/mar7th2.webp",
       "backgroundImage": "/character-backgrounds/mar7th2.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -671,6 +1133,13 @@
       "name": "三月七",
       "element": "冰",
       "path": "存护",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 511,
+        "defense": 573,
+        "speed": 101,
+        "taunt": 150
+      },
       "image": "/characters/mar7th.webp",
       "backgroundImage": "/character-backgrounds/mar7th.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -681,6 +1150,13 @@
       "name": "桑博",
       "element": "风",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1023,
+        "attack": 617,
+        "defense": 396,
+        "speed": 102,
+        "taunt": 100
+      },
       "image": "/characters/sampo.webp",
       "backgroundImage": "/character-backgrounds/sampo.webp",
       "elementIcon": "/character-icons/elements/风.webp",
@@ -691,6 +1167,13 @@
       "name": "砂金",
       "element": "虚数",
       "path": "存护",
+      "baseStats": {
+        "hp": 1203,
+        "attack": 446,
+        "defense": 654,
+        "speed": 106,
+        "taunt": 150
+      },
       "image": "/characters/aventurine.webp",
       "backgroundImage": "/character-backgrounds/aventurine.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -701,6 +1184,13 @@
       "name": "素裳",
       "element": "物理",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 917,
+        "attack": 564,
+        "defense": 418,
+        "speed": 107,
+        "taunt": 75
+      },
       "image": "/characters/sushang.webp",
       "backgroundImage": "/character-backgrounds/sushang.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -711,6 +1201,13 @@
       "name": "缇宝",
       "element": "量子",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 523,
+        "defense": 727,
+        "speed": 96,
+        "taunt": 100
+      },
       "image": "/characters/tribbie.webp",
       "backgroundImage": "/character-backgrounds/tribbie.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -721,6 +1218,13 @@
       "name": "停云",
       "element": "雷",
       "path": "同谐",
+      "baseStats": {
+        "hp": 846,
+        "attack": 529,
+        "defense": 396,
+        "speed": 112,
+        "taunt": 100
+      },
       "image": "/characters/tingyun.webp",
       "backgroundImage": "/character-backgrounds/tingyun.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -731,6 +1235,13 @@
       "name": "托帕&账账",
       "element": "火",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 931,
+        "attack": 620,
+        "defense": 412,
+        "speed": 110,
+        "taunt": 75
+      },
       "image": "/characters/topaz.webp",
       "backgroundImage": "/character-backgrounds/topaz.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -741,6 +1252,13 @@
       "name": "瓦尔特",
       "element": "虚数",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1125,
+        "attack": 620,
+        "defense": 509,
+        "speed": 102,
+        "taunt": 100
+      },
       "image": "/characters/welt.webp",
       "backgroundImage": "/character-backgrounds/welt.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -751,6 +1269,13 @@
       "name": "万敌",
       "element": "虚数",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1552,
+        "attack": 426,
+        "defense": 194,
+        "speed": 95,
+        "taunt": 125
+      },
       "image": "/characters/mydei.webp",
       "backgroundImage": "/character-backgrounds/mydei.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -761,6 +1286,13 @@
       "name": "忘归人",
       "element": "火",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1125,
+        "attack": 582,
+        "defense": 557,
+        "speed": 102,
+        "taunt": 100
+      },
       "image": "/characters/fugue.webp",
       "backgroundImage": "/character-backgrounds/fugue.webp",
       "elementIcon": "/character-icons/elements/火.webp",
@@ -771,6 +1303,13 @@
       "name": "希儿",
       "element": "量子",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 931,
+        "attack": 640,
+        "defense": 363,
+        "speed": 115,
+        "taunt": 75
+      },
       "image": "/characters/seele.webp",
       "backgroundImage": "/character-backgrounds/seele.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -781,6 +1320,13 @@
       "name": "希露瓦",
       "element": "雷",
       "path": "智识",
+      "baseStats": {
+        "hp": 917,
+        "attack": 652,
+        "defense": 374,
+        "speed": 104,
+        "taunt": 75
+      },
       "image": "/characters/serval.webp",
       "backgroundImage": "/character-backgrounds/serval.webp",
       "elementIcon": "/character-icons/elements/雷.webp",
@@ -791,6 +1337,13 @@
       "name": "昔涟",
       "element": "冰",
       "path": "记忆",
+      "baseStats": {
+        "hp": 1397,
+        "attack": 446,
+        "defense": 582,
+        "speed": 101,
+        "taunt": 100
+      },
       "image": "/characters/cyrene.webp",
       "backgroundImage": "/character-backgrounds/cyrene.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -801,6 +1354,13 @@
       "name": "遐蝶",
       "element": "量子",
       "path": "记忆",
+      "baseStats": {
+        "hp": 1629,
+        "attack": 523,
+        "defense": 485,
+        "speed": 95,
+        "taunt": 100
+      },
       "image": "/characters/castorice.webp",
       "backgroundImage": "/character-backgrounds/castorice.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -811,6 +1371,13 @@
       "name": "星期日",
       "element": "虚数",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 640,
+        "defense": 533,
+        "speed": 96,
+        "taunt": 100
+      },
       "image": "/characters/sunday.webp",
       "backgroundImage": "/character-backgrounds/sunday.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -821,6 +1388,13 @@
       "name": "雪衣",
       "element": "量子",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1058,
+        "attack": 599,
+        "defense": 396,
+        "speed": 103,
+        "taunt": 125
+      },
       "image": "/characters/xueyi.webp",
       "backgroundImage": "/character-backgrounds/xueyi.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -831,6 +1405,13 @@
       "name": "彦卿",
       "element": "冰",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 892,
+        "attack": 679,
+        "defense": 412,
+        "speed": 109,
+        "taunt": 75
+      },
       "image": "/characters/yanqing.webp",
       "backgroundImage": "/character-backgrounds/yanqing.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -841,6 +1422,13 @@
       "name": "爻光",
       "element": "物理",
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 465,
+        "defense": 654,
+        "speed": 101,
+        "taunt": 100
+      },
       "image": "/characters/yaoguang.webp",
       "backgroundImage": "/character-backgrounds/yaoguang.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -851,6 +1439,13 @@
       "name": "银狼",
       "element": "量子",
       "path": "虚无",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 640,
+        "defense": 460,
+        "speed": 107,
+        "taunt": 100
+      },
       "image": "/characters/silverwolf.webp",
       "backgroundImage": "/character-backgrounds/silverwolf.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -861,6 +1456,13 @@
       "name": "银狼LV. 999",
       "element": "虚数",
       "path": "欢愉",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 388,
+        "defense": 654,
+        "speed": 110,
+        "taunt": 100
+      },
       "image": "/characters/silverwolflv999.webp",
       "backgroundImage": "/character-backgrounds/silverwolflv999.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -871,6 +1473,13 @@
       "name": "银枝",
       "element": "物理",
       "path": "智识",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 737,
+        "defense": 363,
+        "speed": 103,
+        "taunt": 75
+      },
       "image": "/characters/argenti.webp",
       "backgroundImage": "/character-backgrounds/argenti.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -881,6 +1490,13 @@
       "name": "驭空",
       "element": "虚数",
       "path": "同谐",
+      "baseStats": {
+        "hp": 917,
+        "attack": 599,
+        "defense": 374,
+        "speed": 107,
+        "taunt": 100
+      },
       "image": "/characters/yukong.webp",
       "backgroundImage": "/character-backgrounds/yukong.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -891,6 +1507,13 @@
       "name": "远坂凛",
       "element": "量子",
       "path": "智识",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 698,
+        "defense": 460,
+        "speed": 102,
+        "taunt": 75
+      },
       "image": "/characters/tohsakarin.webp",
       "backgroundImage": "/character-backgrounds/tohsakarin.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -901,6 +1524,13 @@
       "name": "云璃",
       "element": "物理",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1358,
+        "attack": 679,
+        "defense": 460,
+        "speed": 94,
+        "taunt": 125
+      },
       "image": "/characters/yunli.webp",
       "backgroundImage": "/character-backgrounds/yunli.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -911,6 +1541,13 @@
       "name": "长夜月",
       "element": "冰",
       "path": "记忆",
+      "baseStats": {
+        "hp": 1319,
+        "attack": 543,
+        "defense": 582,
+        "speed": 99,
+        "taunt": 100
+      },
       "image": "/characters/evernight.webp",
       "backgroundImage": "/character-backgrounds/evernight.webp",
       "elementIcon": "/character-icons/elements/冰.webp",
@@ -921,6 +1558,13 @@
       "name": "真理医生",
       "element": "虚数",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1047,
+        "attack": 776,
+        "defense": 460,
+        "speed": 103,
+        "taunt": 75
+      },
       "image": "/characters/drratio.webp",
       "backgroundImage": "/character-backgrounds/drratio.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
@@ -931,6 +1575,13 @@
       "name": "知更鸟",
       "element": "物理",
       "path": "同谐",
+      "baseStats": {
+        "hp": 1280,
+        "attack": 640,
+        "defense": 485,
+        "speed": 102,
+        "taunt": 100
+      },
       "image": "/characters/robin.webp",
       "backgroundImage": "/character-backgrounds/robin.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
@@ -941,6 +1592,13 @@
       "name": "Archer",
       "element": "量子",
       "path": "巡猎",
+      "baseStats": {
+        "hp": 1164,
+        "attack": 620,
+        "defense": 485,
+        "speed": 105,
+        "taunt": 75
+      },
       "image": "/characters/archer.webp",
       "backgroundImage": "/character-backgrounds/archer.webp",
       "elementIcon": "/character-icons/elements/量子.webp",
@@ -951,6 +1609,13 @@
       "name": "Saber",
       "element": "风",
       "path": "毁灭",
+      "baseStats": {
+        "hp": 1241,
+        "attack": 601,
+        "defense": 654,
+        "speed": 101,
+        "taunt": 125
+      },
       "image": "/characters/saber.webp",
       "backgroundImage": "/character-backgrounds/saber.webp",
       "elementIcon": "/character-icons/elements/风.webp",

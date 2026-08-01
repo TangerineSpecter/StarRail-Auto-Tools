@@ -5102,6 +5102,19 @@ td {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.66);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-align: inherit;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.character-catalogue-card:hover,
+.character-catalogue-card:focus-visible {
+  border-color: rgba(36, 86, 166, 0.6);
+  box-shadow: 0 12px 24px rgba(39, 69, 110, 0.16);
+  outline: none;
+  transform: translateY(-3px);
 }
 .character-catalogue-portrait {
   position: relative;
@@ -5179,6 +5192,146 @@ td {
   color: var(--muted);
   font-size: 10px;
 }
+.catalogue-character-modal-backdrop {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(14, 27, 49, 0.48);
+  backdrop-filter: blur(8px);
+}
+.catalogue-character-modal {
+  position: relative;
+  width: min(620px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(196, 164, 94, 0.7);
+  border-radius: 12px;
+  background: #f6f9fd;
+  box-shadow: 0 28px 70px rgba(8, 19, 39, 0.38);
+  animation: catalogue-modal-in 200ms ease-out;
+}
+.catalogue-character-modal-close {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.54);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(17, 34, 62, 0.45);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+.catalogue-character-modal-hero {
+  position: relative;
+  height: 245px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(17, 31, 58, 0.92), rgba(17, 31, 58, 0.36) 64%, rgba(17, 31, 58, 0.72)),
+    center / cover no-repeat,
+    linear-gradient(145deg, #486fa4, #203958);
+}
+.catalogue-character-modal-hero > img {
+  position: absolute;
+  right: 0;
+  bottom: -12px;
+  width: min(58%, 350px);
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  mask-image: linear-gradient(to left, #000 76%, transparent);
+}
+.catalogue-character-modal-title {
+  position: absolute;
+  z-index: 1;
+  left: 28px;
+  bottom: 25px;
+  color: #fff;
+}
+.catalogue-character-modal-title p {
+  margin: 0 0 5px;
+  color: #f1d48a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.catalogue-character-modal-title h2 {
+  margin: 0;
+  font-size: 31px;
+  letter-spacing: 0.06em;
+}
+.catalogue-character-modal-title span {
+  display: block;
+  margin-top: 7px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+}
+.catalogue-character-modal-body {
+  padding: 22px 28px 19px;
+}
+.catalogue-character-modal-body > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.catalogue-character-modal-body h3,
+.catalogue-character-modal-body p.eyebrow {
+  margin: 0;
+}
+.catalogue-character-modal-body h3 {
+  color: var(--ink);
+  font-size: 18px;
+}
+.catalogue-character-modal-body > header small {
+  color: #9a7839;
+  font-size: 12px;
+  font-weight: 700;
+}
+.base-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid rgba(46, 80, 123, 0.18);
+  border-left: 1px solid rgba(46, 80, 123, 0.18);
+}
+.base-stat-grid > div {
+  display: grid;
+  min-height: 92px;
+  align-content: center;
+  gap: 4px;
+  padding: 10px;
+  border-right: 1px solid rgba(46, 80, 123, 0.18);
+  border-bottom: 1px solid rgba(46, 80, 123, 0.18);
+}
+.base-stat-grid span {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.base-stat-grid b {
+  color: var(--blue);
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+.base-stat-grid small {
+  color: #9aa7b8;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.catalogue-character-modal-body > footer,
+.base-stat-empty {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+@keyframes catalogue-modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 @media (max-width: 760px) {
   .target-column-headings,
@@ -5198,6 +5351,25 @@ td {
   .character-detail-card > .relic-detail-footer,
   .memosprite-note {
     grid-column: auto;
+  }
+  .catalogue-character-modal-backdrop {
+    padding: 14px;
+  }
+  .catalogue-character-modal-hero {
+    height: 210px;
+  }
+  .catalogue-character-modal-title {
+    left: 20px;
+    bottom: 20px;
+  }
+  .catalogue-character-modal-title h2 {
+    font-size: 25px;
+  }
+  .catalogue-character-modal-body {
+    padding: 18px 20px;
+  }
+  .base-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

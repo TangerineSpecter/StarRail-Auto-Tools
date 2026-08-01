@@ -211,6 +211,14 @@ export interface CharacterCatalogueEntry {
   name: string;
   element: string;
   path: string;
+  /** 角色在 80 级、满突破时的未装备基础面板。 */
+  baseStats?: {
+    hp: number;
+    attack: number;
+    defense: number;
+    speed: number;
+    taunt: number;
+  };
   image: string | null;
   backgroundImage?: string;
   elementIcon?: string;
