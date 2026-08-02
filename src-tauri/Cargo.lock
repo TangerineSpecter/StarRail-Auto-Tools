@@ -5408,6 +5408,7 @@ dependencies = [
  "protobuf",
  "reliquary",
  "reliquary-archiver",
+ "reqwest 0.12.28",
  "rfd",
  "rusqlite",
  "serde",

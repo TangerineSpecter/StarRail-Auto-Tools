@@ -15,7 +15,7 @@ use serde_json::{json, Value};
 use super::models::*;
 use super::{
     canonical_character_name, canonical_light_cone_name, canonical_relic_name, character_rarity,
-    location_id, normalize_main_stat, normalize_slot,
+    location_id, normalize_import, normalize_main_stat, normalize_slot,
 };
 use crate::error::AppError;
 
@@ -329,26 +329,9 @@ impl InventoryStore {
     }
 
     pub fn save_build_plan(&self, plan: &CharacterBuildPlan) -> Result<(), AppError> {
-        if !matches!(plan.cavern_mode.as_str(), "fourPiece" | "twoPlusTwo")
-            || plan.targets.is_empty()
-            || plan.targets.len() > 3
-            || (plan.cavern_mode == "twoPlusTwo" && plan.cavern_set_b.is_none())
-        {
-            return Err(AppError::Database("毕业方案配置无效".to_owned()));
-        }
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
-        transaction.execute("INSERT INTO character_build_plans(character_id,cavern_mode,cavern_set_a,cavern_set_b,planar_set_id,main_stats_json,effective_substats_json,updated_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8) ON CONFLICT(character_id) DO UPDATE SET cavern_mode=excluded.cavern_mode,cavern_set_a=excluded.cavern_set_a,cavern_set_b=excluded.cavern_set_b,planar_set_id=excluded.planar_set_id,main_stats_json=excluded.main_stats_json,effective_substats_json=excluded.effective_substats_json,updated_at=excluded.updated_at", params![plan.character_id, plan.cavern_mode, plan.cavern_set_a, plan.cavern_set_b, plan.planar_set_id, serde_json::to_string(&plan.main_stats).map_err(|e| AppError::Database(e.to_string()))?, serde_json::to_string(&plan.effective_substats).map_err(|e| AppError::Database(e.to_string()))?, now_millis()])?;
-        transaction.execute(
-            "DELETE FROM character_build_targets WHERE character_id = ?1",
-            [plan.character_id],
-        )?;
-        for target in &plan.targets {
-            if target.minimum > target.target {
-                return Err(AppError::Database("最低标准不能高于目标值".to_owned()));
-            }
-            transaction.execute("INSERT INTO character_build_targets(character_id,stat_key,target,priority,max_gap,minimum) VALUES(?1,?2,?3,?4,?5,?6)", params![plan.character_id, target.stat_key, target.target, target.priority, target.target - target.minimum, target.minimum])?;
-        }
+        save_build_plan_in_transaction(&transaction, plan)?;
         transaction.commit()?;
         Ok(())
     }
@@ -425,20 +408,22 @@ impl InventoryStore {
             }
         }
 
-        self.apply_snapshot(import, false).map(Ok)
+        self.apply_snapshot(import, false, false, &[]).map(Ok)
     }
 
     pub fn replace_account_and_apply(
         &self,
         import: &InventoryImport,
     ) -> Result<InventorySummary, AppError> {
-        self.apply_snapshot(import, true)
+        self.apply_snapshot(import, true, false, &[])
     }
 
     fn apply_snapshot(
         &self,
         import: &InventoryImport,
         clear_first: bool,
+        reset_sync_state: bool,
+        build_plans: &[CharacterBuildPlan],
     ) -> Result<InventorySummary, AppError> {
         let now = now_millis();
         let mut connection = self.connect()?;
@@ -446,6 +431,13 @@ impl InventoryStore {
 
         if clear_first {
             clear_all(&transaction)?;
+            if reset_sync_state {
+                transaction.execute("DELETE FROM character_build_plans", [])?;
+                transaction.execute(
+                    "DELETE FROM app_state WHERE key IN ('current_uid', 'trailblazer')",
+                    [],
+                )?;
+            }
         }
 
         let run_id = transaction.query_row(
@@ -586,6 +578,9 @@ impl InventoryStore {
                 run_id
             ],
         )?;
+        for plan in build_plans {
+            save_build_plan_in_transaction(&transaction, plan)?;
+        }
         transaction.commit()?;
         self.summary()
     }
@@ -957,6 +952,60 @@ impl InventoryStore {
             .map_err(|error| AppError::Export(error.to_string()))
     }
 
+    pub fn sync_snapshot(&self) -> Result<SyncSnapshot, AppError> {
+        let connection = self.connect()?;
+        let metadata = ImportMetadata {
+            uid: self.current_uid()?,
+            trailblazer: connection
+                .query_row(
+                    "SELECT value FROM app_state WHERE key = 'trailblazer'",
+                    [],
+                    |row| row.get(0),
+                )
+                .optional()?,
+        };
+        let inventory = InventoryImport {
+            metadata,
+            relics: serde_json::from_value(Value::Array(export_relics(&connection)?))
+                .map_err(|error| AppError::Database(error.to_string()))?,
+            light_cones: serde_json::from_value(Value::Array(export_light_cones(&connection)?))
+                .map_err(|error| AppError::Database(error.to_string()))?,
+            characters: serde_json::from_value(Value::Array(export_characters(&connection)?))
+                .map_err(|error| AppError::Database(error.to_string()))?,
+        };
+        let character_ids = connection
+            .prepare("SELECT character_id FROM character_build_plans ORDER BY character_id")?
+            .query_map([], |row| row.get::<_, u32>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut build_plans = Vec::with_capacity(character_ids.len());
+        for character_id in character_ids {
+            if let Some(plan) = self.build_plan(character_id)? {
+                build_plans.push(plan);
+            }
+        }
+        Ok(SyncSnapshot {
+            format_version: SYNC_FORMAT_VERSION,
+            generated_at: now_millis(),
+            source: "starrail-auto-tools".to_owned(),
+            inventory,
+            build_plans,
+        })
+    }
+
+    pub fn replace_with_sync_snapshot(
+        &self,
+        mut snapshot: SyncSnapshot,
+    ) -> Result<InventorySummary, AppError> {
+        if snapshot.format_version != SYNC_FORMAT_VERSION {
+            return Err(AppError::WebDav(format!(
+                "不支持的同步数据版本：{}",
+                snapshot.format_version
+            )));
+        }
+        normalize_import(&mut snapshot.inventory);
+        self.apply_snapshot(&snapshot.inventory, true, true, &snapshot.build_plans)
+    }
+
     #[cfg(test)]
     fn test_store() -> Self {
         static TEST_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
@@ -968,6 +1017,31 @@ impl InventoryStore {
         ));
         Self::initialize(path).expect("test database")
     }
+}
+
+fn save_build_plan_in_transaction(
+    transaction: &Transaction<'_>,
+    plan: &CharacterBuildPlan,
+) -> Result<(), AppError> {
+    if !matches!(plan.cavern_mode.as_str(), "fourPiece" | "twoPlusTwo")
+        || plan.targets.is_empty()
+        || plan.targets.len() > 3
+        || (plan.cavern_mode == "twoPlusTwo" && plan.cavern_set_b.is_none())
+    {
+        return Err(AppError::Database("毕业方案配置无效".to_owned()));
+    }
+    transaction.execute("INSERT INTO character_build_plans(character_id,cavern_mode,cavern_set_a,cavern_set_b,planar_set_id,main_stats_json,effective_substats_json,updated_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8) ON CONFLICT(character_id) DO UPDATE SET cavern_mode=excluded.cavern_mode,cavern_set_a=excluded.cavern_set_a,cavern_set_b=excluded.cavern_set_b,planar_set_id=excluded.planar_set_id,main_stats_json=excluded.main_stats_json,effective_substats_json=excluded.effective_substats_json,updated_at=excluded.updated_at", params![plan.character_id, plan.cavern_mode, plan.cavern_set_a, plan.cavern_set_b, plan.planar_set_id, serde_json::to_string(&plan.main_stats).map_err(|e| AppError::Database(e.to_string()))?, serde_json::to_string(&plan.effective_substats).map_err(|e| AppError::Database(e.to_string()))?, now_millis()])?;
+    transaction.execute(
+        "DELETE FROM character_build_targets WHERE character_id = ?1",
+        [plan.character_id],
+    )?;
+    for target in &plan.targets {
+        if target.minimum > target.target {
+            return Err(AppError::Database("最低标准不能高于目标值".to_owned()));
+        }
+        transaction.execute("INSERT INTO character_build_targets(character_id,stat_key,target,priority,max_gap,minimum) VALUES(?1,?2,?3,?4,?5,?6)", params![plan.character_id, target.stat_key, target.target, target.priority, target.target - target.minimum, target.minimum])?;
+    }
+    Ok(())
 }
 
 fn normalize_existing_records(connection: &Connection) -> Result<(), AppError> {
@@ -2565,5 +2639,100 @@ mod tests {
         assert!((main_stat_value(5, 15, "HP") - 705.6).abs() < 0.001);
         assert!((main_stat_value(5, 15, "CRIT Rate") - 32.4).abs() < 0.001);
         assert!((main_stat_value(4, 12, "SPD") - 16.4256).abs() < 0.001);
+    }
+
+    #[test]
+    fn sync_snapshot_round_trips_inventory_and_build_plan() {
+        let store = InventoryStore::test_store();
+        store
+            .apply_full_snapshot(&import(10001, &[1, 2]))
+            .unwrap()
+            .unwrap();
+        let plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::from([("Body".to_owned(), vec!["CRIT Rate".to_owned()])]),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 160.0,
+                priority: 1,
+                minimum: 140.0,
+            }],
+            effective_substats: vec!["SPD".to_owned()],
+        };
+        store.save_build_plan(&plan).unwrap();
+        let snapshot = store.sync_snapshot().unwrap();
+        assert_eq!(snapshot.format_version, SYNC_FORMAT_VERSION);
+        store.clear(None).unwrap();
+        let summary = store.replace_with_sync_snapshot(snapshot).unwrap();
+        assert_eq!((summary.relics, summary.characters), (2, 0));
+        let restored = store.build_plan(1001).unwrap().unwrap();
+        assert_eq!(restored.character_id, plan.character_id);
+        assert_eq!(restored.targets[0].minimum, 140.0);
+        assert_eq!(restored.effective_substats, plan.effective_substats);
+    }
+
+    #[test]
+    fn sync_snapshot_rejects_unknown_version_without_replacing_data() {
+        let store = InventoryStore::test_store();
+        store
+            .apply_full_snapshot(&import(10001, &[1]))
+            .unwrap()
+            .unwrap();
+        let mut snapshot = store.sync_snapshot().unwrap();
+        snapshot.format_version += 1;
+        assert!(store.replace_with_sync_snapshot(snapshot).is_err());
+        assert_eq!(store.summary().unwrap().relics, 1);
+    }
+
+    #[test]
+    fn sync_restore_removes_local_plans_and_missing_account_metadata() {
+        let store = InventoryStore::test_store();
+        store
+            .apply_full_snapshot(&import(10001, &[1]))
+            .unwrap()
+            .unwrap();
+        store
+            .save_build_plan(&CharacterBuildPlan {
+                character_id: 1001,
+                cavern_mode: "fourPiece".to_owned(),
+                cavern_set_a: 101,
+                cavern_set_b: None,
+                planar_set_id: 201,
+                main_stats: HashMap::new(),
+                targets: vec![BuildTarget {
+                    stat_key: "SPD".to_owned(),
+                    target: 160.0,
+                    priority: 1,
+                    minimum: 140.0,
+                }],
+                effective_substats: vec![],
+            })
+            .unwrap();
+        let mut snapshot = store.sync_snapshot().unwrap();
+        snapshot.inventory.metadata = ImportMetadata {
+            uid: None,
+            trailblazer: None,
+        };
+        snapshot.build_plans.clear();
+
+        store.replace_with_sync_snapshot(snapshot).unwrap();
+
+        assert!(store.build_plan(1001).unwrap().is_none());
+        assert_eq!(store.current_uid().unwrap(), None);
+        let trailblazer: Option<String> = store
+            .connect()
+            .unwrap()
+            .query_row(
+                "SELECT value FROM app_state WHERE key = 'trailblazer'",
+                [],
+                |row| row.get(0),
+            )
+            .optional()
+            .unwrap();
+        assert_eq!(trailblazer, None);
     }
 }

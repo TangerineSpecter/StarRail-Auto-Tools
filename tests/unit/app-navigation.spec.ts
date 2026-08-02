@@ -40,4 +40,23 @@ describe("AppNavigation", () => {
     await aboutButton?.trigger("click");
     expect(wrapper.emitted("update:activeView")?.[0]).toEqual(["about"]);
   });
+
+  it("places software settings immediately before about", () => {
+    const wrapper = mount(AppNavigation, {
+      props: {
+        activeView: "capture",
+        summary: {
+          relics: 0,
+          lightCones: 0,
+          characters: 0,
+          lastSyncAt: null,
+          protocolVersion: "v",
+        },
+      },
+    });
+    const labels = wrapper.findAll("button").map((button) => button.text());
+    expect(labels.findIndex((label) => label.includes("软件设置"))).toBe(
+      labels.findIndex((label) => label.includes("关于")) - 1,
+    );
+  });
 });

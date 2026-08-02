@@ -58,6 +58,13 @@ export interface InventoryImportResult {
   warnings: string[];
 }
 
+export interface WebDavSettings {
+  serverUrl: string;
+  remotePath: string;
+  username: string;
+  password: string;
+}
+
 export type InventoryKind = "relic" | "lightCone" | "character";
 
 export interface PageQuery {

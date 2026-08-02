@@ -213,7 +213,7 @@ pub struct ClearInventoryRequest {
     pub kind: Option<InventoryKind>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InventoryImport {
     pub metadata: ImportMetadata,
     pub relics: Vec<ImportRelic>,
@@ -221,13 +221,13 @@ pub struct InventoryImport {
     pub characters: Vec<ImportCharacter>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImportMetadata {
     pub uid: Option<u32>,
     pub trailblazer: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImportRelic {
     #[serde(deserialize_with = "deserialize_u32_any")]
     pub set_id: u32,
@@ -346,7 +346,7 @@ pub struct BuildRecommendation {
     pub message: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImportLightCone {
     #[serde(deserialize_with = "deserialize_u32_any")]
     pub id: u32,
@@ -362,7 +362,7 @@ pub struct ImportLightCone {
     pub _uid: u32,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImportCharacter {
     #[serde(deserialize_with = "deserialize_u32_any")]
     pub id: u32,
@@ -376,6 +376,20 @@ pub struct ImportCharacter {
     #[serde(default)]
     pub memosprite: Option<Value>,
     pub ability_version: u32,
+}
+
+pub const SYNC_FORMAT_VERSION: u32 = 1;
+
+/// The WebDAV payload is deliberately separate from the game-data import format.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncSnapshot {
+    pub format_version: u32,
+    pub generated_at: i64,
+    pub source: String,
+    pub inventory: InventoryImport,
+    #[serde(default)]
+    pub build_plans: Vec<CharacterBuildPlan>,
 }
 
 pub(crate) fn deserialize_u32_any<'de, D>(deserializer: D) -> Result<u32, D::Error>

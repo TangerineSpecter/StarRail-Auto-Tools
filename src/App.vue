@@ -16,6 +16,7 @@ const pages: Record<AppView, Component> = {
   catalogue: defineAsyncComponent(() => import("@/pages/CataloguePage.vue")),
   builds: defineAsyncComponent(() => import("@/pages/BuildsPage.vue")),
   scanner: defineAsyncComponent(() => import("@/pages/ScannerPage.vue")),
+  settings: defineAsyncComponent(() => import("@/pages/SettingsPage.vue")),
   about: defineAsyncComponent(() => import("@/pages/AboutPage.vue")),
 };
 const cachedPageNames = ["CapturePage", "InventoryPage", "CataloguePage"];
