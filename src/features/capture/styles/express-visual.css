@@ -308,21 +308,3 @@
     transform: translateY(-3px);
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .meteor,
-  .navigation-sweep,
-  .range-arcs span,
-  .core-plate,
-  .core-diamond {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
-  }
-  .express-pass {
-    animation: none;
-  }
-  .express-pass {
-    opacity: 0.9;
-    transform: translate3d(24vw, 0, 0) rotate(-3deg);
-  }
-}
