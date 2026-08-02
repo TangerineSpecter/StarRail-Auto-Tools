@@ -380,7 +380,7 @@ pub struct ImportCharacter {
 
 pub const SYNC_FORMAT_VERSION: u32 = 1;
 
-/// The WebDAV payload is deliberately separate from the game-data import format.
+/// Internal aggregate used by the repository when restoring a complete WebDAV backup.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SyncSnapshot {
@@ -389,6 +389,30 @@ pub struct SyncSnapshot {
     pub source: String,
     pub inventory: InventoryImport,
     #[serde(default)]
+    pub build_plans: Vec<CharacterBuildPlan>,
+}
+
+/// Code-owned index of the files in one WebDAV sync directory.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncManifest {
+    pub format_version: u32,
+    pub generated_at: i64,
+    pub source: String,
+    pub files: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncInventoryFile {
+    pub format_version: u32,
+    pub inventory: InventoryImport,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncBuildPlansFile {
+    pub format_version: u32,
     pub build_plans: Vec<CharacterBuildPlan>,
 }
 

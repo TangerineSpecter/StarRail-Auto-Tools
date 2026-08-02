@@ -56,9 +56,7 @@ pub async fn upload_webdav_snapshot(
     settings: WebDavSettings,
     inventory: State<'_, InventoryStore>,
 ) -> Result<(), AppError> {
-    let payload = serde_json::to_vec_pretty(&inventory.sync_snapshot()?)
-        .map_err(|error| AppError::WebDav(format!("无法生成同步数据：{error}")))?;
-    webdav::upload(&settings, payload).await
+    webdav::upload_snapshot(&settings, inventory.sync_snapshot()?).await
 }
 
 #[tauri::command]
@@ -67,9 +65,7 @@ pub async fn download_webdav_snapshot(
     app: AppHandle,
     inventory: State<'_, InventoryStore>,
 ) -> Result<InventorySummary, AppError> {
-    let payload = webdav::download(&settings).await?;
-    let snapshot = serde_json::from_slice(&payload)
-        .map_err(|error| AppError::WebDav(format!("远端同步数据不是有效 JSON：{error}")))?;
+    let snapshot = webdav::download_snapshot(&settings).await?;
     let summary = inventory.replace_with_sync_snapshot(snapshot)?;
     direct_read::inventory_changed(&app, &summary, false)?;
     let _ = app.emit("inventory://changed", &summary);

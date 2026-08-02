@@ -29,8 +29,9 @@ function validate() {
     !settings.username.trim() ||
     !settings.password
   )
-    return "请完整填写服务器地址、远端文件、用户名和密码。";
-  if (!settings.remotePath.startsWith("/")) return "远端文件路径必须以 / 开头。";
+    return "请完整填写服务器地址、远端同步目录、用户名和密码。";
+  const remotePath = settings.remotePath.trim();
+  if (!remotePath.startsWith("/")) return "远端同步目录必须以 / 开头。";
   return "";
 }
 async function run(action: () => Promise<void>, success: string) {
@@ -105,7 +106,7 @@ onMounted(async () => {
           <span class="draft-chip">本机保存</span>
         </div>
         <p class="settings-tip">
-          <span>✦</span> 连接信息仅保存在本机应用数据目录，不会上传或写入同步文件。
+          <span>✦</span> 连接信息仅保存在本机应用数据目录。此目录内的同步文件由应用自动管理。
         </p>
         <div v-if="loading" class="settings-loading">正在读取 WebDAV 设置…</div>
         <form v-else class="settings-form" @submit.prevent="save">
@@ -114,8 +115,8 @@ onMounted(async () => {
             ><InputText v-model="settings.serverUrl" placeholder="https://dav.example.com/"
           /></label>
           <label
-            ><span>远端文件路径</span
-            ><InputText v-model="settings.remotePath" placeholder="/StarRail-Auto-Tools/sync.json"
+            ><span>远端同步目录</span
+            ><InputText v-model="settings.remotePath" placeholder="/StarRailTools/"
           /></label>
           <label
             ><span>用户名</span><InputText v-model="settings.username" autocomplete="username"
