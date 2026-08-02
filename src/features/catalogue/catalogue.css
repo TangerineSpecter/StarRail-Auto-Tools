@@ -307,6 +307,7 @@ button.catalogue-card:focus-visible {
 .catalogue-character-modal {
   position: relative;
   width: min(620px, 100%);
+  max-height: calc(100vh - 48px);
   overflow: hidden;
   border: 1px solid rgba(196, 164, 94, 0.7);
   border-radius: 12px;
@@ -379,7 +380,9 @@ button.catalogue-card:focus-visible {
   font-size: 13px;
 }
 .catalogue-character-modal-body {
+  max-height: calc(100vh - 293px);
   padding: 22px 28px 19px;
+  overflow-y: auto;
 }
 .catalogue-character-modal-body > header {
   display: flex;
@@ -435,6 +438,118 @@ button.catalogue-card:focus-visible {
   color: var(--muted);
   font-size: 11px;
 }
+.catalogue-character-equipment {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(46, 80, 123, 0.16);
+}
+.catalogue-character-equipment > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.catalogue-character-equipment h3,
+.catalogue-character-equipment p.eyebrow {
+  margin: 0;
+}
+.catalogue-character-equipment h3 {
+  font-size: 16px;
+}
+.catalogue-character-equipment > header small {
+  color: #9a7839;
+  font-size: 11px;
+  font-weight: 700;
+}
+.equipment-layout {
+  display: grid;
+  gap: 10px;
+}
+.equipment-light-cone,
+.equipment-relic {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(46, 80, 123, 0.16);
+  background: rgba(255, 255, 255, 0.62);
+}
+.equipment-light-cone {
+  grid-template-columns: 50px minmax(0, 1fr);
+  min-height: 66px;
+  padding: 7px;
+}
+.equipment-light-cone > img,
+.equipment-light-cone > span {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  background: #e7edf5;
+}
+.equipment-light-cone > span {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.equipment-light-cone.empty {
+  border-style: dashed;
+  color: var(--muted);
+}
+.equipment-light-cone div,
+.equipment-relic div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.equipment-light-cone small,
+.equipment-relic small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.equipment-light-cone b,
+.equipment-relic b {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.equipment-light-cone em,
+.equipment-relic em {
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-style: normal;
+}
+.equipment-relic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.equipment-relic {
+  grid-template-columns: 34px minmax(0, 1fr);
+  min-height: 54px;
+  padding: 6px;
+}
+.equipment-relic > img,
+.equipment-relic > span {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  background: #e7edf5;
+}
+.equipment-relic > span {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+.equipment-empty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed rgba(46, 80, 123, 0.24);
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
 @keyframes catalogue-modal-in {
   from {
     opacity: 0;
@@ -479,10 +594,14 @@ button.catalogue-card:focus-visible {
     font-size: 25px;
   }
   .catalogue-character-modal-body {
+    max-height: calc(100vh - 258px);
     padding: 18px 20px;
   }
   .base-stat-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .equipment-relic-grid {
+    grid-template-columns: 1fr;
   }
   .lightcone-base-stat-grid {
     grid-template-columns: 1fr;
