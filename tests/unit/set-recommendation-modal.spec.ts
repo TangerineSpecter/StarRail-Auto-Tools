@@ -2,6 +2,13 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import SetRecommendationModal from "@/features/catalogue/SetRecommendationModal.vue";
 
+type TargetCharacter = {
+  characterId: number;
+  name: string;
+  mainStats: Record<string, string[]>;
+  effectiveSubstats: string[];
+};
+
 const { recommendedCharactersForSet } = vi.hoisted(() => ({
   recommendedCharactersForSet: vi.fn(),
 }));
@@ -34,20 +41,22 @@ const characters = [
 
 describe("SetRecommendationModal", () => {
   it("keeps the latest set's result when earlier request resolves late", async () => {
-    let resolveFirst!: (value: { characterId: number; name: string }[]) => void;
-    const firstRequest = new Promise<{ characterId: number; name: string }[]>((resolve) => {
+    let resolveFirst!: (value: TargetCharacter[]) => void;
+    const firstRequest = new Promise<TargetCharacter[]>((resolve) => {
       resolveFirst = resolve;
     });
     recommendedCharactersForSet
       .mockReturnValueOnce(firstRequest)
-      .mockResolvedValueOnce([{ characterId: 2, name: "角色 B" }]);
+      .mockResolvedValueOnce([
+        { characterId: 2, name: "角色 B", mainStats: {}, effectiveSubstats: [] },
+      ]);
 
     const wrapper = mount(SetRecommendationModal, {
       props: { set: sets.cavern, characters },
     });
     await wrapper.setProps({ set: sets.planar });
     await flushPromises();
-    resolveFirst([{ characterId: 1, name: "角色 A" }]);
+    resolveFirst([{ characterId: 1, name: "角色 A", mainStats: {}, effectiveSubstats: [] }]);
     await flushPromises();
 
     expect(wrapper.text()).toContain("位面饰品 B");
@@ -63,5 +72,35 @@ describe("SetRecommendationModal", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("尚未有角色将此套装设为毕业目标");
+  });
+
+  it("shows combined keep stats while retaining the target character list", async () => {
+    recommendedCharactersForSet.mockResolvedValueOnce([
+      {
+        characterId: 1,
+        name: "角色 A",
+        effectiveSubstats: ["CRIT Rate", "SPD"],
+        mainStats: { Body: ["CRIT Rate"], Feet: ["SPD"] },
+      },
+      {
+        characterId: 2,
+        name: "角色 B",
+        effectiveSubstats: ["CRIT DMG", "SPD"],
+        mainStats: { Body: ["CRIT DMG"], Feet: ["ATK%"] },
+      },
+    ]);
+
+    const wrapper = mount(SetRecommendationModal, {
+      props: { set: sets.cavern, characters },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("建议保留词条");
+    expect(wrapper.text()).toContain("暴击率");
+    expect(wrapper.text()).toContain("暴击伤害");
+    expect(wrapper.text()).toContain("躯干主属性");
+    expect(wrapper.text()).toContain("设为目标的角色");
+    expect(wrapper.text()).toContain("角色 A");
+    expect(wrapper.text()).toContain("角色 B");
   });
 });

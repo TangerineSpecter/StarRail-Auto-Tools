@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
+import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
+import { summarizeSetTargets } from "./set-target-summary";
 import type {
   CharacterCatalogueEntry,
   RelicSetCatalogueEntry,
@@ -26,6 +28,9 @@ const recommendations = computed(() =>
     ...character,
     catalogue: props.characters.find((item) => item.name === character.name),
   })),
+);
+const targetSummary = computed(() =>
+  summarizeSetTargets(props.set.kind, recommendedCharacters.value),
 );
 
 async function loadRecommendations(setId: number) {
@@ -87,32 +92,72 @@ onUnmounted(() => {
         <p v-else-if="!recommendations.length" class="set-recommendation-state">
           尚未有角色将此套装设为毕业目标。
         </p>
-        <div v-else class="set-recommendation-grid">
-          <button
-            v-for="character in recommendations"
-            :key="character.characterId"
-            type="button"
-            class="set-recommendation-character"
-            :class="{ unavailable: !character.catalogue }"
-            :disabled="!character.catalogue"
-            @click="character.catalogue && emit('openCharacter', character.catalogue)"
-          >
-            <img
-              v-if="character.catalogue?.image"
-              :src="character.catalogue.image"
-              :alt="character.name"
-            />
-            <span v-else>{{ character.name.slice(0, 1) }}</span>
-            <div>
-              <b>{{ character.name }}</b>
-              <small v-if="character.catalogue"
-                >{{ character.catalogue.element }} · {{ character.catalogue.path }}</small
-              >
-              <small v-else>角色图鉴数据暂缺</small>
+        <template v-else>
+          <section class="set-target-summary" aria-label="保留词条汇总">
+            <header>
+              <div>
+                <p class="eyebrow">KEEP AT A GLANCE</p>
+                <h3>建议保留词条</h3>
+              </div>
+              <small>汇总 {{ recommendations.length }} 名目标角色</small>
+            </header>
+            <div class="set-target-summary-row">
+              <b>副词条</b>
+              <div v-if="targetSummary.substats.length" class="set-target-chip-list">
+                <span v-for="stat in targetSummary.substats" :key="stat">{{
+                  statLabel(stat)
+                }}</span>
+              </div>
+              <small v-else>暂未设置有效副词条</small>
             </div>
-            <i v-if="character.catalogue" aria-hidden="true">→</i>
-          </button>
-        </div>
+            <div
+              v-for="group in targetSummary.mainStats"
+              :key="group.slot"
+              class="set-target-summary-row"
+            >
+              <b>{{ slotLabel(group.slot) }}主属性</b>
+              <div v-if="group.stats.length" class="set-target-chip-list">
+                <span v-for="stat in group.stats" :key="stat">{{ statLabel(stat) }}</span>
+              </div>
+              <small v-else>暂未设置</small>
+            </div>
+            <p class="set-target-summary-note">头部与手部主属性固定，未在此列出。</p>
+          </section>
+          <section class="set-target-characters">
+            <header>
+              <div>
+                <p class="eyebrow">BUILD PLAN TARGET</p>
+                <h3>设为目标的角色</h3>
+              </div>
+            </header>
+            <div class="set-recommendation-grid">
+              <button
+                v-for="character in recommendations"
+                :key="character.characterId"
+                type="button"
+                class="set-recommendation-character"
+                :class="{ unavailable: !character.catalogue }"
+                :disabled="!character.catalogue"
+                @click="character.catalogue && emit('openCharacter', character.catalogue)"
+              >
+                <img
+                  v-if="character.catalogue?.image"
+                  :src="character.catalogue.image"
+                  :alt="character.name"
+                />
+                <span v-else>{{ character.name.slice(0, 1) }}</span>
+                <div>
+                  <b>{{ character.name }}</b>
+                  <small v-if="character.catalogue"
+                    >{{ character.catalogue.element }} · {{ character.catalogue.path }}</small
+                  >
+                  <small v-else>角色图鉴数据暂缺</small>
+                </div>
+                <i v-if="character.catalogue" aria-hidden="true">→</i>
+              </button>
+            </div>
+          </section>
+        </template>
       </div>
     </section>
   </div>
@@ -171,6 +216,8 @@ onUnmounted(() => {
   font-size: 11px;
 }
 .set-recommendation-body {
+  max-height: min(610px, calc(100vh - 190px));
+  overflow-y: auto;
   padding: 20px 28px 24px;
 }
 .set-recommendation-state {
@@ -182,6 +229,86 @@ onUnmounted(() => {
 }
 .set-recommendation-state.error {
   color: var(--danger, #b54848);
+}
+.set-target-summary,
+.set-target-characters {
+  border: 1px solid rgba(46, 80, 123, 0.16);
+  border-radius: 9px;
+  background: #fff;
+}
+.set-target-summary {
+  padding: 15px;
+  box-shadow: inset 3px 0 #c69e4c;
+}
+.set-target-summary > header,
+.set-target-characters > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 11px;
+}
+.set-target-summary h3,
+.set-target-summary .eyebrow,
+.set-target-characters h3,
+.set-target-characters .eyebrow {
+  margin: 0;
+}
+.set-target-summary h3,
+.set-target-characters h3 {
+  color: var(--ink);
+  font-size: 15px;
+}
+.set-target-summary .eyebrow,
+.set-target-characters .eyebrow {
+  color: #9a7839;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+.set-target-summary > header small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.set-target-summary-row {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 8px 0;
+  border-top: 1px solid rgba(46, 80, 123, 0.11);
+}
+.set-target-summary-row > b {
+  padding-top: 4px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.set-target-summary-row > small {
+  padding-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.set-target-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.set-target-chip-list > span {
+  padding: 3px 7px;
+  border-radius: 4px;
+  color: #28588d;
+  background: #eaf2fc;
+  font-size: 10px;
+  font-weight: 700;
+}
+.set-target-summary-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+.set-target-characters {
+  margin-top: 14px;
+  padding: 15px;
 }
 .set-recommendation-grid {
   display: grid;
@@ -248,5 +375,20 @@ onUnmounted(() => {
 .set-recommendation-character.unavailable {
   cursor: default;
   opacity: 0.68;
+}
+@media (max-width: 520px) {
+  .set-recommendation-body {
+    padding: 16px;
+  }
+  .set-recommendation-grid {
+    grid-template-columns: 1fr;
+  }
+  .set-target-summary,
+  .set-target-characters {
+    padding: 12px;
+  }
+  .set-target-summary-row {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
 }
 </style>

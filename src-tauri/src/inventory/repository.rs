@@ -292,21 +292,39 @@ impl InventoryStore {
     ) -> Result<Vec<RelicSetRecommendedCharacter>, AppError> {
         let connection = self.connect()?;
         let mut statement = connection.prepare(
-            "SELECT characters.character_id, characters.name
+            "SELECT characters.character_id, characters.name,
+                    character_build_plans.main_stats_json,
+                    character_build_plans.effective_substats_json
              FROM character_build_plans
              INNER JOIN characters ON characters.character_id = character_build_plans.character_id
              WHERE cavern_set_a = ?1 OR cavern_set_b = ?1 OR planar_set_id = ?1
              ORDER BY character_build_plans.updated_at DESC, characters.character_id ASC",
         )?;
-        let characters = statement
+        let rows = statement
             .query_map([set_id], |row| {
-                Ok(RelicSetRecommendedCharacter {
-                    character_id: row.get(0)?,
-                    name: row.get(1)?,
-                })
+                Ok((
+                    row.get::<_, u32>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                ))
             })?
             .collect::<Result<Vec<_>, _>>()
             .map_err(AppError::from)?;
+        let characters = rows
+            .into_iter()
+            .map(
+                |(character_id, name, main_stats_json, effective_substats_json)| {
+                    RelicSetRecommendedCharacter {
+                        character_id,
+                        name,
+                        main_stats: serde_json::from_str(&main_stats_json).unwrap_or_default(),
+                        effective_substats: serde_json::from_str(&effective_substats_json)
+                            .unwrap_or_default(),
+                    }
+                },
+            )
+            .collect();
         Ok(characters)
     }
 
@@ -2103,14 +2121,14 @@ mod tests {
             cavern_set_a: 101,
             cavern_set_b: None,
             planar_set_id: 201,
-            main_stats: HashMap::new(),
+            main_stats: HashMap::from([("Body".to_owned(), vec!["CRIT Rate".to_owned()])]),
             targets: vec![BuildTarget {
                 stat_key: "SPD".to_owned(),
                 target: 160.0,
                 priority: 1,
                 minimum: 140.0,
             }],
-            effective_substats: vec![],
+            effective_substats: vec!["SPD".to_owned()],
         };
         store.save_build_plan(&base_plan).unwrap();
         let second_plan = CharacterBuildPlan {
@@ -2123,15 +2141,17 @@ mod tests {
         };
         store.save_build_plan(&second_plan).unwrap();
 
-        let cavern_names = store
-            .recommended_characters_for_relic_set(101)
-            .unwrap()
-            .into_iter()
-            .map(|character| character.name)
-            .collect::<Vec<_>>();
-        assert_eq!(cavern_names.len(), 2);
-        assert!(cavern_names.contains(&"飞霄".to_owned()));
-        assert!(cavern_names.contains(&"测试角色".to_owned()));
+        let cavern_targets = store.recommended_characters_for_relic_set(101).unwrap();
+        assert_eq!(cavern_targets.len(), 2);
+        assert!(cavern_targets
+            .iter()
+            .any(|character| character.name == "飞霄"));
+        assert!(cavern_targets
+            .iter()
+            .any(|character| character.name == "测试角色"));
+        assert!(cavern_targets.iter().all(|character| {
+            character.effective_substats == ["SPD"] && character.main_stats["Body"] == ["CRIT Rate"]
+        }));
         assert_eq!(
             store.recommended_characters_for_relic_set(201).unwrap()[0].name,
             "飞霄"

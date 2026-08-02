@@ -201,6 +201,8 @@ export interface BuildDashboardEntry {
 export interface RelicSetRecommendedCharacter {
   characterId: number;
   name: string;
+  mainStats: Record<string, string[]>;
+  effectiveSubstats: string[];
 }
 
 export interface BuildDashboardSubstat {

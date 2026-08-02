@@ -295,6 +295,8 @@ pub struct BuildDashboardEntry {
 pub struct RelicSetRecommendedCharacter {
     pub character_id: u32,
     pub name: String,
+    pub main_stats: HashMap<String, Vec<String>>,
+    pub effective_substats: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
