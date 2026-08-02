@@ -1,6 +1,7 @@
 @import "./shared/styles/tokens.css";
 @import "./shared/styles/base.css";
 @import "./shared/styles/primevue-overrides.css";
+@import "./app/app-toast.css";
 /* Feature styles are loaded eagerly and in a fixed order. Several of the
    original rules intentionally participate in the global cascade, so loading
    them with async pages caused the shell to restyle itself after navigation. */

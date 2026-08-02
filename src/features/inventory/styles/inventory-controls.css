@@ -590,6 +590,11 @@
 .build-actions > span {
   flex: 1;
 }
+.build-actions .filter-submit,
+.build-actions .filter-reset {
+  width: 104px;
+  justify-content: center;
+}
 .include-equipped {
   color: var(--ink-soft);
   font-size: 8px;

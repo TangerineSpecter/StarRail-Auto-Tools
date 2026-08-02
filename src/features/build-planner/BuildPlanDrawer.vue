@@ -50,31 +50,57 @@ const targetStatOptions = computed(() =>
       <div v-else class="build-scroll">
         <section class="build-section">
           <h3>套装结构</h3>
-          <div class="build-grid">
-            <label
-              ><span>四件遗器区</span
-              ><Select
-                v-model="editor.plan.cavernMode"
-                :options="[
-                  { label: '指定 4 件套', value: 'fourPiece' },
-                  { label: '指定 2 件 + 2 件', value: 'twoPlusTwo' },
-                ]"
-                option-label="label"
-                option-value="value" /></label
-            ><RelicSetCardPicker
-              v-model="editor.plan.cavernSetA"
-              :label="editor.plan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套'"
-              :options="editor.cavernSets"
-            /><RelicSetCardPicker
-              v-if="editor.plan.cavernMode === 'twoPlusTwo'"
-              v-model="editor.plan.cavernSetB"
-              label="第二组 2 件套"
-              :options="editor.cavernSets"
-            /><RelicSetCardPicker
-              v-model="editor.plan.planarSetId"
-              label="位面饰品 2 件套"
-              :options="editor.planarSets"
-            />
+          <div class="build-structure">
+            <div class="build-cavern-mode-field">
+              <span>四件遗器区</span>
+              <div class="build-cavern-mode" role="radiogroup" aria-label="四件遗器区套装模式">
+                <button
+                  type="button"
+                  role="radio"
+                  :aria-checked="editor.plan.cavernMode === 'fourPiece'"
+                  :class="{ selected: editor.plan.cavernMode === 'fourPiece' }"
+                  @click="editor.setCavernMode('fourPiece')"
+                >
+                  4 件套
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  :aria-checked="editor.plan.cavernMode === 'twoPlusTwo'"
+                  :class="{ selected: editor.plan.cavernMode === 'twoPlusTwo' }"
+                  @click="editor.setCavernMode('twoPlusTwo')"
+                >
+                  2+2 件套
+                </button>
+              </div>
+            </div>
+            <div class="build-set-selections">
+              <div class="build-cavern-set-primary">
+                <RelicSetCardPicker
+                  :model-value="editor.plan.cavernSetA"
+                  :label="editor.plan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套'"
+                  :options="editor.cavernSets"
+                  @update:model-value="editor.setCavernSetA"
+                />
+              </div>
+              <div
+                v-if="editor.plan.cavernMode === 'twoPlusTwo'"
+                class="build-cavern-set-secondary"
+              >
+                <RelicSetCardPicker
+                  v-model="editor.plan.cavernSetB"
+                  label="第二组 2 件套"
+                  :options="editor.cavernSets.filter((set) => set.setId !== editor.plan.cavernSetA)"
+                />
+              </div>
+              <div class="build-planar-set-picker">
+                <RelicSetCardPicker
+                  v-model="editor.plan.planarSetId"
+                  label="位面饰品 2 件套"
+                  :options="editor.planarSets"
+                />
+              </div>
+            </div>
           </div>
         </section>
         <section class="build-section">
@@ -196,7 +222,7 @@ const targetStatOptions = computed(() =>
           </div>
         </section>
       </div>
-      <footer class="build-actions">
+      <footer class="build-actions" :aria-busy="editor.saving.value || editor.calculating.value">
         <label class="include-equipped"
           ><Checkbox v-model="editor.includeEquipped.value" binary /> 纳入已装备遗器</label
         ><span /><Button
@@ -205,13 +231,18 @@ const targetStatOptions = computed(() =>
           outlined
           @click="editor.remove"
           >{{ editor.deleteArmed.value ? "再次点击确认" : "删除方案" }}</Button
-        ><Button class="filter-submit" type="button" @click="editor.save">保存并计算</Button
         ><Button
           class="filter-submit"
           type="button"
-          :disabled="!editor.plan.characterId"
+          :disabled="editor.saving.value || editor.calculating.value"
+          @click="editor.save"
+          >{{ editor.saving.value ? "保存中…" : "保存并计算" }}</Button
+        ><Button
+          class="filter-submit"
+          type="button"
+          :disabled="!editor.plan.characterId || editor.saving.value || editor.calculating.value"
           @click="editor.calculate"
-          >重新计算</Button
+          >{{ editor.calculating.value ? "计算中…" : "重新计算" }}</Button
         >
       </footer>
     </aside>

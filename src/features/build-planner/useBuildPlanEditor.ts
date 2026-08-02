@@ -1,4 +1,4 @@
-import { onBeforeUnmount, reactive, ref, watch, type Ref } from "vue";
+import { nextTick, onBeforeUnmount, reactive, ref, watch, type Ref } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { relicCatalogue } from "@/shared/catalogue";
 import { relicSlots } from "@/shared/catalogue/relic-options";
@@ -21,8 +21,18 @@ const emptyPlan = (characterId: number): CharacterBuildPlan => ({
   effectiveSubstats: [],
 });
 
+async function yieldForCalculationFeedback() {
+  await nextTick();
+  await new Promise<void>((resolve) => {
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => resolve());
+    else setTimeout(resolve, 0);
+  });
+}
+
 export function useBuildPlanEditor(options: BuildEditorOptions) {
   const loading = ref(false);
+  const saving = ref(false);
+  const calculating = ref(false);
   const includeEquipped = ref(false);
   const deleteArmed = ref(false);
   const recommendation = ref<BuildRecommendation | null>(null);
@@ -38,6 +48,20 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
   }));
   const cavernSets = setOptions.filter((set) => set.kind === "cavern");
   const planarSets = setOptions.filter((set) => set.kind === "planar");
+
+  function firstDifferentCavernSet(setId: number) {
+    return cavernSets.find((set) => set.setId !== setId)?.setId ?? null;
+  }
+  function setCavernMode(mode: CharacterBuildPlan["cavernMode"]) {
+    plan.cavernMode = mode;
+    if (mode === "twoPlusTwo" && plan.cavernSetB === plan.cavernSetA)
+      plan.cavernSetB = firstDifferentCavernSet(plan.cavernSetA);
+  }
+  function setCavernSetA(setId: number) {
+    plan.cavernSetA = setId;
+    if (plan.cavernMode === "twoPlusTwo" && plan.cavernSetB === setId)
+      plan.cavernSetB = firstDifferentCavernSet(setId);
+  }
 
   async function load(characterId: number) {
     loading.value = true;
@@ -136,19 +160,36 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     move(event);
   }
   async function save() {
+    if (saving.value || calculating.value) return;
+    if (plan.cavernMode === "twoPlusTwo" && plan.cavernSetA === plan.cavernSetB) {
+      options.setError("2+2 件套不能选择相同的遗器套装");
+      return;
+    }
+    saving.value = true;
     try {
+      options.setNotice("正在保存培养方案…");
+      await yieldForCalculationFeedback();
       await buildPlanApi.save(JSON.parse(JSON.stringify(plan)));
-      options.setNotice("培养方案已保存");
-      await calculate();
+      if (await calculate()) options.setNotice("培养方案已保存，推荐结果已更新");
     } catch (cause) {
       options.setError(String(cause));
+    } finally {
+      saving.value = false;
     }
   }
-  async function calculate() {
+  async function calculate(): Promise<boolean> {
+    if (calculating.value) return false;
+    calculating.value = true;
     try {
+      options.setNotice("正在计算推荐组合…");
+      await yieldForCalculationFeedback();
       recommendation.value = await buildPlanApi.recommend(plan.characterId, includeEquipped.value);
+      return true;
     } catch (cause) {
       options.setError(String(cause));
+      return false;
+    } finally {
+      calculating.value = false;
     }
   }
   async function remove() {
@@ -174,6 +215,8 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
   onBeforeUnmount(() => targetDragCleanup?.());
   return {
     loading,
+    saving,
+    calculating,
     includeEquipped,
     deleteArmed,
     recommendation,
@@ -182,6 +225,8 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     plan,
     cavernSets,
     planarSets,
+    setCavernMode,
+    setCavernSetA,
     addTarget,
     removeTarget,
     moveTargetTo,

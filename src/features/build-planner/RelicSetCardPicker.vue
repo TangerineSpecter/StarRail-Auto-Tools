@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { relicCatalogue } from "@/shared/catalogue";
 import type { RelicSetOption } from "@/types";
+import { filterRelicSetOptions } from "./relic-set-search";
 
 const props = defineProps<{
   modelValue: number | null;
@@ -11,8 +12,10 @@ const props = defineProps<{
 const emit = defineEmits<{ "update:modelValue": [setId: number] }>();
 
 const open = ref(false);
+const query = ref("");
 const trigger = ref<HTMLButtonElement>();
 const dialog = ref<HTMLElement>();
+const searchInput = ref<HTMLInputElement>();
 const setById = new Map(relicCatalogue.sets.map((set) => [set.id, set]));
 const selectedSet = computed(() =>
   props.modelValue === null ? undefined : setById.get(props.modelValue),
@@ -20,21 +23,23 @@ const selectedSet = computed(() =>
 const optionDetails = computed(() =>
   props.options.map((option) => ({ ...option, image: setById.get(option.setId)?.image })),
 );
+const filteredOptionDetails = computed(() => {
+  const matchingIds = new Set(
+    filterRelicSetOptions(props.options, query.value).map((option) => option.setId),
+  );
+  return optionDetails.value.filter((option) => matchingIds.has(option.setId));
+});
 
 function close() {
   if (!open.value) return;
   open.value = false;
+  query.value = "";
   void nextTick(() => trigger.value?.focus());
 }
 
 function showDialog() {
   open.value = true;
-  void nextTick(() =>
-    (
-      dialog.value?.querySelector<HTMLButtonElement>(".build-set-dialog-option.selected") ??
-      dialog.value?.querySelector<HTMLButtonElement>(".build-set-dialog-close")
-    )?.focus(),
-  );
+  void nextTick(() => searchInput.value?.focus());
 }
 
 function select(setId: number) {
@@ -53,7 +58,7 @@ function handleDocumentKeydown(event: KeyboardEvent) {
   if (event.key !== "Tab") return;
   const focusable = Array.from(
     dialog.value?.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      'input:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
     ) ?? [],
   );
   if (!focusable.length) return;
@@ -118,9 +123,20 @@ onBeforeUnmount(() => {
             ×
           </button>
         </header>
+        <div class="build-set-dialog-search">
+          <label :for="`build-set-search-${label}`">搜索{{ label }}</label>
+          <input
+            :id="`build-set-search-${label}`"
+            ref="searchInput"
+            v-model="query"
+            type="search"
+            placeholder="输入套装名称搜索"
+            autocomplete="off"
+          />
+        </div>
         <div class="build-set-dialog-grid" role="listbox" :aria-label="`${label}选项`">
           <button
-            v-for="set in optionDetails"
+            v-for="set in filteredOptionDetails"
             :key="set.setId"
             type="button"
             class="build-set-dialog-option"
@@ -134,6 +150,9 @@ onBeforeUnmount(() => {
             <span>{{ set.name }}</span>
             <i v-if="set.setId === modelValue" aria-label="已选择">✓</i>
           </button>
+          <p v-if="!filteredOptionDetails.length" class="build-set-dialog-empty" role="status">
+            未找到匹配的套装
+          </p>
         </div>
       </section>
     </div>

@@ -407,6 +407,8 @@ td {
 .build-drawer header small,
 .build-section h3 small,
 .build-grid label,
+.build-set-picker-label,
+.build-cavern-mode-field > span,
 .target-row label,
 .main-stat-grid legend,
 .include-equipped,
@@ -422,6 +424,12 @@ td {
 .target-row .p-inputnumber-input {
   width: 100%;
   min-height: 40px;
+}
+.build-grid .p-select {
+  min-height: 54px;
+}
+.build-cavern-mode button {
+  font-size: 12px;
 }
 .main-stat-grid fieldset {
   padding: 12px;

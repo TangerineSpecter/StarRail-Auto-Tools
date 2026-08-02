@@ -26,6 +26,29 @@ describe("RelicSetCardPicker", () => {
     wrapper.unmount();
   });
 
+  it("filters sets by a partial name and shows an empty state when nothing matches", async () => {
+    const wrapper = mount(RelicSetCardPicker, {
+      attachTo: document.body,
+      props: { modelValue: 101, options, label: "四件套" },
+    });
+
+    await wrapper.get(".build-set-picker-trigger").trigger("click");
+    const search = document.body.querySelector<HTMLInputElement>(".build-set-dialog-search input");
+    expect(document.activeElement).toBe(search);
+    search!.value = "快枪";
+    search!.dispatchEvent(new Event("input"));
+    await wrapper.vm.$nextTick();
+    expect(document.body.querySelectorAll('[role="option"]')).toHaveLength(1);
+    expect(document.body.textContent).toContain("野穗伴行的快枪手");
+
+    search!.value = "不存在";
+    search!.dispatchEvent(new Event("input"));
+    await wrapper.vm.$nextTick();
+    expect(document.body.querySelectorAll('[role="option"]')).toHaveLength(0);
+    expect(document.body.textContent).toContain("未找到匹配的套装");
+    wrapper.unmount();
+  });
+
   it("closes only its own layer when the user presses Escape", async () => {
     const wrapper = mount(RelicSetCardPicker, {
       attachTo: document.body,
@@ -57,9 +80,11 @@ describe("RelicSetCardPicker", () => {
 
     await trigger.trigger("click");
     const focusable = document.body.querySelectorAll<HTMLElement>(
-      ".build-set-dialog button:not([disabled])",
+      ".build-set-dialog input:not([disabled]), .build-set-dialog button:not([disabled])",
     );
-    expect(document.activeElement).toBe(focusable[1]);
+    expect(document.activeElement).toBe(
+      document.body.querySelector(".build-set-dialog-search input"),
+    );
 
     focusable[focusable.length - 1].focus();
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));

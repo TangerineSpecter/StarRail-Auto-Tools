@@ -14,13 +14,81 @@
   display: block;
   margin-bottom: 4px;
   color: var(--ink-soft);
+  font-size: 8px;
+  font-weight: 600;
+}
+.build-structure {
+  display: grid;
+  gap: 9px;
+}
+.build-set-selections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.build-cavern-set-primary {
+  grid-column: 1;
+  grid-row: 1;
+}
+.build-cavern-set-secondary {
+  grid-column: 2;
+  grid-row: 1;
+}
+.build-planar-set-picker {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.build-set-selections .build-set-picker {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.build-cavern-mode-field {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.build-cavern-mode-field > span {
+  color: var(--ink-soft);
+  font-size: 8px;
+}
+.build-cavern-mode {
+  display: grid;
+  height: 54px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.74);
+}
+.build-cavern-mode button {
+  min-width: 0;
+  border: 0;
+  border-radius: 3px;
+  color: var(--ink-soft);
+  font: inherit;
   font-size: 9px;
   font-weight: 600;
+  background: transparent;
+}
+.build-cavern-mode button:hover {
+  color: var(--blue);
+  background: rgba(36, 86, 166, 0.07);
+}
+.build-cavern-mode button.selected {
+  color: var(--blue);
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(30, 49, 79, 0.14);
+}
+.build-cavern-mode button:focus-visible {
+  outline: 2px solid rgba(36, 86, 166, 0.4);
+  outline-offset: -1px;
 }
 .build-set-picker-trigger {
   display: grid;
   width: 100%;
-  min-height: 54px;
+  height: 54px;
   grid-template-columns: 42px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
@@ -84,7 +152,9 @@
 }
 .build-set-dialog {
   width: min(850px, calc(100vw - 56px));
-  max-height: min(700px, calc(100vh - 56px));
+  height: min(700px, calc(100vh - 56px));
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(36, 86, 166, 0.25);
   border-radius: 8px;
@@ -128,13 +198,47 @@
   background: #fff;
   font-size: 21px;
 }
+.build-set-dialog-search {
+  display: grid;
+  gap: 5px;
+  padding: 14px 22px 0;
+}
+.build-set-dialog-search label {
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 600;
+}
+.build-set-dialog-search input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  background: #fff;
+}
+.build-set-dialog-search input:focus {
+  border-color: rgba(36, 86, 166, 0.65);
+  outline: 2px solid rgba(36, 86, 166, 0.15);
+  outline-offset: 1px;
+}
 .build-set-dialog-grid {
   display: grid;
-  max-height: calc(min(700px, 100vh - 56px) - 102px);
+  min-height: 0;
+  flex: 1;
+  align-content: start;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   padding: 18px 22px 22px;
   overflow-y: auto;
+}
+.build-set-dialog-empty {
+  grid-column: 1 / -1;
+  margin: 18px 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 11px;
 }
 .build-set-dialog-option {
   position: relative;

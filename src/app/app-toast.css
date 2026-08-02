@@ -1,0 +1,55 @@
+.app-feedback-toast.p-toast {
+  top: 54px;
+  width: fit-content;
+  max-width: calc(100vw - 28px);
+}
+
+.app-feedback-toast .p-toast-message {
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #2d65ae;
+  box-shadow: 0 5px 12px rgba(29, 71, 125, 0.2);
+  overflow: hidden;
+}
+
+.app-feedback-toast .p-toast-message-content {
+  padding: 0;
+}
+
+.app-feedback-toast .p-toast-message:has(.tone-error) {
+  background: #aa5548;
+  box-shadow: 0 5px 12px rgba(107, 47, 39, 0.18);
+}
+
+.app-feedback-content {
+  display: grid;
+  gap: 2px;
+  min-height: 28px;
+  padding: 7px 16px;
+  color: #fff;
+  font-family: "Bahnschrift", sans-serif;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-shadow: 0 1px rgba(10, 49, 97, 0.18);
+}
+
+.app-feedback-content strong {
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.app-feedback-content p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 15px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .app-feedback-toast .p-toast-message-enter-active,
+  .app-feedback-toast .p-toast-message-leave-active {
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+}

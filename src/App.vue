@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, provide, ref, type Component } from "vue";
+import { computed, defineAsyncComponent, provide, ref, watch, type Component } from "vue";
 import { storeToRefs } from "pinia";
+import Toast from "primevue/toast";
+import { useToast } from "primevue/usetoast";
 import AppNavigation from "@/app/AppNavigation.vue";
 import { useRuntimeLifecycle } from "@/app/composables/useRuntimeLifecycle";
 import type { AppView } from "@/app/navigation";
@@ -25,6 +27,7 @@ const activeView = ref<AppView>("capture");
 const isMaximized = ref(false);
 const runtime = useRuntimeStore();
 const { direct, summary, busy, error, notice, inventoryRevision } = storeToRefs(runtime);
+const toast = useToast();
 provide(runtimeContextKey, { direct, summary, busy, error, notice, inventoryRevision });
 const { capabilities } = useRuntimeLifecycle();
 const currentPage = computed(() => pages[activeView.value]);
@@ -47,6 +50,31 @@ const phaseLabel = computed(
       error: "需要处理",
     })[direct.value.phase] satisfies string,
 );
+
+function showFeedback(message: string, severity: "success" | "error") {
+  toast.removeGroup("app-feedback");
+  toast.add({
+    group: "app-feedback",
+    severity,
+    summary:
+      severity === "error" ? "操作失败" : message.startsWith("正在") ? "正在处理…" : "操作完成",
+    detail: message,
+    life: severity === "error" ? 6000 : 3200,
+    closable: false,
+  });
+}
+
+watch(notice, (message) => {
+  if (!message) return;
+  showFeedback(message, "success");
+  notice.value = "";
+});
+
+watch(error, (message) => {
+  if (!message) return;
+  showFeedback(message, "error");
+  error.value = "";
+});
 
 async function toggleMaximize() {
   if (isMaximized.value) await windowApi.unmaximize();
@@ -110,20 +138,14 @@ async function toggleMaximize() {
         </div>
       </footer>
     </main>
-    <div v-if="error" class="toast error-toast" role="alert" @click="error = ''">
-      <span class="toast-symbol">!</span>
-      <div>
-        <strong>任务未完成</strong>
-        <p>{{ error }}</p>
-      </div>
-    </div>
-    <div v-if="notice" class="toast notice-toast" role="status" @click="notice = ''">
-      <span class="toast-symbol">✓</span>
-      <div>
-        <strong>{{ busy ? "正在处理" : "操作完成" }}</strong>
-        <p>{{ notice }}</p>
-      </div>
-    </div>
+    <Toast group="app-feedback" position="top-center" class="app-feedback-toast">
+      <template #message="{ message }">
+        <div :class="['app-feedback-content', `tone-${message.severity}`]">
+          <strong>{{ message.summary }}</strong>
+          <p>{{ message.detail }}</p>
+        </div>
+      </template>
+    </Toast>
   </div>
 </template>
 
