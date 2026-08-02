@@ -4,6 +4,7 @@ import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import InputNumber from "primevue/inputnumber";
 import Select from "primevue/select";
+import RelicSetCardPicker from "./RelicSetCardPicker.vue";
 import { useBuildPlanEditor } from "./useBuildPlanEditor";
 import {
   relicMainStats,
@@ -60,28 +61,20 @@ const targetStatOptions = computed(() =>
                 ]"
                 option-label="label"
                 option-value="value" /></label
-            ><label
-              ><span>{{ editor.plan.cavernMode === "fourPiece" ? "四件套" : "第一组 2 件套" }}</span
-              ><Select
-                v-model="editor.plan.cavernSetA"
-                :options="editor.cavernSets"
-                option-label="name"
-                option-value="setId" /></label
-            ><label v-if="editor.plan.cavernMode === 'twoPlusTwo'"
-              ><span>第二组 2 件套</span
-              ><Select
-                v-model="editor.plan.cavernSetB"
-                :options="editor.cavernSets"
-                option-label="name"
-                option-value="setId" /></label
-            ><label
-              ><span>位面饰品 2 件套</span
-              ><Select
-                v-model="editor.plan.planarSetId"
-                :options="editor.planarSets"
-                option-label="name"
-                option-value="setId"
-            /></label>
+            ><RelicSetCardPicker
+              v-model="editor.plan.cavernSetA"
+              :label="editor.plan.cavernMode === 'fourPiece' ? '四件套' : '第一组 2 件套'"
+              :options="editor.cavernSets"
+            /><RelicSetCardPicker
+              v-if="editor.plan.cavernMode === 'twoPlusTwo'"
+              v-model="editor.plan.cavernSetB"
+              label="第二组 2 件套"
+              :options="editor.cavernSets"
+            /><RelicSetCardPicker
+              v-model="editor.plan.planarSetId"
+              label="位面饰品 2 件套"
+              :options="editor.planarSets"
+            />
           </div>
         </section>
         <section class="build-section">
