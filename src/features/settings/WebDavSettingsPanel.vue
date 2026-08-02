@@ -18,6 +18,8 @@ const settings = reactive<WebDavSettings>({
   password: "",
 });
 const loading = ref(true);
+const downloadConfirmOpen = ref(false);
+const activeTransfer = ref<"upload" | "download" | null>(null);
 
 function copy(value: WebDavSettings) {
   Object.assign(settings, value);
@@ -34,9 +36,10 @@ function validate() {
   if (!remotePath.startsWith("/")) return "远端同步目录必须以 / 开头。";
   return "";
 }
-async function run(action: () => Promise<void>, success: string) {
+async function run(action: () => Promise<void>, success: string, transfer?: "upload" | "download") {
   const invalid = validate();
   if (invalid) return emit("error", invalid);
+  activeTransfer.value = transfer ?? null;
   emit("busy", true);
   try {
     await action();
@@ -44,6 +47,7 @@ async function run(action: () => Promise<void>, success: string) {
   } catch (cause) {
     emit("error", String(cause));
   } finally {
+    activeTransfer.value = null;
     emit("busy", false);
   }
 }
@@ -54,13 +58,16 @@ async function test() {
   await run(() => webDavApi.test({ ...settings }), "连接正常，已验证服务器和认证信息");
 }
 async function upload() {
-  await run(() => webDavApi.upload({ ...settings }), "已上传当前本地数据与培养方案");
+  await run(() => webDavApi.upload({ ...settings }), "已上传当前本地数据与培养方案", "upload");
 }
-async function download() {
+function requestDownload() {
   const invalid = validate();
   if (invalid) return emit("error", invalid);
-  if (!window.confirm("下载将以远端完整快照覆盖本地录入数据、培养方案和毕业目标。是否继续？"))
-    return;
+  downloadConfirmOpen.value = true;
+}
+async function download() {
+  downloadConfirmOpen.value = false;
+  activeTransfer.value = "download";
   emit("busy", true);
   try {
     await webDavApi.download({ ...settings });
@@ -68,6 +75,7 @@ async function download() {
   } catch (cause) {
     emit("error", String(cause));
   } finally {
+    activeTransfer.value = null;
     emit("busy", false);
   }
 }
@@ -154,12 +162,21 @@ onMounted(async () => {
         <div class="transfer-route"><span>本地数据</span><i>⇄</i><span>你的 WebDAV</span></div>
         <button class="transfer-action upload" type="button" :disabled="busy" @click="upload">
           <span class="transfer-icon">↑</span
-          ><span><b>上传本地数据</b><small>备份当前录入与培养方案</small></span
+          ><span
+            ><b>{{ activeTransfer === "upload" ? "正在上传…" : "上传本地数据" }}</b
+            ><small>备份当前录入与培养方案</small></span
           ><em>→</em>
         </button>
-        <button class="transfer-action download" type="button" :disabled="busy" @click="download">
+        <button
+          class="transfer-action download"
+          type="button"
+          :disabled="busy"
+          @click="requestDownload"
+        >
           <span class="transfer-icon">↓</span
-          ><span><b>下载远端快照</b><small>确认后完整覆盖本地数据</small></span
+          ><span
+            ><b>{{ activeTransfer === "download" ? "正在下载…" : "下载远端快照" }}</b
+            ><small>确认后完整覆盖本地数据</small></span
           ><em>→</em>
         </button>
         <div class="overwrite-note">
@@ -167,6 +184,28 @@ onMounted(async () => {
           <p>下载不是合并操作。远端数据会替换当前本地的录入、培养方案与毕业目标。</p>
         </div>
       </aside>
+    </div>
+    <div
+      v-if="downloadConfirmOpen"
+      class="download-confirm-backdrop"
+      role="presentation"
+      @click.self="downloadConfirmOpen = false"
+    >
+      <section
+        class="download-confirm"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="download-confirm-title"
+      >
+        <p class="eyebrow">REMOTE RESTORE</p>
+        <h3 id="download-confirm-title">确认下载并覆盖？</h3>
+        <p>远端快照会替换当前设备中的录入数据、培养方案与毕业目标；此操作不会合并两端数据。</p>
+        <div class="download-confirm-actions">
+          <button type="button" class="confirm-cancel" @click="downloadConfirmOpen = false">
+            取消</button
+          ><button type="button" class="confirm-download" @click="download">确认下载</button>
+        </div>
+      </section>
     </div>
   </section>
 </template>
@@ -567,6 +606,62 @@ onMounted(async () => {
 }
 .overwrite-note p {
   margin: 0;
+}
+.download-confirm-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 28, 52, 0.42);
+  backdrop-filter: blur(4px);
+}
+.download-confirm {
+  width: min(440px, 100%);
+  padding: 28px;
+  border: 1px solid rgba(199, 165, 90, 0.58);
+  background: #fcfdff;
+  box-shadow: 0 28px 70px rgba(8, 25, 53, 0.3);
+}
+.download-confirm h3 {
+  margin: 10px 0 11px;
+  color: var(--ink);
+  font-size: 25px;
+  letter-spacing: -0.045em;
+}
+.download-confirm > p:not(.eyebrow) {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.75;
+}
+.download-confirm-actions {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+  margin-top: 24px;
+}
+.download-confirm-actions button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid;
+  border-radius: 3px;
+  font: 700 12px/1 var(--font-ui);
+  cursor: pointer;
+}
+.confirm-cancel {
+  border-color: #8394aa !important;
+  color: #344a68;
+  background: #fff;
+}
+.confirm-download {
+  border-color: #a54236 !important;
+  color: #fff;
+  background: #a54236;
+}
+.confirm-download:hover {
+  background: #873229;
 }
 @media (max-width: 900px) {
   .settings-console {
