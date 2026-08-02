@@ -40,6 +40,15 @@ struct LightCone {
     id: u32,
     name: String,
 }
+#[derive(Deserialize)]
+struct CharacterCatalogue {
+    characters: Vec<CharacterCatalogueEntry>,
+}
+#[derive(Deserialize)]
+struct CharacterCatalogueEntry {
+    name: String,
+    rarity: Option<u32>,
+}
 
 fn relic_names() -> &'static std::collections::HashMap<u32, String> {
     static MAP: OnceLock<std::collections::HashMap<u32, String>> = OnceLock::new();
@@ -63,6 +72,20 @@ fn light_cone_names() -> &'static std::collections::HashMap<u32, String> {
         .light_cones
         .into_iter()
         .map(|entry| (entry.id, entry.name))
+        .collect()
+    })
+}
+
+fn character_rarities() -> &'static std::collections::HashMap<String, u32> {
+    static MAP: OnceLock<std::collections::HashMap<String, u32>> = OnceLock::new();
+    MAP.get_or_init(|| {
+        serde_json::from_str::<CharacterCatalogue>(include_str!(
+            "../../../src/data/characters.json"
+        ))
+        .expect("bundled character catalogue must be valid")
+        .characters
+        .into_iter()
+        .filter_map(|entry| entry.rarity.map(|rarity| (entry.name, rarity)))
         .collect()
     })
 }
@@ -248,6 +271,10 @@ pub fn canonical_light_cone_name(id: u32) -> Option<&'static str> {
 
 pub fn canonical_character_name(id: u32) -> Option<&'static str> {
     character_names().get(&id).copied()
+}
+
+pub fn character_rarity(name: &str) -> Option<u32> {
+    character_rarities().get(name).copied()
 }
 
 fn canonical_import_character_name(id: u32, imported_name: &str) -> Option<&'static str> {

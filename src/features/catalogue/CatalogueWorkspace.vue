@@ -13,6 +13,10 @@ const selectedCharacter = ref<CharacterCatalogueEntry | null>(null);
 const selectedSet = ref<RelicSetCatalogueEntry | null>(null);
 const cavernSets = relicCatalogue.sets.filter((set) => set.kind === "cavern");
 const planarSets = relicCatalogue.sets.filter((set) => set.kind === "planar");
+const catalogueCharacters = [...characterCatalogue.characters].sort(
+  (left, right) =>
+    (right.rarity ?? 5) - (left.rarity ?? 5) || left.name.localeCompare(right.name, "zh-CN"),
+);
 const tabs = [
   { key: "cavern" as const, label: "遗器", code: "CAVERN", count: cavernSets.length, unit: "套" },
   {
@@ -75,10 +79,7 @@ onBeforeUnmount(removeEscapeListener);
         <RelicSetGrid :sets="planarSets" @select="selectedSet = $event" />
       </section>
       <section v-show="tab === 'character'" class="catalogue-group character-catalogue-group">
-        <CharacterGrid
-          :characters="characterCatalogue.characters"
-          @select="selectedCharacter = $event"
-        />
+        <CharacterGrid :characters="catalogueCharacters" @select="selectedCharacter = $event" />
       </section>
     </div>
   </section>

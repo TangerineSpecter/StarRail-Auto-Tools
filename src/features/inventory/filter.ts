@@ -19,6 +19,7 @@ export interface InventoryFilterForm {
   path: string[];
   eidolon: number[];
   element: string[];
+  buildPlan: string;
 }
 
 export const createInventoryFilterForm = (): InventoryFilterForm => ({
@@ -39,6 +40,7 @@ export const createInventoryFilterForm = (): InventoryFilterForm => ({
   path: [],
   eidolon: [],
   element: [],
+  buildPlan: "",
 });
 
 const asNumber = (value: string | number): number | undefined => {
@@ -97,5 +99,6 @@ export function buildInventoryFilter(
     names,
     path: form.path.length ? form.path : undefined,
     eidolon: form.eidolon.length ? form.eidolon : undefined,
+    hasBuildPlan: asBoolean(form.buildPlan),
   });
 }

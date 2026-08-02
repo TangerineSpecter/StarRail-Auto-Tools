@@ -185,6 +185,20 @@ const substatCountOptions = [
           /></label>
         </template>
         <template v-else>
+          <label>
+            <span>培养方案</span>
+            <Select
+              v-model="filters.buildPlan"
+              :options="[
+                { label: '全部', value: '' },
+                { label: '已设置', value: 'true' },
+                { label: '未设置', value: 'false' },
+              ]"
+              option-label="label"
+              option-value="value"
+              placeholder="全部"
+            />
+          </label>
           <fieldset class="filter-group filter-group-wide">
             <legend>
               命途 <em class="filter-count">{{ filters.path.length || 8 }} 个</em>

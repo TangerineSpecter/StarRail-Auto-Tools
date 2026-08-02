@@ -103,6 +103,7 @@ export interface CharacterFilter extends PageQuery {
   maxLevel?: number;
   minAscension?: number;
   eidolon?: number[];
+  hasBuildPlan?: boolean;
 }
 
 export interface RelicSubstatItem {
@@ -160,6 +161,7 @@ export interface CharacterListItem {
   level: number;
   ascension: number;
   eidolon: number;
+  hasBuildPlan: boolean;
   abilityVersion: number;
   source: string;
   updatedAt: number;
@@ -258,6 +260,7 @@ export interface CharacterCatalogueEntry {
   name: string;
   element: string;
   path: string;
+  rarity?: number;
   /** 角色在 80 级、满突破时的未装备基础面板。 */
   baseStats?: {
     hp: number;

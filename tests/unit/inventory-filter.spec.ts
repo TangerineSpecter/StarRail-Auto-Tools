@@ -28,4 +28,13 @@ describe("buildInventoryFilter", () => {
       locked: false,
     });
   });
+
+  it("sends the character build-plan state to the list query", () => {
+    const form = createInventoryFilterForm();
+    form.buildPlan = "false";
+
+    expect(buildInventoryFilter("character", form, 1, 50)).toMatchObject({
+      hasBuildPlan: false,
+    });
+  });
 });

@@ -68,7 +68,7 @@ export function useInventoryArchive(options: ArchiveOptions) {
           ]
         : kind.value === "lightCone"
           ? [form.superimposition.length, form.locked, form.equipped]
-          : [form.path.length, form.eidolon.length, form.element.length];
+          : [form.path.length, form.eidolon.length, form.element.length, form.buildPlan];
     return values.filter(Boolean).length;
   });
   const hasActiveSearchOrFilters = computed(

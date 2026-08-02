@@ -35,6 +35,8 @@
 }
 
 .character-card-header {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
   grid-template-areas:
@@ -44,7 +46,15 @@
   column-gap: 13px;
   align-items: center;
   padding: 18px;
-  background: linear-gradient(120deg, rgba(232, 240, 251, 0.9), rgba(255, 255, 255, 0.55));
+  background:
+    linear-gradient(
+      90deg,
+      rgba(246, 250, 255, 0.96) 0%,
+      rgba(246, 250, 255, 0.88) 42%,
+      rgba(246, 250, 255, 0.54) 100%
+    ),
+    var(--character-card-backdrop, none) right center / auto 145% no-repeat,
+    linear-gradient(120deg, rgba(232, 240, 251, 0.9), rgba(255, 255, 255, 0.55));
   text-align: left;
 }
 
@@ -147,6 +157,19 @@
   color: #fff;
   background: #24569e;
   outline: none;
+}
+
+.character-build-action.has-build-plan {
+  border-color: rgba(202, 139, 20, 0.62);
+  color: #9b6500;
+  background: rgba(255, 247, 225, 0.96);
+}
+
+.character-build-action.has-build-plan:hover,
+.character-build-action.has-build-plan:focus-visible {
+  border-color: #a96c00;
+  color: #fff;
+  background: #a96c00;
 }
 
 .character-build-action:focus-visible {

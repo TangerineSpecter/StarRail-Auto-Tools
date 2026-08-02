@@ -3,7 +3,7 @@
  * Creates bundled relic and character catalogues from public Star Rail Station Wiki pages.
  * It deliberately has no third-party dependency so a maintainer can run it with Node 22.
  */
-import { access, mkdir, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { dirname, extname, join } from "node:path";
 
@@ -15,6 +15,11 @@ const characterOutputFile = join(root, "src/data/characters.json");
 const imageRoot = join(root, "public/relic-sets");
 const skipImages = process.argv.includes("--skip-images");
 const refreshImages = process.argv.includes("--refresh-images");
+const previousCharacterRarities = new Map(
+  JSON.parse(await readFile(characterOutputFile, "utf8"))
+    .characters.filter((character) => character.rarity === 4 || character.rarity === 5)
+    .map((character) => [character.slug, character.rarity]),
+);
 
 function decodeHtml(value) {
   return value
@@ -108,6 +113,7 @@ function parseCharacter(slug, fragment) {
     "";
   const imageAlt = fragment.match(/<img[^>]+alt=["']([^"']+)["']/i)?.[1] ?? "";
   const visibleName = parts.filter((part) => !labels.has(part)).join(" ");
+  const rarity = parts.includes("4⭐") ? 4 : parts.includes("5⭐") ? 5 : null;
   // The list page has changed between server-rendered text cards and image-only
   // cards. Image alt text is the stable fallback for the latter.
   const name = (visibleName || imageAlt)
@@ -131,6 +137,10 @@ function parseCharacter(slug, fragment) {
     name,
     element,
     path,
+    // The source currently omits the visible star text for its image-only cards.
+    // Keep a previously synced value in that case, rather than silently treating
+    // every character as five-star in clients.
+    rarity: rarity ?? previousCharacterRarities.get(slug) ?? null,
     imageUrl: backgrounds.at(-1) ?? inlineImages.at(-1) ?? null,
     backgroundImageUrl: backgrounds.length > 1 ? backgrounds[0] : null,
     elementIconUrl: inlineImages[0] ?? null,
@@ -338,6 +348,12 @@ if (characters.length < 50) {
   const linkCount = [...characterHtml.matchAll(/\/cn\/characters?\//gi)].length;
   throw new Error(
     `角色数据页未返回可用的角色卡片（发现 ${linkCount} 个角色链接，解析到 ${characters.length} 名角色）。请稍后重试；现有角色图鉴不会被覆盖。`,
+  );
+}
+const missingRarityCharacters = characters.filter((character) => character.rarity == null);
+if (missingRarityCharacters.length) {
+  throw new Error(
+    `以下角色未能同步星级：${missingRarityCharacters.map((character) => character.name).join("、")}。为避免错误显示为 5 星，现有角色图鉴不会被覆盖。`,
   );
 }
 await forEachConcurrent(characters, async (character) => {

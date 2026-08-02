@@ -52,7 +52,10 @@ const avatarColors = ["#1ea2e8", "#e84a4a", "#8740e5", "#33b061", "#f0a21d", "#e
 const relics = () => props.items as RelicListItem[];
 const lightCones = () => props.items as LightConeListItem[];
 const characters = () => props.items as CharacterListItem[];
-const characterAvatar = (name: string) => characterByName.get(name)?.image ?? undefined;
+const characterCatalogue = (name: string) => characterByName.get(name);
+const characterAvatar = (name: string) => characterCatalogue(name)?.image ?? undefined;
+const characterBackground = (name: string) => characterCatalogue(name)?.backgroundImage;
+const characterStars = (name: string) => "★".repeat(characterCatalogue(name)?.rarity ?? 5);
 const characterElement = (name: string) => characterByName.get(name)?.element ?? null;
 const lightConeImage = (item: LightConeListItem) =>
   lightConeById.get(item.templateId)?.image ?? undefined;
@@ -245,7 +248,14 @@ function avatarColor(name: string): string {
         class="character-card"
         @click="emit('detail', 'character', item.characterId)"
       >
-        <div class="character-card-header">
+        <div
+          class="character-card-header"
+          :style="
+            characterBackground(item.name)
+              ? { '--character-card-backdrop': `url(${characterBackground(item.name)})` }
+              : undefined
+          "
+        >
           <img
             v-if="characterAvatar(item.name)"
             class="character-card-avatar"
@@ -264,7 +274,12 @@ function avatarColor(name: string): string {
             ><span class="path-text">{{ pathLabels[item.path] ?? item.path }}</span>
           </div>
           <div class="character-name">{{ item.name }}</div>
-          <div class="character-stars">★★★★★</div>
+          <div
+            class="character-stars"
+            :aria-label="`${characterCatalogue(item.name)?.rarity ?? 5} 星`"
+          >
+            {{ characterStars(item.name) }}
+          </div>
         </div>
         <div class="character-card-stats">
           <div class="stat-col">
@@ -280,7 +295,7 @@ function avatarColor(name: string): string {
         </div>
         <div class="character-card-actions">
           <button
-            class="character-build-action"
+            :class="['character-build-action', { 'has-build-plan': item.hasBuildPlan }]"
             type="button"
             @click.stop="emit('edit-build', item)"
           >

@@ -1,7 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import InventoryList from "@/features/inventory/InventoryList.vue";
-import type { RelicListItem } from "@/types";
+import type { CharacterListItem, RelicListItem } from "@/types";
 
 const relic: RelicListItem = {
   itemId: 7,
@@ -17,6 +17,19 @@ const relic: RelicListItem = {
   locked: false,
   discard: false,
   location: "",
+};
+
+const character: CharacterListItem = {
+  characterId: 1001,
+  name: "三月七",
+  path: "Preservation",
+  level: 80,
+  ascension: 6,
+  eidolon: 6,
+  hasBuildPlan: true,
+  abilityVersion: 1,
+  source: "network",
+  updatedAt: 0,
 };
 
 describe("InventoryList", () => {
@@ -44,5 +57,21 @@ describe("InventoryList", () => {
 
     await wrapper.get("button.row-action").trigger("click");
     expect(wrapper.emitted("detail")).toEqual([["relic", 7]]);
+  });
+
+  it("distinguishes characters with a saved build plan", () => {
+    const wrapper = mount(InventoryList, {
+      props: {
+        kind: "character",
+        items: [character],
+        selectedIds: new Set<number>(),
+        allSelected: false,
+        appending: false,
+        busy: false,
+      },
+    });
+
+    expect(wrapper.get(".character-build-action").classes()).toContain("has-build-plan");
+    expect(wrapper.get(".character-stars").text()).toBe("★★★★");
   });
 });

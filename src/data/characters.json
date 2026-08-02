@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/characters",
-    "syncedAt": "2026-08-01T13:43:37.583Z"
+    "syncedAt": "2026-08-02T08:23:59.482Z"
   },
   "characters": [
     {
@@ -11,6 +11,7 @@
       "name": "阿格莱雅",
       "element": "雷",
       "path": "记忆",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 698.544,
@@ -130,6 +131,7 @@
       "name": "阿兰",
       "element": "雷",
       "path": "毁灭",
+      "rarity": 4,
       "baseStats": {
         "hp": 1199.52,
         "attack": 599.76,
@@ -249,6 +251,7 @@
       "name": "艾丝妲",
       "element": "火",
       "path": "同谐",
+      "rarity": 4,
       "baseStats": {
         "hp": 1023.12,
         "attack": 511.56,
@@ -368,6 +371,7 @@
       "name": "白厄",
       "element": "物理",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1435.896,
         "attack": 582.12,
@@ -487,6 +491,7 @@
       "name": "白露",
       "element": "雷",
       "path": "丰饶",
+      "rarity": 5,
       "baseStats": {
         "hp": 1319.472,
         "attack": 562.716,
@@ -606,6 +611,7 @@
       "name": "波提欧",
       "element": "物理",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 1203.048,
         "attack": 620.928,
@@ -725,6 +731,7 @@
       "name": "不死途",
       "element": "雷",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 853.776,
         "attack": 776.16,
@@ -844,6 +851,7 @@
       "name": "布洛妮娅",
       "element": "风",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 582.12,
@@ -963,6 +971,7 @@
       "name": "大黑塔",
       "element": "冰",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1164.24,
         "attack": 679.14,
@@ -1082,6 +1091,7 @@
       "name": "大丽花",
       "element": "火",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 679.14,
@@ -1201,6 +1211,7 @@
       "name": "丹恒",
       "element": "风",
       "path": "巡猎",
+      "rarity": 4,
       "baseStats": {
         "hp": 882,
         "attack": 546.84,
@@ -1320,6 +1331,7 @@
       "name": "丹恒•腾荒",
       "element": "物理",
       "path": "存护",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 582.12,
@@ -1439,6 +1451,7 @@
       "name": "丹恒•饮月",
       "element": "虚数",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 698.544,
@@ -1558,6 +1571,7 @@
       "name": "飞霄",
       "element": "风",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 601.524,
@@ -1677,6 +1691,7 @@
       "name": "绯英",
       "element": "物理",
       "path": "欢愉",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 737.352,
@@ -1796,6 +1811,7 @@
       "name": "翡翠",
       "element": "量子",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 659.736,
@@ -1915,6 +1931,7 @@
       "name": "风堇",
       "element": "风",
       "path": "记忆",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 388.08,
@@ -2034,6 +2051,7 @@
       "name": "符玄",
       "element": "量子",
       "path": "存护",
+      "rarity": 5,
       "baseStats": {
         "hp": 1474.704,
         "attack": 465.696,
@@ -2153,6 +2171,7 @@
       "name": "桂乃芬",
       "element": "火",
       "path": "虚无",
+      "rarity": 4,
       "baseStats": {
         "hp": 882,
         "attack": 582.12,
@@ -2272,6 +2291,7 @@
       "name": "海瑟音",
       "element": "物理",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1203.048,
         "attack": 601.524,
@@ -2391,6 +2411,7 @@
       "name": "寒鸦",
       "element": "物理",
       "path": "同谐",
+      "rarity": 4,
       "baseStats": {
         "hp": 917.28,
         "attack": 564.48,
@@ -2510,6 +2531,7 @@
       "name": "黑塔",
       "element": "冰",
       "path": "智识",
+      "rarity": 4,
       "baseStats": {
         "hp": 952.56,
         "attack": 582.12,
@@ -2629,6 +2651,7 @@
       "name": "黑天鹅",
       "element": "风",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 659.736,
@@ -2748,6 +2771,7 @@
       "name": "虎克",
       "element": "火",
       "path": "毁灭",
+      "rarity": 4,
       "baseStats": {
         "hp": 1340.64,
         "attack": 617.4,
@@ -2867,6 +2891,7 @@
       "name": "花火",
       "element": "量子",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1397.088,
         "attack": 523.908,
@@ -2986,6 +3011,7 @@
       "name": "黄泉",
       "element": "雷",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1125.432,
         "attack": 698.544,
@@ -3105,6 +3131,7 @@
       "name": "火花",
       "element": "火",
       "path": "欢愉",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 640.332,
@@ -3224,6 +3251,7 @@
       "name": "藿藿",
       "element": "风",
       "path": "丰饶",
+      "rarity": 5,
       "baseStats": {
         "hp": 1358.28,
         "attack": 601.524,
@@ -3343,6 +3371,7 @@
       "name": "姬子",
       "element": "火",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 756.756,
@@ -3462,6 +3491,7 @@
       "name": "姬子•启行",
       "element": "火",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1125.432,
         "attack": 756.756,
@@ -3581,6 +3611,7 @@
       "name": "吉尔伽美什",
       "element": "雷",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1125.432,
         "attack": 717.948,
@@ -3700,6 +3731,7 @@
       "name": "加拉赫",
       "element": "火",
       "path": "丰饶",
+      "rarity": 4,
       "baseStats": {
         "hp": 1305.36,
         "attack": 529.2,
@@ -3819,6 +3851,7 @@
       "name": "椒丘",
       "element": "火",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1358.28,
         "attack": 601.524,
@@ -3938,6 +3971,7 @@
       "name": "杰帕德",
       "element": "冰",
       "path": "存护",
+      "rarity": 5,
       "baseStats": {
         "hp": 1397.088,
         "attack": 543.312,
@@ -4057,6 +4091,7 @@
       "name": "景元",
       "element": "雷",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1164.24,
         "attack": 698.544,
@@ -4176,6 +4211,7 @@
       "name": "镜流",
       "element": "冰",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1435.896,
         "attack": 679.14,
@@ -4295,6 +4331,7 @@
       "name": "卡芙卡",
       "element": "雷",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 679.14,
@@ -4414,6 +4451,7 @@
       "name": "开拓者",
       "element": "物理",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1203.048,
         "attack": 620.928,
@@ -4533,6 +4571,7 @@
       "name": "开拓者",
       "element": "物理",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1203.048,
         "attack": 620.928,
@@ -4652,6 +4691,7 @@
       "name": "开拓者",
       "element": "火",
       "path": "存护",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 601.524,
@@ -4771,6 +4811,7 @@
       "name": "开拓者",
       "element": "火",
       "path": "存护",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 601.524,
@@ -4890,6 +4931,7 @@
       "name": "开拓者",
       "element": "虚数",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 446.292,
@@ -5009,6 +5051,7 @@
       "name": "开拓者",
       "element": "虚数",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 446.292,
@@ -5128,6 +5171,7 @@
       "name": "开拓者",
       "element": "冰",
       "path": "记忆",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 543.312,
@@ -5247,6 +5291,7 @@
       "name": "开拓者",
       "element": "冰",
       "path": "记忆",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 543.312,
@@ -5366,6 +5411,7 @@
       "name": "开拓者",
       "element": "雷",
       "path": "欢愉",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 465.696,
@@ -5485,6 +5531,7 @@
       "name": "开拓者",
       "element": "雷",
       "path": "欢愉",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 465.696,
@@ -5604,6 +5651,7 @@
       "name": "克拉拉",
       "element": "物理",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 737.352,
@@ -5723,6 +5771,7 @@
       "name": "刻律德菈",
       "element": "风",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1358.28,
         "attack": 620.928,
@@ -5842,6 +5891,7 @@
       "name": "灵砂",
       "element": "火",
       "path": "丰饶",
+      "rarity": 5,
       "baseStats": {
         "hp": 1358.28,
         "attack": 679.14,
@@ -5961,6 +6011,7 @@
       "name": "玲可",
       "element": "量子",
       "path": "丰饶",
+      "rarity": 4,
       "baseStats": {
         "hp": 1058.4,
         "attack": 493.92,
@@ -6080,6 +6131,7 @@
       "name": "流萤",
       "element": "火",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 814.968,
         "attack": 523.908,
@@ -6199,6 +6251,7 @@
       "name": "卢卡",
       "element": "物理",
       "path": "虚无",
+      "rarity": 4,
       "baseStats": {
         "hp": 917.28,
         "attack": 582.12,
@@ -6318,6 +6371,7 @@
       "name": "乱破",
       "element": "虚数",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 717.948,
@@ -6437,6 +6491,7 @@
       "name": "罗刹",
       "element": "虚数",
       "path": "丰饶",
+      "rarity": 5,
       "baseStats": {
         "hp": 1280.664,
         "attack": 756.756,
@@ -6556,6 +6611,7 @@
       "name": "米沙",
       "element": "冰",
       "path": "毁灭",
+      "rarity": 4,
       "baseStats": {
         "hp": 1270.08,
         "attack": 599.76,
@@ -6675,6 +6731,7 @@
       "name": "貊泽",
       "element": "雷",
       "path": "巡猎",
+      "rarity": 4,
       "baseStats": {
         "hp": 811.44,
         "attack": 599.76,
@@ -6794,6 +6851,7 @@
       "name": "那刻夏",
       "element": "风",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 970.2,
         "attack": 756.756,
@@ -6913,6 +6971,7 @@
       "name": "娜塔莎",
       "element": "物理",
       "path": "丰饶",
+      "rarity": 4,
       "baseStats": {
         "hp": 1164.24,
         "attack": 476.28,
@@ -7032,6 +7091,7 @@
       "name": "佩拉",
       "element": "冰",
       "path": "虚无",
+      "rarity": 4,
       "baseStats": {
         "hp": 987.84,
         "attack": 546.84,
@@ -7151,6 +7211,7 @@
       "name": "千冶•刃",
       "element": "火",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1358.28,
         "attack": 543.312,
@@ -7270,6 +7331,7 @@
       "name": "青雀",
       "element": "量子",
       "path": "智识",
+      "rarity": 4,
       "baseStats": {
         "hp": 1023.12,
         "attack": 652.68,
@@ -7389,6 +7451,7 @@
       "name": "刃",
       "element": "风",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1358.28,
         "attack": 543.312,
@@ -7508,6 +7571,7 @@
       "name": "阮•梅",
       "element": "冰",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1086.624,
         "attack": 659.736,
@@ -7627,6 +7691,7 @@
       "name": "赛飞儿",
       "element": "量子",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 931.392,
         "attack": 640.332,
@@ -7746,6 +7811,7 @@
       "name": "三月七",
       "element": "虚数",
       "path": "巡猎",
+      "rarity": 4,
       "baseStats": {
         "hp": 1058.4,
         "attack": 564.48,
@@ -7865,6 +7931,7 @@
       "name": "三月七",
       "element": "冰",
       "path": "存护",
+      "rarity": 4,
       "baseStats": {
         "hp": 1058.4,
         "attack": 511.56,
@@ -7984,6 +8051,7 @@
       "name": "桑博",
       "element": "风",
       "path": "虚无",
+      "rarity": 4,
       "baseStats": {
         "hp": 1023.12,
         "attack": 617.4,
@@ -8103,6 +8171,7 @@
       "name": "砂金",
       "element": "虚数",
       "path": "存护",
+      "rarity": 5,
       "baseStats": {
         "hp": 1203.048,
         "attack": 446.292,
@@ -8222,6 +8291,7 @@
       "name": "素裳",
       "element": "物理",
       "path": "巡猎",
+      "rarity": 4,
       "baseStats": {
         "hp": 917.28,
         "attack": 564.48,
@@ -8341,6 +8411,7 @@
       "name": "缇宝",
       "element": "量子",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 523.908,
@@ -8460,6 +8531,7 @@
       "name": "停云",
       "element": "雷",
       "path": "同谐",
+      "rarity": 4,
       "baseStats": {
         "hp": 846.72,
         "attack": 529.2,
@@ -8579,6 +8651,7 @@
       "name": "托帕&账账",
       "element": "火",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 931.392,
         "attack": 620.928,
@@ -8698,6 +8771,7 @@
       "name": "瓦尔特",
       "element": "虚数",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1125.432,
         "attack": 620.928,
@@ -8817,6 +8891,7 @@
       "name": "万敌",
       "element": "虚数",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1552.32,
         "attack": 426.888,
@@ -8936,6 +9011,7 @@
       "name": "忘归人",
       "element": "火",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1125.432,
         "attack": 582.12,
@@ -9055,6 +9131,7 @@
       "name": "希儿",
       "element": "量子",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 931.392,
         "attack": 640.332,
@@ -9174,6 +9251,7 @@
       "name": "希露瓦",
       "element": "雷",
       "path": "智识",
+      "rarity": 4,
       "baseStats": {
         "hp": 917.28,
         "attack": 652.68,
@@ -9293,6 +9371,7 @@
       "name": "昔涟",
       "element": "冰",
       "path": "记忆",
+      "rarity": 5,
       "baseStats": {
         "hp": 1397.088,
         "attack": 446.292,
@@ -9412,6 +9491,7 @@
       "name": "遐蝶",
       "element": "量子",
       "path": "记忆",
+      "rarity": 5,
       "baseStats": {
         "hp": 1629.936,
         "attack": 523.908,
@@ -9531,6 +9611,7 @@
       "name": "星期日",
       "element": "虚数",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 640.332,
@@ -9650,6 +9731,7 @@
       "name": "雪衣",
       "element": "量子",
       "path": "毁灭",
+      "rarity": 4,
       "baseStats": {
         "hp": 1058.4,
         "attack": 599.76,
@@ -9769,6 +9851,7 @@
       "name": "彦卿",
       "element": "冰",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 892.584,
         "attack": 679.14,
@@ -9888,6 +9971,7 @@
       "name": "爻光",
       "element": "物理",
       "path": "欢愉",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 465.696,
@@ -10007,6 +10091,7 @@
       "name": "银狼",
       "element": "量子",
       "path": "虚无",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 640.332,
@@ -10126,6 +10211,7 @@
       "name": "银狼LV. 999",
       "element": "虚数",
       "path": "欢愉",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 388.08,
@@ -10245,6 +10331,7 @@
       "name": "银枝",
       "element": "物理",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 737.352,
@@ -10364,6 +10451,7 @@
       "name": "驭空",
       "element": "虚数",
       "path": "同谐",
+      "rarity": 4,
       "baseStats": {
         "hp": 917.28,
         "attack": 599.76,
@@ -10483,6 +10571,7 @@
       "name": "远坂凛",
       "element": "量子",
       "path": "智识",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 698.544,
@@ -10602,6 +10691,7 @@
       "name": "云璃",
       "element": "物理",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1358.28,
         "attack": 679.14,
@@ -10721,6 +10811,7 @@
       "name": "长夜月",
       "element": "冰",
       "path": "记忆",
+      "rarity": 5,
       "baseStats": {
         "hp": 1319.472,
         "attack": 543.312,
@@ -10840,6 +10931,7 @@
       "name": "真理医生",
       "element": "虚数",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 1047.816,
         "attack": 776.16,
@@ -10959,6 +11051,7 @@
       "name": "知更鸟",
       "element": "物理",
       "path": "同谐",
+      "rarity": 5,
       "baseStats": {
         "hp": 1280.664,
         "attack": 640.332,
@@ -11078,6 +11171,7 @@
       "name": "Archer",
       "element": "量子",
       "path": "巡猎",
+      "rarity": 5,
       "baseStats": {
         "hp": 1164.24,
         "attack": 620.928,
@@ -11197,6 +11291,7 @@
       "name": "Saber",
       "element": "风",
       "path": "毁灭",
+      "rarity": 5,
       "baseStats": {
         "hp": 1241.856,
         "attack": 601.524,

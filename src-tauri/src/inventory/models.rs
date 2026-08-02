@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 6;
+pub(crate) const SCHEMA_VERSION: i64 = 7;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]
@@ -116,6 +116,7 @@ pub struct CharacterFilter {
     pub max_level: Option<u32>,
     pub min_ascension: Option<u32>,
     pub eidolon: Option<Vec<u32>>,
+    pub has_build_plan: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -186,6 +187,7 @@ pub struct CharacterListItem {
     pub level: u32,
     pub ascension: u32,
     pub eidolon: u32,
+    pub has_build_plan: bool,
     pub ability_version: u32,
     pub source: String,
     pub updated_at: i64,

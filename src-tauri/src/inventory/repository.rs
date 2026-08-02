@@ -14,8 +14,8 @@ use serde_json::{json, Value};
 
 use super::models::*;
 use super::{
-    canonical_character_name, canonical_light_cone_name, canonical_relic_name, location_id,
-    normalize_main_stat, normalize_slot,
+    canonical_character_name, canonical_light_cone_name, canonical_relic_name, character_rarity,
+    location_id, normalize_main_stat, normalize_slot,
 };
 use crate::error::AppError;
 
@@ -122,6 +122,7 @@ impl InventoryStore {
                 level INTEGER NOT NULL,
                 ascension INTEGER NOT NULL,
                 eidolon INTEGER NOT NULL,
+                rarity INTEGER NOT NULL DEFAULT 5,
                 skills_json TEXT NOT NULL,
                 traces_json TEXT NOT NULL,
                 memosprite_json TEXT,
@@ -184,6 +185,10 @@ impl InventoryStore {
             "ALTER TABLE light_cones ADD COLUMN equipped_character_id INTEGER",
             [],
         );
+        let _ = connection.execute(
+            "ALTER TABLE characters ADD COLUMN rarity INTEGER NOT NULL DEFAULT 5",
+            [],
+        );
         connection.execute(
             "UPDATE character_build_targets SET minimum = target - max_gap",
             [],
@@ -195,6 +200,7 @@ impl InventoryStore {
         if schema_version < SCHEMA_VERSION {
             normalize_existing_records(connection)?;
             backfill_main_stat_values(connection)?;
+            backfill_character_rarities(connection)?;
         }
         connection.execute("UPDATE schema_meta SET version = ?1", [SCHEMA_VERSION])?;
         Ok(())
@@ -488,16 +494,17 @@ impl InventoryStore {
             transaction.execute(
                 r#"
                 INSERT INTO characters(
-                    character_id, name, path, level, ascension, eidolon,
+                    character_id, name, path, level, ascension, eidolon, rarity,
                     skills_json, traces_json, memosprite_json, ability_version,
                     source, updated_at, last_seen_run
-                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 'network', ?11, ?12)
+                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'network', ?12, ?13)
                 ON CONFLICT(character_id) DO UPDATE SET
                     name = excluded.name,
                     path = excluded.path,
                     level = excluded.level,
                     ascension = excluded.ascension,
                     eidolon = excluded.eidolon,
+                    rarity = excluded.rarity,
                     skills_json = excluded.skills_json,
                     traces_json = excluded.traces_json,
                     memosprite_json = excluded.memosprite_json,
@@ -513,6 +520,7 @@ impl InventoryStore {
                     character.level,
                     character.ascension,
                     character.eidolon,
+                    character_rarity(&character.name).unwrap_or(5),
                     serde_json::to_string(&character.skills)
                         .map_err(|error| AppError::Database(error.to_string()))?,
                     serde_json::to_string(&character.traces)
@@ -826,6 +834,13 @@ impl InventoryStore {
             filter.min_ascension,
         );
         push_number_filters(&mut clauses, &mut values, "eidolon", &filter.eidolon);
+        if let Some(has_build_plan) = filter.has_build_plan {
+            clauses.push(if has_build_plan {
+                "EXISTS (SELECT 1 FROM character_build_plans WHERE character_build_plans.character_id = characters.character_id)".to_owned()
+            } else {
+                "NOT EXISTS (SELECT 1 FROM character_build_plans WHERE character_build_plans.character_id = characters.character_id)".to_owned()
+            });
+        }
         let where_sql = make_where(&clauses);
         let total = query_count(&connection, "characters", &where_sql, &values)?;
         let mut paged_values = values.clone();
@@ -835,9 +850,10 @@ impl InventoryStore {
         ));
         let sql = format!(
             "SELECT character_id, name, path, level, ascension, eidolon,
+                    EXISTS (SELECT 1 FROM character_build_plans WHERE character_build_plans.character_id = characters.character_id),
                     ability_version, source, updated_at
              FROM characters {where_sql}
-             ORDER BY level DESC, eidolon DESC, character_id LIMIT ? OFFSET ?"
+             ORDER BY rarity DESC, level DESC, eidolon DESC, character_id LIMIT ? OFFSET ?"
         );
         let mut statement = connection.prepare(&sql)?;
         let items = statement
@@ -1291,6 +1307,24 @@ fn backfill_main_stat_values(connection: &Connection) -> Result<(), AppError> {
     Ok(())
 }
 
+fn backfill_character_rarities(connection: &Connection) -> Result<(), AppError> {
+    let mut statement = connection.prepare("SELECT character_id, name FROM characters")?;
+    let rows = statement
+        .query_map([], |row| {
+            Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?))
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    for (character_id, name) in rows {
+        if let Some(rarity) = character_rarity(&name) {
+            connection.execute(
+                "UPDATE characters SET rarity = ?1 WHERE character_id = ?2",
+                params![rarity, character_id],
+            )?;
+        }
+    }
+    Ok(())
+}
+
 fn upsert_relic(
     transaction: &Transaction<'_>,
     relic: &ImportRelic,
@@ -1558,9 +1592,10 @@ fn map_character(row: &Row<'_>) -> rusqlite::Result<CharacterListItem> {
         level: row.get(3)?,
         ascension: row.get(4)?,
         eidolon: row.get(5)?,
-        ability_version: row.get(6)?,
-        source: row.get(7)?,
-        updated_at: row.get(8)?,
+        has_build_plan: row.get(6)?,
+        ability_version: row.get(7)?,
+        source: row.get(8)?,
+        updated_at: row.get(9)?,
     })
 }
 
@@ -1952,6 +1987,82 @@ mod tests {
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].plan.character_id, 1220);
         assert_eq!(entries[0].character["equippedRelics"][0]["itemId"], 1);
+    }
+
+    #[test]
+    fn character_list_filters_and_marks_saved_build_plans() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[]);
+        snapshot.characters = vec![
+            ImportCharacter {
+                id: 1220,
+                name: "飞霄".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 0,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+            ImportCharacter {
+                id: 1008,
+                name: "阿兰".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 0,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+        ];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+        store
+            .save_build_plan(&CharacterBuildPlan {
+                character_id: 1220,
+                cavern_mode: "fourPiece".to_owned(),
+                cavern_set_a: 101,
+                cavern_set_b: None,
+                planar_set_id: 201,
+                main_stats: HashMap::new(),
+                targets: vec![BuildTarget {
+                    stat_key: "SPD".to_owned(),
+                    target: 160.0,
+                    priority: 1,
+                    minimum: 140.0,
+                }],
+                effective_substats: vec![],
+            })
+            .unwrap();
+
+        let planned = store
+            .list_characters(&CharacterFilter {
+                has_build_plan: Some(true),
+                ..Default::default()
+            })
+            .unwrap();
+        let unplanned = store
+            .list_characters(&CharacterFilter {
+                has_build_plan: Some(false),
+                ..Default::default()
+            })
+            .unwrap();
+        let all = store.list_characters(&CharacterFilter::default()).unwrap();
+
+        assert_eq!(planned.items.len(), 1);
+        assert!(planned.items[0].has_build_plan);
+        assert_eq!(unplanned.items.len(), 1);
+        assert!(!unplanned.items[0].has_build_plan);
+        assert_eq!(
+            all.items
+                .iter()
+                .map(|character| character.character_id)
+                .collect::<Vec<_>>(),
+            vec![1220, 1008]
+        );
     }
 
     #[test]
