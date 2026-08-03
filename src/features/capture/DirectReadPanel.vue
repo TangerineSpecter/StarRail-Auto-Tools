@@ -46,7 +46,7 @@ const emit = defineEmits<{ toggle: []; "switch-account": [] }>();
           </div>
         </div>
       </div>
-      <div class="visual-status">
+      <div v-if="direct.phase !== 'unsupported'" class="visual-status">
         <span :class="['status-dot', { pulse: running }]" />
         <span class="status-text">{{
           direct.phase === "ready" ? "LIVE" : direct.phase.toUpperCase()
