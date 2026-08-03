@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import ExpressPassage from "./ExpressPassage.vue";
+import FloatingDanmaku from "./FloatingDanmaku.vue";
 import type { DirectReadSnapshot } from "@/types";
 
 defineProps<{ direct: DirectReadSnapshot; busy: boolean; running: boolean }>();
@@ -46,6 +47,7 @@ const emit = defineEmits<{ toggle: []; "switch-account": [] }>();
           </div>
         </div>
       </div>
+      <FloatingDanmaku />
       <div v-if="direct.phase !== 'unsupported'" class="visual-status">
         <span :class="['status-dot', { pulse: running }]" />
         <span class="status-text">{{
