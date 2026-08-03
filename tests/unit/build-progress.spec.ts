@@ -3,6 +3,7 @@ import {
   buildTargetProgress,
   effectiveSubstatCounts,
   lowestTargetPercent,
+  relicPieceCounts,
 } from "@/features/build-planner/progress";
 
 describe("buildTargetProgress", () => {
@@ -49,11 +50,15 @@ describe("buildTargetProgress", () => {
   });
 
   it("finds the lowest progress without forcing it to zero", () => {
-    expect(
-      lowestTargetPercent([
-        { percent: 82 },
-        { percent: 65.5 },
+    expect(lowestTargetPercent([{ percent: 82 }, { percent: 65.5 }])).toBe(65.5);
+  });
+
+  it("counts equipped relic pieces by set for target matching", () => {
+    expect(relicPieceCounts([{ setId: 101 }, { setId: 101 }, { setId: 301 }])).toEqual(
+      new Map([
+        [101, 2],
+        [301, 1],
       ]),
-    ).toBe(65.5);
+    );
   });
 });

@@ -69,3 +69,9 @@ export function effectiveSubstatCounts(
   }
   return [...counts.entries()].map(([key, count]) => ({ key, count }));
 }
+
+export function relicPieceCounts(relics: Array<{ setId: number }>): Map<number, number> {
+  const counts = new Map<number, number>();
+  for (const relic of relics) counts.set(relic.setId, (counts.get(relic.setId) ?? 0) + 1);
+  return counts;
+}

@@ -8,7 +8,12 @@ import { useRuntimeContext } from "@/shared/contracts/runtime";
 import { loadDisabledTraceNodes, traceNodeEnabled } from "@/shared/utils/trace-settings";
 import { calculateStandingStats, isMaxStandingEquipment } from "@/shared/utils/standing-stats";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
-import { buildTargetProgress, effectiveSubstatCounts, lowestTargetPercent } from "./progress";
+import {
+  buildTargetProgress,
+  effectiveSubstatCounts,
+  lowestTargetPercent,
+  relicPieceCounts,
+} from "./progress";
 import characterCatalogueJson from "@/data/characters.json";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
@@ -22,6 +27,9 @@ import type {
 const entries = ref<BuildDashboardEntry[]>([]);
 const loading = ref(true);
 const error = ref("");
+const emit = defineEmits<{
+  editBuild: [characterId: number];
+}>();
 const { notice } = useRuntimeContext();
 const search = ref("");
 const sort = ref("urgent");
@@ -38,14 +46,22 @@ function recommendedSets(plan: BuildDashboardEntry["plan"]) {
   const findSet = (setId: number) => relicSets.sets.find((set) => set.id === setId);
   const cavernSets =
     plan.cavernMode === "fourPiece"
-      ? [{ set: findSet(plan.cavernSetA), pieces: "4件" }]
+      ? [{ set: findSet(plan.cavernSetA), pieces: 4 }]
       : [
-          { set: findSet(plan.cavernSetA), pieces: "2件" },
-          ...(plan.cavernSetB ? [{ set: findSet(plan.cavernSetB), pieces: "2件" }] : []),
+          { set: findSet(plan.cavernSetA), pieces: 2 },
+          ...(plan.cavernSetB ? [{ set: findSet(plan.cavernSetB), pieces: 2 }] : []),
         ];
-  return [...cavernSets, { set: findSet(plan.planarSetId), pieces: "2件" }].filter(
-    (item): item is { set: RelicSetCatalogue["sets"][number]; pieces: string } => !!item.set,
+  return [...cavernSets, { set: findSet(plan.planarSetId), pieces: 2 }].filter(
+    (item): item is { set: RelicSetCatalogue["sets"][number]; pieces: number } => !!item.set,
   );
+}
+
+function getProgressClass(percent: number | null) {
+  if (percent === null) return "progress-unknown";
+  if (percent >= 100) return "progress-complete";
+  if (percent >= 80) return "progress-high";
+  if (percent >= 50) return "progress-medium";
+  return "progress-low";
 }
 
 function dashboardState(entry: BuildDashboardEntry) {
@@ -100,6 +116,7 @@ const cards = computed(() =>
         character.equippedRelics ?? [],
         entry.plan.effectiveSubstats,
       );
+      const equippedPieceCounts = relicPieceCounts(character.equippedRelics ?? []);
       const completed = targets.filter(
         (target) => target.percent !== null && target.percent >= 100,
       ).length;
@@ -107,7 +124,10 @@ const cards = computed(() =>
         entry,
         character,
         image: catalogue?.image,
-        recommendedSets: recommendedSets(entry.plan),
+        recommendedSets: recommendedSets(entry.plan).map((item) => ({
+          ...item,
+          matched: (equippedPieceCounts.get(item.set.id) ?? 0) >= item.pieces,
+        })),
         state,
         targets,
         effective,
@@ -160,6 +180,8 @@ async function importExcel() {
 }
 
 onMounted(() => void loadDashboard());
+
+defineExpose({ reload: loadDashboard });
 </script>
 
 <template>
@@ -216,6 +238,14 @@ onMounted(() => void loadDashboard());
           <div>
             <p>{{ card.character.name }}</p>
             <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
+            <button
+              type="button"
+              class="build-target-edit"
+              :aria-label="`编辑${card.character.name}的毕业目标`"
+              @click="emit('editBuild', card.character.characterId)"
+            >
+              <span aria-hidden="true">✎</span> 编辑目标
+            </button>
           </div>
         </div>
         <div class="recommended-set-list" role="cell">
@@ -224,12 +254,26 @@ onMounted(() => void loadDashboard());
             <span v-else class="recommended-set-fallback">遗</span>
             <p>
               {{ item.set.name }}
-              <b>{{ item.pieces }}</b>
+              <b>{{ item.pieces }}件</b>
             </p>
+            <span
+              :class="['recommended-set-status', { matched: item.matched }]"
+              role="img"
+              :aria-label="
+                item.matched
+                  ? `${item.set.name}已装备${item.pieces}件`
+                  : `${item.set.name}未装备${item.pieces}件`
+              "
+              >{{ item.matched ? "✓" : "×" }}</span
+            >
           </div>
         </div>
         <div class="target-progress-list" role="cell">
-          <div v-for="target in card.targets" :key="target.statKey" class="target-progress-row">
+          <div
+            v-for="target in card.targets"
+            :key="target.statKey"
+            :class="['target-progress-row', getProgressClass(target.percent)]"
+          >
             <div class="target-progress-label">
               <b>{{ statLabel(target.statKey) }}</b>
               <span v-if="target.percent !== null"
@@ -238,7 +282,7 @@ onMounted(() => void loadDashboard());
               <span v-else>不可映射</span>
             </div>
             <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
-            <small :class="{ complete: (target.percent ?? 0) >= 100 }">
+            <small>
               {{ (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%` }}
             </small>
           </div>
@@ -415,7 +459,7 @@ onMounted(() => void loadDashboard());
   place-items: center;
   overflow: hidden;
   border: 2px solid #d8e5f4;
-  border-radius: 50%;
+  border-radius: 4px;
   background: linear-gradient(145deg, #dceafb, #f9fcff);
   box-shadow: 0 3px 8px rgba(43, 87, 146, 0.14);
 }
@@ -439,6 +483,40 @@ onMounted(() => void loadDashboard());
   margin-top: 5px;
   color: #55769b;
   font-size: 11px;
+}
+.build-target-edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #356eae;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    transform 160ms ease;
+}
+.build-target-edit span {
+  font-family: Georgia, serif;
+  font-size: 15px;
+  line-height: 0.8;
+}
+.build-target-edit:hover {
+  color: #1e528f;
+}
+.build-target-edit:active {
+  transform: translateY(1px);
+}
+.build-target-edit:focus-visible {
+  outline: 2px solid rgba(53, 110, 174, 0.42);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 .recommended-set-list {
   display: grid;
@@ -485,6 +563,26 @@ onMounted(() => void loadDashboard());
   font-size: 10px;
   font-weight: 700;
 }
+.recommended-set-status {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  place-items: center;
+  border: 1px solid #cf5a5a;
+  border-radius: 2px;
+  background: #d95b5b;
+  color: #fff;
+  font-family: Georgia, serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+.recommended-set-status.matched {
+  border-color: #248263;
+  background: #2e9675;
+  color: #fff;
+}
 .target-progress-list {
   display: grid;
   align-content: center;
@@ -515,21 +613,59 @@ onMounted(() => void loadDashboard());
   border-radius: 999px;
   background: #e7eef6;
   overflow: hidden;
+  transition: background 0.3s ease;
+}
+.target-progress-row.progress-complete i {
+  background: #e1f4ee;
+}
+.target-progress-row.progress-high i {
+  background: #e7f0fd;
+}
+.target-progress-row.progress-medium i {
+  background: #fcf1e5;
+}
+.target-progress-row.progress-low i {
+  background: #faeaea;
 }
 .target-progress-row em {
   display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #3c83ce, #66bba4);
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+.target-progress-row.progress-complete em {
+  background: linear-gradient(90deg, #3c83ce, #66bba4);
+}
+.target-progress-row.progress-high em {
+  background: linear-gradient(90deg, #64a1e0, #4288d3);
+}
+.target-progress-row.progress-medium em {
+  background: linear-gradient(90deg, #f0c27b, #e09938);
+}
+.target-progress-row.progress-low em {
+  background: linear-gradient(90deg, #eb918a, #df6262);
 }
 .target-progress-row small {
   color: #9a7130;
   text-align: right;
   font-size: 10px;
   font-weight: 700;
+  transition: color 0.3s ease;
 }
-.target-progress-row small.complete {
+.target-progress-row.progress-complete small {
   color: #2c866f;
+}
+.target-progress-row.progress-high small {
+  color: #3b74b6;
+}
+.target-progress-row.progress-medium small {
+  color: #c28221;
+}
+.target-progress-row.progress-low small {
+  color: #c74a4a;
 }
 .effective-summary {
   display: grid;
