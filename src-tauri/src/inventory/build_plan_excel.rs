@@ -378,11 +378,18 @@ fn text(cell: Option<&Data>) -> String {
         .unwrap_or_default()
 }
 fn number(cell: Option<&Data>) -> Option<f64> {
-    text(cell).parse().ok()
+    let value = text(cell);
+    let value = value
+        .strip_suffix('%')
+        .or_else(|| value.strip_suffix('％'))
+        .unwrap_or(&value)
+        .trim();
+    value.parse().ok()
 }
 pub(super) fn import(
     path: &Path,
     character_ids: &HashSet<u32>,
+    legacy_character_ids: &HashMap<String, u32>,
 ) -> Result<Vec<CharacterBuildPlan>, AppError> {
     let mut workbook = open_workbook_auto(path).map_err(io_error)?;
     let range = workbook.worksheet_range(SHEET_NAME).map_err(io_error)?;
@@ -398,15 +405,14 @@ pub(super) fn import(
         if character_name.is_empty() {
             continue;
         }
-        let Some(character_id) = number(row.get(32))
+        let character_id = number(row.get(32))
             .filter(|id| *id >= 0.0 && id.fract() == 0.0)
             .map(|id| id as u32)
-        else {
+            .filter(|id| character_ids.contains(id))
+            .or_else(|| legacy_character_ids.get(&character_name).copied());
+        let Some(character_id) = character_id else {
             continue;
         };
-        if !character_ids.contains(&character_id) {
-            continue;
-        }
         let mode = text(row.get(1));
         let set_a = text(row.get(2));
         let set_b = text(row.get(3));
@@ -605,11 +611,22 @@ mod tests {
             ],
         )
         .unwrap();
-        let imported = import(&path, &HashSet::from([1001, 1002, 1003, 1004])).unwrap();
+        let imported = import(
+            &path,
+            &HashSet::from([1001, 1002, 1003, 1004]),
+            &HashMap::new(),
+        )
+        .unwrap();
         std::fs::remove_file(path).unwrap();
         assert_eq!(imported.len(), 2);
         assert_eq!(imported[0].targets[0].stat_key, "SPD");
         assert_eq!(imported[0].cavern_set_a, 101);
         assert_eq!(imported[1].character_id, 1002);
+    }
+
+    #[test]
+    fn parses_percent_values_as_percentage_points() {
+        assert_eq!(number(Some(&Data::String("70%".into()))), Some(70.0));
+        assert_eq!(number(Some(&Data::String("160％".into()))), Some(160.0));
     }
 }

@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { buildPlanApi } from "@/shared/api/build-plan";
+import { statLabel } from "@/shared/catalogue/relic-options";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import { loadDisabledTraceNodes, traceNodeEnabled } from "@/shared/utils/trace-settings";
 import { calculateStandingStats, isMaxStandingEquipment } from "@/shared/utils/standing-stats";
@@ -28,24 +29,6 @@ const characters = characterCatalogueJson as CharacterCatalogue;
 const lightCones = lightConeCatalogueJson as LightConeCatalogue;
 const relicSets = relicCatalogueJson as RelicSetCatalogue;
 const disabledTraceNodes = loadDisabledTraceNodes();
-
-function statLabel(key: string) {
-  return (
-    (
-      {
-        SPD: "速度",
-        "CRIT Rate": "暴击率",
-        "CRIT DMG": "暴击伤害",
-        "Effect Hit Rate": "效果命中",
-        "Effect RES": "效果抵抗",
-        "Break Effect": "击破特攻",
-        HP: "生命值",
-        ATK: "攻击力",
-        DEF: "防御力",
-      } as Record<string, string>
-    )[key] ?? key
-  );
-}
 
 function characterInitial(name: string) {
   return name.slice(0, 1);

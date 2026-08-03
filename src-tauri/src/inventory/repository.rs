@@ -316,7 +316,22 @@ impl InventoryStore {
         let character_ids = statement
             .query_map([], |row| row.get::<_, u32>(0))?
             .collect::<Result<HashSet<_>, _>>()?;
-        let plans = build_plan_excel::import(path, &character_ids)?;
+        let mut name_statement = connection.prepare("SELECT character_id, name FROM characters")?;
+        let mut legacy_character_ids = HashMap::new();
+        let mut duplicate_names = HashSet::new();
+        for row in name_statement.query_map([], |row| {
+            Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?))
+        })? {
+            let (character_id, name) = row?;
+            if legacy_character_ids
+                .insert(name.clone(), character_id)
+                .is_some()
+            {
+                duplicate_names.insert(name);
+            }
+        }
+        legacy_character_ids.retain(|name, _| !duplicate_names.contains(name));
+        let plans = build_plan_excel::import(path, &character_ids, &legacy_character_ids)?;
         if plans.is_empty() {
             return Ok(0);
         }
