@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs::File,
     io::BufWriter,
     path::{Path, PathBuf},
@@ -12,6 +12,7 @@ use rusqlite::{
 };
 use serde_json::{json, Value};
 
+use super::build_plan_excel::{self, ExportRow};
 use super::models::*;
 use super::{
     canonical_character_name, canonical_light_cone_name, canonical_relic_name, character_rarity,
@@ -284,6 +285,47 @@ impl InventoryStore {
             entries.push(BuildDashboardEntry { plan, character });
         }
         Ok(entries)
+    }
+
+    pub fn export_build_plans_excel(&self, path: &Path) -> Result<(), AppError> {
+        let connection = self.connect()?;
+        let mut statement = connection.prepare(
+            "SELECT character_id, name FROM characters ORDER BY rarity DESC, level DESC, name",
+        )?;
+        let characters = statement
+            .query_map([], |row| {
+                Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?))
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        let rows = characters
+            .into_iter()
+            .map(|(character_id, character_name)| {
+                Ok(ExportRow {
+                    character_id,
+                    character_name,
+                    plan: self.build_plan(character_id)?,
+                })
+            })
+            .collect::<Result<Vec<_>, AppError>>()?;
+        build_plan_excel::export(path, &rows)
+    }
+
+    pub fn import_build_plans_excel(&self, path: &Path) -> Result<u64, AppError> {
+        let connection = self.connect()?;
+        let mut statement = connection.prepare("SELECT character_id, name FROM characters")?;
+        let character_ids = statement
+            .query_map([], |row| row.get::<_, u32>(0))?
+            .collect::<Result<HashSet<_>, _>>()?;
+        let plans = build_plan_excel::import(path, &character_ids)?;
+        if plans.is_empty() {
+            return Ok(0);
+        }
+        let transaction = connection.unchecked_transaction()?;
+        for plan in &plans {
+            save_build_plan_in_transaction(&transaction, plan)?;
+        }
+        transaction.commit()?;
+        Ok(plans.len() as u64)
     }
 
     pub fn recommended_characters_for_relic_set(

@@ -285,6 +285,12 @@ pub struct CharacterBuildPlan {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct BuildPlanExcelImportResult {
+    pub imported: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BuildDashboardEntry {
     pub plan: CharacterBuildPlan,
     pub character: Value,

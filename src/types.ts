@@ -199,6 +199,10 @@ export interface CharacterBuildPlan {
   effectiveSubstats: string[];
 }
 
+export interface BuildPlanExcelImportResult {
+  imported: number;
+}
+
 export interface BuildDashboardEntry {
   plan: CharacterBuildPlan;
   character: BuildDashboardCharacter;

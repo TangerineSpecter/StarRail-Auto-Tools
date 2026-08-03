@@ -3,11 +3,9 @@ import { computed, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { buildPlanApi } from "@/shared/api/build-plan";
+import { useRuntimeContext } from "@/shared/contracts/runtime";
 import { loadDisabledTraceNodes, traceNodeEnabled } from "@/shared/utils/trace-settings";
-import {
-  calculateStandingStats,
-  isMaxStandingEquipment,
-} from "@/shared/utils/standing-stats";
+import { calculateStandingStats, isMaxStandingEquipment } from "@/shared/utils/standing-stats";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
 import { buildTargetProgress, effectiveSubstatCounts, lowestTargetPercent } from "./progress";
 import characterCatalogueJson from "@/data/characters.json";
@@ -23,6 +21,7 @@ import type {
 const entries = ref<BuildDashboardEntry[]>([]);
 const loading = ref(true);
 const error = ref("");
+const { notice } = useRuntimeContext();
 const search = ref("");
 const sort = ref("urgent");
 const characters = characterCatalogueJson as CharacterCatalogue;
@@ -144,7 +143,9 @@ const cards = computed(() =>
     }),
 );
 
-onMounted(async () => {
+async function loadDashboard() {
+  loading.value = true;
+  error.value = "";
   try {
     entries.value = await buildPlanApi.dashboard();
   } catch (cause) {
@@ -152,7 +153,30 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+
+async function exportExcel() {
+  try {
+    const path = await buildPlanApi.exportExcel();
+    if (path) notice.value = "操作完成";
+  } catch (cause) {
+    error.value = String(cause);
+  }
+}
+
+async function importExcel() {
+  try {
+    const result = await buildPlanApi.importExcel();
+    if (result) {
+      notice.value = "操作完成";
+      await loadDashboard();
+    }
+  } catch (cause) {
+    error.value = String(cause);
+  }
+}
+
+onMounted(() => void loadDashboard());
 </script>
 
 <template>
@@ -164,6 +188,16 @@ onMounted(async () => {
         <p>追踪已配置角色的当前站街属性与毕业目标。</p>
       </div>
       <div class="build-dashboard-tools">
+        <div class="build-plan-transfer-actions" aria-label="角色目标 Excel 操作">
+          <button type="button" class="build-plan-transfer export" @click="exportExcel">
+            <span class="build-plan-transfer-icon" aria-hidden="true">↓</span>
+            <span>导出 Excel</span>
+          </button>
+          <button type="button" class="build-plan-transfer import" @click="importExcel">
+            <span class="build-plan-transfer-icon" aria-hidden="true">↑</span>
+            <span>导入 Excel</span>
+          </button>
+        </div>
         <InputText v-model="search" placeholder="搜索角色" /><Select
           v-model="sort"
           :options="[
@@ -249,8 +283,12 @@ onMounted(async () => {
 .build-dashboard-heading {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 20px;
   margin-bottom: 20px;
+}
+.build-dashboard-heading > :first-child {
+  flex: 1 1 380px;
 }
 .build-dashboard-heading h2 {
   margin: 3px 0;
@@ -264,6 +302,82 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.build-dashboard-tools :deep(.p-inputtext) {
+  width: 240px;
+}
+.build-dashboard-tools :deep(.p-select) {
+  width: 150px;
+}
+.build-plan-transfer-actions {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid rgba(36, 86, 166, 0.18);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    0 6px 16px rgba(36, 86, 166, 0.08),
+    inset 0 1px rgba(255, 255, 255, 0.88);
+}
+.build-plan-transfer {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  min-width: 112px;
+  padding: 5px 9px 5px 5px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #294368;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+.build-plan-transfer + .build-plan-transfer {
+  border-left: 1px solid rgba(36, 86, 166, 0.12);
+}
+.build-plan-transfer:hover {
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(36, 86, 166, 0.1);
+}
+.build-plan-transfer:active {
+  transform: translateY(1px);
+}
+.build-plan-transfer:focus-visible {
+  outline: 2px solid rgba(36, 86, 166, 0.42);
+  outline-offset: -2px;
+}
+.build-plan-transfer-icon {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  place-items: center;
+  border-radius: 6px;
+  color: currentColor;
+  font-family: Georgia, serif;
+  font-size: 18px;
+  line-height: 1;
+}
+.build-plan-transfer.export .build-plan-transfer-icon {
+  background: #e7f0fd;
+  color: #285d9f;
+}
+.build-plan-transfer.import .build-plan-transfer-icon {
+  background: #e1f4ee;
+  color: #20725f;
 }
 .build-progress-table {
   overflow: hidden;

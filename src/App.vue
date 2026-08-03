@@ -142,7 +142,7 @@ async function toggleMaximize() {
       <template #message="{ message }">
         <div :class="['app-feedback-content', `tone-${message.severity}`]">
           <strong>{{ message.summary }}</strong>
-          <p>{{ message.detail }}</p>
+          <p v-if="message.detail !== message.summary">{{ message.detail }}</p>
         </div>
       </template>
     </Toast>

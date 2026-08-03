@@ -19,11 +19,13 @@ ocr = ["dep:oar-ocr", "dep:ort"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+calamine = "0.26"
 oar-ocr = { version = "0.8.1", optional = true }
 # oar-ocr 0.8.1 still uses the rc.12 execution-provider API. Cargo otherwise
 # considers newer release candidates compatible and currently selects rc.13.
 ort = { version = "=2.0.0-rc.12", optional = true }
 rfd = "0.17.2"
+rust_xlsxwriter = "0.84"
 rusqlite = { version = "0.37", features = ["bundled"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 serde = { version = "1", features = ["derive"] }

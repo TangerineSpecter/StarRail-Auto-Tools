@@ -5,11 +5,11 @@ use crate::{
     domain::{OcrImageResult, OcrModelConfig, ScanSnapshot, StartScanRequest, SystemCapabilities},
     error::AppError,
     inventory::{
-        BuildRecommendation, BuildRecommendationRequest, CharacterBuildPlan, CharacterFilter,
-        ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryImportResult,
-        InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
-        PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatScanResult,
-        RelicSetRecommendedCharacter,
+        BuildPlanExcelImportResult, BuildRecommendation, BuildRecommendationRequest,
+        CharacterBuildPlan, CharacterFilter, ClearInventoryRequest, DeleteItemsRequest,
+        InventoryDetail, InventoryImportResult, InventoryKind, InventoryStore, InventorySummary,
+        LightConeFilter, LightConeListItem, PageQuery, PagedResult, RelicFilter, RelicListItem,
+        RelicMainStatScanResult, RelicSetRecommendedCharacter,
     },
     scanner::ScannerState,
     screenshot,
@@ -264,6 +264,40 @@ pub fn delete_character_build_plan(
     store: State<'_, InventoryStore>,
 ) -> Result<(), AppError> {
     store.delete_build_plan(character_id)
+}
+
+#[tauri::command]
+pub async fn export_character_build_plans_excel(
+    store: State<'_, InventoryStore>,
+) -> Result<Option<String>, AppError> {
+    let Some(file) = rfd::AsyncFileDialog::new()
+        .set_title("导出角色目标")
+        .set_file_name("角色目标.xlsx")
+        .add_filter("Excel", &["xlsx"])
+        .save_file()
+        .await
+    else {
+        return Ok(None);
+    };
+    store.export_build_plans_excel(file.path())?;
+    Ok(Some(file.path().to_string_lossy().into_owned()))
+}
+
+#[tauri::command]
+pub async fn import_character_build_plans_excel(
+    store: State<'_, InventoryStore>,
+) -> Result<Option<BuildPlanExcelImportResult>, AppError> {
+    let Some(file) = rfd::AsyncFileDialog::new()
+        .set_title("导入角色目标")
+        .add_filter("Excel", &["xlsx"])
+        .pick_file()
+        .await
+    else {
+        return Ok(None);
+    };
+    Ok(Some(BuildPlanExcelImportResult {
+        imported: store.import_build_plans_excel(file.path())?,
+    }))
 }
 
 #[tauri::command]

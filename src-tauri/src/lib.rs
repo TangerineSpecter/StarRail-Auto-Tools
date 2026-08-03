@@ -57,6 +57,8 @@ pub fn run() {
             commands::list_relic_set_recommended_characters,
             commands::save_character_build_plan,
             commands::delete_character_build_plan,
+            commands::export_character_build_plans_excel,
+            commands::import_character_build_plans_excel,
             commands::recommend_character_build,
             commands::delete_inventory_items,
             commands::clear_inventory,
