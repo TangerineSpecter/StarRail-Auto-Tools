@@ -7,7 +7,7 @@ use calamine::{open_workbook_auto, Data, Reader};
 use rust_xlsxwriter::{DataValidation, Format, FormatAlign, Workbook, Worksheet};
 use serde::Deserialize;
 
-use super::models::{BuildTarget, CharacterBuildPlan};
+use super::models::{normalize_build_plan_note, BuildTarget, CharacterBuildPlan};
 use crate::error::AppError;
 
 pub(super) const SHEET_NAME: &str = "角色目标";
@@ -143,6 +143,7 @@ fn headers() -> Vec<&'static str> {
         "有效副词条 4",
         "有效副词条 5",
         "有效副词条 6",
+        "说明",
     ]
 }
 fn catalogue() -> Result<RelicCatalogue, AppError> {
@@ -342,6 +343,11 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
                 .write_string(row, 26 + stat_index as u16, stat_label(stat))
                 .map_err(io_error)?;
         }
+        if !plan.note.is_empty() {
+            sheet
+                .write_string(row, 32, &plan.note)
+                .map_err(io_error)?;
+        }
     }
     validation(sheet, 0, 0, &characters)?;
     validation(sheet, 1, 1, &modes)?;
@@ -361,13 +367,17 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
     validation(sheet, 20, 20, &substats)?;
     validation(sheet, 23, 23, &substats)?;
     validation(sheet, 26, 31, &substats)?;
+    // Column 32 is "说明" (from headers). Character ID is hidden at column 33.
     sheet
-        .write_string_with_format(0, 32, "角色 ID", &heading)
+        .write_string_with_format(0, 33, "角色 ID", &heading)
         .map_err(io_error)?;
-    sheet.set_column_hidden(32).map_err(io_error)?;
+    sheet.set_column_hidden(33).map_err(io_error)?;
+    sheet
+        .set_column_width(32, 28.0)
+        .map_err(io_error)?;
     for (index, row_data) in rows.iter().enumerate() {
         sheet
-            .write_number(index as u32 + 1, 32, row_data.character_id)
+            .write_number(index as u32 + 1, 33, row_data.character_id)
             .map_err(io_error)?;
     }
     workbook.worksheets_mut().swap(0, 1);
@@ -405,7 +415,9 @@ pub(super) fn import(
         if character_name.is_empty() {
             continue;
         }
-        let character_id = number(row.get(32))
+        // Prefer the hidden character-id column (33). Older exports stored it in column 32.
+        let character_id = number(row.get(33))
+            .or_else(|| number(row.get(32)))
             .filter(|id| *id >= 0.0 && id.fract() == 0.0)
             .map(|id| id as u32)
             .filter(|id| character_ids.contains(id))
@@ -521,6 +533,16 @@ pub(super) fn import(
                 stat.filter(|value| SUBSTATS.contains(&value.as_str()))
             })
             .collect();
+        // New exports store notes in column 32. Older files used that slot for character id,
+        // so only treat the cell as a note when it is not a pure integer id.
+        let note_raw = text(row.get(32));
+        let note = if note_raw.is_empty()
+            || (note_raw.parse::<u32>().is_ok() && number(row.get(33)).is_none())
+        {
+            String::new()
+        } else {
+            normalize_build_plan_note(&note_raw)
+        };
         plans.push(CharacterBuildPlan {
             character_id,
             cavern_mode: if cavern_set_b.is_some() {
@@ -534,6 +556,7 @@ pub(super) fn import(
             main_stats,
             targets,
             effective_substats,
+            note,
         });
     }
     Ok(plans)
@@ -560,6 +583,7 @@ mod tests {
                 priority: 1,
             }],
             effective_substats: vec!["SPD".into(), "CRIT Rate".into()],
+            note: "  优先速度，暴伤次之  ".into(),
         };
         export(
             &path,
@@ -574,6 +598,7 @@ mod tests {
                     character_name: "测试角色".into(),
                     plan: Some(CharacterBuildPlan {
                         character_id: 1002,
+                        note: "副C说明".into(),
                         ..plan.clone()
                     }),
                 },
@@ -621,7 +646,9 @@ mod tests {
         assert_eq!(imported.len(), 2);
         assert_eq!(imported[0].targets[0].stat_key, "SPD");
         assert_eq!(imported[0].cavern_set_a, 101);
+        assert_eq!(imported[0].note, "优先速度，暴伤次之");
         assert_eq!(imported[1].character_id, 1002);
+        assert_eq!(imported[1].note, "副C说明");
     }
 
     #[test]

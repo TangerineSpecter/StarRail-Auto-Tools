@@ -141,6 +141,7 @@ impl InventoryStore {
                 planar_set_id INTEGER NOT NULL,
                 main_stats_json TEXT NOT NULL,
                 effective_substats_json TEXT NOT NULL DEFAULT '[]',
+                note TEXT NOT NULL DEFAULT '',
                 updated_at INTEGER NOT NULL,
                 display_order INTEGER NOT NULL DEFAULT 0,
                 pinned INTEGER NOT NULL DEFAULT 0
@@ -186,6 +187,10 @@ impl InventoryStore {
         );
         let _ = connection.execute(
             "ALTER TABLE character_build_plans ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN note TEXT NOT NULL DEFAULT ''",
             [],
         );
         let _ = connection.execute(
@@ -241,8 +246,8 @@ impl InventoryStore {
     pub fn build_plan(&self, character_id: u32) -> Result<Option<CharacterBuildPlan>, AppError> {
         let connection = self.connect()?;
         let row = connection.query_row(
-            "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json, effective_substats_json FROM character_build_plans WHERE character_id = ?1",
-            [character_id], |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?, row.get::<_, Option<u32>>(2)?, row.get::<_, u32>(3)?, row.get::<_, String>(4)?, row.get::<_, String>(5)?))
+            "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json, effective_substats_json, note FROM character_build_plans WHERE character_id = ?1",
+            [character_id], |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?, row.get::<_, Option<u32>>(2)?, row.get::<_, u32>(3)?, row.get::<_, String>(4)?, row.get::<_, String>(5)?, row.get::<_, String>(6)?))
         ).optional()?;
         let Some((
             cavern_mode,
@@ -251,6 +256,7 @@ impl InventoryStore {
             planar_set_id,
             main_stats_json,
             effective_substats_json,
+            note,
         )) = row
         else {
             return Ok(None);
@@ -275,6 +281,7 @@ impl InventoryStore {
             main_stats: serde_json::from_str(&main_stats_json).unwrap_or_default(),
             targets,
             effective_substats: serde_json::from_str(&effective_substats_json).unwrap_or_default(),
+            note,
         }))
     }
 
@@ -1179,12 +1186,13 @@ fn save_build_plan_in_transaction(
             "2+2 件套不能选择相同的遗器套装".to_owned(),
         ));
     }
+    let note = normalize_build_plan_note(&plan.note);
     transaction.execute(
         "INSERT INTO character_build_plans(
             character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
-            main_stats_json, effective_substats_json, updated_at, display_order, pinned
+            main_stats_json, effective_substats_json, note, updated_at, display_order, pinned
          ) VALUES(
-            ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8,
+            ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9,
             COALESCE((SELECT MAX(display_order) + 1 FROM character_build_plans), 0), 0
          )
          ON CONFLICT(character_id) DO UPDATE SET
@@ -1194,6 +1202,7 @@ fn save_build_plan_in_transaction(
             planar_set_id = excluded.planar_set_id,
             main_stats_json = excluded.main_stats_json,
             effective_substats_json = excluded.effective_substats_json,
+            note = excluded.note,
             updated_at = excluded.updated_at",
         params![
             plan.character_id,
@@ -1205,6 +1214,7 @@ fn save_build_plan_in_transaction(
                 .map_err(|error| AppError::Database(error.to_string()))?,
             serde_json::to_string(&plan.effective_substats)
                 .map_err(|error| AppError::Database(error.to_string()))?,
+            note,
             now_millis()
         ],
     )?;
@@ -2315,6 +2325,7 @@ mod tests {
                 minimum: 140.0,
             }],
             effective_substats: vec!["SPD".to_owned()],
+            note: String::new(),
         };
         store.save_build_plan(&plan).unwrap();
         let mut missing_character_plan = plan.clone();
@@ -2375,6 +2386,7 @@ mod tests {
                 minimum: 140.0,
             }],
             effective_substats: vec![],
+            note: String::new(),
         };
         store.save_build_plan(&plan).unwrap();
         store
@@ -2457,6 +2469,7 @@ mod tests {
                     minimum: 140.0,
                 }],
                 effective_substats: vec![],
+                note: String::new(),
             })
             .unwrap();
 
@@ -2533,6 +2546,7 @@ mod tests {
                 minimum: 140.0,
             }],
             effective_substats: vec!["SPD".to_owned()],
+            note: String::new(),
         };
         store.save_build_plan(&base_plan).unwrap();
         let second_plan = CharacterBuildPlan {
@@ -2606,6 +2620,7 @@ mod tests {
                 minimum: 140.0,
             }],
             effective_substats: vec![],
+            note: String::new(),
         };
         store.save_build_plan(&first_plan).unwrap();
         first_plan.character_id = 1002;
@@ -2645,6 +2660,7 @@ mod tests {
                 minimum: 140.0,
             }],
             effective_substats: vec![],
+            note: String::new(),
         };
         store.save_build_plan(&plan).unwrap();
 
@@ -2908,17 +2924,72 @@ mod tests {
                 minimum: 170.0,
             }],
             effective_substats: vec!["SPD".to_owned(), "CRIT Rate".to_owned()],
+            note: "优先补速度".to_owned(),
         };
         store.save_build_plan(&plan).unwrap();
         store.clear(None).unwrap();
+        let restored = store.build_plan(1001).unwrap().unwrap();
+        assert_eq!(restored.targets[0].target, 180.0);
         assert_eq!(
-            store.build_plan(1001).unwrap().unwrap().targets[0].target,
-            180.0
-        );
-        assert_eq!(
-            store.build_plan(1001).unwrap().unwrap().effective_substats,
+            restored.effective_substats,
             vec!["SPD".to_owned(), "CRIT Rate".to_owned()]
         );
+        assert_eq!(restored.note, "优先补速度");
+    }
+
+    #[test]
+    fn build_plan_note_round_trips_and_defaults_empty() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[]);
+        snapshot.characters = vec![ImportCharacter {
+            id: 1001,
+            name: "三月七".to_owned(),
+            path: "Preservation".to_owned(),
+            level: 80,
+            ascension: 6,
+            eidolon: 0,
+            skills: json!({}),
+            traces: json!({}),
+            memosprite: None,
+            ability_version: 1,
+        }];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let mut plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "CRIT DMG".to_owned(),
+                target: 200.0,
+                priority: 1,
+                minimum: 180.0,
+            }],
+            effective_substats: vec![],
+            note: String::new(),
+        };
+        store.save_build_plan(&plan).unwrap();
+        assert_eq!(store.build_plan(1001).unwrap().unwrap().note, "");
+
+        plan.note = "  配队：虚数队副C  ".to_owned();
+        store.save_build_plan(&plan).unwrap();
+        assert_eq!(
+            store.build_plan(1001).unwrap().unwrap().note,
+            "配队：虚数队副C"
+        );
+        assert_eq!(
+            store.build_dashboard().unwrap()[0].plan.note,
+            "配队：虚数队副C"
+        );
+
+        plan.note = format!("前缀{}", "长".repeat(600));
+        store.save_build_plan(&plan).unwrap();
+        let truncated = store.build_plan(1001).unwrap().unwrap().note;
+        assert_eq!(truncated.chars().count(), MAX_BUILD_PLAN_NOTE_LEN);
+        assert!(truncated.starts_with("前缀"));
     }
 
     #[test]
@@ -2937,6 +3008,7 @@ mod tests {
                 minimum: 0.0,
             }],
             effective_substats: vec![],
+            note: String::new(),
         };
         let mut candidates = Vec::new();
         for (index, slot) in BUILD_SLOTS.iter().enumerate() {
@@ -2995,6 +3067,7 @@ mod tests {
                 },
             ],
             effective_substats: vec![],
+            note: String::new(),
         };
         let mut candidates = Vec::new();
         for (slot_index, slot) in BUILD_SLOTS.iter().enumerate() {
@@ -3059,6 +3132,7 @@ mod tests {
                 minimum: 0.0,
             }],
             effective_substats: vec![],
+            note: String::new(),
         };
 
         let unequipped = build_candidates(&connection, &plan, false).unwrap();
@@ -3111,6 +3185,7 @@ mod tests {
                 minimum: 140.0,
             }],
             effective_substats: vec!["SPD".to_owned()],
+            note: String::new(),
         };
         store.save_build_plan(&plan).unwrap();
         let snapshot = store.sync_snapshot().unwrap();
@@ -3176,6 +3251,7 @@ mod tests {
                     minimum: 140.0,
                 }],
                 effective_substats: vec![],
+                note: String::new(),
             })
             .unwrap();
         let mut snapshot = store.sync_snapshot().unwrap();

@@ -197,6 +197,8 @@ export interface CharacterBuildPlan {
   mainStats: Record<string, string[]>;
   targets: BuildTarget[];
   effectiveSubstats: string[];
+  /** Optional free-text note shown on the graduation dashboard. */
+  note: string;
 }
 
 export interface BuildPlanExcelImportResult {

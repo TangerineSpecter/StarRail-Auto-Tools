@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, toRef } from "vue";
+import { computed, onMounted, onUnmounted, toRef } from "vue";
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import InputNumber from "primevue/inputnumber";
 import Select from "primevue/select";
+import Textarea from "primevue/textarea";
 import RelicSetCardPicker from "./RelicSetCardPicker.vue";
 import { useBuildPlanEditor } from "./useBuildPlanEditor";
 import {
@@ -27,6 +28,7 @@ const editor = useBuildPlanEditor({
   setError: (message) => emit("error", message),
   setNotice: (message) => emit("notice", message),
   onDeleted: () => emit("deleted"),
+  onSaved: () => emit("close"),
 });
 const progressPercent = (progress: { current: number; target: number }) =>
   progress.target <= 0
@@ -35,6 +37,12 @@ const progressPercent = (progress: { current: number; target: number }) =>
 const targetStatOptions = computed(() =>
   relicSubStats.map((stat) => ({ label: statLabel(stat), value: stat })),
 );
+
+function closeOnEscape(event: KeyboardEvent) {
+  if (event.key === "Escape" && !event.isComposing) emit("close");
+}
+onMounted(() => window.addEventListener("keydown", closeOnEscape));
+onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 <template>
   <div class="detail-backdrop build-backdrop" @click.self="emit('close')">
@@ -232,6 +240,22 @@ const targetStatOptions = computed(() =>
             >
           </div>
         </section>
+        <section class="build-section build-note-section">
+          <h3>说明</h3>
+          <label class="build-note-field">
+            <span class="visually-hidden">毕业目标说明</span>
+            <Textarea
+              v-model="editor.plan.note"
+              class="build-note-input"
+              rows="3"
+              auto-resize
+              maxlength="500"
+              placeholder="可选：补充培养备注，例如优先级、配队用途或词条取舍"
+              aria-label="毕业目标说明"
+            />
+          </label>
+          <small class="build-note-hint">保存后会在毕业管理角色卡片中以 i 图标查看。</small>
+        </section>
       </div>
       <footer class="build-actions" :aria-busy="editor.saving.value || editor.calculating.value">
         <label class="include-equipped"
@@ -247,7 +271,7 @@ const targetStatOptions = computed(() =>
           type="button"
           :disabled="editor.saving.value || editor.calculating.value"
           @click="editor.save"
-          >{{ editor.saving.value ? "保存中…" : "保存并计算" }}</Button
+          >{{ editor.saving.value ? "保存中…" : "保存" }}</Button
         ><Button
           class="filter-submit"
           type="button"

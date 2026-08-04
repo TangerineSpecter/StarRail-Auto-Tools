@@ -408,6 +408,30 @@
   font-size: 8px;
   font-weight: 400;
 }
+.build-note-section {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 4px;
+}
+.build-note-field {
+  display: grid;
+  gap: 6px;
+}
+.build-note-field .build-note-input,
+.build-note-field .p-textarea {
+  width: 100%;
+  min-height: 72px;
+  resize: vertical;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.build-note-hint {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
 .effective-substats-config {
   margin-top: 14px;
   padding-top: 12px;

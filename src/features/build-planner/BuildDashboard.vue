@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { buildPlanApi } from "@/shared/api/build-plan";
@@ -40,6 +40,13 @@ const { notice } = useRuntimeContext();
 const search = ref("");
 const sort = ref("urgent");
 const actionCharacterId = ref<number | null>(null);
+const notePopover = ref<{
+  characterId: number;
+  name: string;
+  note: string;
+  top: number;
+  left: number;
+} | null>(null);
 const dashboardElement = ref<HTMLElement | null>(null);
 const characters = characterCatalogueJson as CharacterCatalogue;
 const lightCones = lightConeCatalogueJson as LightConeCatalogue;
@@ -48,6 +55,60 @@ const disabledTraceNodes = loadDisabledTraceNodes();
 
 function characterInitial(name: string) {
   return name.slice(0, 1);
+}
+
+function planNote(plan: BuildDashboardEntry["plan"]) {
+  return plan.note?.trim() ?? "";
+}
+
+function closeNotePopover() {
+  notePopover.value = null;
+}
+
+function toggleNotePopover(event: MouseEvent, card: { character: { characterId: number; name: string }; entry: BuildDashboardEntry }) {
+  const note = planNote(card.entry.plan);
+  if (!note) return;
+  if (notePopover.value?.characterId === card.character.characterId) {
+    closeNotePopover();
+    return;
+  }
+  const trigger = event.currentTarget as HTMLElement;
+  const rect = trigger.getBoundingClientRect();
+  const width = 260;
+  const estimatedHeight = 120;
+  const gap = 8;
+  const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+  const spaceBelow = window.innerHeight - rect.bottom - gap;
+  const spaceAbove = rect.top - gap;
+  const placeAbove = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+  const top = placeAbove
+    ? Math.max(12, rect.top - estimatedHeight - gap)
+    : Math.min(rect.bottom + gap, window.innerHeight - estimatedHeight - 12);
+  notePopover.value = {
+    characterId: card.character.characterId,
+    name: card.character.name,
+    note,
+    top: Math.max(12, top),
+    left,
+  };
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+  if (!notePopover.value) return;
+  const target = event.target as Element | null;
+  if (target?.closest(".build-note-info, .build-note-popover")) return;
+  closeNotePopover();
+}
+
+function onDocumentKeydown(event: KeyboardEvent) {
+  if (event.key === "Escape" && !event.isComposing && notePopover.value) {
+    event.preventDefault();
+    closeNotePopover();
+  }
+}
+
+function onDashboardScroll() {
+  if (notePopover.value) closeNotePopover();
 }
 
 function recommendedSets(plan: BuildDashboardEntry["plan"]) {
@@ -278,7 +339,17 @@ async function importExcel() {
   }
 }
 
-onMounted(() => void loadDashboard());
+onMounted(() => {
+  void loadDashboard();
+  document.addEventListener("pointerdown", onDocumentPointerDown);
+  document.addEventListener("keydown", onDocumentKeydown);
+  dashboardElement.value?.addEventListener("scroll", onDashboardScroll, { passive: true });
+});
+onBeforeUnmount(() => {
+  document.removeEventListener("pointerdown", onDocumentPointerDown);
+  document.removeEventListener("keydown", onDocumentKeydown);
+  dashboardElement.value?.removeEventListener("scroll", onDashboardScroll);
+});
 defineExpose({ reload: loadDashboard });
 </script>
 
@@ -375,6 +446,17 @@ defineExpose({ reload: loadDashboard });
           <div class="build-character-content">
             <div class="build-character-title">
               <p>{{ card.character.name }}</p>
+              <button
+                v-if="planNote(card.entry.plan)"
+                type="button"
+                class="build-note-info"
+                :aria-expanded="notePopover?.characterId === card.character.characterId"
+                :aria-label="`查看${card.character.name}的说明`"
+                title="查看说明"
+                @click.stop="toggleNotePopover($event, card)"
+              >
+                i
+              </button>
             </div>
             <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
             <button
@@ -438,6 +520,18 @@ defineExpose({ reload: loadDashboard });
         </div>
       </article>
     </div>
+    <Teleport to="body">
+      <div
+        v-if="notePopover"
+        class="build-note-popover"
+        role="dialog"
+        :aria-label="`${notePopover.name}的说明`"
+        :style="{ top: `${notePopover.top}px`, left: `${notePopover.left}px` }"
+      >
+        <p class="build-note-popover-title">{{ notePopover.name }}</p>
+        <p class="build-note-popover-body">{{ notePopover.note }}</p>
+      </div>
+    </Teleport>
   </section>
 </template>
 
@@ -642,12 +736,49 @@ defineExpose({ reload: loadDashboard });
 .build-character-title {
   display: flex;
   align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 .build-character-title p {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.build-note-info {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(53, 110, 174, 0.35);
+  border-radius: 50%;
+  background: #eef5fd;
+  color: #356eae;
+  font: italic 700 11px/1 Georgia, "Times New Roman", serif;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+.build-note-info:hover {
+  background: #e3effc;
+  border-color: rgba(53, 110, 174, 0.55);
+}
+.build-note-info:active {
+  transform: scale(0.94);
+}
+.build-note-info:focus-visible {
+  outline: 2px solid rgba(53, 110, 174, 0.42);
+  outline-offset: 2px;
+}
+.build-note-info[aria-expanded="true"] {
+  background: #dceafb;
+  border-color: rgba(53, 110, 174, 0.62);
 }
 .build-drag-handle,
 .build-pin-toggle {
@@ -987,5 +1118,38 @@ defineExpose({ reload: loadDashboard });
   .build-dashboard {
     overflow: auto;
   }
+}
+</style>
+<style>
+/* Teleported popover sits on body; keep a feature-prefixed global rule. */
+.build-note-popover {
+  position: fixed;
+  z-index: 1200;
+  width: min(260px, calc(100vw - 24px));
+  max-height: min(240px, calc(100vh - 24px));
+  overflow: auto;
+  padding: 10px 12px;
+  border: 1px solid rgba(53, 110, 174, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 14px 28px rgba(36, 86, 166, 0.16),
+    0 2px 8px rgba(36, 86, 166, 0.08);
+  color: #334d6e;
+}
+.build-note-popover-title {
+  margin: 0 0 6px;
+  color: #356eae;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.build-note-popover-body {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>

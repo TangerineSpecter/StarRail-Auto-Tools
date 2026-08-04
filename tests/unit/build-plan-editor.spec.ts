@@ -13,6 +13,8 @@ vi.mock("@/shared/api/build-plan", () => ({ buildPlanApi: api }));
 const setError = vi.fn();
 const setNotice = vi.fn();
 
+const onSaved = vi.fn();
+const onDeleted = vi.fn();
 let editor!: ReturnType<typeof useBuildPlanEditor>;
 const Host = defineComponent({
   setup() {
@@ -20,7 +22,8 @@ const Host = defineComponent({
       characterId: ref(1001),
       setError,
       setNotice,
-      onDeleted: vi.fn(),
+      onDeleted,
+      onSaved,
     });
     return () => null;
   },
@@ -34,6 +37,8 @@ async function mountEditor() {
 describe("useBuildPlanEditor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    onSaved.mockClear();
+    onDeleted.mockClear();
     api.get.mockResolvedValue(null);
     api.save.mockResolvedValue(undefined);
     api.recommend.mockResolvedValue({
@@ -100,14 +105,65 @@ describe("useBuildPlanEditor", () => {
     expect(api.save).not.toHaveBeenCalled();
   });
 
-  it("does not claim the recommendation was updated when calculation fails after saving", async () => {
-    api.recommend.mockRejectedValue(new Error("推荐服务不可用"));
+  it("closes after a successful save without waiting for recommendation calculation", async () => {
     await mountEditor();
+    editor.plan.targets.push({
+      statKey: "SPD",
+      target: 134,
+      minimum: 120,
+      priority: 1,
+    });
 
     await editor.save();
 
     expect(api.save).toHaveBeenCalledTimes(1);
-    expect(setError).toHaveBeenCalledWith("Error: 推荐服务不可用");
-    expect(setNotice).not.toHaveBeenCalledWith("培养方案已保存，推荐结果已更新");
+    expect(api.recommend).not.toHaveBeenCalled();
+    expect(setNotice).toHaveBeenCalledWith("培养方案已保存");
+    expect(onSaved).toHaveBeenCalledOnce();
+  });
+
+  it("loads, trims, and persists the plan note field then notifies saved", async () => {
+    api.get.mockResolvedValue({
+      characterId: 1001,
+      cavernMode: "fourPiece",
+      cavernSetA: 101,
+      cavernSetB: null,
+      planarSetId: 301,
+      mainStats: {},
+      targets: [{ statKey: "SPD", target: 134, minimum: 120, priority: 1 }],
+      effectiveSubstats: ["SPD"],
+      note: "旧说明",
+    });
+    await mountEditor();
+    expect(editor.plan.note).toBe("旧说明");
+
+    editor.plan.note = "  新说明：优先速度  ";
+    await editor.save();
+
+    expect(editor.plan.note).toBe("新说明：优先速度");
+    expect(api.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        characterId: 1001,
+        note: "新说明：优先速度",
+      }),
+    );
+    expect(setNotice).toHaveBeenCalledWith("培养方案已保存");
+    expect(api.recommend).not.toHaveBeenCalled();
+    expect(onSaved).toHaveBeenCalledOnce();
+  });
+
+  it("defaults note to an empty string when the plan payload omits it", async () => {
+    api.get.mockResolvedValue({
+      characterId: 1001,
+      cavernMode: "fourPiece",
+      cavernSetA: 101,
+      cavernSetB: null,
+      planarSetId: 301,
+      mainStats: {},
+      targets: [{ statKey: "SPD", target: 134, minimum: 120, priority: 1 }],
+      effectiveSubstats: [],
+    });
+    await mountEditor();
+    expect(editor.plan.note).toBe("");
   });
 });

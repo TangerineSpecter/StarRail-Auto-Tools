@@ -9,6 +9,7 @@ interface BuildEditorOptions {
   setError: (message: string) => void;
   setNotice: (message: string) => void;
   onDeleted: () => void;
+  onSaved?: () => void;
 }
 const emptyPlan = (characterId: number): CharacterBuildPlan => ({
   characterId,
@@ -19,6 +20,7 @@ const emptyPlan = (characterId: number): CharacterBuildPlan => ({
   mainStats: Object.fromEntries(relicSlots.map((slot) => [slot.value, []])),
   targets: [],
   effectiveSubstats: [],
+  note: "",
 });
 
 async function yieldForCalculationFeedback() {
@@ -70,6 +72,7 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     deleteArmed.value = false;
     try {
       Object.assign(plan, emptyPlan(characterId), (await buildPlanApi.get(characterId)) ?? {});
+      if (typeof plan.note !== "string") plan.note = "";
     } catch (cause) {
       options.setError(String(cause));
     } finally {
@@ -167,10 +170,13 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     }
     saving.value = true;
     try {
+      plan.note = typeof plan.note === "string" ? plan.note.trim() : "";
       options.setNotice("正在保存培养方案…");
       await yieldForCalculationFeedback();
       await buildPlanApi.save(JSON.parse(JSON.stringify(plan)));
-      if (await calculate()) options.setNotice("培养方案已保存，推荐结果已更新");
+      options.setNotice("培养方案已保存");
+      // Close immediately after a successful save; recommendation can be recomputed later.
+      options.onSaved?.();
     } catch (cause) {
       options.setError(String(cause));
     } finally {

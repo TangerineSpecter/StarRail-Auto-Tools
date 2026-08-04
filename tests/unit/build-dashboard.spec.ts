@@ -31,6 +31,7 @@ const entry: BuildDashboardEntry = {
     mainStats: {},
     targets: [{ statKey: "攻击力", target: 2000, minimum: 1800, priority: 1 }],
     effectiveSubstats: ["攻击力"],
+    note: "",
   },
   character: {
     characterId: 1005,
@@ -123,5 +124,50 @@ describe("BuildDashboard", () => {
 
     expect(setDashboardPinned).toHaveBeenCalledWith(1005, true);
     expect(wrapper.get(".build-pin-toggle").attributes("aria-pressed")).toBe("true");
+  });
+
+  it("hides the info icon without a note and opens a floating card on click", async () => {
+    dashboard.mockResolvedValueOnce([entry]).mockResolvedValueOnce([
+      {
+        ...entry,
+        plan: { ...entry.plan, note: "  优先补速度，暴伤次之  " },
+      },
+    ]);
+    const wrapper = mount(BuildDashboard, {
+      attachTo: document.body,
+      global: {
+        provide: { [runtimeContextKey as symbol]: { notice: ref("") } },
+        stubs: { InputText: true, Select: true },
+      },
+    });
+
+    await flushPromises();
+    expect(wrapper.find(".build-note-info").exists()).toBe(false);
+    expect(document.querySelector(".build-note-popover")).toBeNull();
+
+    await (wrapper.vm as { reload: () => Promise<void> }).reload();
+    await flushPromises();
+
+    const infoButton = wrapper.get(".build-note-info");
+    expect(infoButton.text()).toBe("i");
+    expect(infoButton.attributes("aria-expanded")).toBe("false");
+
+    await infoButton.trigger("click");
+    expect(infoButton.attributes("aria-expanded")).toBe("true");
+    const popover = document.querySelector(".build-note-popover");
+    expect(popover?.textContent).toContain("优先补速度，暴伤次之");
+    expect(popover?.textContent).toContain("卡芙卡");
+
+    wrapper.get(".build-dashboard").element.dispatchEvent(new Event("scroll"));
+    await flushPromises();
+    expect(document.querySelector(".build-note-popover")).toBeNull();
+    expect(infoButton.attributes("aria-expanded")).toBe("false");
+
+    await infoButton.trigger("click");
+    expect(document.querySelector(".build-note-popover")).not.toBeNull();
+    await infoButton.trigger("click");
+    expect(document.querySelector(".build-note-popover")).toBeNull();
+
+    wrapper.unmount();
   });
 });

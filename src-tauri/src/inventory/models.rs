@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 8;
+pub(crate) const SCHEMA_VERSION: i64 = 9;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]
@@ -281,6 +281,22 @@ pub struct CharacterBuildPlan {
     pub targets: Vec<BuildTarget>,
     #[serde(default)]
     pub effective_substats: Vec<String>,
+    /// Optional free-text note shown on the graduation dashboard.
+    #[serde(default)]
+    pub note: String,
+}
+
+/// Maximum character length for a build-plan note (Unicode scalar values).
+pub const MAX_BUILD_PLAN_NOTE_LEN: usize = 500;
+
+/// Trim and clamp a build-plan note to the shared frontend/backend limit.
+pub fn normalize_build_plan_note(note: &str) -> String {
+    let trimmed = note.trim();
+    if trimmed.chars().count() <= MAX_BUILD_PLAN_NOTE_LEN {
+        trimmed.to_owned()
+    } else {
+        trimmed.chars().take(MAX_BUILD_PLAN_NOTE_LEN).collect()
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
