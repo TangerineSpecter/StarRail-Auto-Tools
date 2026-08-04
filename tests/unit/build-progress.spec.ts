@@ -2,11 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
   buildTargetProgress,
   effectiveSubstatCounts,
+  formatBuildProgressValue,
   lowestTargetPercent,
   relicPieceCounts,
 } from "@/features/build-planner/progress";
 
 describe("buildTargetProgress", () => {
+  it("formats flat progress stats without decimal places", () => {
+    expect(formatBuildProgressValue("ATK", 3295.04)).toBe("3295");
+    expect(formatBuildProgressValue("SPD", 25.03)).toBe("25");
+    expect(formatBuildProgressValue("CRIT Rate", 61.94)).toBe("61.9");
+  });
+
   it("keeps progress above 100 percent and reports shortages", () => {
     const progress = buildTargetProgress(
       [

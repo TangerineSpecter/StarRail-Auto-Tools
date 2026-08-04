@@ -29,6 +29,12 @@ const standingKeyByBuildKey: Record<string, string> = {
   "Imaginary DMG Boost": "imaginaryDmg",
 };
 
+const integerProgressStats = new Set(["HP", "ATK", "DEF", "SPD"]);
+
+export function formatBuildProgressValue(statKey: string, value: number): string {
+  return integerProgressStats.has(statKey) ? value.toFixed(0) : value.toFixed(1);
+}
+
 export function buildTargetProgress(
   targets: BuildTarget[],
   standingStats: StandingStat[],

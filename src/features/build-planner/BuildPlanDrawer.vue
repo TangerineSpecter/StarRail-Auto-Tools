@@ -13,6 +13,7 @@ import {
   slotLabel,
   statLabel,
 } from "@/shared/catalogue/relic-options";
+import { formatBuildProgressValue } from "./progress";
 
 const props = defineProps<{ characterId: number }>();
 const emit = defineEmits<{
@@ -198,10 +199,17 @@ const targetStatOptions = computed(() =>
           >
             <div>
               <b>{{ statLabel(progress.statKey) }}</b
-              ><span>{{ progress.current.toFixed(1) }} / {{ progress.target }}</span>
+              ><span
+                >{{ formatBuildProgressValue(progress.statKey, progress.current) }} /
+                {{ progress.target }}</span
+              >
             </div>
             <i><em :style="{ width: `${progressPercent(progress)}%` }" /></i
-            ><small>{{ progress.gap ? `缺 ${progress.gap.toFixed(1)}` : "已达标" }}</small>
+            ><small>{{
+              progress.gap
+                ? `缺 ${formatBuildProgressValue(progress.statKey, progress.gap)}`
+                : "已达标"
+            }}</small>
           </div>
           <h3>推荐组合</h3>
           <p class="build-message">{{ editor.recommendation.value.message }}</p>
@@ -216,8 +224,11 @@ const targetStatOptions = computed(() =>
             <span
               v-for="progress in editor.recommendation.value.recommendedProgress"
               :key="progress.statKey"
-              >{{ statLabel(progress.statKey) }} {{ progress.current.toFixed(1)
-              }}<b v-if="progress.gap"> · 缺 {{ progress.gap.toFixed(1) }}</b></span
+              >{{ statLabel(progress.statKey) }}
+              {{ formatBuildProgressValue(progress.statKey, progress.current)
+              }}<b v-if="progress.gap">
+                · 缺 {{ formatBuildProgressValue(progress.statKey, progress.gap) }}</b
+              ></span
             >
           </div>
         </section>

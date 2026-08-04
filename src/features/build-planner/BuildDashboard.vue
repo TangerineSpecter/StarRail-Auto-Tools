@@ -11,6 +11,7 @@ import { primaryTraceNodes } from "@/shared/utils/trace-stats";
 import {
   buildTargetProgress,
   effectiveSubstatCounts,
+  formatBuildProgressValue,
   lowestTargetPercent,
   relicPieceCounts,
 } from "./progress";
@@ -277,7 +278,8 @@ defineExpose({ reload: loadDashboard });
             <div class="target-progress-label">
               <b>{{ statLabel(target.statKey) }}</b>
               <span v-if="target.percent !== null"
-                >{{ target.current?.toFixed(1) }} / {{ target.target }}</span
+                >{{ formatBuildProgressValue(target.statKey, target.current ?? 0) }} /
+                {{ target.target }}</span
               >
               <span v-else>不可映射</span>
             </div>
