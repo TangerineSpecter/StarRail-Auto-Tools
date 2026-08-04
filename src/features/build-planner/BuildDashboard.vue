@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { buildPlanApi } from "@/shared/api/build-plan";
@@ -46,6 +46,8 @@ const notePopover = ref<{
   note: string;
   top: number;
   left: number;
+  /** When true, `top` is the bottom edge of the card (just above the trigger). */
+  placeAbove: boolean;
 } | null>(null);
 const dashboardElement = ref<HTMLElement | null>(null);
 const characters = characterCatalogueJson as CharacterCatalogue;
@@ -65,7 +67,10 @@ function closeNotePopover() {
   notePopover.value = null;
 }
 
-function toggleNotePopover(event: MouseEvent, card: { character: { characterId: number; name: string }; entry: BuildDashboardEntry }) {
+async function toggleNotePopover(
+  event: MouseEvent,
+  card: { character: { characterId: number; name: string }; entry: BuildDashboardEntry },
+) {
   const note = planNote(card.entry.plan);
   if (!note) return;
   if (notePopover.value?.characterId === card.character.characterId) {
@@ -75,22 +80,38 @@ function toggleNotePopover(event: MouseEvent, card: { character: { characterId: 
   const trigger = event.currentTarget as HTMLElement;
   const rect = trigger.getBoundingClientRect();
   const width = 260;
-  const estimatedHeight = 120;
   const gap = 8;
+  const preferredBelowHeight = 96;
   const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
   const spaceBelow = window.innerHeight - rect.bottom - gap;
   const spaceAbove = rect.top - gap;
-  const placeAbove = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
-  const top = placeAbove
-    ? Math.max(12, rect.top - estimatedHeight - gap)
-    : Math.min(rect.bottom + gap, window.innerHeight - estimatedHeight - 12);
+  const placeAbove = spaceBelow < preferredBelowHeight && spaceAbove > spaceBelow;
+  // When above: `top` is the bottom edge of the card, kept just above the trigger.
+  // When below: `top` is the top edge of the card, kept just under the trigger.
   notePopover.value = {
     characterId: card.character.characterId,
     name: card.character.name,
     note,
-    top: Math.max(12, top),
+    top: placeAbove ? rect.top - gap : rect.bottom + gap,
     left,
+    placeAbove,
   };
+  await nextTick();
+  const popoverEl = document.querySelector<HTMLElement>(".build-note-popover");
+  if (!popoverEl || !notePopover.value) return;
+  const height = popoverEl.getBoundingClientRect().height;
+  if (notePopover.value.placeAbove) {
+    // Keep bottom edge near the trigger; only push down if the card would leave the viewport.
+    const minBottom = 12 + height;
+    if (notePopover.value.top < minBottom) {
+      notePopover.value = { ...notePopover.value, top: minBottom };
+    }
+  } else {
+    const maxTop = window.innerHeight - height - 12;
+    if (notePopover.value.top > maxTop) {
+      notePopover.value = { ...notePopover.value, top: Math.max(12, maxTop) };
+    }
+  }
 }
 
 function onDocumentPointerDown(event: PointerEvent) {
@@ -524,6 +545,7 @@ defineExpose({ reload: loadDashboard });
       <div
         v-if="notePopover"
         class="build-note-popover"
+        :class="{ 'place-above': notePopover.placeAbove }"
         role="dialog"
         :aria-label="`${notePopover.name}的说明`"
         :style="{ top: `${notePopover.top}px`, left: `${notePopover.left}px` }"
@@ -1136,6 +1158,10 @@ defineExpose({ reload: loadDashboard });
     0 14px 28px rgba(36, 86, 166, 0.16),
     0 2px 8px rgba(36, 86, 166, 0.08);
   color: #334d6e;
+}
+/* Anchor `top` as the bottom edge so the card sits tightly above the trigger. */
+.build-note-popover.place-above {
+  transform: translateY(-100%);
 }
 .build-note-popover-title {
   margin: 0 0 6px;
