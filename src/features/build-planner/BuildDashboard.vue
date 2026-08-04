@@ -15,6 +15,7 @@ import {
   lowestTargetPercent,
   relicPieceCounts,
 } from "./progress";
+import { useDashboardDrag } from "./useDashboardDrag";
 import characterCatalogueJson from "@/data/characters.json";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
@@ -34,6 +35,8 @@ const emit = defineEmits<{
 const { notice } = useRuntimeContext();
 const search = ref("");
 const sort = ref("urgent");
+const actionCharacterId = ref<number | null>(null);
+const dashboardElement = ref<HTMLElement | null>(null);
 const characters = characterCatalogueJson as CharacterCatalogue;
 const lightCones = lightConeCatalogueJson as LightConeCatalogue;
 const relicSets = relicCatalogueJson as RelicSetCatalogue;
@@ -99,6 +102,35 @@ function dashboardState(entry: BuildDashboardEntry) {
   };
 }
 
+const canDrag = computed(() => !search.value.trim() && !loading.value && !error.value);
+
+function compareCards(
+  left: {
+    entry: BuildDashboardEntry;
+    completed: number;
+    targets: Array<{ percent: number | null }>;
+  },
+  right: {
+    entry: BuildDashboardEntry;
+    completed: number;
+    targets: Array<{ percent: number | null }>;
+  },
+) {
+  if (left.entry.pinned !== right.entry.pinned)
+    return Number(right.entry.pinned) - Number(left.entry.pinned);
+  if (sort.value === "custom") {
+    return left.entry.displayOrder - right.entry.displayOrder;
+  }
+  if (sort.value === "complete") {
+    return right.completed - left.completed || left.entry.displayOrder - right.entry.displayOrder;
+  }
+  return (
+    left.targets.length - left.completed - (right.targets.length - right.completed) ||
+    lowestTargetPercent(left.targets) - lowestTargetPercent(right.targets) ||
+    left.entry.displayOrder - right.entry.displayOrder
+  );
+}
+
 const cards = computed(() =>
   entries.value
     .map((entry) => {
@@ -138,14 +170,74 @@ const cards = computed(() =>
     })
     .filter((card) => card.state.available)
     .filter((card) => card.character.name.includes(search.value.trim()))
-    .sort((left, right) => {
-      if (sort.value === "complete") return right.completed - left.completed;
-      return (
-        left.targets.length - left.completed - (right.targets.length - right.completed) ||
-        lowestTargetPercent(left.targets) - lowestTargetPercent(right.targets)
-      );
-    }),
+    .sort(compareCards),
 );
+
+function orderedEntryIds() {
+  return [...entries.value]
+    .sort(
+      (left, right) =>
+        Number(right.pinned) - Number(left.pinned) ||
+        left.displayOrder - right.displayOrder ||
+        left.character.characterId - right.character.characterId,
+    )
+    .map((entry) => entry.character.characterId);
+}
+
+function orderedEntryIdsForDrag(preferred: number[]) {
+  const known = new Set(preferred);
+  return [...preferred, ...orderedEntryIds().filter((id) => !known.has(id))];
+}
+
+async function reorderDraggedCard(sourceId: number, targetId: number, visibleOrderIds: number[]) {
+  const source = entries.value.find((entry) => entry.character.characterId === sourceId);
+  const target = entries.value.find((entry) => entry.character.characterId === targetId);
+  if (!source || !target || source.pinned !== target.pinned) {
+    return;
+  }
+  const ordered = orderedEntryIdsForDrag(visibleOrderIds);
+  const from = ordered.indexOf(sourceId);
+  const to = ordered.indexOf(targetId);
+  if (from < 0 || to < 0 || from === to) return;
+  const [moved] = ordered.splice(from, 1);
+  ordered.splice(to, 0, moved);
+  actionCharacterId.value = targetId;
+  sort.value = "custom";
+  try {
+    await buildPlanApi.reorderDashboard(ordered);
+    notice.value = "排序已保存";
+    await loadDashboard();
+  } catch (cause) {
+    error.value = String(cause);
+  } finally {
+    actionCharacterId.value = null;
+  }
+}
+
+const { draggedCharacterId, dragOverCharacterId, pointerDragStart } = useDashboardDrag({
+  dashboardElement,
+  canDrag: () => canDrag.value && actionCharacterId.value === null,
+  items: () =>
+    cards.value.map((card) => ({
+      characterId: card.character.characterId,
+      pinned: card.entry.pinned,
+    })),
+  onDrop: ({ sourceId, targetId, visibleOrderIds }) =>
+    reorderDraggedCard(sourceId, targetId, visibleOrderIds),
+});
+
+async function togglePinned(card: (typeof cards.value)[number]) {
+  actionCharacterId.value = card.character.characterId;
+  try {
+    await buildPlanApi.setDashboardPinned(card.character.characterId, !card.entry.pinned);
+    notice.value = card.entry.pinned ? "已取消置顶" : "已置顶";
+    await loadDashboard();
+  } catch (cause) {
+    error.value = String(cause);
+  } finally {
+    actionCharacterId.value = null;
+  }
+}
 
 async function loadDashboard() {
   loading.value = true;
@@ -181,12 +273,11 @@ async function importExcel() {
 }
 
 onMounted(() => void loadDashboard());
-
 defineExpose({ reload: loadDashboard });
 </script>
 
 <template>
-  <section class="build-dashboard">
+  <section ref="dashboardElement" class="build-dashboard">
     <header class="build-dashboard-heading">
       <div>
         <p class="eyebrow">BUILD MANAGEMENT</p>
@@ -209,10 +300,14 @@ defineExpose({ reload: loadDashboard });
           :options="[
             { label: '最需提升', value: 'urgent' },
             { label: '已达标优先', value: 'complete' },
+            { label: '自定义排序', value: 'custom' },
           ]"
           option-label="label"
           option-value="value"
         />
+        <small class="build-sort-hint">
+          {{ search.trim() ? "清除搜索后可拖拽排序" : "拖动左侧手柄调整顺序" }}
+        </small>
       </div>
     </header>
     <p v-if="loading" class="dashboard-state">正在汇总毕业进度…</p>
@@ -228,16 +323,53 @@ defineExpose({ reload: loadDashboard });
       <article
         v-for="card in cards"
         :key="card.character.characterId"
-        class="build-progress-row"
+        :class="[
+          'build-progress-row',
+          { dragging: draggedCharacterId === card.character.characterId },
+          { 'drag-over': dragOverCharacterId === card.character.characterId },
+        ]"
+        :data-character-id="card.character.characterId"
         role="row"
       >
         <div class="build-character" role="cell">
-          <div class="build-character-avatar">
-            <img v-if="card.image" :src="card.image" :alt="`${card.character.name} 头像`" />
-            <span v-else>{{ characterInitial(card.character.name) }}</span>
+          <button
+            type="button"
+            class="build-drag-handle"
+            :disabled="!canDrag || actionCharacterId !== null"
+            :aria-label="`拖动调整${card.character.name}顺序`"
+            title="拖动调整顺序"
+            @pointerdown="
+              pointerDragStart(
+                { characterId: card.character.characterId, pinned: card.entry.pinned },
+                $event,
+              )
+            "
+          >
+            ⠿
+          </button>
+          <div class="build-character-avatar-wrap">
+            <div class="build-character-avatar">
+              <img v-if="card.image" :src="card.image" :alt="`${card.character.name} 头像`" />
+              <span v-else>{{ characterInitial(card.character.name) }}</span>
+            </div>
+            <button
+              type="button"
+              :class="['build-pin-toggle', { pinned: card.entry.pinned }]"
+              :disabled="actionCharacterId !== null"
+              :aria-label="
+                card.entry.pinned ? `取消${card.character.name}置顶` : `置顶${card.character.name}`
+              "
+              :aria-pressed="card.entry.pinned"
+              title="置顶"
+              @click="togglePinned(card)"
+            >
+              {{ card.entry.pinned ? "★" : "☆" }}
+            </button>
           </div>
-          <div>
-            <p>{{ card.character.name }}</p>
+          <div class="build-character-content">
+            <div class="build-character-title">
+              <p>{{ card.character.name }}</p>
+            </div>
             <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
             <button
               type="button"
@@ -341,6 +473,12 @@ defineExpose({ reload: loadDashboard });
 .build-dashboard-tools :deep(.p-select) {
   width: 150px;
 }
+.build-sort-hint {
+  flex-basis: 100%;
+  color: #6b84a4;
+  font-size: 10px;
+  text-align: right;
+}
 .build-plan-transfer-actions {
   display: flex;
   gap: 3px;
@@ -418,7 +556,7 @@ defineExpose({ reload: loadDashboard });
 .build-progress-table-head,
 .build-progress-row {
   display: grid;
-  grid-template-columns: minmax(185px, 0.8fr) minmax(230px, 1.05fr) minmax(390px, 1.85fr) minmax(
+  grid-template-columns: minmax(225px, 0.9fr) minmax(260px, 1.15fr) minmax(390px, 1.85fr) minmax(
       175px,
       0.75fr
     );
@@ -434,14 +572,45 @@ defineExpose({ reload: loadDashboard });
   letter-spacing: 0.08em;
 }
 .build-progress-row {
+  position: relative;
+  z-index: 0;
   align-items: stretch;
   min-height: 112px;
   padding: 16px 24px;
   border-top: 1px solid var(--line);
-  transition: background 160ms ease;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 .build-progress-row:hover {
   background: linear-gradient(90deg, rgba(239, 246, 253, 0.72), rgba(255, 255, 255, 0));
+}
+.build-progress-row.dragging {
+  z-index: 0;
+  border: 1px dashed rgba(93, 143, 202, 0.45);
+  border-radius: 10px;
+  background: rgba(230, 240, 251, 0.48);
+  box-shadow: none;
+  opacity: 0.45;
+  transform: none;
+}
+.build-progress-row.build-drag-preview {
+  position: fixed !important;
+  z-index: 1000;
+  margin: 0;
+  pointer-events: none;
+  border: 1px solid rgba(93, 143, 202, 0.55);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 16px 30px rgba(49, 86, 132, 0.2),
+    0 3px 8px rgba(49, 86, 132, 0.12);
+  opacity: 0.98;
+  transform: none !important;
+}
+.build-progress-row.drag-over {
+  box-shadow: inset 0 2px 0 #3d8ed0;
 }
 .build-character {
   display: flex;
@@ -452,6 +621,91 @@ defineExpose({ reload: loadDashboard });
 .build-character p,
 .build-character b {
   margin: 0;
+}
+.build-character-content {
+  min-width: 0;
+}
+.build-character-avatar-wrap {
+  position: relative;
+  flex: 0 0 56px;
+}
+.build-character-title {
+  display: flex;
+  align-items: center;
+}
+.build-character-title p {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.build-drag-handle,
+.build-pin-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.build-drag-handle {
+  width: 13px;
+  color: #8ea5c1;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -5px;
+  opacity: 0.35;
+  user-select: none;
+  touch-action: none;
+}
+.build-drag-handle:not(:disabled) {
+  cursor: grab;
+  opacity: 1;
+}
+.build-drag-handle:not(:disabled):active {
+  cursor: grabbing;
+}
+.build-drag-handle:focus-visible,
+.build-pin-toggle:focus-visible {
+  outline: 2px solid rgba(53, 110, 174, 0.42);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.build-drag-handle:disabled,
+.build-pin-toggle:disabled {
+  cursor: default;
+}
+.build-pin-toggle {
+  position: absolute;
+  top: -11px;
+  right: -11px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid #d8e5f4;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: #a9b9cd;
+  font-size: 17px;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(43, 87, 146, 0.12);
+  transition:
+    color 160ms ease,
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.build-pin-toggle:hover:not(:disabled),
+.build-pin-toggle.pinned {
+  color: #d59a35;
+}
+.build-pin-toggle:hover:not(:disabled),
+.build-pin-toggle.pinned {
+  border-color: rgba(213, 154, 53, 0.42);
+  background: #fff8e8;
+}
+.build-pin-toggle:active:not(:disabled) {
+  transform: scale(0.9);
 }
 .build-character-avatar {
   display: grid;

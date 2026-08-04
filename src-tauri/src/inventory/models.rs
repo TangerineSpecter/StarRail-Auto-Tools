@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 7;
+pub(crate) const SCHEMA_VERSION: i64 = 8;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]
@@ -294,6 +294,16 @@ pub struct BuildPlanExcelImportResult {
 pub struct BuildDashboardEntry {
     pub plan: CharacterBuildPlan,
     pub character: Value,
+    pub display_order: i64,
+    pub pinned: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildDashboardLayout {
+    pub character_id: u32,
+    pub display_order: i64,
+    pub pinned: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -384,7 +394,12 @@ pub struct ImportCharacter {
     pub ability_version: u32,
 }
 
-pub const SYNC_FORMAT_VERSION: u32 = 1;
+pub const SYNC_FORMAT_VERSION: u32 = 2;
+pub const LEGACY_SYNC_FORMAT_VERSION: u32 = 1;
+
+pub fn supports_sync_format_version(version: u32) -> bool {
+    matches!(version, LEGACY_SYNC_FORMAT_VERSION | SYNC_FORMAT_VERSION)
+}
 
 /// Internal aggregate used by the repository when restoring a complete WebDAV backup.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -396,6 +411,8 @@ pub struct SyncSnapshot {
     pub inventory: InventoryImport,
     #[serde(default)]
     pub build_plans: Vec<CharacterBuildPlan>,
+    #[serde(default)]
+    pub build_layouts: Vec<BuildDashboardLayout>,
 }
 
 /// Code-owned index of the files in one WebDAV sync directory.
@@ -420,6 +437,8 @@ pub struct SyncInventoryFile {
 pub struct SyncBuildPlansFile {
     pub format_version: u32,
     pub build_plans: Vec<CharacterBuildPlan>,
+    #[serde(default)]
+    pub build_layouts: Vec<BuildDashboardLayout>,
 }
 
 pub(crate) fn deserialize_u32_any<'de, D>(deserializer: D) -> Result<u32, D::Error>

@@ -141,7 +141,9 @@ impl InventoryStore {
                 planar_set_id INTEGER NOT NULL,
                 main_stats_json TEXT NOT NULL,
                 effective_substats_json TEXT NOT NULL DEFAULT '[]',
-                updated_at INTEGER NOT NULL
+                updated_at INTEGER NOT NULL,
+                display_order INTEGER NOT NULL DEFAULT 0,
+                pinned INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS character_build_targets (
@@ -176,6 +178,14 @@ impl InventoryStore {
         );
         let _ = connection.execute(
             "ALTER TABLE character_build_plans ADD COLUMN effective_substats_json TEXT NOT NULL DEFAULT '[]'",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0",
             [],
         );
         let _ = connection.execute(
@@ -271,20 +281,75 @@ impl InventoryStore {
     pub fn build_dashboard(&self) -> Result<Vec<BuildDashboardEntry>, AppError> {
         let connection = self.connect()?;
         let character_ids = connection
-            .prepare("SELECT character_id FROM character_build_plans ORDER BY updated_at DESC")?
-            .query_map([], |row| row.get::<_, u32>(0))?
+            .prepare(
+                "SELECT character_id, display_order, pinned
+                 FROM character_build_plans
+                 ORDER BY pinned DESC, display_order, updated_at DESC, character_id",
+            )?
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, u32>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, bool>(2)?,
+                ))
+            })?
             .collect::<Result<Vec<_>, _>>()?;
         let mut entries = Vec::new();
-        for character_id in character_ids {
+        for (character_id, display_order, pinned) in character_ids {
             let Some(plan) = self.build_plan(character_id)? else {
                 continue;
             };
             let Some(character) = character_detail(&connection, character_id)? else {
                 continue;
             };
-            entries.push(BuildDashboardEntry { plan, character });
+            entries.push(BuildDashboardEntry {
+                plan,
+                character,
+                display_order,
+                pinned,
+            });
         }
         Ok(entries)
+    }
+
+    pub fn reorder_build_dashboard(&self, character_ids: &[u32]) -> Result<(), AppError> {
+        let mut connection = self.connect()?;
+        let transaction = connection.transaction()?;
+        let existing = transaction
+            .prepare("SELECT character_id FROM character_build_plans ORDER BY character_id")?
+            .query_map([], |row| row.get::<_, u32>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        if existing.len() != character_ids.len()
+            || character_ids.iter().copied().collect::<HashSet<_>>()
+                != existing.into_iter().collect::<HashSet<_>>()
+        {
+            return Err(AppError::Database(
+                "毕业方案列表已变化，请刷新后重新排序".to_owned(),
+            ));
+        }
+        for (display_order, character_id) in character_ids.iter().enumerate() {
+            transaction.execute(
+                "UPDATE character_build_plans SET display_order = ?1 WHERE character_id = ?2",
+                params![display_order as i64, character_id],
+            )?;
+        }
+        transaction.commit()?;
+        Ok(())
+    }
+
+    pub fn set_build_dashboard_pinned(
+        &self,
+        character_id: u32,
+        pinned: bool,
+    ) -> Result<(), AppError> {
+        let changed = self.connect()?.execute(
+            "UPDATE character_build_plans SET pinned = ?1 WHERE character_id = ?2",
+            params![pinned, character_id],
+        )?;
+        if changed == 0 {
+            return Err(AppError::Database("毕业方案不存在".to_owned()));
+        }
+        Ok(())
     }
 
     pub fn export_build_plans_excel(&self, path: &Path) -> Result<(), AppError> {
@@ -465,14 +530,14 @@ impl InventoryStore {
             }
         }
 
-        self.apply_snapshot(import, false, false, &[]).map(Ok)
+        self.apply_snapshot(import, false, false, &[], &[]).map(Ok)
     }
 
     pub fn replace_account_and_apply(
         &self,
         import: &InventoryImport,
     ) -> Result<InventorySummary, AppError> {
-        self.apply_snapshot(import, true, false, &[])
+        self.apply_snapshot(import, true, false, &[], &[])
     }
 
     fn apply_snapshot(
@@ -481,6 +546,7 @@ impl InventoryStore {
         clear_first: bool,
         reset_sync_state: bool,
         build_plans: &[CharacterBuildPlan],
+        build_layouts: &[BuildDashboardLayout],
     ) -> Result<InventorySummary, AppError> {
         let now = now_millis();
         let mut connection = self.connect()?;
@@ -638,6 +704,7 @@ impl InventoryStore {
         for plan in build_plans {
             save_build_plan_in_transaction(&transaction, plan)?;
         }
+        apply_build_layouts(&transaction, build_layouts)?;
         transaction.commit()?;
         self.summary()
     }
@@ -1040,12 +1107,26 @@ impl InventoryStore {
                 build_plans.push(plan);
             }
         }
+        let build_layouts = connection
+            .prepare(
+                "SELECT character_id, display_order, pinned
+                 FROM character_build_plans ORDER BY character_id",
+            )?
+            .query_map([], |row| {
+                Ok(BuildDashboardLayout {
+                    character_id: row.get(0)?,
+                    display_order: row.get(1)?,
+                    pinned: row.get(2)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(SyncSnapshot {
             format_version: SYNC_FORMAT_VERSION,
             generated_at: now_millis(),
             source: "starrail-auto-tools".to_owned(),
             inventory,
             build_plans,
+            build_layouts,
         })
     }
 
@@ -1053,14 +1134,20 @@ impl InventoryStore {
         &self,
         mut snapshot: SyncSnapshot,
     ) -> Result<InventorySummary, AppError> {
-        if snapshot.format_version != SYNC_FORMAT_VERSION {
+        if !supports_sync_format_version(snapshot.format_version) {
             return Err(AppError::WebDav(format!(
                 "不支持的同步数据版本：{}",
                 snapshot.format_version
             )));
         }
         normalize_import(&mut snapshot.inventory);
-        self.apply_snapshot(&snapshot.inventory, true, true, &snapshot.build_plans)
+        self.apply_snapshot(
+            &snapshot.inventory,
+            true,
+            true,
+            &snapshot.build_plans,
+            &snapshot.build_layouts,
+        )
     }
 
     #[cfg(test)]
@@ -1092,7 +1179,35 @@ fn save_build_plan_in_transaction(
             "2+2 件套不能选择相同的遗器套装".to_owned(),
         ));
     }
-    transaction.execute("INSERT INTO character_build_plans(character_id,cavern_mode,cavern_set_a,cavern_set_b,planar_set_id,main_stats_json,effective_substats_json,updated_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8) ON CONFLICT(character_id) DO UPDATE SET cavern_mode=excluded.cavern_mode,cavern_set_a=excluded.cavern_set_a,cavern_set_b=excluded.cavern_set_b,planar_set_id=excluded.planar_set_id,main_stats_json=excluded.main_stats_json,effective_substats_json=excluded.effective_substats_json,updated_at=excluded.updated_at", params![plan.character_id, plan.cavern_mode, plan.cavern_set_a, plan.cavern_set_b, plan.planar_set_id, serde_json::to_string(&plan.main_stats).map_err(|e| AppError::Database(e.to_string()))?, serde_json::to_string(&plan.effective_substats).map_err(|e| AppError::Database(e.to_string()))?, now_millis()])?;
+    transaction.execute(
+        "INSERT INTO character_build_plans(
+            character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
+            main_stats_json, effective_substats_json, updated_at, display_order, pinned
+         ) VALUES(
+            ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8,
+            COALESCE((SELECT MAX(display_order) + 1 FROM character_build_plans), 0), 0
+         )
+         ON CONFLICT(character_id) DO UPDATE SET
+            cavern_mode = excluded.cavern_mode,
+            cavern_set_a = excluded.cavern_set_a,
+            cavern_set_b = excluded.cavern_set_b,
+            planar_set_id = excluded.planar_set_id,
+            main_stats_json = excluded.main_stats_json,
+            effective_substats_json = excluded.effective_substats_json,
+            updated_at = excluded.updated_at",
+        params![
+            plan.character_id,
+            plan.cavern_mode,
+            plan.cavern_set_a,
+            plan.cavern_set_b,
+            plan.planar_set_id,
+            serde_json::to_string(&plan.main_stats)
+                .map_err(|error| AppError::Database(error.to_string()))?,
+            serde_json::to_string(&plan.effective_substats)
+                .map_err(|error| AppError::Database(error.to_string()))?,
+            now_millis()
+        ],
+    )?;
     transaction.execute(
         "DELETE FROM character_build_targets WHERE character_id = ?1",
         [plan.character_id],
@@ -1102,6 +1217,21 @@ fn save_build_plan_in_transaction(
             return Err(AppError::Database("最低标准不能高于目标值".to_owned()));
         }
         transaction.execute("INSERT INTO character_build_targets(character_id,stat_key,target,priority,max_gap,minimum) VALUES(?1,?2,?3,?4,?5,?6)", params![plan.character_id, target.stat_key, target.target, target.priority, target.target - target.minimum, target.minimum])?;
+    }
+    Ok(())
+}
+
+fn apply_build_layouts(
+    transaction: &Transaction<'_>,
+    layouts: &[BuildDashboardLayout],
+) -> Result<(), AppError> {
+    for layout in layouts {
+        transaction.execute(
+            "UPDATE character_build_plans
+             SET display_order = ?1, pinned = ?2
+             WHERE character_id = ?3",
+            params![layout.display_order, layout.pinned, layout.character_id],
+        )?;
     }
     Ok(())
 }
@@ -2194,7 +2324,91 @@ mod tests {
         let entries = store.build_dashboard().unwrap();
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].plan.character_id, 1220);
+        assert_eq!(entries[0].display_order, 0);
+        assert!(!entries[0].pinned);
         assert_eq!(entries[0].character["equippedRelics"][0]["itemId"], 1);
+    }
+
+    #[test]
+    fn build_dashboard_reorders_pins_and_syncs_layout() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[]);
+        snapshot.characters = vec![
+            ImportCharacter {
+                id: 1220,
+                name: "飞霄".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 0,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+            ImportCharacter {
+                id: 1001,
+                name: "三月七".to_owned(),
+                path: "Preservation".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 0,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+        ];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let plan = CharacterBuildPlan {
+            character_id: 1220,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 160.0,
+                priority: 1,
+                minimum: 140.0,
+            }],
+            effective_substats: vec![],
+        };
+        store.save_build_plan(&plan).unwrap();
+        store
+            .save_build_plan(&CharacterBuildPlan {
+                character_id: 1001,
+                ..plan.clone()
+            })
+            .unwrap();
+
+        store.reorder_build_dashboard(&[1001, 1220]).unwrap();
+        store.set_build_dashboard_pinned(1220, true).unwrap();
+        let entries = store.build_dashboard().unwrap();
+        assert_eq!(
+            entries
+                .iter()
+                .map(|entry| entry.plan.character_id)
+                .collect::<Vec<_>>(),
+            vec![1220, 1001]
+        );
+        assert!(entries[0].pinned);
+        assert_eq!(entries[0].display_order, 1);
+
+        let synced = store.sync_snapshot().unwrap();
+        store.replace_with_sync_snapshot(synced).unwrap();
+        let restored = store.build_dashboard().unwrap();
+        assert_eq!(
+            restored
+                .iter()
+                .map(|entry| entry.plan.character_id)
+                .collect::<Vec<_>>(),
+            vec![1220, 1001]
+        );
+        assert!(restored[0].pinned);
+        assert_eq!(restored[0].display_order, 1);
     }
 
     #[test]
@@ -2920,6 +3134,23 @@ mod tests {
         let mut snapshot = store.sync_snapshot().unwrap();
         snapshot.format_version += 1;
         assert!(store.replace_with_sync_snapshot(snapshot).is_err());
+        assert_eq!(store.summary().unwrap().relics, 1);
+    }
+
+    #[test]
+    fn sync_snapshot_accepts_layoutless_legacy_version() {
+        let store = InventoryStore::test_store();
+        store
+            .apply_full_snapshot(&import(10001, &[1]))
+            .unwrap()
+            .unwrap();
+        let mut snapshot = store.sync_snapshot().unwrap();
+        snapshot.format_version = LEGACY_SYNC_FORMAT_VERSION;
+        snapshot.build_layouts.clear();
+
+        store.clear(None).unwrap();
+        store.replace_with_sync_snapshot(snapshot).unwrap();
+
         assert_eq!(store.summary().unwrap().relics, 1);
     }
 

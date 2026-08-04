@@ -243,6 +243,23 @@ pub fn get_build_dashboard(
 }
 
 #[tauri::command]
+pub fn reorder_build_dashboard(
+    character_ids: Vec<u32>,
+    store: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
+    store.reorder_build_dashboard(&character_ids)
+}
+
+#[tauri::command]
+pub fn set_build_dashboard_pinned(
+    character_id: u32,
+    pinned: bool,
+    store: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
+    store.set_build_dashboard_pinned(character_id, pinned)
+}
+
+#[tauri::command]
 pub fn list_relic_set_recommended_characters(
     set_id: u32,
     store: State<'_, InventoryStore>,

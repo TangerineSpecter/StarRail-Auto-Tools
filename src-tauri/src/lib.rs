@@ -54,6 +54,8 @@ pub fn run() {
             commands::list_relic_sets,
             commands::get_character_build_plan,
             commands::get_build_dashboard,
+            commands::reorder_build_dashboard,
+            commands::set_build_dashboard_pinned,
             commands::list_relic_set_recommended_characters,
             commands::save_character_build_plan,
             commands::delete_character_build_plan,

@@ -206,6 +206,8 @@ export interface BuildPlanExcelImportResult {
 export interface BuildDashboardEntry {
   plan: CharacterBuildPlan;
   character: BuildDashboardCharacter;
+  displayOrder: number;
+  pinned: boolean;
 }
 
 /** A character whose saved build plan targets a relic or planar ornament set. */

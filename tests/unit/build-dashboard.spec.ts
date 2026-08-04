@@ -5,10 +5,20 @@ import BuildDashboard from "@/features/build-planner/BuildDashboard.vue";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import type { BuildDashboardEntry } from "@/types";
 
-const { dashboard } = vi.hoisted(() => ({ dashboard: vi.fn() }));
+const { dashboard, reorderDashboard, setDashboardPinned } = vi.hoisted(() => ({
+  dashboard: vi.fn(),
+  reorderDashboard: vi.fn(),
+  setDashboardPinned: vi.fn(),
+}));
 
 vi.mock("@/shared/api/build-plan", () => ({
-  buildPlanApi: { dashboard, exportExcel: vi.fn(), importExcel: vi.fn() },
+  buildPlanApi: {
+    dashboard,
+    reorderDashboard,
+    setDashboardPinned,
+    exportExcel: vi.fn(),
+    importExcel: vi.fn(),
+  },
 }));
 
 const entry: BuildDashboardEntry = {
@@ -30,6 +40,8 @@ const entry: BuildDashboardEntry = {
     equippedLightCone: { templateId: 23000, level: 80, ascension: 6 },
     equippedRelics: [],
   },
+  displayOrder: 0,
+  pinned: false,
 };
 
 describe("BuildDashboard", () => {
@@ -52,6 +64,7 @@ describe("BuildDashboard", () => {
     await wrapper.get(".build-target-edit").trigger("click");
 
     expect(wrapper.get(".build-target-edit").text()).toContain("编辑目标");
+    expect(wrapper.get(".build-drag-handle").attributes("disabled")).toBeUndefined();
     expect(wrapper.get(".recommended-set-status").text()).toBe("×");
     expect(wrapper.emitted("editBuild")).toEqual([[1005]]);
   });
@@ -92,5 +105,23 @@ describe("BuildDashboard", () => {
     expect(wrapper.findAll(".recommended-set-status").every((item) => item.text() === "✓")).toBe(
       true,
     );
+  });
+
+  it("toggles the selected character pin state", async () => {
+    dashboard.mockResolvedValueOnce([entry]).mockResolvedValueOnce([{ ...entry, pinned: true }]);
+    setDashboardPinned.mockResolvedValue(undefined);
+    const wrapper = mount(BuildDashboard, {
+      global: {
+        provide: { [runtimeContextKey as symbol]: { notice: ref("") } },
+        stubs: { InputText: true, Select: true },
+      },
+    });
+
+    await flushPromises();
+    await wrapper.get(".build-pin-toggle").trigger("click");
+    await flushPromises();
+
+    expect(setDashboardPinned).toHaveBeenCalledWith(1005, true);
+    expect(wrapper.get(".build-pin-toggle").attributes("aria-pressed")).toBe("true");
   });
 });

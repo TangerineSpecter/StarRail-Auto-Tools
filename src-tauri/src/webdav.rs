@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     error::AppError,
     inventory::{
-        SyncBuildPlansFile, SyncInventoryFile, SyncManifest, SyncSnapshot, SYNC_FORMAT_VERSION,
+        supports_sync_format_version, SyncBuildPlansFile, SyncInventoryFile, SyncManifest,
+        SyncSnapshot, SYNC_FORMAT_VERSION,
     },
 };
 
@@ -176,6 +177,7 @@ pub async fn upload_snapshot(
     let build_plans = SyncBuildPlansFile {
         format_version: SYNC_FORMAT_VERSION,
         build_plans: snapshot.build_plans,
+        build_layouts: snapshot.build_layouts,
     };
     let manifest = SyncManifest {
         format_version: SYNC_FORMAT_VERSION,
@@ -195,7 +197,7 @@ pub async fn download_snapshot(settings: &WebDavSettings) -> Result<SyncSnapshot
         &download_file(settings, MANIFEST_FILE).await?,
         MANIFEST_FILE,
     )?;
-    if manifest.format_version != SYNC_FORMAT_VERSION {
+    if !supports_sync_format_version(manifest.format_version) {
         return Err(AppError::WebDav(format!(
             "不支持的同步数据版本：{}",
             manifest.format_version
@@ -222,6 +224,7 @@ pub async fn download_snapshot(settings: &WebDavSettings) -> Result<SyncSnapshot
         source: manifest.source,
         inventory: inventory.inventory,
         build_plans: build_plans.build_plans,
+        build_layouts: build_plans.build_layouts,
     })
 }
 

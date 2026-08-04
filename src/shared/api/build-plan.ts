@@ -11,6 +11,10 @@ export const buildPlanApi = {
   get: (characterId: number) =>
     invoke<CharacterBuildPlan | null>("get_character_build_plan", { characterId }),
   dashboard: () => invoke<BuildDashboardEntry[]>("get_build_dashboard"),
+  reorderDashboard: (characterIds: number[]) =>
+    invoke<void>("reorder_build_dashboard", { characterIds }),
+  setDashboardPinned: (characterId: number, pinned: boolean) =>
+    invoke<void>("set_build_dashboard_pinned", { characterId, pinned }),
   recommendedCharactersForSet: (setId: number) =>
     invoke<RelicSetRecommendedCharacter[]>("list_relic_set_recommended_characters", { setId }),
   save: (plan: CharacterBuildPlan) => invoke<void>("save_character_build_plan", { plan }),
