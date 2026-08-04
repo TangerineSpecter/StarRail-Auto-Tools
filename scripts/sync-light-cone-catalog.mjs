@@ -111,6 +111,52 @@ function level80BaseStats(levelData) {
   };
 }
 
+/**
+ * Fill skill description placeholders.
+ * `#n[i]%` / `#n[f1]%` are ratio params shown as percent; bare `#n[i]` keeps the raw number.
+ */
+function fillSkillDescription(template, params) {
+  return template.replace(/#(\d+)\[([^\]]+)\](%?)/g, (_, indexText, format, percentMark) => {
+    const param = params[Number(indexText) - 1];
+    if (!Number.isFinite(param)) return "?";
+
+    if (percentMark === "%") {
+      const display = param * 100;
+      if (format === "i") return `${Math.round(display)}%`;
+      if (format.startsWith("f")) {
+        const digits = Number(format.slice(1)) || 0;
+        return `${display.toFixed(digits)}%`;
+      }
+      return `${display}%`;
+    }
+
+    if (format === "i") return String(Math.round(param));
+    if (format.startsWith("f")) {
+      const digits = Number(format.slice(1)) || 0;
+      return param.toFixed(digits);
+    }
+    return String(param);
+  });
+}
+
+function skillFromDetail(skill) {
+  if (!skill?.descHash || !Array.isArray(skill.levelData) || skill.levelData.length === 0) {
+    return null;
+  }
+
+  const levels = [...skill.levelData].sort((left, right) => (left.level ?? 0) - (right.level ?? 0));
+  const template = skill.descHash;
+  const effects = levels.map((level) =>
+    decodeHtml(fillSkillDescription(template, level.params ?? [])),
+  );
+
+  if (!effects.some(Boolean)) return null;
+  return {
+    name: decodeHtml(skill.name ?? ""),
+    effects,
+  };
+}
+
 async function forEachConcurrent(entries, worker, concurrency = 8) {
   let nextIndex = 0;
   await Promise.all(
@@ -150,8 +196,10 @@ await forEachConcurrent(lightCones, async (lightCone) => {
     const detailUrl = new URL(`/cn/lightcone/${lightCone.id}`, sourceUrl).toString();
     const detailConfig = parsePageConfig(await (await fetchOrThrow(detailUrl)).text());
     lightCone.baseStats = level80BaseStats(detailConfig.levelData);
+    const skill = skillFromDetail(detailConfig.skill);
+    if (skill) lightCone.skill = skill;
   } catch (error) {
-    throw new Error(`无法同步光锥「${lightCone.name}」的 80 级基础属性：${error.message}`);
+    throw new Error(`无法同步光锥「${lightCone.name}」的详情：${error.message}`);
   }
 });
 

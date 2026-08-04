@@ -347,6 +347,21 @@
   font-size: 19px;
   font-variant-numeric: tabular-nums;
 }
+.lightcone-skill-effect {
+  margin: 10px 0 0;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.lightcone-standing-bonuses {
+  margin: 8px 0 0;
+  color: var(--blue);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.lightcone-standing-bonuses.muted {
+  color: var(--muted);
+}
 .standing-stat-section {
   position: relative;
   overflow: hidden;

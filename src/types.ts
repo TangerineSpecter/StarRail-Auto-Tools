@@ -236,6 +236,7 @@ export interface BuildDashboardLightCone {
   templateId: number;
   level: number;
   ascension: number;
+  superimposition?: number;
 }
 
 export interface BuildDashboardCharacter {
@@ -300,6 +301,12 @@ export interface CharacterCatalogue {
   source: { name: string; url: string; syncedAt: string | null };
   characters: CharacterCatalogueEntry[];
 }
+export interface LightConeSkill {
+  name: string;
+  /** 叠影 1–5 对应的技能描述（已填入数值）。 */
+  effects: string[];
+}
+
 export interface LightConeCatalogueEntry {
   id: number;
   name: string;
@@ -311,6 +318,8 @@ export interface LightConeCatalogueEntry {
     attack: number;
     defense: number;
   };
+  /** 光锥技能与各叠影效果文案，用于展示和无条件站街加成解析。 */
+  skill?: LightConeSkill;
   image: string | null;
 }
 export interface LightConeCatalogue {

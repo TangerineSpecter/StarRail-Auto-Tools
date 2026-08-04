@@ -5,6 +5,7 @@ import {
   calculateStandingStats,
   formatStandingStat,
   isMaxStandingEquipment,
+  lightConeSkillEffect,
 } from "@/shared/utils/standing-stats";
 import {
   loadDisabledTraceNodes,
@@ -41,11 +42,13 @@ const standingStats = computed(() => {
   if (!base) return { available: false, reason: "该角色的满级基础属性尚未同步。", stats: [] };
   if (!lightCone)
     return { available: false, reason: "未装备光锥，无法汇总完整站街属性。", stats: [] };
-  const lightConeBase = lightConeById.get(lightCone.templateId)?.baseStats;
+  const lightConeEntry = lightConeById.get(lightCone.templateId);
+  const lightConeBase = lightConeEntry?.baseStats;
   if (!lightConeBase)
     return { available: false, reason: "该光锥的满级基础属性尚未同步。", stats: [] };
   if (!isMaxStandingEquipment(props.detail, lightCone))
     return { available: false, reason: "角色与已装备光锥需均为 Lv.80、满突破后展示。", stats: [] };
+  const lightConeEffect = lightConeSkillEffect(lightConeEntry?.skill, lightCone.superimposition);
   return {
     available: true,
     reason: "",
@@ -55,6 +58,7 @@ const standingStats = computed(() => {
       relics: props.detail.equippedRelics ?? [],
       traces: selectedTraces.value,
       setEffects: staticSetEffects.value,
+      lightConeEffects: lightConeEffect ? [lightConeEffect] : [],
     }),
   };
 });
@@ -114,7 +118,9 @@ function toggleTrace(id: number) {
         </div>
       </div>
       <p v-else class="standing-stat-unavailable">{{ standingStats.reason }}</p>
-      <footer>已计入基础属性、光锥三围、遗器主/副属性、无条件 2 件套与当前勾选行迹。</footer>
+      <footer>
+        已计入基础属性、光锥三围、光锥无条件技能加成、遗器主/副属性、无条件 2 件套与当前勾选行迹。
+      </footer>
     </section>
     <section class="character-data-section">
       <header>

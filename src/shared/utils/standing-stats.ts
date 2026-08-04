@@ -16,6 +16,8 @@ export type StandingStatsInput = {
   relics: EquippedRelicForStats[];
   traces: StaticStatValue[];
   setEffects?: string[];
+  /** 已装备光锥在当前叠影下的技能描述（仅解析无条件站街加成）。 */
+  lightConeEffects?: string[];
 };
 
 export type StandingStat = {
@@ -162,15 +164,57 @@ const setStatPatterns: Array<{ pattern: RegExp; key: string }> = [
   },
 ];
 
+/** Clauses that start combat/conditional triggers are not free standing bonuses. */
+function isConditionalClause(clause: string): boolean {
+  const text = clause.trim().replace(/^(?:并|且|同时|又)/u, "");
+  if (!text) return false;
+  if (/^(?:使)?在/u.test(text)) return true;
+  if (/^(?:当|若|每有|每次|场上|进入战斗|战斗开始)/u.test(text)) return true;
+  if (/后$/u.test(text) && /(?:消灭|击破|受到|击中|施放|攻击)/u.test(text)) return true;
+  if (/时$/u.test(text) && /(?:施放|击中|受到|攻击|进入|提供治疗)/u.test(text)) return true;
+  if (/^(?:使)?装备者对/u.test(text) || /^对/u.test(text)) return true;
+  return false;
+}
+
+function normalizeEffectClause(clause: string): string {
+  return clause
+    .trim()
+    .replace(/^(?:并|且|同时|又)/u, "")
+    .trim();
+}
+
+/**
+ * Parse unconditional standing bonuses from set/light-cone effect text.
+ * Collects consecutive leading stat grants and stops at the first combat condition.
+ */
 export function staticSetStats(effects: string[]): StaticStatValue[] {
   return effects.flatMap((effect) => {
-    const leadingClause = effect.trim().split(/[。；，]/u, 1)[0] ?? "";
-    const definition = setStatPatterns.find(({ pattern }) => pattern.test(leadingClause));
-    if (!definition) return [];
+    const stats: StaticStatValue[] = [];
+    for (const rawClause of effect.trim().split(/[。；，]/u)) {
+      const clause = rawClause.trim();
+      if (!clause) continue;
+      if (isConditionalClause(clause)) break;
 
-    const value = Number(leadingClause.match(definition.pattern)?.[1]);
-    return Number.isFinite(value) ? [{ key: definition.key, value: value / 100 }] : [];
+      const normalized = normalizeEffectClause(clause);
+      const definition = setStatPatterns.find(({ pattern }) => pattern.test(normalized));
+      if (!definition) continue;
+
+      const value = Number(normalized.match(definition.pattern)?.[1]);
+      if (Number.isFinite(value)) stats.push({ key: definition.key, value: value / 100 });
+    }
+    return stats;
   });
+}
+
+/** Resolve the skill description for a light cone at the given superimposition (1–5). */
+export function lightConeSkillEffect(
+  skill: { effects: string[] } | null | undefined,
+  superimposition: number | null | undefined,
+): string | undefined {
+  const effects = skill?.effects;
+  if (!effects?.length) return undefined;
+  const rank = Math.min(Math.max(superimposition ?? 1, 1), effects.length);
+  return effects[rank - 1] || undefined;
 }
 
 function addStaticSetConversions(accumulator: Accumulator, effects: string[]) {
@@ -218,8 +262,9 @@ export function calculateStandingStats(input: StandingStatsInput): StandingStat[
     }
   }
   for (const trace of input.traces) addTraceStat(accumulator, trace);
-  for (const stat of staticSetStats(input.setEffects ?? [])) addTraceStat(accumulator, stat);
-  addStaticSetConversions(accumulator, input.setEffects ?? []);
+  const passiveEffects = [...(input.setEffects ?? []), ...(input.lightConeEffects ?? [])];
+  for (const stat of staticSetStats(passiveEffects)) addTraceStat(accumulator, stat);
+  addStaticSetConversions(accumulator, passiveEffects);
 
   const baseHp = input.characterBase.hp + input.lightConeBase.hp;
   const baseAttack = input.characterBase.attack + input.lightConeBase.attack;

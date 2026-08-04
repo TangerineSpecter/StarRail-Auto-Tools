@@ -6,7 +6,11 @@ import { buildPlanApi } from "@/shared/api/build-plan";
 import { statLabel } from "@/shared/catalogue/relic-options";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import { loadDisabledTraceNodes, traceNodeEnabled } from "@/shared/utils/trace-settings";
-import { calculateStandingStats, isMaxStandingEquipment } from "@/shared/utils/standing-stats";
+import {
+  calculateStandingStats,
+  isMaxStandingEquipment,
+  lightConeSkillEffect,
+} from "@/shared/utils/standing-stats";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
 import {
   buildTargetProgress,
@@ -72,8 +76,8 @@ function dashboardState(entry: BuildDashboardEntry) {
   const character = entry.character;
   const catalogue = characters.characters.find((item) => item.name === character.name);
   const cone = character.equippedLightCone;
-  const coneBase =
-    cone && lightCones.lightCones.find((item) => item.id === cone.templateId)?.baseStats;
+  const coneEntry = cone && lightCones.lightCones.find((item) => item.id === cone.templateId);
+  const coneBase = coneEntry?.baseStats;
   if (!catalogue?.baseStats)
     return { available: false, reason: "该角色的满级基础属性尚未同步。", stats: [] };
   if (!cone) return { available: false, reason: "未装备光锥，无法汇总完整站街属性。", stats: [] };
@@ -87,6 +91,7 @@ function dashboardState(entry: BuildDashboardEntry) {
     .filter((set) => (pieceCounts.get(set.id) ?? 0) >= 2)
     .map((set) => set.effects.twoPiece)
     .filter(Boolean);
+  const lightConeEffect = lightConeSkillEffect(coneEntry?.skill, cone.superimposition);
   return {
     available: true,
     reason: "",
@@ -98,6 +103,7 @@ function dashboardState(entry: BuildDashboardEntry) {
         .filter((trace) => traceNodeEnabled(disabledTraceNodes, character.characterId, trace.id))
         .flatMap((trace) => trace.stats),
       setEffects,
+      lightConeEffects: lightConeEffect ? [lightConeEffect] : [],
     }),
   };
 }

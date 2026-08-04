@@ -2,6 +2,7 @@ export {
   calculateStandingStats,
   formatStandingStat,
   isMaxStandingEquipment,
+  lightConeSkillEffect,
   staticSetStats,
   type EquippedRelicForStats,
   type StandingStat,
