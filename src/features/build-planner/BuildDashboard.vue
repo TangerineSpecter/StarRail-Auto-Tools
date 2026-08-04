@@ -460,11 +460,12 @@ defineExpose({ reload: loadDashboard });
   color: var(--muted);
 }
 .build-dashboard-tools {
+  position: relative;
   display: flex;
   gap: 8px;
   align-items: center;
   flex: 0 1 auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
 }
 .build-dashboard-tools :deep(.p-inputtext) {
@@ -474,9 +475,12 @@ defineExpose({ reload: loadDashboard });
   width: 150px;
 }
 .build-sort-hint {
-  flex-basis: 100%;
+  position: absolute;
+  right: 0;
+  bottom: 0;
   color: #6b84a4;
   font-size: 10px;
+  white-space: nowrap;
   text-align: right;
 }
 .build-plan-transfer-actions {
