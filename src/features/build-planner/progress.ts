@@ -63,11 +63,15 @@ export function effectiveSubstatCounts(
   for (const relic of relics) {
     for (const stat of relic.substats ?? []) {
       if (stat.kind === "normal" && selected.has(stat.key)) {
-        counts.set(stat.key, (counts.get(stat.key) ?? 0) + stat.count);
+        // The importer keeps the initial substat roll in `count`; only rolls
+        // after the substat was generated are enhancement hits.
+        counts.set(stat.key, (counts.get(stat.key) ?? 0) + Math.max(0, stat.count - 1));
       }
     }
   }
-  return [...counts.entries()].map(([key, count]) => ({ key, count }));
+  return [...counts.entries()]
+    .filter(([, count]) => count > 0)
+    .map(([key, count]) => ({ key, count }));
 }
 
 export function relicPieceCounts(relics: Array<{ setId: number }>): Map<number, number> {

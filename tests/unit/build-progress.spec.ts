@@ -30,14 +30,14 @@ describe("buildTargetProgress", () => {
         [
           {
             substats: [
-              { kind: "normal", key: "SPD", count: 3 },
+              { kind: "normal", key: "SPD", count: 4 },
               { kind: "reroll", key: "SPD", count: 2 },
             ],
           },
           {
             substats: [
-              { kind: "normal", key: "CRIT Rate", count: 2 },
-              { kind: "normal", key: "HP", count: 5 },
+              { kind: "normal", key: "CRIT Rate", count: 3 },
+              { kind: "normal", key: "HP", count: 6 },
             ],
           },
         ],
@@ -47,6 +47,23 @@ describe("buildTargetProgress", () => {
       { key: "SPD", count: 3 },
       { key: "CRIT Rate", count: 2 },
     ]);
+  });
+
+  it("does not count the initial roll as an enhancement hit", () => {
+    expect(
+      effectiveSubstatCounts(
+        [
+          {
+            substats: [
+              { kind: "normal", key: "SPD", count: 1 },
+              { kind: "normal", key: "CRIT Rate", count: 6 },
+              { kind: "normal", key: "HP", count: 0 },
+            ],
+          },
+        ],
+        ["SPD", "CRIT Rate", "HP"],
+      ),
+    ).toEqual([{ key: "CRIT Rate", count: 5 }]);
   });
 
   it("finds the lowest progress without forcing it to zero", () => {
