@@ -31,7 +31,8 @@ describe("buildTargetProgress", () => {
     expect(progress[1].percent).toBeCloseTo(115, 4);
   });
 
-  it("counts only configured normal equipped substats", () => {
+  it("counts only configured normal equipped substats as total rolls", () => {
+    // Live mode (no zero counts): count already includes the initial line.
     expect(
       effectiveSubstatCounts(
         [
@@ -51,13 +52,14 @@ describe("buildTargetProgress", () => {
         ["SPD", "CRIT Rate"],
       ),
     ).toEqual([
-      { key: "SPD", count: 3 },
-      { key: "CRIT Rate", count: 2 },
+      { key: "SPD", count: 4 },
+      { key: "CRIT Rate", count: 3 },
     ]);
   });
 
-  it("does not count the initial roll as an enhancement hit", () => {
+  it("counts unenhanced wanted lines as 1 effective roll (not enhancement hits)", () => {
     // Live inventory: count is total rolls including initial (never 0 on a real line).
+    // Graduation “有效词条” must include the base roll; inventory badges still use count − 1.
     expect(
       effectiveSubstatCounts(
         [
@@ -71,10 +73,14 @@ describe("buildTargetProgress", () => {
         ],
         ["SPD", "CRIT Rate", "HP"],
       ),
-    ).toEqual([{ key: "CRIT Rate", count: 5 }]);
+    ).toEqual([
+      { key: "SPD", count: 1 },
+      { key: "CRIT Rate", count: 6 },
+      { key: "HP", count: 1 },
+    ]);
   });
 
-  it("uses legacy enhancement-hit counts when any line is 0", () => {
+  it("adds +1 when legacy data stores enhancement hits (any line is 0)", () => {
     expect(
       effectiveSubstatCounts(
         [
@@ -87,7 +93,10 @@ describe("buildTargetProgress", () => {
         ],
         ["SPD", "CRIT Rate"],
       ),
-    ).toEqual([{ key: "CRIT Rate", count: 2 }]);
+    ).toEqual([
+      { key: "SPD", count: 1 },
+      { key: "CRIT Rate", count: 3 },
+    ]);
   });
 
   it("finds the lowest progress without forcing it to zero", () => {

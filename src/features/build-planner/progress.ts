@@ -1,5 +1,5 @@
 import {
-  enhancementHitsOnLine,
+  totalRollsOnLine,
   usesEnhancementHitCount,
 } from "@/shared/utils/relic-score";
 import type { BuildTarget } from "@/types";
@@ -64,6 +64,13 @@ export function lowestTargetPercent(targets: Array<Pick<TargetProgress, "percent
   return Math.min(...targets.map((target) => target.percent ?? 0));
 }
 
+/**
+ * Aggregate effective substat **roll counts** on equipped relics.
+ *
+ * Uses total rolls (initial line + upgrades), not enhancement-hit badges.
+ * Unenhanced wanted lines still count as 1 (e.g. base SPD with no +N).
+ * Inventory UI continues to show enhancement hits via `enhancementHitsOnLine` (count − 1).
+ */
 export function effectiveSubstatCounts(
   relics: Array<{ substats?: Array<{ kind: string; key: string; count: number }> }>,
   effectiveSubstats: string[],
@@ -74,9 +81,8 @@ export function effectiveSubstatCounts(
     const enhancementHits = usesEnhancementHitCount(relic.substats);
     for (const stat of relic.substats ?? []) {
       if (stat.kind === "normal" && selected.has(stat.key)) {
-        // Same live/legacy convention as Stat Score and relic hit badges.
-        const hits = enhancementHitsOnLine(stat, { enhancementHits });
-        counts.set(stat.key, (counts.get(stat.key) ?? 0) + hits);
+        const rolls = totalRollsOnLine(stat, { enhancementHits });
+        counts.set(stat.key, (counts.get(stat.key) ?? 0) + rolls);
       }
     }
   }
