@@ -547,7 +547,50 @@ defineExpose({ reload: loadDashboard });
         </header>
 
         <div class="build-card-body">
-          <div class="build-card-column">
+          <div class="build-card-main">
+            <div class="build-card-equipment">
+              <div class="build-card-section light-cone-section">
+                <h4 class="section-title">当前光锥</h4>
+                <div
+                  v-if="card.equippedLightCone"
+                  class="equipped-light-cone"
+                  :aria-label="`${card.equippedLightCone.name} Lv.${card.equippedLightCone.level} 叠影${card.equippedLightCone.superimposition}`"
+                >
+                  <img
+                    v-if="card.equippedLightCone.image"
+                    :src="card.equippedLightCone.image"
+                    :alt="card.equippedLightCone.name"
+                  />
+                  <span v-else class="equipped-light-cone-fallback">光</span>
+                  <p>
+                    <b>{{ card.equippedLightCone.name }}</b>
+                    <em
+                      >Lv.{{ card.equippedLightCone.level }} · 叠影
+                      {{ card.equippedLightCone.superimposition }}</em
+                    >
+                  </p>
+                </div>
+                <p v-else class="equipped-light-cone empty muted">未装备光锥</p>
+              </div>
+
+              <div class="build-card-section sets-section">
+                <h4 class="section-title">遗器套装状态</h4>
+                <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
+                  <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
+                  <span v-else class="recommended-set-fallback">遗</span>
+                  <p>
+                    {{ item.set.name }}
+                    <b>{{ item.pieces }}件</b>
+                  </p>
+                  <span
+                    :class="['recommended-set-status', { matched: item.matched }]"
+                    role="img"
+                    :aria-label="item.matched ? `${item.set.name}已装备${item.pieces}件` : `${item.set.name}未装备${item.pieces}件`"
+                  >{{ item.matched ? "✓" : "×" }}</span>
+                </div>
+              </div>
+            </div>
+
             <div class="build-card-section progress-section">
               <h4 class="section-title">属性目标进度</h4>
               <div
@@ -569,61 +612,9 @@ defineExpose({ reload: loadDashboard });
                 </small>
               </div>
             </div>
-
-            <div class="build-card-section affix-section">
-              <h4 class="section-title">有效词条分布</h4>
-              <div class="affix-tags">
-                <template v-if="card.effective.length">
-                  <div v-for="item in card.effective" :key="item.key" class="affix-tag">
-                    <span class="affix-name">{{ statLabel(item.key).replace("百分比", "%") }}</span>
-                    <span class="affix-val">{{ item.count }}</span>
-                  </div>
-                </template>
-                <span v-else class="muted">暂无命中词条</span>
-              </div>
-            </div>
           </div>
 
-          <div class="build-card-column">
-            <div class="build-card-section sets-section">
-              <h4 class="section-title">当前光锥</h4>
-              <div
-                v-if="card.equippedLightCone"
-                class="equipped-light-cone"
-                :aria-label="`${card.equippedLightCone.name} Lv.${card.equippedLightCone.level} 叠影${card.equippedLightCone.superimposition}`"
-              >
-                <img
-                  v-if="card.equippedLightCone.image"
-                  :src="card.equippedLightCone.image"
-                  :alt="card.equippedLightCone.name"
-                />
-                <span v-else class="equipped-light-cone-fallback">光</span>
-                <p>
-                  <b>{{ card.equippedLightCone.name }}</b>
-                  <em
-                    >Lv.{{ card.equippedLightCone.level }} · 叠影
-                    {{ card.equippedLightCone.superimposition }}</em
-                  >
-                </p>
-              </div>
-              <p v-else class="equipped-light-cone empty muted">未装备光锥</p>
-
-              <h4 class="section-title sets-status-title">遗器套装状态</h4>
-              <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
-                <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
-                <span v-else class="recommended-set-fallback">遗</span>
-                <p>
-                  {{ item.set.name }}
-                  <b>{{ item.pieces }}件</b>
-                </p>
-                <span
-                  :class="['recommended-set-status', { matched: item.matched }]"
-                  role="img"
-                  :aria-label="item.matched ? `${item.set.name}已装备${item.pieces}件` : `${item.set.name}未装备${item.pieces}件`"
-                >{{ item.matched ? "✓" : "×" }}</span>
-              </div>
-            </div>
-
+          <div class="build-card-side">
             <div class="build-card-section quality-section">
               <h4 class="section-title">部位合格状况</h4>
               <div class="quality-visuals">
@@ -659,6 +650,19 @@ defineExpose({ reload: loadDashboard });
                     >{{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
                   >
                 </div>
+              </div>
+            </div>
+
+            <div class="build-card-section affix-section">
+              <h4 class="section-title">有效词条分布</h4>
+              <div class="affix-tags">
+                <template v-if="card.effective.length">
+                  <div v-for="item in card.effective" :key="item.key" class="affix-tag">
+                    <span class="affix-name">{{ statLabel(item.key).replace("百分比", "%") }}</span>
+                    <span class="affix-val">{{ item.count }}</span>
+                  </div>
+                </template>
+                <span v-else class="muted">暂无命中词条</span>
               </div>
             </div>
           </div>
@@ -812,7 +816,7 @@ defineExpose({ reload: loadDashboard });
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 1160px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 .build-progress-row {
@@ -903,23 +907,44 @@ defineExpose({ reload: loadDashboard });
 }
 .build-card-body {
   display: grid;
-  grid-template-columns: minmax(300px, 1.35fr) minmax(220px, 1fr) minmax(240px, 1.15fr);
-  gap: 24px 32px;
-  padding: 20px 24px 24px 72px;
+  grid-template-columns: minmax(400px, 1.65fr) minmax(176px, 0.8fr) auto;
+  align-items: stretch;
+  gap: 18px 22px;
+  padding: 18px 22px 22px 72px;
   background: rgba(255, 255, 255, 0.3);
 }
-.build-card-column {
+.build-card-main,
+.build-card-side {
   display: flex;
   flex-direction: column;
-  gap: 24px;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.build-card-main {
+  gap: 14px;
+}
+.build-card-side {
+  gap: 16px;
+  justify-content: flex-start;
+  padding-top: 2px;
+}
+.build-card-equipment {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 10px 14px;
+  align-items: start;
+  flex: 0 0 auto;
 }
 .build-card-radar-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-  padding: 16px 20px 20px;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 236px;
+  min-width: 236px;
+  height: 100%;
+  padding: 14px 16px 16px;
   border: 1px solid rgba(93, 143, 202, 0.14);
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(244, 248, 253, 0.85), rgba(255, 255, 255, 0.55));
@@ -929,27 +954,39 @@ defineExpose({ reload: loadDashboard });
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  margin: 0 0 14px 0;
+  margin: 0 0 10px 0;
 }
 .progress-section,
+.light-cone-section,
 .sets-section,
 .radar-section,
 .quality-section,
 .affix-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
+}
+.progress-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  justify-content: flex-start;
 }
 .radar-section {
-  align-items: stretch;
-  gap: 8px;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
 }
 .radar-section .section-title {
+  align-self: stretch;
   margin-bottom: 0;
 }
 .quality-section .section-title,
-.affix-section .section-title {
-  margin-bottom: 10px;
+.affix-section .section-title,
+.light-cone-section .section-title,
+.sets-section .section-title {
+  margin-bottom: 8px;
 }
 .build-note-info {
   display: grid;
@@ -1121,14 +1158,13 @@ defineExpose({ reload: loadDashboard });
   align-items: center;
   min-width: 0;
   gap: 10px;
-  margin-bottom: 4px;
   padding: 8px 10px;
   border: 1px solid rgba(93, 143, 202, 0.16);
   border-radius: 10px;
   background: linear-gradient(135deg, rgba(241, 247, 253, 0.95), rgba(255, 255, 255, 0.72));
 }
 .equipped-light-cone.empty {
-  margin: 0 0 4px;
+  margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1173,9 +1209,6 @@ defineExpose({ reload: loadDashboard });
   font-size: 10px;
   font-style: normal;
   font-variant-numeric: tabular-nums;
-}
-.sets-status-title {
-  margin-top: 6px;
 }
 .recommended-set {
   display: flex;
@@ -1239,9 +1272,9 @@ defineExpose({ reload: loadDashboard });
 
 .target-progress-row {
   display: grid;
-  grid-template-columns: minmax(130px, 0.9fr) minmax(80px, 1.35fr) 40px;
+  grid-template-columns: minmax(150px, 0.85fr) minmax(120px, 1.5fr) 40px;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 11px;
 }
 .target-progress-label {
@@ -1421,10 +1454,38 @@ defineExpose({ reload: loadDashboard });
 .dashboard-state.error {
   color: #b04d43;
 }
+@media (max-width: 1100px) {
+  .build-card-body {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr) auto;
+    gap: 16px 16px;
+  }
+  .build-card-radar-panel {
+    width: 220px;
+    min-width: 220px;
+  }
+  .build-card-equipment {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 900px) {
   .build-card-body {
     grid-template-columns: 1fr;
     padding-left: 24px;
+  }
+  .build-card-main,
+  .build-card-side,
+  .build-card-radar-panel {
+    width: auto;
+    min-width: 0;
+    height: auto;
+  }
+  .build-card-equipment {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .build-card-equipment {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 760px) {
