@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 9;
+pub(crate) const SCHEMA_VERSION: i64 = 10;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { inventoryApi } from "@/shared/api/inventory";
-import { lightConeById, relicCatalogue } from "@/shared/catalogue";
-import { formatStatValue, slotLabel, statLabel } from "@/shared/catalogue/relic-options";
+import { catalogueCharacterId, lightConeById, relicCatalogue } from "@/shared/catalogue";
+import { formatStatValue, pathLabel, slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import { formatBaseStat } from "@/shared/utils/display";
 import type { CharacterCatalogueEntry } from "@/types";
 import type { CatalogueCharacterEquipment, CatalogueEquippedRelic } from "./equipped-items";
@@ -34,10 +34,14 @@ async function loadEquipment() {
   try {
     const characters = await inventoryApi.listCharacters({
       page: 1,
-      pageSize: 1,
+      pageSize: 20,
       names: [props.character.name],
     });
-    const inventoryCharacter = characters.items[0];
+    const expectedId = catalogueCharacterId(props.character);
+    const inventoryCharacter =
+      characters.items.find((item) => expectedId != null && item.characterId === expectedId) ??
+      characters.items.find((item) => pathLabel(item.path) === props.character.path) ??
+      characters.items[0];
     if (!inventoryCharacter) {
       if (currentRequest === requestId) equipment.value = null;
       return;

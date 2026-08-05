@@ -96,6 +96,14 @@
   font-weight: 600;
 }
 
+.character-path .path-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) opacity(0.72);
+}
+
 .character-name {
   grid-area: name;
   overflow: hidden;

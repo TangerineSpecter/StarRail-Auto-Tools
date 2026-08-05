@@ -110,4 +110,5 @@ export const pathLabel = (path: string): string =>
     Preservation: "存护",
     Abundance: "丰饶",
     Remembrance: "记忆",
+    Elation: "欢愉",
   })[path] ?? path;

@@ -12,5 +12,6 @@ describe("relic display options", () => {
     expect(pathLabel("Hunt")).toBe("巡猎");
     expect(pathLabel("Destruction")).toBe("毁灭");
     expect(pathLabel("Remembrance")).toBe("记忆");
+    expect(pathLabel("Elation")).toBe("欢愉");
   });
 });

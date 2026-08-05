@@ -16,7 +16,7 @@ use super::build_plan_excel::{self, ExportRow};
 use super::models::*;
 use super::{
     canonical_character_name, canonical_light_cone_name, canonical_relic_name, character_rarity,
-    location_id, normalize_import, normalize_main_stat, normalize_slot,
+    normalize_import, normalize_main_stat, normalize_slot, resolve_equipped_character_id,
 };
 use crate::error::AppError;
 
@@ -520,10 +520,10 @@ impl InventoryStore {
             )
             .optional()?
             .ok_or_else(|| AppError::Database("角色不存在".to_owned()))?;
-        let current = load_equipped_build_relics(&connection, &character_name)?;
+        let current = load_equipped_build_relics(&connection, request.character_id)?;
         let current_progress = progress_for(&plan.targets, &current);
         let candidates = build_candidates(&connection, &plan, request.include_equipped)?;
-        let recommended = choose_build(&plan, candidates, &character_name);
+        let recommended = choose_build(&plan, candidates, request.character_id);
         let recommended_progress = recommended
             .as_ref()
             .map(|items| progress_for(&plan.targets, items));
@@ -537,7 +537,7 @@ impl InventoryStore {
             recommended: recommended.map(|items| {
                 items
                     .into_iter()
-                    .map(|item| item.into_choice(&character_name))
+                    .map(|item| item.into_choice(request.character_id, &character_name))
                     .collect()
             }),
             recommended_progress,
@@ -1297,8 +1297,9 @@ fn apply_build_layouts(
 
 fn normalize_existing_records(connection: &Connection) -> Result<(), AppError> {
     let relic_rows = {
-        let mut statement =
-            connection.prepare("SELECT item_id, set_id, slot, main_stat, location FROM relics")?;
+        let mut statement = connection.prepare(
+            "SELECT item_id, set_id, slot, main_stat, location, equipped_character_id FROM relics",
+        )?;
         let rows = statement
             .query_map([], |row| {
                 Ok((
@@ -1307,45 +1308,48 @@ fn normalize_existing_records(connection: &Connection) -> Result<(), AppError> {
                     row.get::<_, String>(2)?,
                     row.get::<_, String>(3)?,
                     row.get::<_, String>(4)?,
+                    row.get::<_, Option<u32>>(5)?,
                 ))
             })?
             .collect::<Result<Vec<_>, _>>()?;
         rows
     };
-    for (id, set_id, slot, main_stat, location) in relic_rows {
+    for (id, set_id, slot, main_stat, location, existing_equipped_id) in relic_rows {
         let slot = normalize_slot(&slot);
         let main_stat = normalize_main_stat(slot, &main_stat);
-        let location_id = location_id(&location);
-        let location = location_id
+        let equipped_id = resolve_equipped_character_id(&location, existing_equipped_id);
+        let location = equipped_id
             .and_then(canonical_character_name)
             .unwrap_or(&location);
         connection.execute(
             "UPDATE relics SET name = COALESCE(?2, name), set_name = COALESCE(?2, set_name), slot = ?3, main_stat = ?4, location = ?5, equipped_character_id = ?6 WHERE item_id = ?1",
-            params![id, canonical_relic_name(set_id), slot, main_stat, location, location_id],
+            params![id, canonical_relic_name(set_id), slot, main_stat, location, equipped_id],
         )?;
     }
     let cone_rows = {
-        let mut statement =
-            connection.prepare("SELECT item_id, template_id, location FROM light_cones")?;
+        let mut statement = connection.prepare(
+            "SELECT item_id, template_id, location, equipped_character_id FROM light_cones",
+        )?;
         let rows = statement
             .query_map([], |row| {
                 Ok((
                     row.get::<_, u32>(0)?,
                     row.get::<_, u32>(1)?,
                     row.get::<_, String>(2)?,
+                    row.get::<_, Option<u32>>(3)?,
                 ))
             })?
             .collect::<Result<Vec<_>, _>>()?;
         rows
     };
-    for (id, template_id, location) in cone_rows {
-        let location_id = location_id(&location);
-        let location = location_id
+    for (id, template_id, location, existing_equipped_id) in cone_rows {
+        let equipped_id = resolve_equipped_character_id(&location, existing_equipped_id);
+        let location = equipped_id
             .and_then(canonical_character_name)
             .unwrap_or(&location);
         connection.execute(
             "UPDATE light_cones SET name = COALESCE(?2, name), location = ?3, equipped_character_id = ?4 WHERE item_id = ?1",
-            params![id, canonical_light_cone_name(template_id), location, location_id],
+            params![id, canonical_light_cone_name(template_id), location, equipped_id],
         )?;
     }
     let character_rows = {
@@ -1373,18 +1377,23 @@ struct BuildCandidate {
     set_id: u32,
     main_stat: String,
     location: String,
+    equipped_character_id: Option<u32>,
     stats: HashMap<String, f64>,
 }
 
 impl BuildCandidate {
-    fn into_choice(self, character_name: &str) -> BuildRelicChoice {
+    fn into_choice(self, character_id: u32, character_name: &str) -> BuildRelicChoice {
+        let borrowed = match self.equipped_character_id {
+            Some(owner_id) => owner_id != character_id,
+            None => !self.location.is_empty() && self.location != character_name,
+        };
         BuildRelicChoice {
             item_id: self.item_id,
             name: self.name,
             slot: self.slot,
             set_id: self.set_id,
             main_stat: self.main_stat,
-            borrowed: !self.location.is_empty() && self.location != character_name,
+            borrowed,
             location: self.location,
         }
     }
@@ -1400,7 +1409,8 @@ fn load_build_relics(
     let mut statement = connection.prepare(
         &format!(
             "SELECT relics.item_id, relics.name, relics.slot, relics.set_id, relics.main_stat, \
-             relics.main_stat_value, relics.location, relic_substats.stat_key, relic_substats.value \
+             relics.main_stat_value, relics.location, relics.equipped_character_id, \
+             relic_substats.stat_key, relic_substats.value \
              FROM relics \
              LEFT JOIN relic_substats ON relic_substats.relic_id = relics.item_id \
                  AND relic_substats.kind = 'normal' \
@@ -1424,12 +1434,13 @@ fn load_build_relics(
                 set_id: row.get(3)?,
                 main_stat,
                 location: row.get(6)?,
+                equipped_character_id: row.get(7)?,
                 stats,
             });
         }
         if let (Some(key), Some(value)) = (
-            row.get::<_, Option<String>>(7)?,
-            row.get::<_, Option<f64>>(8)?,
+            row.get::<_, Option<String>>(8)?,
+            row.get::<_, Option<f64>>(9)?,
         ) {
             if let Some(item) = items.last_mut() {
                 *item.stats.entry(key).or_default() += value;
@@ -1441,9 +1452,14 @@ fn load_build_relics(
 
 fn load_equipped_build_relics(
     connection: &Connection,
-    character_name: &str,
+    character_id: u32,
 ) -> Result<Vec<BuildCandidate>, AppError> {
-    load_build_relics(connection, "relics.location = ?1", &[&character_name])
+    // Must key by character id — multi-path protagonists share one display name.
+    load_build_relics(
+        connection,
+        "relics.equipped_character_id = ?1",
+        &[&character_id],
+    )
 }
 
 fn build_candidates(
@@ -1506,7 +1522,7 @@ fn progress_for(targets: &[BuildTarget], relics: &[BuildCandidate]) -> Vec<Build
 fn choose_build(
     plan: &CharacterBuildPlan,
     candidates: Vec<BuildCandidate>,
-    character_name: &str,
+    _character_id: u32,
 ) -> Option<Vec<BuildCandidate>> {
     let mut per_slot = BUILD_SLOTS
         .iter()
@@ -1553,7 +1569,6 @@ fn choose_build(
     }
     let mut search = BuildSearch::new(&per_slot, plan);
     search.visit(0, &mut Vec::new(), &mut [0.0; 3]);
-    let _ = character_name;
     search.best.map(|(_, items)| items)
 }
 
@@ -2339,6 +2354,184 @@ mod tests {
         assert_eq!(detail.data["equippedRelics"].as_array().unwrap().len(), 1);
         assert_eq!(detail.data["equippedRelics"][0]["itemId"], 1);
         assert_eq!(detail.data["equippedLightCone"]["templateId"], 23062);
+    }
+
+    #[test]
+    fn multi_path_characters_keep_equipment_isolated_by_character_id() {
+        let store = InventoryStore::test_store();
+        let snapshot = InventoryImport {
+            metadata: ImportMetadata {
+                uid: Some(10001),
+                trailblazer: Some("Stelle".to_owned()),
+            },
+            relics: vec![
+                ImportRelic {
+                    set_id: 101,
+                    name: "毁灭头".to_owned(),
+                    slot: "Head".to_owned(),
+                    rarity: 5,
+                    level: 15,
+                    mainstat: "HP".to_owned(),
+                    substats: Vec::new(),
+                    reroll_substats: None,
+                    preview_substats: None,
+                    location: "8001".to_owned(),
+                    equipped_character_id: None,
+                    lock: true,
+                    discard: false,
+                    _uid: 1,
+                },
+                ImportRelic {
+                    set_id: 101,
+                    name: "存护头".to_owned(),
+                    slot: "Head".to_owned(),
+                    rarity: 5,
+                    level: 15,
+                    mainstat: "HP".to_owned(),
+                    substats: Vec::new(),
+                    reroll_substats: None,
+                    preview_substats: None,
+                    location: "8003".to_owned(),
+                    equipped_character_id: None,
+                    lock: true,
+                    discard: false,
+                    _uid: 2,
+                },
+                ImportRelic {
+                    set_id: 101,
+                    name: "三月巡猎头".to_owned(),
+                    slot: "Head".to_owned(),
+                    rarity: 5,
+                    level: 15,
+                    mainstat: "HP".to_owned(),
+                    substats: Vec::new(),
+                    reroll_substats: None,
+                    preview_substats: None,
+                    location: "1224".to_owned(),
+                    equipped_character_id: None,
+                    lock: true,
+                    discard: false,
+                    _uid: 3,
+                },
+            ],
+            light_cones: vec![
+                ImportLightCone {
+                    id: 20000,
+                    name: "光锥A".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    superimposition: 1,
+                    location: "8001".to_owned(),
+                    equipped_character_id: None,
+                    lock: true,
+                    _uid: 11,
+                },
+                ImportLightCone {
+                    id: 20001,
+                    name: "光锥B".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    superimposition: 1,
+                    location: "8003".to_owned(),
+                    equipped_character_id: None,
+                    lock: true,
+                    _uid: 12,
+                },
+            ],
+            characters: vec![
+                ImportCharacter {
+                    id: 8001,
+                    name: "开拓者".to_owned(),
+                    path: "Destruction".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    eidolon: 6,
+                    skills: json!({}),
+                    traces: json!({}),
+                    memosprite: None,
+                    ability_version: 1,
+                },
+                ImportCharacter {
+                    id: 8003,
+                    name: "开拓者".to_owned(),
+                    path: "Preservation".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    eidolon: 6,
+                    skills: json!({}),
+                    traces: json!({}),
+                    memosprite: None,
+                    ability_version: 1,
+                },
+                ImportCharacter {
+                    id: 1224,
+                    name: "三月七".to_owned(),
+                    path: "Hunt".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    eidolon: 6,
+                    skills: json!({}),
+                    traces: json!({}),
+                    memosprite: None,
+                    ability_version: 1,
+                },
+                ImportCharacter {
+                    id: 1001,
+                    name: "三月七".to_owned(),
+                    path: "Preservation".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    eidolon: 6,
+                    skills: json!({}),
+                    traces: json!({}),
+                    memosprite: None,
+                    ability_version: 1,
+                },
+            ],
+        };
+
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+        // Migration must not collapse multi-path owners onto one id.
+        normalize_existing_records(&store.connect().unwrap()).unwrap();
+
+        let destruction = store.detail(InventoryKind::Character, 8001).unwrap();
+        let preservation = store.detail(InventoryKind::Character, 8003).unwrap();
+        let march_hunt = store.detail(InventoryKind::Character, 1224).unwrap();
+        let march_pres = store.detail(InventoryKind::Character, 1001).unwrap();
+
+        assert_eq!(
+            destruction.data["equippedRelics"].as_array().unwrap().len(),
+            1
+        );
+        assert_eq!(destruction.data["equippedRelics"][0]["itemId"], 1);
+        assert_eq!(destruction.data["equippedLightCone"]["itemId"], 11);
+
+        assert_eq!(
+            preservation.data["equippedRelics"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
+        assert_eq!(preservation.data["equippedRelics"][0]["itemId"], 2);
+        assert_eq!(preservation.data["equippedLightCone"]["itemId"], 12);
+
+        assert_eq!(
+            march_hunt.data["equippedRelics"].as_array().unwrap().len(),
+            1
+        );
+        assert_eq!(march_hunt.data["equippedRelics"][0]["itemId"], 3);
+        assert!(march_pres.data["equippedRelics"]
+            .as_array()
+            .unwrap()
+            .is_empty());
+
+        let relic_a = store.detail(InventoryKind::Relic, 1).unwrap();
+        let relic_b = store.detail(InventoryKind::Relic, 2).unwrap();
+        assert_eq!(relic_a.data["equippedCharacterId"], 8001);
+        assert_eq!(relic_b.data["equippedCharacterId"], 8003);
+        assert_eq!(relic_a.data["location"], "开拓者");
+        assert_eq!(relic_b.data["location"], "开拓者");
     }
 
     #[test]
@@ -3147,11 +3340,12 @@ mod tests {
                     set_id,
                     main_stat: "SPD".to_owned(),
                     location: String::new(),
+                    equipped_character_id: None,
                     stats: HashMap::new(),
                 });
             }
         }
-        let selected = choose_build(&plan, candidates, "测试角色").unwrap();
+        let selected = choose_build(&plan, candidates, 1).unwrap();
         assert_eq!(
             selected[..4]
                 .iter()
@@ -3208,6 +3402,7 @@ mod tests {
                     set_id: if slot_index < 4 { 10 } else { 20 },
                     main_stat: "HP".to_owned(),
                     location: String::new(),
+                    equipped_character_id: None,
                     stats: HashMap::from([
                         ("Break Effect".to_owned(), rank as f64),
                         ("SPD".to_owned(), (7 - rank) as f64),
@@ -3215,7 +3410,7 @@ mod tests {
                 });
             }
         }
-        let selected = choose_build(&plan, candidates, "测试角色").unwrap();
+        let selected = choose_build(&plan, candidates, 1).unwrap();
         let progress = progress_for(&plan.targets, &selected);
         assert_eq!(progress[0].current, 42.0);
         assert_eq!(progress[1].current, 0.0);

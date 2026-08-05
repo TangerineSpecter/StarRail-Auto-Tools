@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
+import { resolveCharacterCatalogue } from "@/shared/catalogue";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import { summarizeSetTargets } from "./set-target-summary";
 import type {
@@ -26,7 +27,10 @@ let requestId = 0;
 const recommendations = computed(() =>
   recommendedCharacters.value.map((character) => ({
     ...character,
-    catalogue: props.characters.find((item) => item.name === character.name),
+    catalogue: resolveCharacterCatalogue({
+      characterId: character.characterId,
+      name: character.name,
+    }),
   })),
 );
 const targetSummary = computed(() =>

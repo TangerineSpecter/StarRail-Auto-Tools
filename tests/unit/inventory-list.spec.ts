@@ -74,4 +74,45 @@ describe("InventoryList", () => {
     expect(wrapper.get(".character-build-action").classes()).toContain("has-build-plan");
     expect(wrapper.get(".character-stars").text()).toBe("★★★★");
   });
+
+  it("uses path icon assets and resolves multi-path Trailblazer avatars", () => {
+    const trailblazers: CharacterListItem[] = [
+      {
+        ...character,
+        characterId: 8001,
+        name: "开拓者",
+        path: "Destruction",
+        hasBuildPlan: false,
+      },
+      {
+        ...character,
+        characterId: 8003,
+        name: "开拓者",
+        path: "Preservation",
+        hasBuildPlan: false,
+      },
+    ];
+    const wrapper = mount(InventoryList, {
+      props: {
+        kind: "character",
+        items: trailblazers,
+        selectedIds: new Set<number>(),
+        allSelected: false,
+        appending: false,
+        busy: false,
+      },
+    });
+
+    const cards = wrapper.findAll(".character-card");
+    expect(cards).toHaveLength(2);
+    expect(cards[0]!.get(".path-icon").attributes("src")).toBe(
+      "/character-icons/paths/毁灭.webp",
+    );
+    expect(cards[0]!.get(".path-text").text()).toBe("毁灭");
+    expect(cards[0]!.get(".character-card-avatar").attributes("src")).toContain("playerboy");
+    expect(cards[1]!.get(".path-icon").attributes("src")).toBe(
+      "/character-icons/paths/存护.webp",
+    );
+    expect(cards[1]!.get(".character-card-avatar").attributes("src")).toContain("playerboy2");
+  });
 });

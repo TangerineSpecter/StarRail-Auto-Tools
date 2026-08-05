@@ -159,10 +159,16 @@ fn character_names() -> &'static std::collections::HashMap<u32, &'static str> {
             (1506, "银狼LV. 999"),
             (1508, "远坂凛"),
             (1510, "姬子•启行"),
+            // Trailblazer path variants: odd = male, even = female.
+            (8001, "开拓者"),
             (8002, "开拓者"),
+            (8003, "开拓者"),
             (8004, "开拓者"),
+            (8005, "开拓者"),
             (8006, "开拓者"),
+            (8007, "开拓者"),
             (8008, "开拓者"),
+            (8009, "开拓者"),
             (8010, "开拓者"),
         ]
         .into_iter()
@@ -253,12 +259,49 @@ fn normalize_location(
     }
 }
 
+/// Resolve the equipped character id from a location field.
+///
+/// Exporter locations are character ids (`"8006"`, `"1224"`). Name reverse-lookup is
+/// only used for unique names — multi-path protagonists (开拓者 / 三月七) share one
+/// display name across several ids, so an ambiguous name never wins an id.
 pub fn location_id(location: &str) -> Option<u32> {
-    location.parse::<u32>().ok().or_else(|| {
-        character_names()
-            .iter()
-            .find_map(|(id, name)| (*name == location).then_some(*id))
-    })
+    if location.is_empty() {
+        return None;
+    }
+    if let Ok(id) = location.parse::<u32>() {
+        return Some(id);
+    }
+    unique_character_id_by_name(location)
+}
+
+/// Prefer an authoritative numeric location, then a stored id that still matches the
+/// display name (keeps multi-path gear from collapsing during migrations).
+pub fn resolve_equipped_character_id(location: &str, existing: Option<u32>) -> Option<u32> {
+    if location.is_empty() {
+        return None;
+    }
+    if let Ok(id) = location.parse::<u32>() {
+        return Some(id);
+    }
+    if let Some(id) = existing {
+        if canonical_character_name(id) == Some(location) {
+            return Some(id);
+        }
+    }
+    unique_character_id_by_name(location)
+}
+
+fn unique_character_id_by_name(name: &str) -> Option<u32> {
+    let mut ids = character_names()
+        .iter()
+        .filter_map(|(id, canonical)| (*canonical == name).then_some(*id));
+    let first = ids.next()?;
+    if ids.next().is_some() {
+        // Ambiguous multi-path name — never invent a single owner.
+        None
+    } else {
+        Some(first)
+    }
 }
 
 pub fn canonical_relic_name(set_id: u32) -> Option<&'static str> {
@@ -349,6 +392,8 @@ pub fn normalize_main_stat<'a>(slot: &str, key: &'a str) -> &'a str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::inventory::ImportMetadata;
+
     #[test]
     fn normalizes_exporter_values() {
         assert_eq!(normalize_slot("Link Rope"), "LinkRope");
@@ -422,5 +467,111 @@ mod tests {
                 "missing import normalization for {name}",
             );
         }
+    }
+
+    #[test]
+    fn location_id_keeps_numeric_ids_and_rejects_ambiguous_names() {
+        assert_eq!(location_id("8006"), Some(8006));
+        assert_eq!(location_id("1224"), Some(1224));
+        assert_eq!(location_id("1220"), Some(1220));
+        // Unique name still resolves.
+        assert_eq!(location_id("飞霄"), Some(1220));
+        // Multi-path display names must not collapse onto one id.
+        assert_eq!(location_id("开拓者"), None);
+        assert_eq!(location_id("三月七"), None);
+        assert_eq!(location_id(""), None);
+    }
+
+    #[test]
+    fn resolve_equipped_character_id_preserves_multi_path_owners() {
+        assert_eq!(
+            resolve_equipped_character_id("开拓者", Some(8003)),
+            Some(8003)
+        );
+        assert_eq!(
+            resolve_equipped_character_id("三月七", Some(1224)),
+            Some(1224)
+        );
+        assert_eq!(resolve_equipped_character_id("开拓者", None), None);
+        assert_eq!(resolve_equipped_character_id("8001", Some(9999)), Some(8001));
+    }
+
+    #[test]
+    fn import_binds_trailblazer_and_march_equipment_by_id() {
+        let mut import = InventoryImport {
+            metadata: ImportMetadata {
+                uid: None,
+                trailblazer: None,
+            },
+            relics: vec![
+                ImportRelic {
+                    set_id: 101,
+                    name: "r1".to_owned(),
+                    slot: "Head".to_owned(),
+                    rarity: 5,
+                    level: 15,
+                    mainstat: "HP".to_owned(),
+                    substats: Vec::new(),
+                    reroll_substats: None,
+                    preview_substats: None,
+                    location: "8006".to_owned(),
+                    equipped_character_id: None,
+                    lock: false,
+                    discard: false,
+                    _uid: 1,
+                },
+                ImportRelic {
+                    set_id: 101,
+                    name: "r2".to_owned(),
+                    slot: "Head".to_owned(),
+                    rarity: 5,
+                    level: 15,
+                    mainstat: "HP".to_owned(),
+                    substats: Vec::new(),
+                    reroll_substats: None,
+                    preview_substats: None,
+                    location: "1001".to_owned(),
+                    equipped_character_id: None,
+                    lock: false,
+                    discard: false,
+                    _uid: 2,
+                },
+            ],
+            light_cones: Vec::new(),
+            characters: vec![
+                ImportCharacter {
+                    id: 8006,
+                    name: "Trailblazer".to_owned(),
+                    path: "Harmony".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    eidolon: 0,
+                    skills: serde_json::json!({}),
+                    traces: serde_json::json!({}),
+                    memosprite: None,
+                    ability_version: 1,
+                },
+                ImportCharacter {
+                    id: 1001,
+                    name: "March 7th".to_owned(),
+                    path: "Preservation".to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    eidolon: 0,
+                    skills: serde_json::json!({}),
+                    traces: serde_json::json!({}),
+                    memosprite: None,
+                    ability_version: 1,
+                },
+            ],
+        };
+        let report = normalize_import(&mut import);
+        assert!(report.warnings().is_empty());
+        assert_eq!(import.relics[0].equipped_character_id, Some(8006));
+        assert_eq!(import.relics[0].location, "开拓者");
+        assert_eq!(import.relics[1].equipped_character_id, Some(1001));
+        assert_eq!(import.relics[1].location, "三月七");
+        assert_eq!(import.characters[0].name, "开拓者");
+        assert_eq!(import.characters[1].name, "三月七");
     }
 }

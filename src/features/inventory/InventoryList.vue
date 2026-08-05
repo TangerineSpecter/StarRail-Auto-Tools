@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
-import { characterByName, lightConeById, relicImage } from "@/shared/catalogue";
+import {
+  lightConeById,
+  pathIconSrc,
+  relicImage,
+  resolveCharacterCatalogue,
+} from "@/shared/catalogue";
 import {
   enhancementHitsOnLine,
   formatEnhancementHitBadge,
   usesEnhancementHitCount,
 } from "@/shared/utils/relic-score";
-import { formatStatValue, slotLabel, statLabel } from "./options";
+import { formatStatValue, pathLabel, slotLabel, statLabel } from "./options";
 import { inventoryItemId } from "./useInventoryArchive";
 import type {
   CharacterListItem,
@@ -33,17 +38,6 @@ const emit = defineEmits<{
   scroll: [event: Event];
 }>();
 
-const pathLabels: Record<string, string> = {
-  Destruction: "毁灭",
-  Hunt: "巡猎",
-  Erudition: "智识",
-  Harmony: "同谐",
-  Nihility: "虚无",
-  Preservation: "存护",
-  Abundance: "丰饶",
-  Remembrance: "记忆",
-};
-
 /** Dense list: only show hit badge when a line has 3+ enhancement upgrades. */
 function relicSubstatRows(item: RelicListItem) {
   const enhancementHits = usesEnhancementHitCount(item.substats);
@@ -57,25 +51,23 @@ function relicSubstatRows(item: RelicListItem) {
     };
   });
 }
-const pathIcons: Record<string, string> = {
-  Destruction: "⚔",
-  Hunt: "◎",
-  Erudition: "✧",
-  Harmony: "🎵",
-  Nihility: "🌙",
-  Preservation: "⛨",
-  Abundance: "✿",
-  Remembrance: "❄",
-};
 const avatarColors = ["#1ea2e8", "#e84a4a", "#8740e5", "#33b061", "#f0a21d", "#e0427f"];
 const relics = () => props.items as RelicListItem[];
 const lightCones = () => props.items as LightConeListItem[];
 const characters = () => props.items as CharacterListItem[];
-const characterCatalogue = (name: string) => characterByName.get(name);
-const characterAvatar = (name: string) => characterCatalogue(name)?.image ?? undefined;
-const characterBackground = (name: string) => characterCatalogue(name)?.backgroundImage;
-const characterStars = (name: string) => "★".repeat(characterCatalogue(name)?.rarity ?? 5);
-const characterElement = (name: string) => characterByName.get(name)?.element ?? null;
+const characterCatalogueEntry = (item: Pick<CharacterListItem, "characterId" | "name" | "path">) =>
+  resolveCharacterCatalogue({
+    characterId: item.characterId,
+    name: item.name,
+    path: item.path,
+  });
+const characterAvatar = (item: CharacterListItem) => characterCatalogueEntry(item)?.image ?? undefined;
+const characterBackground = (item: CharacterListItem) =>
+  characterCatalogueEntry(item)?.backgroundImage;
+const characterStars = (item: CharacterListItem) =>
+  "★".repeat(characterCatalogueEntry(item)?.rarity ?? 5);
+const characterElement = (name: string, characterId?: number | null) =>
+  resolveCharacterCatalogue({ characterId, name })?.element ?? null;
 const lightConeImage = (item: LightConeListItem) =>
   lightConeById.get(item.templateId)?.image ?? undefined;
 
@@ -179,7 +171,10 @@ function avatarColor(name: string): string {
             <td>
               <span
                 v-if="item.location"
-                :class="['relic-equip-tag', `element-${characterElement(item.location)}`]"
+                :class="[
+                  'relic-equip-tag',
+                  `element-${characterElement(item.location, item.equippedCharacterId)}`,
+                ]"
                 >{{ item.location }}</span
               ><span v-else class="relic-equip-tag unequipped">未装备</span>
             </td>
@@ -236,7 +231,10 @@ function avatarColor(name: string): string {
             <td>
               <span
                 v-if="item.location"
-                :class="['relic-equip-tag', `element-${characterElement(item.location)}`]"
+                :class="[
+                  'relic-equip-tag',
+                  `element-${characterElement(item.location, item.equippedCharacterId)}`,
+                ]"
                 >{{ item.location }}</span
               ><span v-else class="relic-equip-tag unequipped">未装备</span>
             </td>
@@ -270,15 +268,15 @@ function avatarColor(name: string): string {
         <div
           class="character-card-header"
           :style="
-            characterBackground(item.name)
-              ? { '--character-card-backdrop': `url(${characterBackground(item.name)})` }
+            characterBackground(item)
+              ? { '--character-card-backdrop': `url(${characterBackground(item)})` }
               : undefined
           "
         >
           <img
-            v-if="characterAvatar(item.name)"
+            v-if="characterAvatar(item)"
             class="character-card-avatar"
-            :src="characterAvatar(item.name)"
+            :src="characterAvatar(item)"
             :alt="`${item.name} 头像`"
           />
           <div
@@ -289,15 +287,18 @@ function avatarColor(name: string): string {
             {{ item.name.charAt(0) }}
           </div>
           <div class="character-path">
-            <span class="path-icon">{{ pathIcons[item.path] ?? "✧" }}</span
-            ><span class="path-text">{{ pathLabels[item.path] ?? item.path }}</span>
+            <img
+              class="path-icon"
+              :src="pathIconSrc(item.path)"
+              :alt="pathLabel(item.path)"
+            /><span class="path-text">{{ pathLabel(item.path) }}</span>
           </div>
           <div class="character-name">{{ item.name }}</div>
           <div
             class="character-stars"
-            :aria-label="`${characterCatalogue(item.name)?.rarity ?? 5} 星`"
+            :aria-label="`${characterCatalogueEntry(item)?.rarity ?? 5} 星`"
           >
-            {{ characterStars(item.name) }}
+            {{ characterStars(item) }}
           </div>
         </div>
         <div class="character-card-stats">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { characterByName, lightConeById, relicCatalogue } from "@/shared/catalogue";
+import { lightConeById, relicCatalogue, resolveCharacterCatalogue } from "@/shared/catalogue";
 import {
   calculateStandingStats,
   formatStandingStat,
@@ -22,7 +22,13 @@ import type { CharacterDetailData } from "./detail-types";
 
 const props = defineProps<{ detail: CharacterDetailData; plan?: CharacterBuildPlan | null }>();
 const disabledTraceNodes = ref<Record<string, number[]>>(loadDisabledTraceNodes());
-const catalogue = computed(() => characterByName.get(props.detail.name));
+const catalogue = computed(() =>
+  resolveCharacterCatalogue({
+    characterId: props.detail.characterId,
+    name: props.detail.name,
+    path: props.detail.path,
+  }),
+);
 const traceNodes = computed(() => primaryTraceNodes(catalogue.value?.traceStats ?? []));
 const traceEnabled = (id: number) =>
   isTraceNodeEnabled(disabledTraceNodes.value, props.detail.characterId, id);

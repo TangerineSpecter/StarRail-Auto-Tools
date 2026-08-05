@@ -4,7 +4,7 @@ import Button from "primevue/button";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
 import { scoreRelicForPlans } from "@/shared/utils/relic-score";
-import { characterByName } from "@/shared/catalogue";
+import { resolveCharacterCatalogue } from "@/shared/catalogue";
 import type {
   BuildDashboardEntry,
   RelicListItem,
@@ -74,7 +74,8 @@ const hasMore = computed(() => !!result.value && result.value.items.length < res
 const slotLabel = (slot: string) => slotLabels[slot] ?? slot;
 const statLabel = (stat: string) => statLabels[stat] ?? stat;
 const allowedStats = (item: RelicListItem) => result.value?.allowedMainStats[item.slot] ?? [];
-const characterElement = (name: string) => characterByName.get(name)?.element ?? null;
+const characterElement = (name: string, characterId?: number | null) =>
+  resolveCharacterCatalogue({ characterId, name })?.element ?? null;
 
 function loadMoreOnScroll(event: Event) {
   const container = event.currentTarget as HTMLElement;

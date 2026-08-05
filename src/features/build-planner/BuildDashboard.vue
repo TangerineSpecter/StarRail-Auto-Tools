@@ -26,12 +26,11 @@ import {
 } from "./progress";
 import RelicPotentialRadar from "./RelicPotentialRadar.vue";
 import { useDashboardDrag } from "./useDashboardDrag";
-import characterCatalogueJson from "@/data/characters.json";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
+import { resolveCharacterCatalogue } from "@/shared/catalogue";
 import type {
   BuildDashboardEntry,
-  CharacterCatalogue,
   LightConeCatalogue,
   RelicSetCatalogue,
 } from "@/types";
@@ -56,7 +55,6 @@ const notePopover = ref<{
   placeAbove: boolean;
 } | null>(null);
 const dashboardElement = ref<HTMLElement | null>(null);
-const characters = characterCatalogueJson as CharacterCatalogue;
 const lightCones = lightConeCatalogueJson as LightConeCatalogue;
 const relicSets = relicCatalogueJson as RelicSetCatalogue;
 const disabledTraceNodes = loadDisabledTraceNodes();
@@ -162,7 +160,10 @@ function getProgressClass(percent: number | null) {
 
 function dashboardState(entry: BuildDashboardEntry) {
   const character = entry.character;
-  const catalogue = characters.characters.find((item) => item.name === character.name);
+  const catalogue = resolveCharacterCatalogue({
+    characterId: character.characterId,
+    name: character.name,
+  });
   const cone = character.equippedLightCone;
   const coneEntry = cone && lightCones.lightCones.find((item) => item.id === cone.templateId);
   const coneBase = coneEntry?.baseStats;
@@ -229,7 +230,10 @@ const cards = computed(() =>
   entries.value
     .map((entry) => {
       const character = entry.character;
-      const catalogue = characters.characters.find((item) => item.name === character.name);
+      const catalogue = resolveCharacterCatalogue({
+        characterId: character.characterId,
+        name: character.name,
+      });
       const state = dashboardState(entry);
       const targets = state.available
         ? buildTargetProgress(entry.plan.targets, state.stats)

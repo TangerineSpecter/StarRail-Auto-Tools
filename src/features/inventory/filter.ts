@@ -88,9 +88,16 @@ export function buildInventoryFilter(
 
   let names: string[] | undefined = undefined;
   if (form.element.length > 0) {
-    names = characterCatalogueJson.characters
-      .filter((c) => form.element.includes(c.element))
-      .map((c) => c.name);
+    // Deduplicate names; multi-path characters (开拓者 / 三月七) share a name across
+    // elements, so name-only SQL filtering is an over-approximation — path filter
+    // and catalogue-side resolution keep path variants distinct in the UI.
+    names = [
+      ...new Set(
+        characterCatalogueJson.characters
+          .filter((c) => form.element.includes(c.element))
+          .map((c) => c.name),
+      ),
+    ];
     if (names.length === 0) names = ["__NO_MATCH__"];
   }
 

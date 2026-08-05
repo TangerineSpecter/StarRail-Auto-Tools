@@ -27,6 +27,7 @@ const paths = [
   { label: "存护", value: "Preservation" },
   { label: "丰饶", value: "Abundance" },
   { label: "记忆", value: "Remembrance" },
+  { label: "欢愉", value: "Elation" },
 ];
 const elements = [
   { label: "物理", color: "#888888" },
@@ -201,7 +202,7 @@ const substatCountOptions = [
           </label>
           <fieldset class="filter-group filter-group-wide">
             <legend>
-              命途 <em class="filter-count">{{ filters.path.length || 8 }} 个</em>
+              命途 <em class="filter-count">{{ filters.path.length || paths.length }} 个</em>
             </legend>
             <div class="filter-chips filter-grid-3">
               <label v-for="path in paths" :key="path.value" class="filter-chip filter-path-chip"
