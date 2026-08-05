@@ -270,10 +270,20 @@ const cards = computed(() =>
       const potential = averageCharacterPotential(relicInputs, weights, {
         allowedMainStats: entry.plan.mainStats,
       });
+      const cone = character.equippedLightCone;
+      const coneEntry = cone ? lightCones.lightCones.find((item) => item.id === cone.templateId) : undefined;
       return {
         entry,
         character,
         image: catalogue?.image,
+        equippedLightCone: cone
+          ? {
+              name: cone.name || coneEntry?.name || `光锥 #${cone.templateId}`,
+              image: coneEntry?.image ?? null,
+              level: cone.level,
+              superimposition: cone.superimposition ?? 1,
+            }
+          : null,
         recommendedSets: recommendedSets(entry.plan).map((item) => ({
           ...item,
           matched: (equippedPieceCounts.get(item.set.id) ?? 0) >= item.pieces,
@@ -576,7 +586,29 @@ defineExpose({ reload: loadDashboard });
 
           <div class="build-card-column">
             <div class="build-card-section sets-section">
-              <h4 class="section-title">遗器套装状态</h4>
+              <h4 class="section-title">当前光锥</h4>
+              <div
+                v-if="card.equippedLightCone"
+                class="equipped-light-cone"
+                :aria-label="`${card.equippedLightCone.name} Lv.${card.equippedLightCone.level} 叠影${card.equippedLightCone.superimposition}`"
+              >
+                <img
+                  v-if="card.equippedLightCone.image"
+                  :src="card.equippedLightCone.image"
+                  :alt="card.equippedLightCone.name"
+                />
+                <span v-else class="equipped-light-cone-fallback">光</span>
+                <p>
+                  <b>{{ card.equippedLightCone.name }}</b>
+                  <em
+                    >Lv.{{ card.equippedLightCone.level }} · 叠影
+                    {{ card.equippedLightCone.superimposition }}</em
+                  >
+                </p>
+              </div>
+              <p v-else class="equipped-light-cone empty muted">未装备光锥</p>
+
+              <h4 class="section-title sets-status-title">遗器套装状态</h4>
               <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
                 <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
                 <span v-else class="recommended-set-fallback">遗</span>
@@ -1084,6 +1116,67 @@ defineExpose({ reload: loadDashboard });
   border-radius: 2px;
 }
 
+.equipped-light-cone {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+  margin-bottom: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(93, 143, 202, 0.16);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(241, 247, 253, 0.95), rgba(255, 255, 255, 0.72));
+}
+.equipped-light-cone.empty {
+  margin: 0 0 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+}
+.equipped-light-cone img,
+.equipped-light-cone-fallback {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #dae5f1;
+  border-radius: 8px;
+  background: #f2f6fb;
+  color: #6f87a4;
+  font-size: 11px;
+  font-weight: 700;
+}
+.equipped-light-cone img {
+  object-fit: contain;
+  background: #e7edf5;
+}
+.equipped-light-cone p {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  gap: 2px;
+}
+.equipped-light-cone b {
+  overflow: hidden;
+  color: #263b5c;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.equipped-light-cone em {
+  color: #6f87a4;
+  font-size: 10px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.sets-status-title {
+  margin-top: 6px;
+}
 .recommended-set {
   display: flex;
   align-items: center;

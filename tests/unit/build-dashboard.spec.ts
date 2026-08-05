@@ -41,7 +41,7 @@ const entry: BuildDashboardEntry = {
     name: "卡芙卡",
     level: 80,
     ascension: 6,
-    equippedLightCone: { templateId: 23000, level: 80, ascension: 6 },
+    equippedLightCone: { templateId: 23000, level: 80, ascension: 6, superimposition: 1 },
     equippedRelics: [],
   },
   displayOrder: 0,
@@ -69,6 +69,9 @@ describe("BuildDashboard", () => {
 
     expect(wrapper.get(".build-target-edit").text()).toContain("编辑目标");
     expect(wrapper.get(".build-drag-handle").attributes("disabled")).toBeUndefined();
+    expect(wrapper.get(".equipped-light-cone").text()).toContain("银河铁道之夜");
+    expect(wrapper.get(".equipped-light-cone").text()).toContain("叠影");
+    expect(wrapper.get(".equipped-light-cone").text()).toContain("1");
     expect(wrapper.get(".recommended-set-status").text()).toBe("×");
     expect(wrapper.get(".relic-potential-radar").attributes("aria-label")).toContain("六件词条潜力");
     expect(wrapper.get(".quality-section").text()).toContain("主属性");

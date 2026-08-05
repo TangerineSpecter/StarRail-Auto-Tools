@@ -247,6 +247,8 @@ export interface BuildDashboardRelic {
 
 export interface BuildDashboardLightCone {
   templateId: number;
+  /** 背包中的光锥名称；图鉴缺失时可用于展示。 */
+  name?: string;
   level: number;
   ascension: number;
   superimposition?: number;
