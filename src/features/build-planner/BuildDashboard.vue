@@ -24,6 +24,7 @@ import {
   lowestTargetPercent,
   relicPieceCounts,
 } from "./progress";
+import RelicPotentialRadar from "./RelicPotentialRadar.vue";
 import { useDashboardDrag } from "./useDashboardDrag";
 import characterCatalogueJson from "@/data/characters.json";
 import lightConeCatalogueJson from "@/data/light-cones.json";
@@ -281,6 +282,8 @@ const cards = computed(() =>
         quality,
         averagePotentialPct: potential.averagePotentialPct,
         weakSlot: potential.weakSlot,
+        pieces: potential.pieces,
+        minPotentialPct: entry.plan.minPotentialPct ?? 40,
       };
     })
     .filter((card) => card.state.available)
@@ -530,78 +533,109 @@ defineExpose({ reload: loadDashboard });
         </header>
 
         <div class="build-card-body">
-          <div class="build-card-section progress-section">
-            <h4 class="section-title">属性目标进度</h4>
-            <div
-              v-for="target in card.targets"
-              :key="target.statKey"
-              :class="['target-progress-row', getProgressClass(target.percent)]"
-            >
-              <div class="target-progress-label">
-                <b>{{ statLabel(target.statKey) }}</b>
-                <span v-if="target.percent !== null"
-                  >{{ formatBuildProgressValue(target.statKey, target.current ?? 0) }} /
-                  {{ target.target }}</span
-                >
-                <span v-else>不可映射</span>
+          <div class="build-card-column">
+            <div class="build-card-section progress-section">
+              <h4 class="section-title">属性目标进度</h4>
+              <div
+                v-for="target in card.targets"
+                :key="target.statKey"
+                :class="['target-progress-row', getProgressClass(target.percent)]"
+              >
+                <div class="target-progress-label">
+                  <b>{{ statLabel(target.statKey) }}</b>
+                  <span v-if="target.percent !== null"
+                    >{{ formatBuildProgressValue(target.statKey, target.current ?? 0) }} /
+                    {{ target.target }}</span
+                  >
+                  <span v-else>不可映射</span>
+                </div>
+                <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
+                <small>
+                  {{ (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%` }}
+                </small>
               </div>
-              <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
-              <small>
-                {{ (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%` }}
-              </small>
+            </div>
+
+            <div class="build-card-section affix-section">
+              <h4 class="section-title">有效词条分布</h4>
+              <div class="affix-tags">
+                <template v-if="card.effective.length">
+                  <div v-for="item in card.effective" :key="item.key" class="affix-tag">
+                    <span class="affix-name">{{ statLabel(item.key).replace("百分比", "%") }}</span>
+                    <span class="affix-val">{{ item.count }}</span>
+                  </div>
+                </template>
+                <span v-else class="muted">暂无命中词条</span>
+              </div>
             </div>
           </div>
 
-          <div class="build-card-section sets-section">
-            <h4 class="section-title">遗器套装状态</h4>
-            <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
-              <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
-              <span v-else class="recommended-set-fallback">遗</span>
-              <p>
-                {{ item.set.name }}
-                <b>{{ item.pieces }}件</b>
-              </p>
-              <span
-                :class="['recommended-set-status', { matched: item.matched }]"
-                role="img"
-                :aria-label="item.matched ? `${item.set.name}已装备${item.pieces}件` : `${item.set.name}未装备${item.pieces}件`"
-              >{{ item.matched ? "✓" : "×" }}</span>
+          <div class="build-card-column">
+            <div class="build-card-section sets-section">
+              <h4 class="section-title">遗器套装状态</h4>
+              <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
+                <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
+                <span v-else class="recommended-set-fallback">遗</span>
+                <p>
+                  {{ item.set.name }}
+                  <b>{{ item.pieces }}件</b>
+                </p>
+                <span
+                  :class="['recommended-set-status', { matched: item.matched }]"
+                  role="img"
+                  :aria-label="item.matched ? `${item.set.name}已装备${item.pieces}件` : `${item.set.name}未装备${item.pieces}件`"
+                >{{ item.matched ? "✓" : "×" }}</span>
+              </div>
+            </div>
+
+            <div class="build-card-section quality-section">
+              <h4 class="section-title">部位合格状况</h4>
+              <div class="quality-visuals">
+                <div class="quality-row">
+                  <span class="quality-label">主属性</span>
+                  <div
+                    class="quality-segments"
+                    :aria-label="`主属性正确 ${card.quality.mainStatCorrectCount} / ${card.quality.mainStatTotal}`"
+                  >
+                    <i
+                      v-for="n in card.quality.mainStatTotal"
+                      :key="'main' + n"
+                      :class="{ active: n <= card.quality.mainStatCorrectCount }"
+                    ></i>
+                  </div>
+                  <span class="quality-count"
+                    >{{ card.quality.mainStatCorrectCount }}/{{ card.quality.mainStatTotal }}</span
+                  >
+                </div>
+                <div class="quality-row">
+                  <span class="quality-label">及格件数</span>
+                  <div
+                    class="quality-segments"
+                    :aria-label="`质量达标 ${card.quality.qualityPassCount} / ${card.quality.qualityTotal}`"
+                  >
+                    <i
+                      v-for="n in card.quality.qualityTotal"
+                      :key="'qual' + n"
+                      :class="{ active: n <= card.quality.qualityPassCount }"
+                    ></i>
+                  </div>
+                  <span class="quality-count"
+                    >{{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
+                  >
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="build-card-section details-section">
-            <h4 class="section-title">装备质量评级</h4>
-            <div class="quality-visuals">
-              <div class="quality-row">
-                <span class="quality-label">主属性</span>
-                <div class="quality-segments" :aria-label="`主属性正确 ${card.quality.mainStatCorrectCount} / ${card.quality.mainStatTotal}`">
-                  <i v-for="n in card.quality.mainStatTotal" :key="'main'+n" :class="{ active: n <= card.quality.mainStatCorrectCount }"></i>
-                </div>
-              </div>
-              <div class="quality-row">
-                <span class="quality-label">及格件数</span>
-                <div class="quality-segments" :aria-label="`质量达标 ${card.quality.qualityPassCount} / ${card.quality.qualityTotal}`">
-                  <i v-for="n in card.quality.qualityTotal" :key="'qual'+n" :class="{ active: n <= card.quality.qualityPassCount }"></i>
-                </div>
-              </div>
-              <div class="quality-row">
-                <span class="quality-label">词条潜力</span>
-                <div class="quality-bar">
-                  <em :style="{ width: `${card.averagePotentialPct}%` }"></em>
-                </div>
-                <span class="quality-value">{{ card.averagePotentialPct.toFixed(0) }}%</span>
-              </div>
-            </div>
-
-            <h4 class="section-title mt-2">有效词条分布</h4>
-            <div class="affix-tags">
-              <template v-if="card.effective.length">
-                <div v-for="item in card.effective" :key="item.key" class="affix-tag">
-                  <span class="affix-name">{{ statLabel(item.key).replace('百分比', '%') }}</span>
-                  <span class="affix-val">{{ item.count }}</span>
-                </div>
-              </template>
-              <span v-else class="muted">暂无命中词条</span>
+          <div class="build-card-radar-panel">
+            <div class="build-card-section radar-section">
+              <h4 class="section-title">六件词条潜力</h4>
+              <RelicPotentialRadar
+                :pieces="card.pieces"
+                :weak-slot="card.weakSlot"
+                :average-potential-pct="card.averagePotentialPct"
+                :min-potential-pct="card.minPotentialPct"
+              />
             </div>
           </div>
         </div>
@@ -833,10 +867,26 @@ defineExpose({ reload: loadDashboard });
 }
 .build-card-body {
   display: grid;
-  grid-template-columns: minmax(320px, 1.4fr) minmax(220px, 1fr) minmax(260px, 1.2fr);
-  gap: 40px;
+  grid-template-columns: minmax(300px, 1.35fr) minmax(220px, 1fr) minmax(240px, 1.15fr);
+  gap: 24px 32px;
   padding: 20px 24px 24px 72px;
   background: rgba(255, 255, 255, 0.3);
+}
+.build-card-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.build-card-radar-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px 20px 20px;
+  border: 1px solid rgba(93, 143, 202, 0.14);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(244, 248, 253, 0.85), rgba(255, 255, 255, 0.55));
 }
 .section-title {
   color: #7994b4;
@@ -845,10 +895,25 @@ defineExpose({ reload: loadDashboard });
   letter-spacing: 0.1em;
   margin: 0 0 14px 0;
 }
-.progress-section, .sets-section, .details-section {
+.progress-section,
+.sets-section,
+.radar-section,
+.quality-section,
+.affix-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.radar-section {
+  align-items: stretch;
+  gap: 8px;
+}
+.radar-section .section-title {
+  margin-bottom: 0;
+}
+.quality-section .section-title,
+.affix-section .section-title {
+  margin-bottom: 10px;
 }
 .build-note-info {
   display: grid;
@@ -1077,7 +1142,7 @@ defineExpose({ reload: loadDashboard });
 
 .target-progress-row {
   display: grid;
-  grid-template-columns: minmax(152px, 0.9fr) minmax(90px, 1.35fr) 40px;
+  grid-template-columns: minmax(130px, 0.9fr) minmax(80px, 1.35fr) 40px;
   align-items: center;
   gap: 10px;
   font-size: 11px;
@@ -1192,10 +1257,12 @@ defineExpose({ reload: loadDashboard });
   width: 50px;
   color: #55769b;
   font-size: 11px;
+  flex: 0 0 auto;
 }
 .quality-segments {
   display: flex;
   gap: 3px;
+  flex: 1 1 auto;
 }
 .quality-segments i {
   display: block;
@@ -1208,30 +1275,13 @@ defineExpose({ reload: loadDashboard });
 .quality-segments i.active {
   background: #64a1e0;
 }
-.quality-bar {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  background: #e7eef6;
-  overflow: hidden;
-}
-.quality-bar em {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #f0c27b, #e09938);
-  transition: width 0.3s ease;
-}
-.quality-value {
-  width: 28px;
+.quality-count {
+  min-width: 28px;
   color: var(--ink);
   font-size: 11px;
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;
-}
-.mt-2 {
-  margin-top: 6px !important;
 }
 
 .affix-tags {
@@ -1274,6 +1324,12 @@ defineExpose({ reload: loadDashboard });
 .dashboard-state.error {
   color: #b04d43;
 }
+@media (max-width: 900px) {
+  .build-card-body {
+    grid-template-columns: 1fr;
+    padding-left: 24px;
+  }
+}
 @media (max-width: 760px) {
   .build-dashboard-heading {
     display: grid;
@@ -1286,6 +1342,9 @@ defineExpose({ reload: loadDashboard });
   }
   .build-dashboard {
     overflow: auto;
+  }
+  .build-card-body {
+    padding-left: 20px;
   }
 }
 </style>

@@ -57,6 +57,7 @@ describe("buildTargetProgress", () => {
   });
 
   it("does not count the initial roll as an enhancement hit", () => {
+    // Live inventory: count is total rolls including initial (never 0 on a real line).
     expect(
       effectiveSubstatCounts(
         [
@@ -64,13 +65,29 @@ describe("buildTargetProgress", () => {
             substats: [
               { kind: "normal", key: "SPD", count: 1 },
               { kind: "normal", key: "CRIT Rate", count: 6 },
-              { kind: "normal", key: "HP", count: 0 },
+              { kind: "normal", key: "HP", count: 1 },
             ],
           },
         ],
         ["SPD", "CRIT Rate", "HP"],
       ),
     ).toEqual([{ key: "CRIT Rate", count: 5 }]);
+  });
+
+  it("uses legacy enhancement-hit counts when any line is 0", () => {
+    expect(
+      effectiveSubstatCounts(
+        [
+          {
+            substats: [
+              { kind: "normal", key: "SPD", count: 0 },
+              { kind: "normal", key: "CRIT Rate", count: 2 },
+            ],
+          },
+        ],
+        ["SPD", "CRIT Rate"],
+      ),
+    ).toEqual([{ key: "CRIT Rate", count: 2 }]);
   });
 
   it("finds the lowest progress without forcing it to zero", () => {

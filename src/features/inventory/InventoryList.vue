@@ -2,6 +2,11 @@
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import { characterByName, lightConeById, relicImage } from "@/shared/catalogue";
+import {
+  enhancementHitsOnLine,
+  formatEnhancementHitBadge,
+  usesEnhancementHitCount,
+} from "@/shared/utils/relic-score";
 import { formatStatValue, slotLabel, statLabel } from "./options";
 import { inventoryItemId } from "./useInventoryArchive";
 import type {
@@ -38,6 +43,20 @@ const pathLabels: Record<string, string> = {
   Abundance: "丰饶",
   Remembrance: "记忆",
 };
+
+/** Dense list: only show hit badge when a line has 3+ enhancement upgrades. */
+function relicSubstatRows(item: RelicListItem) {
+  const enhancementHits = usesEnhancementHitCount(item.substats);
+  return (item.substats ?? []).map((stat) => {
+    const hits = enhancementHitsOnLine(stat, { enhancementHits });
+    return {
+      key: stat.key,
+      value: stat.value,
+      hits,
+      badge: hits >= 3 ? formatEnhancementHitBadge(hits) : null,
+    };
+  });
+}
 const pathIcons: Record<string, string> = {
   Destruction: "⚔",
   Hunt: "◎",
@@ -145,15 +164,15 @@ function avatarColor(name: string): string {
             <td>
               <div class="relic-substats-grid">
                 <span
-                  v-for="stat in item.substats"
-                  :key="stat.key"
-                  :class="['relic-substat-item', `hit-${stat.count}`]"
+                  v-for="row in relicSubstatRows(item)"
+                  :key="row.key"
+                  :class="['relic-substat-item', `hit-${row.hits}`]"
                 >
-                  <span class="substat-name">{{ statLabel(stat.key) }}</span
-                  ><strong class="substat-value">{{ formatStatValue(stat.key, stat.value) }}</strong
-                  ><i v-if="stat.count >= 3" class="hit-count-badge">{{
-                    stat.count === 5 ? "MAX" : `+${stat.count}`
-                  }}</i>
+                  <span class="substat-name">{{ statLabel(row.key) }}</span
+                  ><strong class="substat-value">{{
+                    formatStatValue(row.key, row.value)
+                  }}</strong
+                  ><i v-if="row.badge" class="hit-count-badge">{{ row.badge }}</i>
                 </span>
               </div>
             </td>

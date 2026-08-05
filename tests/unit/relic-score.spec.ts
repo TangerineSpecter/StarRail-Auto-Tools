@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   averageCharacterPotential,
   effectiveWeight,
+  enhancementHitsOnLine,
+  formatEnhancementHitBadge,
   estimateTbp,
   farmingPriorityRows,
   inferWeightsFromEffectiveSubstats,
@@ -15,6 +17,8 @@ import {
   scoreRelic,
   scoreRelicForPlans,
   spdBreakpointHelper,
+  totalRollsOnLine,
+  usesEnhancementHitCount,
   weightedRollsOfRelic,
 } from "@/shared/utils/relic-score";
 
@@ -85,7 +89,7 @@ describe("relic-score core", () => {
 
   it("gives near-equal potentialPct for equal-weight high-roll CR vs CD relics", () => {
     const weights = { "CRIT Rate": 1, "CRIT DMG": 1, SPD: 0, "ATK%": 0 };
-    // 5 high rolls into one line (count=4 enhancements + initial, step=8 max)
+    // 5 high rolls into one line (legacy enhancement count=4 + initial; dead lines count=0)
     const crRelic = {
       slot: "Head" as const,
       mainStat: "HP",
@@ -113,6 +117,68 @@ describe("relic-score core", () => {
     expect(cr.letterGrade).toBe(cd.letterGrade);
     // Must not be ~2× CR vs CD potential from erroneous potentialScale stacking.
     expect(Math.abs(cr.potentialPct - cd.potentialPct)).toBeLessThan(0.5);
+  });
+
+  it("treats live inventory count as total rolls including the initial line", () => {
+    // Real export: count never 0; sum across lines ≈ 8–9 on +15. count=1 = initial only.
+    const live = {
+      slot: "Head" as const,
+      mainStat: "HP",
+      substats: [
+        { key: "Break Effect", count: 4, step: 4 },
+        { key: "SPD", count: 1, step: 1 },
+        { key: "ATK%", count: 2, step: 1 },
+        { key: "DEF%", count: 1, step: 0 },
+      ],
+    };
+    expect(usesEnhancementHitCount(live.substats)).toBe(false);
+    expect(totalRollsOnLine(live.substats[0]!)).toBe(4);
+    expect(enhancementHitsOnLine(live.substats[0]!)).toBe(3);
+    expect(totalRollsOnLine(live.substats[1]!)).toBe(1);
+    expect(enhancementHitsOnLine(live.substats[1]!)).toBe(0);
+
+    const weights = roleWeights("breakDps");
+    const scored = scoreRelic(live, weights);
+    // BE 4 rolls + SPD 1 roll + ATK% 2 rolls (no +1 double-count on initials)
+    expect(scored.breakdown.find((row) => row.key === "Break Effect")?.rolls).toBe(4);
+    expect(scored.breakdown.find((row) => row.key === "SPD")?.rolls).toBe(1);
+  });
+
+  it("maps live total-roll counts to enhancement badges in the game 0–5 range", () => {
+    // Live: count includes initial. +15 piece has 5 upgrade events; one line can take all 5.
+    expect(enhancementHitsOnLine({ count: 1 })).toBe(0);
+    expect(formatEnhancementHitBadge(0)).toBeNull();
+    expect(enhancementHitsOnLine({ count: 2 })).toBe(1);
+    expect(formatEnhancementHitBadge(1)).toBe("+1");
+    expect(enhancementHitsOnLine({ count: 4 })).toBe(3);
+    expect(formatEnhancementHitBadge(3)).toBe("+3");
+    expect(enhancementHitsOnLine({ count: 6 })).toBe(5);
+    expect(formatEnhancementHitBadge(5)).toBe("MAX");
+    // Over-range storage still clamps to max 5 upgrades on a single line.
+    expect(enhancementHitsOnLine({ count: 20 })).toBe(5);
+    // Sum of live counts on +15 should be ~8–9 → enhancement hits sum ≤ 5.
+    const liveLines = [{ count: 1 }, { count: 1 }, { count: 2 }, { count: 5 }];
+    const hitSum = liveLines.reduce((sum, line) => sum + enhancementHitsOnLine(line), 0);
+    expect(hitSum).toBe(5);
+  });
+
+  it("keeps mono-BE full stack well below 100% vs ideal four openers", () => {
+    const weights = roleWeights("breakDps");
+    // Live: 4 total rolls on BE (1 initial + 3 upgrades) + dead lines
+    const mono = {
+      slot: "Head" as const,
+      mainStat: "HP",
+      substats: [
+        { key: "Break Effect", count: 5, step: 6 },
+        { key: "CRIT Rate", count: 1, step: 0 },
+        { key: "DEF%", count: 1, step: 0 },
+        { key: "Effect RES", count: 1, step: 0 },
+      ],
+    };
+    const scored = scoreRelic(mono, weights);
+    // Ideal ≈ SPD+BE+ATK%+ATK + 5×best ≈ 8.05; mono BE alone cannot reach ~100%.
+    expect(scored.potentialPct).toBeGreaterThan(40);
+    expect(scored.potentialPct).toBeLessThan(75);
   });
 
   it("returns larger estTbp/days when the score threshold is higher", () => {

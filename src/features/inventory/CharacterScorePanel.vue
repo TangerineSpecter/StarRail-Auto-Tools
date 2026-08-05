@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import InputNumber from "primevue/inputnumber";
 import { inventoryApi } from "@/shared/api/inventory";
 import { relicCatalogue } from "@/shared/catalogue";
@@ -16,7 +16,8 @@ import {
   type ScoreRelicInput,
 } from "@/shared/utils/relic-score";
 import type { CharacterBuildPlan, RelicListItem } from "@/types";
-import type { CharacterDetailData } from "./detail-types";
+import type { CharacterDetailData, RelicDetailData } from "./detail-types";
+import EquippedRelicPeekCard from "./EquippedRelicPeekCard.vue";
 
 const props = defineProps<{
   detail: CharacterDetailData;
@@ -45,6 +46,16 @@ const farmInvestment = ref<{
   bottleneckDays: number;
   estimateDays: number;
 } | null>(null);
+const peek = ref<{
+  slot: string;
+  relic: RelicDetailData;
+  letterGrade: string | null;
+  potentialPct: number;
+  top: number;
+  left: number;
+  placeAbove: boolean;
+} | null>(null);
+const peekPopoverEl = ref<HTMLElement | null>(null);
 let farmRequestId = 0;
 
 watch(
@@ -65,6 +76,7 @@ watch(
     farmInvestment.value = null;
     inventoryLoaded.value = false;
     inventoryRelics.value = [];
+    closePeek();
   },
 );
 
@@ -98,6 +110,106 @@ const completion = computed(() =>
     minPotentialPct: props.plan?.minPotentialPct ?? 40,
   }),
 );
+
+const equippedBySlot = computed(() => {
+  const map = new Map<string, RelicDetailData>();
+  for (const relic of props.detail.equippedRelics ?? []) {
+    if (relic.slot) map.set(relic.slot, relic);
+  }
+  return map;
+});
+
+function closePeek() {
+  peek.value = null;
+}
+
+async function openPeek(
+  event: MouseEvent,
+  piece: { slot: string; letterGrade: string | null; potentialPct: number },
+) {
+  const relic = equippedBySlot.value.get(piece.slot);
+  if (!relic) return;
+  if (peek.value?.slot === piece.slot) {
+    closePeek();
+    return;
+  }
+
+  const trigger = event.currentTarget as HTMLElement;
+  const rect = trigger.getBoundingClientRect();
+  const width = 320;
+  const gap = 8;
+  const preferredBelowHeight = 220;
+  const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+  const spaceBelow = window.innerHeight - rect.bottom - gap;
+  const spaceAbove = rect.top - gap;
+  const placeAbove = spaceBelow < preferredBelowHeight && spaceAbove > spaceBelow;
+
+  peek.value = {
+    slot: piece.slot,
+    relic,
+    letterGrade: piece.letterGrade,
+    potentialPct: piece.potentialPct,
+    top: placeAbove ? rect.top - gap : rect.bottom + gap,
+    left,
+    placeAbove,
+  };
+
+  await nextTick();
+  const popoverEl = peekPopoverEl.value;
+  if (!popoverEl || !peek.value) return;
+  const height = popoverEl.getBoundingClientRect().height;
+  if (peek.value.placeAbove) {
+    const minBottom = 12 + height;
+    if (peek.value.top < minBottom) {
+      peek.value = { ...peek.value, top: minBottom };
+    }
+  } else {
+    const maxTop = window.innerHeight - height - 12;
+    if (peek.value.top > maxTop) {
+      peek.value = { ...peek.value, top: Math.max(12, maxTop) };
+    }
+  }
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+  if (!peek.value) return;
+  const target = event.target as Element | null;
+  if (target?.closest(".score-piece, .equipped-relic-peek-popover")) return;
+  closePeek();
+}
+
+function onDocumentKeydown(event: KeyboardEvent) {
+  if (event.key === "Escape") closePeek();
+}
+
+function onWindowScrollOrResize(event: Event) {
+  if (!peek.value) return;
+  // Capture-phase scroll fires for any scroller; keep popover open when scrolling its content.
+  if (event.type === "scroll") {
+    const target = event.target;
+    if (target instanceof Element && target.closest(".equipped-relic-peek-popover")) {
+      return;
+    }
+    if (target instanceof Node && peekPopoverEl.value?.contains(target)) {
+      return;
+    }
+  }
+  closePeek();
+}
+
+onMounted(() => {
+  document.addEventListener("pointerdown", onDocumentPointerDown);
+  document.addEventListener("keydown", onDocumentKeydown);
+  window.addEventListener("scroll", onWindowScrollOrResize, true);
+  window.addEventListener("resize", onWindowScrollOrResize);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("pointerdown", onDocumentPointerDown);
+  document.removeEventListener("keydown", onDocumentKeydown);
+  window.removeEventListener("scroll", onWindowScrollOrResize, true);
+  window.removeEventListener("resize", onWindowScrollOrResize);
+});
 
 const relicSpdBonus = computed(() => {
   let spd = 0;
@@ -271,13 +383,26 @@ async function computeFarmPriority() {
       </div>
 
       <p class="score-hint">
-        下方六格为各部位字母评级与潜力%；仅<strong>潜力最低的短板部位</strong>会标「短板」（与等级字母无关）。
+        下方六格为各部位字母评级与潜力%；点击可查看当前装备遗器。仅<strong>潜力最低的短板部位</strong>会标「短板」（与等级字母无关）。
       </p>
       <div class="score-piece-grid">
-        <div
+        <button
           v-for="piece in summary.pieces"
           :key="piece.slot"
-          :class="['score-piece', { 'is-weak-slot': piece.slot === summary.weakSlot }]"
+          type="button"
+          :class="[
+            'score-piece',
+            {
+              'is-weak-slot': piece.slot === summary.weakSlot,
+              'is-open': peek?.slot === piece.slot,
+            },
+          ]"
+          :aria-expanded="peek?.slot === piece.slot"
+          aria-haspopup="dialog"
+          :aria-controls="peek?.slot === piece.slot ? 'equipped-relic-peek-dialog' : undefined"
+          :aria-label="`查看${slotLabel(piece.slot)}当前装备`"
+          :disabled="!equippedBySlot.get(piece.slot)"
+          @click="openPeek($event, piece)"
         >
           <div class="score-piece-top">
             <span>{{ slotLabel(piece.slot) }}</span>
@@ -285,7 +410,7 @@ async function computeFarmPriority() {
           </div>
           <b>{{ piece.letterGrade ?? "—" }}</b>
           <small>潜力 {{ piece.potentialPct.toFixed(0) }}%</small>
-        </div>
+        </button>
       </div>
 
       <div class="score-subblock">
@@ -387,5 +512,25 @@ async function computeFarmPriority() {
         </p>
       </div>
     </template>
+
+    <Teleport to="body">
+      <div
+        v-if="peek"
+        ref="peekPopoverEl"
+        id="equipped-relic-peek-dialog"
+        class="equipped-relic-peek-popover"
+        :class="{ 'place-above': peek.placeAbove }"
+        role="dialog"
+        aria-modal="false"
+        :aria-label="`${slotLabel(peek.slot)}当前装备`"
+        :style="{ top: `${peek.top}px`, left: `${peek.left}px` }"
+      >
+        <EquippedRelicPeekCard
+          :relic="peek.relic"
+          :letter-grade="peek.letterGrade"
+          :potential-pct="peek.potentialPct"
+        />
+      </div>
+    </Teleport>
   </section>
 </template>

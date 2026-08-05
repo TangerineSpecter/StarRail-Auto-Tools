@@ -15,7 +15,12 @@ import {
 export interface ScoreSubstat {
   key: string;
   value?: number;
-  /** Enhancement hits after the initial line (demo inventory convention). */
+  /**
+   * Roll count on this line. Live/export inventory uses **total rolls including the
+   * initial line** (typically ≥ 1; sum across four lines ≈ 8–9 on a +15 piece).
+   * Legacy demo JSON sometimes stores **enhancement hits only** (0 = initial only;
+   * sum ≈ 5 on +15). Detection: any line with `count === 0` ⇒ enhancement-hit mode.
+   */
   count?: number;
   /** Extra quality steps above low rolls (each step ≈ +0.1 quality unit). */
   step?: number;
@@ -57,12 +62,32 @@ function normalSubstats(substats: ScoreSubstat[] | undefined): ScoreSubstat[] {
 }
 
 /**
- * Total rolls on a line: inventory `count` is enhancement hits (0 = initial only).
- * When count is missing, infer from value / high-roll.
+ * True when `count` is enhancement hits after the initial line (legacy/demo).
+ * Live data never uses 0; presence of any 0 selects enhancement-hit mode.
  */
-export function totalRollsOnLine(stat: ScoreSubstat): number {
+export function usesEnhancementHitCount(substats: ScoreSubstat[] | undefined): boolean {
+  return normalSubstats(substats).some(
+    (stat) => typeof stat.count === "number" && Number.isFinite(stat.count) && stat.count === 0,
+  );
+}
+
+/**
+ * Total rolls on a line (initial + upgrades).
+ * - Live/export: `count` already includes the initial line.
+ * - Legacy/demo (`usesEnhancementHitCount`): `count` is upgrades only → rolls = count + 1.
+ * When count is missing, infer from value / mid-roll.
+ */
+export function totalRollsOnLine(
+  stat: ScoreSubstat,
+  options?: { enhancementHits?: boolean },
+): number {
   if (typeof stat.count === "number" && Number.isFinite(stat.count)) {
-    return Math.max(1, Math.floor(stat.count) + 1);
+    const count = Math.floor(stat.count);
+    if (options?.enhancementHits) {
+      return Math.max(1, count + 1);
+    }
+    // Total-rolls convention; treat non-positive as a single initial roll.
+    return Math.max(1, count);
   }
   const rolls = GRADE5_SUBSTAT_ROLLS[stat.key as SubstatKey];
   if (rolls && typeof stat.value === "number" && stat.value > 0) {
@@ -72,11 +97,41 @@ export function totalRollsOnLine(stat: ScoreSubstat): number {
 }
 
 /**
+ * Upgrade hits after the initial line (what the UI “+N” badge should show).
+ *
+ * Game range (5★ +15): the piece gets 5 substat events; a single line can receive
+ * at most those 5 upgrades → enhancement hits ∈ [0, 5] (MAX at 5).
+ * Live inventory `count` is total rolls including the initial line, so hits = count − 1.
+ */
+export function enhancementHitsOnLine(
+  stat: Pick<ScoreSubstat, "count">,
+  options?: { enhancementHits?: boolean },
+): number {
+  if (typeof stat.count === "number" && Number.isFinite(stat.count)) {
+    const count = Math.floor(stat.count);
+    const hits = options?.enhancementHits ? Math.max(0, count) : Math.max(0, count - 1);
+    // Clamp to game max upgrades on one line (+15 / every +3).
+    return Math.min(5, hits);
+  }
+  return 0;
+}
+
+/** Badge text for enhancement hits: null when none, "+N" for 1–4, "MAX" for 5. */
+export function formatEnhancementHitBadge(hits: number): string | null {
+  if (!Number.isFinite(hits) || hits <= 0) return null;
+  if (hits >= 5) return "MAX";
+  return `+${Math.floor(hits)}`;
+}
+
+/**
  * Quality-adjusted roll units: low=0.8, mid=0.9, high=1.0.
  * Uses `step` as sum of quality steps above low across all rolls on the line.
  */
-export function qualityUnitsOnLine(stat: ScoreSubstat): number {
-  const rolls = totalRollsOnLine(stat);
+export function qualityUnitsOnLine(
+  stat: ScoreSubstat,
+  options?: { enhancementHits?: boolean },
+): number {
+  const rolls = totalRollsOnLine(stat, options);
   const maxStep = rolls * 2;
   let step = typeof stat.step === "number" && Number.isFinite(stat.step) ? stat.step : 0;
   step = Math.max(0, Math.min(maxStep, step));
@@ -88,17 +143,19 @@ export function weightedRollsOfRelic(
   relic: ScoreRelicInput,
   weights: Record<string, number>,
 ): { total: number; breakdown: WeightedRollBreakdown[] } {
+  const enhancementHits = usesEnhancementHitCount(relic.substats);
+  const rollOpts = { enhancementHits };
   const breakdown: WeightedRollBreakdown[] = [];
   let total = 0;
   for (const stat of normalSubstats(relic.substats)) {
     const weight = effectiveWeight(stat.key, weights);
     if (weight <= 0) continue;
-    const qualityUnits = qualityUnitsOnLine(stat);
+    const qualityUnits = qualityUnitsOnLine(stat, rollOpts);
     const contribution = weight * qualityUnits;
     total += contribution;
     breakdown.push({
       key: stat.key,
-      rolls: totalRollsOnLine(stat),
+      rolls: totalRollsOnLine(stat, rollOpts),
       qualityUnits,
       weight,
       contribution,
@@ -139,12 +196,13 @@ export function currentPotentialUnits(
   relic: ScoreRelicInput,
   weights: Record<string, number>,
 ): number {
+  const rollOpts = { enhancementHits: usesEnhancementHitCount(relic.substats) };
   let total = 0;
   for (const stat of normalSubstats(relic.substats)) {
     const weight = effectiveWeight(stat.key, weights);
     if (weight <= 0) continue;
     // qualityUnits already encode 0.8/0.9/1.0 per roll; match weighted-roll units.
-    total += weight * qualityUnitsOnLine(stat);
+    total += weight * qualityUnitsOnLine(stat, rollOpts);
   }
   return total;
 }

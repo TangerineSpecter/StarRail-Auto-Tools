@@ -1,15 +1,36 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { relicImage } from "@/shared/catalogue";
 import { formatTime } from "@/shared/utils/display";
+import {
+  enhancementHitsOnLine,
+  formatEnhancementHitBadge,
+  usesEnhancementHitCount,
+} from "@/shared/utils/relic-score";
 import type { CharacterBuildPlan } from "@/types";
 import { formatStatValue, slotLabel, statLabel } from "./options";
 import type { RelicDetailData } from "./detail-types";
 import RelicQualityCard from "./RelicQualityCard.vue";
-defineProps<{
+
+const props = defineProps<{
   detail: RelicDetailData;
   plan?: CharacterBuildPlan | null;
   planLabel?: string;
 }>();
+
+const enhancementMode = computed(() => usesEnhancementHitCount(props.detail.substats));
+
+const substatRows = computed(() =>
+  (props.detail.substats ?? []).map((stat, index) => {
+    const hits = enhancementHitsOnLine(stat, { enhancementHits: enhancementMode.value });
+    return {
+      stat,
+      index,
+      hits,
+      badge: formatEnhancementHitBadge(hits),
+    };
+  }),
+);
 </script>
 <template>
   <section class="relic-detail-card">
@@ -52,23 +73,25 @@ defineProps<{
         </div>
         <small>{{ detail.substats?.length ?? 0 }} / 4</small>
       </header>
-      <div v-if="detail.substats?.length" class="detail-substat-list">
+      <div v-if="substatRows.length" class="detail-substat-list">
         <div
-          v-for="(stat, index) in detail.substats"
-          :key="`${stat.kind}-${index}`"
+          v-for="row in substatRows"
+          :key="`${row.stat.kind}-${row.index}`"
           :class="[
             'detail-substat-row',
-            `hit-${stat.count}`,
-            { auxiliary: stat.kind !== 'normal' },
+            `hit-${row.hits}`,
+            { auxiliary: row.stat.kind !== 'normal' },
           ]"
         >
-          <span class="detail-substat-name">{{ statLabel(stat.key) }}</span
-          ><b class="detail-substat-value">+{{ formatStatValue(stat.key, stat.value) }}</b>
+          <span class="detail-substat-name">{{ statLabel(row.stat.key) }}</span
+          ><b class="detail-substat-value"
+            >+{{ formatStatValue(row.stat.key, row.stat.value) }}</b
+          >
           <div class="detail-substat-meta">
-            <i v-if="stat.count" class="detail-hit-badge">{{
-              stat.count === 5 ? "MAX" : `+${stat.count}`
-            }}</i
-            ><em v-if="stat.kind !== 'normal'">{{ stat.kind === "reroll" ? "重铸" : "预览" }}</em>
+            <i v-if="row.badge" class="detail-hit-badge">{{ row.badge }}</i
+            ><em v-if="row.stat.kind !== 'normal'">{{
+              row.stat.kind === "reroll" ? "重铸" : "预览"
+            }}</em>
           </div>
         </div>
       </div>

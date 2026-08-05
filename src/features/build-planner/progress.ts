@@ -1,3 +1,7 @@
+import {
+  enhancementHitsOnLine,
+  usesEnhancementHitCount,
+} from "@/shared/utils/relic-score";
 import type { BuildTarget } from "@/types";
 
 type StandingStat = { key: string; value: number };
@@ -67,11 +71,12 @@ export function effectiveSubstatCounts(
   const selected = new Set(effectiveSubstats);
   const counts = new Map<string, number>();
   for (const relic of relics) {
+    const enhancementHits = usesEnhancementHitCount(relic.substats);
     for (const stat of relic.substats ?? []) {
       if (stat.kind === "normal" && selected.has(stat.key)) {
-        // The importer keeps the initial substat roll in `count`; only rolls
-        // after the substat was generated are enhancement hits.
-        counts.set(stat.key, (counts.get(stat.key) ?? 0) + Math.max(0, stat.count - 1));
+        // Same live/legacy convention as Stat Score and relic hit badges.
+        const hits = enhancementHitsOnLine(stat, { enhancementHits });
+        counts.set(stat.key, (counts.get(stat.key) ?? 0) + hits);
       }
     }
   }

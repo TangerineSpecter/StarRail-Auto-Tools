@@ -70,6 +70,8 @@ describe("BuildDashboard", () => {
     expect(wrapper.get(".build-target-edit").text()).toContain("编辑目标");
     expect(wrapper.get(".build-drag-handle").attributes("disabled")).toBeUndefined();
     expect(wrapper.get(".recommended-set-status").text()).toBe("×");
+    expect(wrapper.get(".relic-potential-radar").attributes("aria-label")).toContain("六件词条潜力");
+    expect(wrapper.get(".quality-section").text()).toContain("主属性");
     expect(wrapper.emitted("editBuild")).toEqual([[1005]]);
   });
 
@@ -122,11 +124,11 @@ describe("BuildDashboard", () => {
     });
 
     await flushPromises();
-    await wrapper.get(".build-pin-toggle").trigger("click");
+    await wrapper.get(".build-pin-inline").trigger("click");
     await flushPromises();
 
     expect(setDashboardPinned).toHaveBeenCalledWith(1005, true);
-    expect(wrapper.get(".build-pin-toggle").attributes("aria-pressed")).toBe("true");
+    expect(wrapper.get(".build-pin-inline").attributes("aria-pressed")).toBe("true");
   });
 
   it("hides the info icon without a note and opens a floating card on click", async () => {
