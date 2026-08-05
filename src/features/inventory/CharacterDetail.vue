@@ -14,11 +14,13 @@ import {
 } from "@/shared/utils/trace-settings";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
 import { formatTime, formatTraceStat } from "@/shared/utils/display";
+import type { CharacterBuildPlan } from "@/types";
 import { characterSkillEntries } from "./character-skills";
+import CharacterScorePanel from "./CharacterScorePanel.vue";
 import { pathLabel } from "./options";
 import type { CharacterDetailData } from "./detail-types";
 
-const props = defineProps<{ detail: CharacterDetailData }>();
+const props = defineProps<{ detail: CharacterDetailData; plan?: CharacterBuildPlan | null }>();
 const disabledTraceNodes = ref<Record<string, number[]>>(loadDisabledTraceNodes());
 const catalogue = computed(() => characterByName.get(props.detail.name));
 const traceNodes = computed(() => primaryTraceNodes(catalogue.value?.traceStats ?? []));
@@ -100,6 +102,15 @@ function toggleTrace(id: number) {
         <span>能力版本</span><b>V{{ detail.abilityVersion }}</b>
       </div>
     </div>
+    <CharacterScorePanel
+      :detail="detail"
+      :plan="plan"
+      :current-spd="
+        standingStats.available
+          ? (standingStats.stats.find((stat) => stat.key === 'speed')?.value ?? null)
+          : null
+      "
+    />
     <section class="character-data-section standing-stat-section">
       <header>
         <div>

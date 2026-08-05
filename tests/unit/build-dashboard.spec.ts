@@ -32,6 +32,9 @@ const entry: BuildDashboardEntry = {
     targets: [{ statKey: "攻击力", target: 2000, minimum: 1800, priority: 1 }],
     effectiveSubstats: ["攻击力"],
     note: "",
+    substatWeights: {},
+    minPotentialPct: 40,
+    spdTarget: 0,
   },
   character: {
     characterId: 1005,

@@ -194,6 +194,18 @@ impl InventoryStore {
             [],
         );
         let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN substat_weights_json TEXT NOT NULL DEFAULT '{}'",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN min_potential_pct REAL NOT NULL DEFAULT 40",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN spd_target REAL NOT NULL DEFAULT 0",
+            [],
+        );
+        let _ = connection.execute(
             "ALTER TABLE relics ADD COLUMN equipped_character_id INTEGER",
             [],
         );
@@ -246,8 +258,21 @@ impl InventoryStore {
     pub fn build_plan(&self, character_id: u32) -> Result<Option<CharacterBuildPlan>, AppError> {
         let connection = self.connect()?;
         let row = connection.query_row(
-            "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json, effective_substats_json, note FROM character_build_plans WHERE character_id = ?1",
-            [character_id], |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?, row.get::<_, Option<u32>>(2)?, row.get::<_, u32>(3)?, row.get::<_, String>(4)?, row.get::<_, String>(5)?, row.get::<_, String>(6)?))
+            "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json, effective_substats_json, note,
+                    COALESCE(substat_weights_json, '{}'), COALESCE(min_potential_pct, 40), COALESCE(spd_target, 0)
+             FROM character_build_plans WHERE character_id = ?1",
+            [character_id], |row| Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, u32>(1)?,
+                row.get::<_, Option<u32>>(2)?,
+                row.get::<_, u32>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, String>(6)?,
+                row.get::<_, String>(7)?,
+                row.get::<_, f64>(8)?,
+                row.get::<_, f64>(9)?,
+            ))
         ).optional()?;
         let Some((
             cavern_mode,
@@ -257,6 +282,9 @@ impl InventoryStore {
             main_stats_json,
             effective_substats_json,
             note,
+            substat_weights_json,
+            min_potential_pct,
+            spd_target,
         )) = row
         else {
             return Ok(None);
@@ -282,6 +310,9 @@ impl InventoryStore {
             targets,
             effective_substats: serde_json::from_str(&effective_substats_json).unwrap_or_default(),
             note,
+            substat_weights: serde_json::from_str(&substat_weights_json).unwrap_or_default(),
+            min_potential_pct,
+            spd_target,
         }))
     }
 
@@ -1190,10 +1221,12 @@ fn save_build_plan_in_transaction(
     transaction.execute(
         "INSERT INTO character_build_plans(
             character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
-            main_stats_json, effective_substats_json, note, updated_at, display_order, pinned
+            main_stats_json, effective_substats_json, note, updated_at, display_order, pinned,
+            substat_weights_json, min_potential_pct, spd_target
          ) VALUES(
             ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9,
-            COALESCE((SELECT MAX(display_order) + 1 FROM character_build_plans), 0), 0
+            COALESCE((SELECT MAX(display_order) + 1 FROM character_build_plans), 0), 0,
+            ?10, ?11, ?12
          )
          ON CONFLICT(character_id) DO UPDATE SET
             cavern_mode = excluded.cavern_mode,
@@ -1203,7 +1236,10 @@ fn save_build_plan_in_transaction(
             main_stats_json = excluded.main_stats_json,
             effective_substats_json = excluded.effective_substats_json,
             note = excluded.note,
-            updated_at = excluded.updated_at",
+            updated_at = excluded.updated_at,
+            substat_weights_json = excluded.substat_weights_json,
+            min_potential_pct = excluded.min_potential_pct,
+            spd_target = excluded.spd_target",
         params![
             plan.character_id,
             plan.cavern_mode,
@@ -1215,7 +1251,20 @@ fn save_build_plan_in_transaction(
             serde_json::to_string(&plan.effective_substats)
                 .map_err(|error| AppError::Database(error.to_string()))?,
             note,
-            now_millis()
+            now_millis(),
+            serde_json::to_string(&plan.substat_weights)
+                .map_err(|error| AppError::Database(error.to_string()))?,
+            // Allow 0 as an explicit threshold; only replace non-finite / negative values.
+            if plan.min_potential_pct.is_finite() && plan.min_potential_pct >= 0.0 {
+                plan.min_potential_pct.min(100.0)
+            } else {
+                40.0
+            },
+            if plan.spd_target.is_finite() && plan.spd_target >= 0.0 {
+                plan.spd_target
+            } else {
+                0.0
+            }
         ],
     )?;
     transaction.execute(
@@ -2326,6 +2375,9 @@ mod tests {
             }],
             effective_substats: vec!["SPD".to_owned()],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&plan).unwrap();
         let mut missing_character_plan = plan.clone();
@@ -2387,6 +2439,9 @@ mod tests {
             }],
             effective_substats: vec![],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&plan).unwrap();
         store
@@ -2470,6 +2525,9 @@ mod tests {
                 }],
                 effective_substats: vec![],
                 note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
             })
             .unwrap();
 
@@ -2547,6 +2605,9 @@ mod tests {
             }],
             effective_substats: vec!["SPD".to_owned()],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&base_plan).unwrap();
         let second_plan = CharacterBuildPlan {
@@ -2621,6 +2682,9 @@ mod tests {
             }],
             effective_substats: vec![],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&first_plan).unwrap();
         first_plan.character_id = 1002;
@@ -2661,6 +2725,9 @@ mod tests {
             }],
             effective_substats: vec![],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&plan).unwrap();
 
@@ -2925,6 +2992,9 @@ mod tests {
             }],
             effective_substats: vec!["SPD".to_owned(), "CRIT Rate".to_owned()],
             note: "优先补速度".to_owned(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&plan).unwrap();
         store.clear(None).unwrap();
@@ -2935,6 +3005,56 @@ mod tests {
             vec!["SPD".to_owned(), "CRIT Rate".to_owned()]
         );
         assert_eq!(restored.note, "优先补速度");
+    }
+
+    #[test]
+    fn build_plan_score_weights_round_trip_including_zero_threshold() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[]);
+        snapshot.characters = vec![ImportCharacter {
+            id: 1001,
+            name: "三月七".to_owned(),
+            path: "Preservation".to_owned(),
+            level: 80,
+            ascension: 6,
+            eidolon: 0,
+            skills: json!({}),
+            traces: json!({}),
+            memosprite: None,
+            ability_version: 1,
+        }];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 134.0,
+                priority: 1,
+                minimum: 120.0,
+            }],
+            effective_substats: vec!["SPD".to_owned()],
+            note: String::new(),
+            substat_weights: HashMap::from([
+                ("SPD".to_owned(), 1.0),
+                ("CRIT Rate".to_owned(), 0.75),
+                ("ATK%".to_owned(), 0.5),
+            ]),
+            min_potential_pct: 0.0,
+            spd_target: 160.0,
+        };
+        store.save_build_plan(&plan).unwrap();
+        let restored = store.build_plan(1001).unwrap().unwrap();
+        assert_eq!(restored.substat_weights.get("SPD"), Some(&1.0));
+        assert_eq!(restored.substat_weights.get("CRIT Rate"), Some(&0.75));
+        assert_eq!(restored.substat_weights.get("ATK%"), Some(&0.5));
+        assert_eq!(restored.min_potential_pct, 0.0);
+        assert_eq!(restored.spd_target, 160.0);
     }
 
     #[test]
@@ -2970,6 +3090,9 @@ mod tests {
             }],
             effective_substats: vec![],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&plan).unwrap();
         assert_eq!(store.build_plan(1001).unwrap().unwrap().note, "");
@@ -3009,6 +3132,9 @@ mod tests {
             }],
             effective_substats: vec![],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         let mut candidates = Vec::new();
         for (index, slot) in BUILD_SLOTS.iter().enumerate() {
@@ -3068,6 +3194,9 @@ mod tests {
             ],
             effective_substats: vec![],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         let mut candidates = Vec::new();
         for (slot_index, slot) in BUILD_SLOTS.iter().enumerate() {
@@ -3133,6 +3262,9 @@ mod tests {
             }],
             effective_substats: vec![],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
 
         let unequipped = build_candidates(&connection, &plan, false).unwrap();
@@ -3186,6 +3318,9 @@ mod tests {
             }],
             effective_substats: vec!["SPD".to_owned()],
             note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
         };
         store.save_build_plan(&plan).unwrap();
         let snapshot = store.sync_snapshot().unwrap();
@@ -3252,6 +3387,9 @@ mod tests {
                 }],
                 effective_substats: vec![],
                 note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
             })
             .unwrap();
         let mut snapshot = store.sync_snapshot().unwrap();

@@ -144,6 +144,11 @@ fn headers() -> Vec<&'static str> {
         "有效副词条 5",
         "有效副词条 6",
         "说明",
+        // Columns 33+ are machine-oriented extensions (older files omit them safely).
+        "角色 ID",
+        "词条权重 JSON",
+        "质量门槛",
+        "速度断点",
     ]
 }
 fn catalogue() -> Result<RelicCatalogue, AppError> {
@@ -348,6 +353,22 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
                 .write_string(row, 32, &plan.note)
                 .map_err(io_error)?;
         }
+        // 33 = character id (also written below for rows without plans)
+        if !plan.substat_weights.is_empty() {
+            let weights_json = serde_json::to_string(&plan.substat_weights)
+                .map_err(|error| AppError::Database(error.to_string()))?;
+            sheet
+                .write_string(row, 34, &weights_json)
+                .map_err(io_error)?;
+        }
+        sheet
+            .write_number(row, 35, plan.min_potential_pct)
+            .map_err(io_error)?;
+        if plan.spd_target > 0.0 {
+            sheet
+                .write_number(row, 36, plan.spd_target)
+                .map_err(io_error)?;
+        }
     }
     validation(sheet, 0, 0, &characters)?;
     validation(sheet, 1, 1, &modes)?;
@@ -367,13 +388,17 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
     validation(sheet, 20, 20, &substats)?;
     validation(sheet, 23, 23, &substats)?;
     validation(sheet, 26, 31, &substats)?;
-    // Column 32 is "说明" (from headers). Character ID is hidden at column 33.
-    sheet
-        .write_string_with_format(0, 33, "角色 ID", &heading)
-        .map_err(io_error)?;
+    // Hide machine columns: character id + weights JSON.
     sheet.set_column_hidden(33).map_err(io_error)?;
+    sheet.set_column_hidden(34).map_err(io_error)?;
     sheet
         .set_column_width(32, 28.0)
+        .map_err(io_error)?;
+    sheet
+        .set_column_width(35, 12.0)
+        .map_err(io_error)?;
+    sheet
+        .set_column_width(36, 12.0)
         .map_err(io_error)?;
     for (index, row_data) in rows.iter().enumerate() {
         sheet
@@ -543,6 +568,15 @@ pub(super) fn import(
         } else {
             normalize_build_plan_note(&note_raw)
         };
+        // Optional extensions (new exports). Missing cells keep defaults for older workbooks.
+        let substat_weights = parse_substat_weights(&text(row.get(34)));
+        let min_potential_pct = number(row.get(35))
+            .filter(|value| value.is_finite() && *value >= 0.0)
+            .map(|value| value.min(100.0))
+            .unwrap_or(40.0);
+        let spd_target = number(row.get(36))
+            .filter(|value| value.is_finite() && *value >= 0.0)
+            .unwrap_or(0.0);
         plans.push(CharacterBuildPlan {
             character_id,
             cavern_mode: if cavern_set_b.is_some() {
@@ -557,9 +591,39 @@ pub(super) fn import(
             targets,
             effective_substats,
             note,
+            substat_weights,
+            min_potential_pct,
+            spd_target,
         });
     }
     Ok(plans)
+}
+
+fn parse_substat_weights(raw: &str) -> HashMap<String, f64> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return HashMap::new();
+    }
+    let Ok(parsed) = serde_json::from_str::<serde_json::Value>(trimmed) else {
+        return HashMap::new();
+    };
+    let Some(object) = parsed.as_object() else {
+        return HashMap::new();
+    };
+    let mut weights = HashMap::new();
+    for (key, value) in object {
+        let Some(number) = value.as_f64() else {
+            continue;
+        };
+        if !number.is_finite() || !(0.0..=1.0).contains(&number) {
+            continue;
+        }
+        // Accept English keys; ignore unknown keys so partial maps still import.
+        if SUBSTATS.contains(&key.as_str()) {
+            weights.insert(key.clone(), number);
+        }
+    }
+    weights
 }
 
 #[cfg(test)]
@@ -584,6 +648,14 @@ mod tests {
             }],
             effective_substats: vec!["SPD".into(), "CRIT Rate".into()],
             note: "  优先速度，暴伤次之  ".into(),
+            substat_weights: HashMap::from([
+                ("SPD".into(), 1.0),
+                ("CRIT Rate".into(), 1.0),
+                ("CRIT DMG".into(), 1.0),
+                ("ATK%".into(), 0.75),
+            ]),
+            min_potential_pct: 45.0,
+            spd_target: 160.0,
         };
         export(
             &path,
@@ -647,8 +719,22 @@ mod tests {
         assert_eq!(imported[0].targets[0].stat_key, "SPD");
         assert_eq!(imported[0].cavern_set_a, 101);
         assert_eq!(imported[0].note, "优先速度，暴伤次之");
+        assert_eq!(imported[0].substat_weights.get("SPD"), Some(&1.0));
+        assert_eq!(imported[0].substat_weights.get("ATK%"), Some(&0.75));
+        assert_eq!(imported[0].min_potential_pct, 45.0);
+        assert_eq!(imported[0].spd_target, 160.0);
         assert_eq!(imported[1].character_id, 1002);
         assert_eq!(imported[1].note, "副C说明");
+        assert_eq!(imported[1].spd_target, 160.0);
+    }
+
+    #[test]
+    fn parse_substat_weights_ignores_invalid_entries() {
+        let weights = parse_substat_weights(r#"{"SPD":1,"ATK%":0.75,"nope":1,"CRIT Rate":2}"#);
+        assert_eq!(weights.get("SPD"), Some(&1.0));
+        assert_eq!(weights.get("ATK%"), Some(&0.75));
+        assert!(!weights.contains_key("nope"));
+        assert!(!weights.contains_key("CRIT Rate")); // out of 0..=1
     }
 
     #[test]

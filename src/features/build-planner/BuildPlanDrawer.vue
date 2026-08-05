@@ -6,6 +6,7 @@ import InputNumber from "primevue/inputnumber";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import RelicSetCardPicker from "./RelicSetCardPicker.vue";
+import SubstatWeightEditor from "./SubstatWeightEditor.vue";
 import { useBuildPlanEditor } from "./useBuildPlanEditor";
 import {
   relicMainStats,
@@ -197,6 +198,14 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
               >
             </div>
           </div>
+        </section>
+        <section class="build-section">
+          <h3>词条权重 / Stat Score</h3>
+          <SubstatWeightEditor
+            v-model="editor.plan.substatWeights"
+            v-model:min-potential-pct="editor.plan.minPotentialPct"
+            v-model:spd-target="editor.plan.spdTarget"
+          />
         </section>
         <section v-if="editor.recommendation.value" class="build-section build-results">
           <h3>当前进度</h3>

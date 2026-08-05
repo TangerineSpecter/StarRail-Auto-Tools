@@ -3,7 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { buildPlanApi } from "@/shared/api/build-plan";
-import { statLabel } from "@/shared/catalogue/relic-options";
+import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import { loadDisabledTraceNodes, traceNodeEnabled } from "@/shared/utils/trace-settings";
 import {
@@ -12,6 +12,11 @@ import {
   lightConeSkillEffect,
 } from "@/shared/utils/standing-stats";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
+import {
+  averageCharacterPotential,
+  planQualityCompletion,
+  resolvePlanWeights,
+} from "@/shared/utils/relic-score";
 import {
   buildTargetProgress,
   effectiveSubstatCounts,
@@ -241,6 +246,25 @@ const cards = computed(() =>
       const completed = targets.filter(
         (target) => target.percent !== null && target.percent >= 100,
       ).length;
+      // Lightweight scoring only — full Estimated TBP enumeration is too slow for list load.
+      const weights = resolvePlanWeights({
+        substatWeights: entry.plan.substatWeights,
+        effectiveSubstats: entry.plan.effectiveSubstats,
+      });
+      const relicInputs = (character.equippedRelics ?? []).map((relic, index) => ({
+        slot:
+          relic.slot ??
+          (["Head", "Hands", "Body", "Feet", "PlanarSphere", "LinkRope"][index] || "Head"),
+        mainStat: relic.mainStat,
+        substats: relic.substats,
+      }));
+      const quality = planQualityCompletion(relicInputs, weights, {
+        allowedMainStats: entry.plan.mainStats,
+        minPotentialPct: entry.plan.minPotentialPct ?? 40,
+      });
+      const potential = averageCharacterPotential(relicInputs, weights, {
+        allowedMainStats: entry.plan.mainStats,
+      });
       return {
         entry,
         character,
@@ -254,6 +278,9 @@ const cards = computed(() =>
         effective,
         effectiveTotal: effective.reduce((sum, item) => sum + item.count, 0),
         completed,
+        quality,
+        averagePotentialPct: potential.averagePotentialPct,
+        weakSlot: potential.weakSlot,
       };
     })
     .filter((card) => card.state.available)
@@ -538,6 +565,25 @@ defineExpose({ reload: loadDashboard });
             >
           </div>
           <small v-else>暂无命中词条</small>
+          <div class="build-score-strip" aria-label="词条质量摘要">
+            <span class="build-score-chip"
+              >潜力 {{ card.averagePotentialPct.toFixed(0) }}%</span
+            >
+            <span class="build-score-chip"
+              >质量 {{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
+            >
+            <span class="build-score-chip"
+              >主属性 {{ card.quality.mainStatCorrectCount }}/{{
+                card.quality.mainStatTotal
+              }}</span
+            >
+            <span class="build-score-chip muted"
+              >完成 {{ (card.quality.combinedRatio * 100).toFixed(0) }}%</span
+            >
+            <span v-if="card.weakSlot" class="build-score-chip weak"
+              >短板 {{ slotLabel(card.weakSlot) }}</span
+            >
+          </div>
         </div>
       </article>
     </div>
@@ -1118,6 +1164,36 @@ defineExpose({ reload: loadDashboard });
 .effective-summary > small {
   color: var(--muted);
   font-size: 11px;
+}
+.build-score-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.build-score-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f7faff 0%, #eef4fb 100%);
+  color: #3d5f8f;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.build-score-chip.muted {
+  border-color: rgba(48, 75, 117, 0.1);
+  background: #f4f6f9;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.build-score-chip.weak {
+  border-color: rgba(199, 165, 90, 0.35);
+  background: linear-gradient(180deg, #fffaf0 0%, #f8efd8 100%);
+  color: #8a6a2a;
 }
 .dashboard-state {
   padding: 48px;

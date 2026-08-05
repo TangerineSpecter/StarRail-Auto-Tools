@@ -24,6 +24,9 @@ describe("BuildPlanDrawer", () => {
       targets: [{ statKey: "SPD", target: 134, minimum: 120, priority: 1 }],
       effectiveSubstats: ["SPD"],
       note: "遗器优先速度鞋",
+      substatWeights: { SPD: 1 },
+      minPotentialPct: 40,
+      spdTarget: 134,
     });
     api.save.mockResolvedValue(undefined);
     api.recommend.mockResolvedValue({

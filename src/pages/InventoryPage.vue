@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { onActivated, onBeforeUnmount, onDeactivated, ref } from "vue";
+import { computed, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from "vue";
 import InventorySidebar from "@/features/inventory/InventorySidebar.vue";
 import InventoryToolbar from "@/features/inventory/InventoryToolbar.vue";
 import InventoryFilterDrawer from "@/features/inventory/InventoryFilterDrawer.vue";
 import InventoryList from "@/features/inventory/InventoryList.vue";
 import InventoryDetailDrawer from "@/features/inventory/InventoryDetailDrawer.vue";
+import RelicQualityToolbar from "@/features/inventory/RelicQualityToolbar.vue";
 import BuildPlanDrawer from "@/features/build-planner/BuildPlanDrawer.vue";
 import { useInventoryArchive } from "@/features/inventory/useInventoryArchive";
 import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import type { InventoryListItem, RelicListItem } from "@/types";
 
 defineOptions({ name: "InventoryPage" });
 const { direct, summary, busy, error, notice, inventoryRevision } = useRuntimeContext();
@@ -23,6 +25,19 @@ const feedback = {
 const archive = useInventoryArchive(feedback);
 const detail = useInventoryDetail(feedback.setError);
 const buildCharacterId = ref<number | null>(null);
+const scoredRelicItems = ref<RelicListItem[] | null>(null);
+const listItems = computed<InventoryListItem[]>(() => {
+  if (archive.kind.value === "relic" && scoredRelicItems.value) return scoredRelicItems.value;
+  return archive.result.value.items;
+});
+
+// Drop client-side score ordering when leaving the relic tab so stale pages never leak.
+watch(
+  () => archive.kind.value,
+  (kind) => {
+    if (kind !== "relic") scoredRelicItems.value = null;
+  },
+);
 
 function onEscape(event: KeyboardEvent) {
   if (event.key !== "Escape" || event.isComposing) return;
@@ -64,9 +79,16 @@ onBeforeUnmount(removeEscapeListener);
         @apply="archive.applyFilters"
         @reset="archive.resetFilters"
       />
+      <RelicQualityToolbar
+        v-if="archive.kind.value === 'relic'"
+        :items="archive.result.value.items as RelicListItem[]"
+        @update:display-items="scoredRelicItems = $event"
+        @notice="notice = $event"
+        @error="error = $event"
+      />
       <InventoryList
         :kind="archive.kind.value"
-        :items="archive.result.value.items"
+        :items="listItems"
         :selected-ids="archive.selectedIds.value"
         :all-selected="archive.allSelected.value"
         :appending="archive.appending.value"

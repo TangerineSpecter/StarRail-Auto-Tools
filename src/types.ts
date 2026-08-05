@@ -199,6 +199,15 @@ export interface CharacterBuildPlan {
   effectiveSubstats: string[];
   /** Optional free-text note shown on the graduation dashboard. */
   note: string;
+  /**
+   * Per-plan substat weights for Stat Score / Estimated TBP (0–1, typically 0.25 steps).
+   * Persisted with the build plan (WebDAV-backed). Empty object → infer from effectiveSubstats.
+   */
+  substatWeights: Record<string, number>;
+  /** Minimum relic potential % counted as quality-pass on the graduation dashboard (default 40). */
+  minPotentialPct: number;
+  /** Optional SPD breakpoint target for the SPD helper (0 = unset). */
+  spdTarget: number;
 }
 
 export interface BuildPlanExcelImportResult {
@@ -225,10 +234,12 @@ export interface BuildDashboardSubstat {
   key: string;
   value: number;
   count: number;
+  step?: number;
 }
 
 export interface BuildDashboardRelic {
   setId: number;
+  slot?: string;
   mainStat: string;
   mainStatValue: number;
   substats?: BuildDashboardSubstat[];

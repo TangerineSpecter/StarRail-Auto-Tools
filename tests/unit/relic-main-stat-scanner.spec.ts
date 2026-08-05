@@ -2,13 +2,21 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RelicMainStatScanner from "@/features/relic-scanner/RelicMainStatScanner.vue";
 
-const { relicMainStatScanPlanCount, scanRelicsByMainStat } = vi.hoisted(() => ({
-  relicMainStatScanPlanCount: vi.fn(),
-  scanRelicsByMainStat: vi.fn(),
-}));
+const { relicMainStatScanPlanCount, scanRelicsByMainStat, listRelics, dashboard } = vi.hoisted(
+  () => ({
+    relicMainStatScanPlanCount: vi.fn(),
+    scanRelicsByMainStat: vi.fn(),
+    listRelics: vi.fn(),
+    dashboard: vi.fn(),
+  }),
+);
 
 vi.mock("@/shared/api/inventory", () => ({
-  inventoryApi: { relicMainStatScanPlanCount, scanRelicsByMainStat },
+  inventoryApi: { relicMainStatScanPlanCount, scanRelicsByMainStat, listRelics },
+}));
+
+vi.mock("@/shared/api/build-plan", () => ({
+  buildPlanApi: { dashboard },
 }));
 
 const buttonStub = {
@@ -20,10 +28,15 @@ describe("RelicMainStatScanner", () => {
   beforeEach(() => {
     relicMainStatScanPlanCount.mockReset();
     scanRelicsByMainStat.mockReset();
+    listRelics.mockReset();
+    dashboard.mockReset();
+    dashboard.mockResolvedValue([]);
+    listRelics.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 200 });
   });
 
   it("disables analysis when there are no saved build plans", async () => {
     relicMainStatScanPlanCount.mockResolvedValue(0);
+    dashboard.mockResolvedValue([]);
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
       global: { stubs: { Button: buttonStub } },
@@ -36,6 +49,27 @@ describe("RelicMainStatScanner", () => {
 
   it("shows unconfigured-slot context and emits the selected relic", async () => {
     relicMainStatScanPlanCount.mockResolvedValue(1);
+    dashboard.mockResolvedValue([
+      {
+        plan: {
+          characterId: 1,
+          cavernMode: "fourPiece",
+          cavernSetA: 1,
+          cavernSetB: null,
+          planarSetId: 1,
+          mainStats: {},
+          targets: [{ statKey: "SPD", target: 134, minimum: 120, priority: 1 }],
+          effectiveSubstats: [],
+          note: "",
+          substatWeights: {},
+          minPotentialPct: 40,
+          spdTarget: 0,
+        },
+        character: { characterId: 1, name: "测试", level: 80, ascension: 6 },
+        displayOrder: 0,
+        pinned: false,
+      },
+    ]);
     scanRelicsByMainStat.mockResolvedValue({
       items: [
         {

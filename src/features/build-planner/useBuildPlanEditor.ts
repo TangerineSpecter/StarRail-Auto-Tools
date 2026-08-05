@@ -21,6 +21,9 @@ const emptyPlan = (characterId: number): CharacterBuildPlan => ({
   targets: [],
   effectiveSubstats: [],
   note: "",
+  substatWeights: {},
+  minPotentialPct: 40,
+  spdTarget: 0,
 });
 
 async function yieldForCalculationFeedback() {
@@ -73,6 +76,10 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     try {
       Object.assign(plan, emptyPlan(characterId), (await buildPlanApi.get(characterId)) ?? {});
       if (typeof plan.note !== "string") plan.note = "";
+      if (!plan.substatWeights || typeof plan.substatWeights !== "object") plan.substatWeights = {};
+      if (typeof plan.minPotentialPct !== "number" || !Number.isFinite(plan.minPotentialPct))
+        plan.minPotentialPct = 40;
+      if (typeof plan.spdTarget !== "number" || !Number.isFinite(plan.spdTarget)) plan.spdTarget = 0;
     } catch (cause) {
       options.setError(String(cause));
     } finally {

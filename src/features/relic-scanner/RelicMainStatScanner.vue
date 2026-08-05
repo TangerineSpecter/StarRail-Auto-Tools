@@ -1,16 +1,40 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import Button from "primevue/button";
+import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
-import type { RelicListItem, RelicMainStatScanResult } from "@/types";
+import { scoreRelicForPlans } from "@/shared/utils/relic-score";
+import type {
+  BuildDashboardEntry,
+  RelicListItem,
+  RelicMainStatScanResult,
+} from "@/types";
 
 const props = defineProps<{ imageFor: (relic: RelicListItem) => string | undefined }>();
 const emit = defineEmits<{ "open-relic": [relic: RelicListItem] }>();
 const planCount = ref<number | null>(null);
 const loading = ref(false);
 const loadingMore = ref(false);
+const usefulnessLoading = ref(false);
 const error = ref("");
 const result = ref<RelicMainStatScanResult | null>(null);
+const plans = ref<BuildDashboardEntry[]>([]);
+const usefulnessRows = ref<
+  Array<{
+    item: RelicListItem;
+    bestCharacterId: number | null;
+    bestLabel: string;
+    grade: string | null;
+    weightedRolls: number;
+    overallTag: string;
+  }>
+>([]);
+/** True when inventory has more unequipped relics than the scan page size. */
+const usefulnessTruncated = ref(false);
+const usefulnessScanned = ref(0);
+const usefulnessTotal = ref(0);
+const USEFULNESS_PAGE_SIZE = 200;
+let usefulnessRequestId = 0;
 
 const slotLabels: Record<string, string> = {
   Head: "头部",
@@ -80,9 +104,79 @@ async function analyze(append = false) {
   }
 }
 
+async function analyzeUsefulness() {
+  const requestId = ++usefulnessRequestId;
+  usefulnessLoading.value = true;
+  error.value = "";
+  usefulnessTruncated.value = false;
+  usefulnessScanned.value = 0;
+  usefulnessTotal.value = 0;
+  try {
+    if (!plans.value.length) plans.value = await buildPlanApi.dashboard();
+    if (requestId !== usefulnessRequestId) return;
+    planCount.value = plans.value.length;
+    if (!plans.value.length) {
+      usefulnessRows.value = [];
+      return;
+    }
+    const page = await inventoryApi.listRelics({
+      page: 1,
+      pageSize: USEFULNESS_PAGE_SIZE,
+      equipped: false,
+    });
+    if (requestId !== usefulnessRequestId) return;
+    usefulnessScanned.value = page.items.length;
+    usefulnessTotal.value = page.total;
+    usefulnessTruncated.value = page.total > page.items.length;
+    const planInputs = plans.value.map((entry) => ({
+      characterId: entry.character.characterId,
+      planLabel: entry.character.name,
+      substatWeights: entry.plan.substatWeights,
+      effectiveSubstats: entry.plan.effectiveSubstats,
+      mainStats: entry.plan.mainStats,
+      minPotentialPct: entry.plan.minPotentialPct,
+    }));
+    usefulnessRows.value = page.items
+      .map((item) => {
+        const scored = scoreRelicForPlans(
+          {
+            slot: item.slot,
+            mainStat: item.mainStat,
+            substats: item.substats,
+            rarity: item.rarity,
+            level: item.level,
+          },
+          planInputs,
+        );
+        return {
+          item,
+          bestCharacterId: scored.best?.characterId ?? null,
+          bestLabel: scored.best?.planLabel ?? "—",
+          grade: scored.best?.score.letterGrade ?? null,
+          weightedRolls: scored.best?.score.weightedRolls ?? 0,
+          overallTag: scored.overallTag,
+        };
+      })
+      .sort((a, b) => b.weightedRolls - a.weightedRolls);
+  } catch (cause) {
+    if (requestId !== usefulnessRequestId) return;
+    error.value = String(cause);
+  } finally {
+    if (requestId === usefulnessRequestId) usefulnessLoading.value = false;
+  }
+}
+
+const tagLabel: Record<string, string> = {
+  lock: "建议锁定",
+  farm: "可继续刷",
+  "discard-candidate": "分解候选",
+};
+
 onMounted(async () => {
   try {
     planCount.value = await inventoryApi.relicMainStatScanPlanCount();
+    plans.value = await buildPlanApi.dashboard();
+    planCount.value = Math.max(planCount.value ?? 0, plans.value.length);
   } catch (cause) {
     error.value = String(cause);
   }
@@ -103,7 +197,14 @@ onMounted(async () => {
       <div class="scanner-command">
         <small>MAIN-STAT ANALYZER</small>
         <Button :disabled="!canAnalyze" :loading="loading" @click="analyze()"
-          ><span class="command-marker" aria-hidden="true">✦</span> 分析背包</Button
+          ><span class="command-marker" aria-hidden="true">✦</span> 主属性扫描</Button
+        >
+        <Button
+          :disabled="!canAnalyze"
+          :loading="usefulnessLoading"
+          outlined
+          @click="analyzeUsefulness()"
+          >方案有用度排序</Button
         >
       </div>
     </header>
@@ -113,8 +214,53 @@ onMounted(async () => {
         <small>ANALYSIS SOURCE</small><b>{{ planCount ?? "--" }} 个培养方案</b>
       </div>
       <div><small>INCLUDED ITEMS</small><b>仅未装备遗器</b></div>
-      <div><small>JUDGEMENT</small><b>主词条是否命中目标</b></div>
+      <div><small>JUDGEMENT</small><b>主词条 / 词条有用度</b></div>
       <i aria-hidden="true" />
+    </div>
+
+    <div v-if="usefulnessRows.length" class="scanner-usefulness">
+      <div class="scanner-result-heading">
+        <div>
+          <small>PLAN USEFULNESS / RANKED</small>
+          <p>
+            <b>{{ usefulnessRows.length }}</b> 件未装备遗器（按最佳方案加权分）
+          </p>
+          <p v-if="usefulnessTruncated" class="scanner-result-note">
+            仅分析前 {{ usefulnessScanned }} / {{ usefulnessTotal }} 件未装备遗器（性能上限），结果可能不完整。
+          </p>
+        </div>
+        <p class="scanner-result-note">启发式评分，不是 DPS</p>
+      </div>
+      <div class="scanner-list" role="list" aria-label="方案有用度排序">
+        <button
+          v-for="row in usefulnessRows"
+          :key="row.item.itemId"
+          class="scanner-item"
+          type="button"
+          role="listitem"
+          @click="emit('open-relic', row.item)"
+        >
+          <span class="scanner-card-kicker"
+            ><i>{{ row.grade ?? "—" }}</i
+            ><small>{{ slotLabel(row.item.slot) }}</small></span
+          >
+          <span :class="['scanner-item-image', `rarity-${row.item.rarity}`]"
+            ><img
+              v-if="props.imageFor(row.item)"
+              :src="props.imageFor(row.item)"
+              :alt="row.item.name"
+            /><i v-else>{{ slotLabel(row.item.slot).slice(0, 1) }}</i></span
+          >
+          <span class="scanner-item-identity"
+            ><b>{{ row.item.setName }}</b
+            ><small
+              >{{ row.bestLabel }} · {{ row.weightedRolls.toFixed(2) }} rolls ·
+              {{ tagLabel[row.overallTag] ?? row.overallTag }}</small
+            ></span
+          >
+          <span class="scanner-item-arrow" aria-hidden="true">查看 ›</span>
+        </button>
+      </div>
     </div>
 
     <p v-if="error" class="scanner-state error">{{ error }}</p>

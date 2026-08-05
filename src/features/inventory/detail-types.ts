@@ -11,6 +11,7 @@ export interface RelicDetailData {
   mainStat: string;
   mainStatValue: number;
   location: string;
+  equippedCharacterId?: number | null;
   locked: boolean;
   discard: boolean;
   updatedAt: number;

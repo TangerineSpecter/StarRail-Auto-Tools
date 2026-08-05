@@ -284,6 +284,19 @@ pub struct CharacterBuildPlan {
     /// Optional free-text note shown on the graduation dashboard.
     #[serde(default)]
     pub note: String,
+    /// Per-plan substat weights for Stat Score (0–1). Empty → client infers defaults.
+    #[serde(default)]
+    pub substat_weights: HashMap<String, f64>,
+    /// Minimum relic potential % for quality-pass (default 40).
+    #[serde(default = "default_min_potential_pct")]
+    pub min_potential_pct: f64,
+    /// Optional SPD breakpoint target for the SPD helper (0 = unset).
+    #[serde(default)]
+    pub spd_target: f64,
+}
+
+fn default_min_potential_pct() -> f64 {
+    40.0
 }
 
 /// Maximum character length for a build-plan note (Unicode scalar values).

@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { relicImage } from "@/shared/catalogue";
 import { formatTime } from "@/shared/utils/display";
+import type { CharacterBuildPlan } from "@/types";
 import { formatStatValue, slotLabel, statLabel } from "./options";
 import type { RelicDetailData } from "./detail-types";
-defineProps<{ detail: RelicDetailData }>();
+import RelicQualityCard from "./RelicQualityCard.vue";
+defineProps<{
+  detail: RelicDetailData;
+  plan?: CharacterBuildPlan | null;
+  planLabel?: string;
+}>();
 </script>
 <template>
   <section class="relic-detail-card">
@@ -68,6 +74,7 @@ defineProps<{ detail: RelicDetailData }>();
       </div>
       <div v-else class="detail-empty-substats"><p>该遗器尚未记录副属性数据。</p></div>
     </section>
+    <RelicQualityCard :detail="detail" :plan="plan" :plan-label="planLabel" />
     <footer class="relic-detail-footer">
       <div>
         <span>装备归属</span><b>{{ detail.location || "未装备" }}</b>
