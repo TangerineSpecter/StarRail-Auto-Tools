@@ -205,6 +205,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             v-model="editor.plan.substatWeights"
             v-model:min-potential-pct="editor.plan.minPotentialPct"
             v-model:spd-target="editor.plan.spdTarget"
+            :effective-substats="editor.plan.effectiveSubstats"
           />
         </section>
         <section v-if="editor.recommendation.value" class="build-section build-results">

@@ -192,104 +192,212 @@ export function letterGradeFromPotential(potentialPct: number): string {
   return "F";
 }
 
-/** Default role weight templates (0–1, 0.25 steps). */
-export type WeightRole = "critDps" | "hpScaler" | "defScaler" | "break" | "support" | "sustain";
+/**
+ * Role weight templates for Stat Score convenience presets.
+ *
+ * Design rules (reviewed against Fribbels defaults + common HSR archetypes):
+ * - Damage templates weight only stats that usually raise that archetype’s damage or action
+ *   value; **Effect RES is 0 on pure damage kits** so dead survival lines do not inflate scores.
+ * - Fribbels assigns RES mainly to supports (≈0.25) and sustains (≈0.50), not to crit DPS.
+ * - SPD is 1.0 for most action-value kits, but **not** for counter / low-SPD DPS
+ *   (Clara / Yunli etc. often prefer ATK boots and minimal SPD so enemies hit them more).
+ * - Crit DPS matches Fribbels baseline: ATK% 0.75, SPD/CR/CD 1.0 (when SPD is valued).
+ * - Templates are **generic archetypes**, not per-character official tables; always adjustable.
+ */
+export type WeightRole =
+  | "critDps"
+  | "critDpsSlow"
+  | "hpDps"
+  | "defDps"
+  | "breakDps"
+  | "dot"
+  | "support"
+  | "ehrSupport"
+  | "sustain";
+
+/** Full substat map builder so every template lists every scorable key. */
+function w(partial: Partial<Record<SubstatKey, number>>): Record<string, number> {
+  const base: Record<string, number> = Object.fromEntries(SUBSTAT_KEYS.map((key) => [key, 0]));
+  return { ...base, ...partial };
+}
 
 export const DEFAULT_ROLE_WEIGHTS: Record<WeightRole, Record<string, number>> = {
-  critDps: {
+  /**
+   * 暴击直伤主 C — Seele / Jing Yuan / Acheron (crit builds) 等。
+   * Fribbels crit DPS baseline; RES not valued for damage scoring.
+   */
+  critDps: w({
     SPD: 1,
     "CRIT Rate": 1,
     "CRIT DMG": 1,
     "ATK%": 0.75,
-    ATK: 0.75,
-    "HP%": 0,
-    HP: 0,
-    "DEF%": 0,
-    DEF: 0,
-    "Effect Hit Rate": 0,
-    "Effect RES": 0.25,
     "Break Effect": 0,
-  },
-  hpScaler: {
+    "Effect Hit Rate": 0,
+    "Effect RES": 0,
+    "HP%": 0,
+    "DEF%": 0,
+  }),
+  /**
+   * 低速 / 反击暴击输出 — Clara / Yunli 等。
+   * 核心伤害来自反击或希望被打；速度副词条通常接近无用甚至有害（行动太快减少受击窗口）。
+   * SPD 权重 0；双暴 + 攻击% 为主。脚部通常走攻击鞋而非速度鞋。
+   */
+  critDpsSlow: w({
+    SPD: 0,
+    "CRIT Rate": 1,
+    "CRIT DMG": 1,
+    "ATK%": 1,
+    "Break Effect": 0,
+    "Effect Hit Rate": 0,
+    "Effect RES": 0,
+    "HP%": 0,
+    "DEF%": 0,
+  }),
+  /**
+   * 生命倍率输出 — Blade / 部分生命乘区主 C。
+   * 「倍率」= 技能伤害公式吃 HP 面板，不是“生命缩放系统”。
+   */
+  hpDps: w({
     SPD: 1,
     "CRIT Rate": 1,
     "CRIT DMG": 1,
     "HP%": 1,
-    HP: 1,
     "ATK%": 0,
-    ATK: 0,
     "DEF%": 0,
-    DEF: 0,
     "Effect Hit Rate": 0,
-    "Effect RES": 0.25,
+    "Effect RES": 0,
     "Break Effect": 0,
-  },
-  defScaler: {
+  }),
+  /**
+   * 防御倍率输出 — 少数 DEF 乘区输出（如部分盾辅兼输出构筑）。
+   * 与纯生存位不同：仍保留一定双暴权重。
+   */
+  defDps: w({
     SPD: 1,
     "CRIT Rate": 0.75,
     "CRIT DMG": 0.75,
     "DEF%": 1,
-    DEF: 1,
-    "ATK%": 0,
-    ATK: 0,
     "HP%": 0.25,
-    HP: 0.25,
+    "ATK%": 0,
     "Effect Hit Rate": 0,
-    "Effect RES": 0.5,
+    "Effect RES": 0,
     "Break Effect": 0,
-  },
-  break: {
+  }),
+  /**
+   * 击破 / 超击破 — Firefly / Boothill / Rappa 等。
+   * 击破伤害基本不吃双暴；ATK% 对部分击破角色仍有用，双暴保持 0。
+   */
+  breakDps: w({
     SPD: 1,
     "Break Effect": 1,
     "ATK%": 0.75,
-    ATK: 0.75,
-    "CRIT Rate": 0.5,
-    "CRIT DMG": 0.5,
-    "HP%": 0,
-    HP: 0,
-    "DEF%": 0,
-    DEF: 0,
+    "CRIT Rate": 0,
+    "CRIT DMG": 0,
     "Effect Hit Rate": 0,
-    "Effect RES": 0.25,
-  },
-  support: {
+    "Effect RES": 0,
+    "HP%": 0,
+    "DEF%": 0,
+  }),
+  /**
+   * 持续伤害 DoT — Kafka / Black Swan / 桑博 等。
+   * 引爆与 DoT 乘区主吃攻击与速度；效果命中保障上异常；双暴提升很有限。
+   */
+  dot: w({
     SPD: 1,
-    "HP%": 0.25,
-    HP: 0.25,
-    "DEF%": 0.25,
-    DEF: 0.25,
-    "Effect Hit Rate": 0.75,
-    "Effect RES": 0.25,
-    "ATK%": 0.5,
-    ATK: 0.5,
+    "ATK%": 1,
+    "Effect Hit Rate": 1,
     "CRIT Rate": 0,
     "CRIT DMG": 0,
     "Break Effect": 0,
-  },
-  sustain: {
+    "Effect RES": 0,
+    "HP%": 0,
+    "DEF%": 0,
+  }),
+  /**
+   * 同谐 / 进攻辅助 — Bronya / Sparkle / Robin 等（以拉条、加攻、增伤为主）。
+   * SPD 优先；少量 HP/DEF 利于生存；EHR 默认 0（不依赖命中时不要抬死词条）。
+   * RES 取 Fribbels 进攻辅助口径 0.25（抗控，不抬输出）。
+   */
+  support: w({
+    SPD: 1,
+    "HP%": 0.5,
+    "DEF%": 0.25,
+    "Effect RES": 0.25,
+    "ATK%": 0.25,
+    "Effect Hit Rate": 0,
+    "CRIT Rate": 0,
+    "CRIT DMG": 0,
+    "Break Effect": 0,
+  }),
+  /**
+   * 命中 / 虚无辅助 — Pela / Silver Wolf / Jiaoqiu 等靠效果命中上 debuff。
+   */
+  ehrSupport: w({
+    SPD: 1,
+    "Effect Hit Rate": 1,
+    "HP%": 0.25,
+    "DEF%": 0.25,
+    "Effect RES": 0.25,
+    "ATK%": 0,
+    "CRIT Rate": 0,
+    "CRIT DMG": 0,
+    "Break Effect": 0,
+  }),
+  /**
+   * 生存位 — 丰饶 / 存护奶盾（Luocha / Huohuo / Aventurine 生存向 等）。
+   * SPD + 生存面板；RES 0.5 对齐 Fribbels defensive sustain。
+   */
+  sustain: w({
     SPD: 1,
     "HP%": 0.75,
-    HP: 0.75,
     "DEF%": 0.75,
-    DEF: 0.75,
     "Effect RES": 0.5,
-    "Effect Hit Rate": 0.25,
+    "Effect Hit Rate": 0,
     "ATK%": 0,
-    ATK: 0,
     "CRIT Rate": 0,
     "CRIT DMG": 0,
     "Break Effect": 0,
-  },
+  }),
 };
 
 export const WEIGHT_ROLE_LABELS: Record<WeightRole, string> = {
-  critDps: "暴击主 C",
-  hpScaler: "生命缩放",
-  defScaler: "防御缩放",
-  break: "击破",
-  support: "进攻辅助",
-  sustain: "生存辅助",
+  critDps: "暴击直伤",
+  critDpsSlow: "低速反击输出",
+  hpDps: "生命倍率输出",
+  defDps: "防御倍率输出",
+  breakDps: "击破输出",
+  dot: "持续伤害 DoT",
+  support: "同谐/进攻辅助",
+  ehrSupport: "命中/虚无辅助",
+  sustain: "生存位（奶盾）",
 };
+
+/** Short help text for the weight editor (Chinese). */
+export const WEIGHT_ROLE_HINTS: Record<WeightRole, string> = {
+  critDps: "双暴 + 速度 + 攻击%；常规直伤暴击主 C。效果抵抗不计分。",
+  critDpsSlow:
+    "克拉拉/云璃等反击或希望被打的低速路线：双暴 + 攻击%；速度权重为 0（速度鞋/副词条通常不是目标）。",
+  hpDps: "技能伤害吃生命面板（如刃）。生命% + 双暴 + 速度。",
+  defDps: "技能伤害吃防御面板。防御% 优先，保留部分双暴。",
+  breakDps: "击破特攻 + 速度 + 攻击%；双暴通常无用。",
+  dot: "攻击% + 速度 + 效果命中；卡芙卡/黑天鹅等，双暴通常无用。",
+  support: "速度优先，少量生存；不依赖命中的同谐/辅助。",
+  ehrSupport: "速度 + 效果命中；佩拉/银狼等上 debuff 辅助。",
+  sustain: "速度 + 生命/防御 + 效果抵抗；奶妈/盾辅生存向。",
+};
+
+/** Display order in the role template dropdown. */
+export const WEIGHT_ROLE_ORDER: WeightRole[] = [
+  "critDps",
+  "critDpsSlow",
+  "hpDps",
+  "defDps",
+  "breakDps",
+  "dot",
+  "support",
+  "ehrSupport",
+  "sustain",
+];
 
 export const WEIGHT_STEPS = [0, 0.25, 0.5, 0.75, 1] as const;
 
@@ -305,23 +413,40 @@ export function roleWeights(role: WeightRole): Record<string, number> {
   return cloneWeights(DEFAULT_ROLE_WEIGHTS[role]);
 }
 
-/** Infer a role template from effective substats when plan has no explicit weights. */
+/**
+ * Infer a role template from effective substats when plan has no explicit weights.
+ * Order matters: more specific kits (break / DoT / EHR) before generic crit.
+ */
 export function inferWeightsFromEffectiveSubstats(
   effectiveSubstats: string[],
 ): Record<string, number> {
   const set = new Set(effectiveSubstats);
-  if (set.has("Break Effect") && !set.has("CRIT Rate") && !set.has("CRIT DMG"))
-    return roleWeights("break");
-  if (set.has("HP%") && !set.has("ATK%") && (set.has("CRIT Rate") || set.has("CRIT DMG")))
-    return roleWeights("hpScaler");
-  if (set.has("DEF%") && !set.has("ATK%")) return roleWeights("defScaler");
-  if (
-    set.has("Effect Hit Rate") ||
-    (set.has("SPD") && !set.has("CRIT Rate") && !set.has("CRIT DMG"))
-  )
+  const hasCrit = set.has("CRIT Rate") || set.has("CRIT DMG");
+  const hasAtk = set.has("ATK%") || set.has("ATK");
+  const hasEhr = set.has("Effect Hit Rate");
+  const hasBreak = set.has("Break Effect");
+  const hasHp = set.has("HP%") || set.has("HP");
+  const hasDef = set.has("DEF%") || set.has("DEF");
+  const hasRes = set.has("Effect RES");
+
+  // Pure / primary break kit
+  if (hasBreak && !hasCrit) return roleWeights("breakDps");
+  // DoT: ATK + EHR, little crit
+  if (hasEhr && hasAtk && !hasCrit) return roleWeights("dot");
+  // Debuff support: EHR without ATK focus
+  if (hasEhr && !hasCrit && !hasAtk) return roleWeights("ehrSupport");
+  // HP scaling crit DPS
+  if (hasHp && hasCrit && !hasAtk) return roleWeights("hpDps");
+  // DEF scaling
+  if (hasDef && !hasAtk && (hasCrit || !hasHp)) return roleWeights("defDps");
+  // Sustain: RES or heavy HP/DEF without crit/atk damage lines
+  if (hasRes && (hasHp || hasDef) && !hasCrit && !hasAtk) return roleWeights("sustain");
+  if ((hasHp || hasDef) && !hasCrit && !hasAtk && !hasEhr && !hasBreak)
+    return roleWeights("sustain");
+  // Speed-first support without damage lines
+  if (set.has("SPD") && !hasCrit && !hasAtk && !hasEhr && !hasBreak)
     return roleWeights("support");
-  if ((set.has("HP%") || set.has("DEF%")) && set.has("Effect RES")) return roleWeights("sustain");
-  if (set.has("CRIT Rate") || set.has("CRIT DMG") || set.has("ATK%")) return roleWeights("critDps");
+  if (hasCrit || hasAtk) return roleWeights("critDps");
   return roleWeights("critDps");
 }
 

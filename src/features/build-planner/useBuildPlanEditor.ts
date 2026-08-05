@@ -77,6 +77,8 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
       Object.assign(plan, emptyPlan(characterId), (await buildPlanApi.get(characterId)) ?? {});
       if (typeof plan.note !== "string") plan.note = "";
       if (!plan.substatWeights || typeof plan.substatWeights !== "object") plan.substatWeights = {};
+      // Keep empty weights empty in the model so Save does not silently persist inferred
+      // templates. SubstatWeightEditor resolves empty → display-only until the user edits.
       if (typeof plan.minPotentialPct !== "number" || !Number.isFinite(plan.minPotentialPct))
         plan.minPotentialPct = 40;
       if (typeof plan.spdTarget !== "number" || !Number.isFinite(plan.spdTarget)) plan.spdTarget = 0;

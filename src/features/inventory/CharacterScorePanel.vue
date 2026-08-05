@@ -2,12 +2,14 @@
 import { computed, ref, watch } from "vue";
 import InputNumber from "primevue/inputnumber";
 import { inventoryApi } from "@/shared/api/inventory";
+import { relicCatalogue } from "@/shared/catalogue";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import {
   averageCharacterPotential,
   characterFarmInvestment,
   farmingPriorityRows,
   planQualityCompletion,
+  planTargetSetIdsForSlot,
   rankSlotReplacements,
   resolvePlanWeights,
   spdBreakpointHelper,
@@ -135,6 +137,17 @@ const spdHelp = computed(() => {
   };
 });
 
+const replacementSetFilter = computed(() => {
+  if (!summary.value.weakSlot) return null;
+  return planTargetSetIdsForSlot(props.plan, summary.value.weakSlot);
+});
+
+const replacementSetNames = computed(() => {
+  const ids = replacementSetFilter.value;
+  if (!ids?.length) return [] as string[];
+  return ids.map((id) => relicCatalogue.sets.find((set) => set.id === id)?.name ?? `套装#${id}`);
+});
+
 const replacements = computed(() => {
   if (!inventoryLoaded.value || !summary.value.weakSlot) return [];
   const weak = props.detail.equippedRelics?.find((r) => r.slot === summary.value.weakSlot);
@@ -144,8 +157,10 @@ const replacements = computed(() => {
     mainStat: weak.mainStat,
     substats: weak.substats,
   };
+  const allowedSets = replacementSetFilter.value;
   const candidates = inventoryRelics.value
     .filter((item) => item.slot === weak.slot)
+    .filter((item) => (allowedSets ? allowedSets.includes(item.setId) : true))
     .map((item) => ({
       slot: item.slot,
       mainStat: item.mainStat,
@@ -153,6 +168,7 @@ const replacements = computed(() => {
       itemId: item.itemId,
       name: item.name,
       setName: item.setName,
+      setId: item.setId,
     }));
   return rankSlotReplacements(equipped, candidates, weights.value, {
     allowedMainStats: props.plan?.mainStats,
@@ -254,15 +270,21 @@ async function computeFarmPriority() {
         </div>
       </div>
 
+      <p class="score-hint">
+        下方六格为各部位字母评级与潜力%；仅<strong>潜力最低的短板部位</strong>会标「短板」（与等级字母无关）。
+      </p>
       <div class="score-piece-grid">
         <div
           v-for="piece in summary.pieces"
           :key="piece.slot"
-          :class="['score-piece', { weak: piece.slot === summary.weakSlot }]"
+          :class="['score-piece', { 'is-weak-slot': piece.slot === summary.weakSlot }]"
         >
-          <span>{{ slotLabel(piece.slot) }}</span>
+          <div class="score-piece-top">
+            <span>{{ slotLabel(piece.slot) }}</span>
+            <em v-if="piece.slot === summary.weakSlot" class="score-piece-badge">短板</em>
+          </div>
           <b>{{ piece.letterGrade ?? "—" }}</b>
-          <small>{{ piece.potentialPct.toFixed(0) }}%</small>
+          <small>潜力 {{ piece.potentialPct.toFixed(0) }}%</small>
         </div>
       </div>
 
@@ -305,10 +327,13 @@ async function computeFarmPriority() {
       </div>
 
       <div class="score-subblock">
-        <h4>速度断点</h4>
+        <h4>速度断点（目标速度阈值）</h4>
+        <p class="score-hint">
+          「断点」= 你想达到的<strong>总速度门槛</strong>（如 134 / 143 / 160），用来估算还差多少速度副词条，<strong>不是</strong>「速度永远越高越好」。低速反击角色（克拉拉/云璃等）通常不必用此工具，权重模板请选「低速反击输出」。
+        </p>
         <div class="score-spd">
           <label>
-            <span>目标速度</span>
+            <span>目标速度阈值</span>
             <InputNumber v-model="localSpdTarget" :min="0" :max="300" :step="1" />
           </label>
           <div v-if="spdHelp" class="score-spd-result">
@@ -322,7 +347,9 @@ async function computeFarmPriority() {
             </p>
             <p>{{ spdHelp.note }}</p>
           </div>
-          <p v-else class="score-hint">设置目标速度，或在培养方案中添加 SPD 目标 / 速度断点。</p>
+          <p v-else class="score-hint">
+            填写目标阈值，或在培养方案中设置 SPD 属性目标 / 速度断点字段。
+          </p>
         </div>
       </div>
 
@@ -340,6 +367,13 @@ async function computeFarmPriority() {
             }}
           </button>
         </div>
+        <p class="score-hint">
+          仅同部位、同主属性且加权分更高的件。
+          <template v-if="replacementSetNames.length">
+            已限制为培养方案目标套装：{{ replacementSetNames.join("、") }}。
+          </template>
+          <template v-else>方案未配置目标套装时，在背包同部位中检索。</template>
+        </p>
         <ul v-if="replacements.length" class="score-replace-list">
           <li v-for="item in replacements" :key="item.relic.itemId">
             <span>#{{ item.relic.itemId }} {{ item.relic.setName || item.relic.name }}</span>
@@ -348,7 +382,8 @@ async function computeFarmPriority() {
           </li>
         </ul>
         <p v-else-if="inventoryLoaded" class="score-hint">
-          背包中未找到同部位、同主属性且加权分更高的候选。
+          未找到符合条件的候选（同部位
+          {{ replacementSetFilter?.length ? "· 目标套装" : "" }} · 主属性 · 更高加权分）。
         </p>
       </div>
     </template>

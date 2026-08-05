@@ -4,8 +4,10 @@ import {
   effectiveWeight,
   estimateTbp,
   farmingPriorityRows,
+  inferWeightsFromEffectiveSubstats,
   letterGradeFromPotential,
   planQualityCompletion,
+  planTargetSetIdsForSlot,
   qualityTagFromScore,
   rankSlotReplacements,
   rerollPotential,
@@ -277,5 +279,51 @@ describe("relic-score core", () => {
     expect(result.estimateDays).toBe(Number.POSITIVE_INFINITY);
     expect(result.sumDays).toBe(Number.POSITIVE_INFINITY);
     expect(result.bottleneckSlot).toBe("Body");
+  });
+
+  it("keeps Effect RES at 0 on damage archetypes and provides a DoT template", () => {
+    const crit = roleWeights("critDps");
+    const brk = roleWeights("breakDps");
+    const dot = roleWeights("dot");
+    const sustain = roleWeights("sustain");
+    expect(crit["Effect RES"]).toBe(0);
+    expect(brk["Effect RES"]).toBe(0);
+    expect(dot["Effect RES"]).toBe(0);
+    expect(dot["Effect Hit Rate"]).toBe(1);
+    expect(dot["ATK%"]).toBe(1);
+    expect(dot["CRIT Rate"]).toBe(0);
+    expect(brk["Break Effect"]).toBe(1);
+    expect(brk["CRIT Rate"]).toBe(0);
+    expect(sustain["Effect RES"]).toBe(0.5);
+  });
+
+  it("infers DoT and break templates from effective substats", () => {
+    const dot = inferWeightsFromEffectiveSubstats(["SPD", "ATK%", "Effect Hit Rate"]);
+    expect(dot["Effect Hit Rate"]).toBe(1);
+    expect(dot["CRIT Rate"]).toBe(0);
+    const brk = inferWeightsFromEffectiveSubstats(["SPD", "Break Effect", "ATK%"]);
+    expect(brk["Break Effect"]).toBe(1);
+    expect(brk["CRIT DMG"]).toBe(0);
+  });
+
+  it("gives zero SPD weight on low-speed counter DPS template", () => {
+    const slow = roleWeights("critDpsSlow");
+    expect(slow.SPD).toBe(0);
+    expect(slow["CRIT Rate"]).toBe(1);
+    expect(slow["ATK%"]).toBe(1);
+  });
+
+  it("resolves plan target set ids by slot", () => {
+    const four = {
+      cavernMode: "fourPiece",
+      cavernSetA: 101,
+      cavernSetB: 102,
+      planarSetId: 301,
+    };
+    expect(planTargetSetIdsForSlot(four, "Body")).toEqual([101]);
+    expect(planTargetSetIdsForSlot(four, "PlanarSphere")).toEqual([301]);
+    const two = { ...four, cavernMode: "twoPlusTwo" };
+    expect(planTargetSetIdsForSlot(two, "Feet")?.sort()).toEqual([101, 102]);
+    expect(planTargetSetIdsForSlot({ cavernSetA: 0, planarSetId: 0 }, "Head")).toBeNull();
   });
 });

@@ -993,6 +993,13 @@
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.78);
 }
+.score-piece-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: 14px;
+}
 .score-piece span {
   color: var(--muted);
   font-size: 8px;
@@ -1009,12 +1016,22 @@
   font-size: 9px;
   font-variant-numeric: tabular-nums;
 }
-.score-piece.weak {
-  border-color: rgba(199, 165, 90, 0.4);
+/* Only the lowest-potential slot — not related to letter grade (S/SS/etc.). */
+.score-piece.is-weak-slot {
+  border-color: rgba(199, 165, 90, 0.45);
   background: linear-gradient(180deg, #fffdf7 0%, #faf3e4 100%);
+  box-shadow: inset 0 0 0 1px rgba(199, 165, 90, 0.12);
 }
-.score-piece.weak b {
-  color: #9a7130;
+.score-piece-badge {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(199, 165, 90, 0.2);
+  color: #8a6a2a;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 .score-subblock {
   margin-top: 12px;
@@ -1272,34 +1289,45 @@
   margin-top: 6px;
 }
 
-/* Build plan weight editor */
+/* Build plan weight editor — align with PrimeVue controls used in build drawer */
 .weight-editor {
   display: grid;
   gap: 10px;
 }
 .weight-editor-toolbar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 9px;
 }
-.weight-editor-toolbar label {
+.weight-field {
   display: grid;
   gap: 4px;
+  min-width: 0;
   color: var(--ink-soft);
   font-size: 9px;
   font-weight: 600;
 }
-.weight-editor-toolbar select,
-.weight-editor-toolbar input,
-.weight-row select {
-  height: var(--control-height);
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: var(--control-radius);
-  color: var(--ink);
-  font: inherit;
+.weight-editor .weight-control,
+.weight-editor .weight-step-input {
+  width: 100%;
+  min-width: 0;
+}
+.weight-editor :deep(.p-select),
+.weight-editor :deep(.p-inputnumber) {
+  width: 100%;
+}
+.weight-editor :deep(.p-select-label),
+.weight-editor :deep(.p-inputnumber-input) {
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.92);
+}
+.weight-editor :deep(.p-select) {
+  min-height: var(--control-height);
+}
+.weight-editor .weight-step-input :deep(.p-inputnumber-input) {
+  min-width: 0;
+  width: 100%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .weight-editor-hint {
   margin: 0;
@@ -1310,14 +1338,22 @@
 .weight-editor-hint strong {
   color: var(--blue-deep);
 }
+.weight-editor-role-hint {
+  margin-top: -4px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  background: rgba(232, 240, 251, 0.55);
+  color: var(--ink-soft);
+}
 .weight-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
   gap: 6px 8px;
 }
 .weight-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 72px;
+  grid-template-columns: minmax(0, 1fr) minmax(96px, 42%);
   gap: 6px;
   align-items: center;
   padding: 6px 8px;
@@ -1331,4 +1367,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.weight-row :deep(.p-inputnumber) {
+  min-height: 30px;
+}
+.weight-row :deep(.p-inputnumber-button) {
+  width: 1.6rem;
 }

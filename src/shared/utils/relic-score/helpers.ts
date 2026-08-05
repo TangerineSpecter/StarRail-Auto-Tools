@@ -166,6 +166,38 @@ export function resolvePlanWeights(plan: {
   return inferWeightsFromEffectiveSubstats(plan.effectiveSubstats ?? []);
 }
 
+/**
+ * Target relic set IDs for a slot from a build plan.
+ * - Cavern slots (Head/Hands/Body/Feet): cavernSetA (+ cavernSetB when 2+2)
+ * - Planar slots: planarSetId
+ * Returns null when no set is configured (caller should not filter by set).
+ */
+export function planTargetSetIdsForSlot(
+  plan:
+    | {
+        cavernMode?: string;
+        cavernSetA?: number | null;
+        cavernSetB?: number | null;
+        planarSetId?: number | null;
+      }
+    | null
+    | undefined,
+  slot: string,
+): number[] | null {
+  if (!plan) return null;
+  const isPlanar = slot === "PlanarSphere" || slot === "LinkRope";
+  if (isPlanar) {
+    const id = plan.planarSetId ?? 0;
+    return id > 0 ? [id] : null;
+  }
+  const ids: number[] = [];
+  if ((plan.cavernSetA ?? 0) > 0) ids.push(plan.cavernSetA as number);
+  if (plan.cavernMode === "twoPlusTwo" && (plan.cavernSetB ?? 0) > 0) {
+    ids.push(plan.cavernSetB as number);
+  }
+  return ids.length > 0 ? [...new Set(ids)] : null;
+}
+
 export function planQualityCompletion(
   relics: ScoreRelicInput[],
   weights: Record<string, number>,
