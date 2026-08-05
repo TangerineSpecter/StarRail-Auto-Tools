@@ -196,16 +196,18 @@ onMounted(async () => {
       </div>
       <div class="scanner-command">
         <small>MAIN-STAT ANALYZER</small>
-        <Button :disabled="!canAnalyze" :loading="loading" @click="analyze()"
-          ><span class="command-marker" aria-hidden="true">✦</span> 主属性扫描</Button
-        >
-        <Button
-          :disabled="!canAnalyze"
-          :loading="usefulnessLoading"
-          outlined
-          @click="analyzeUsefulness()"
-          >方案有用度排序</Button
-        >
+        <div class="scanner-command-buttons">
+          <Button :disabled="!canAnalyze" :loading="loading" @click="analyze()"
+            ><span class="command-marker" aria-hidden="true">✦</span> 主属性扫描</Button
+          >
+          <Button
+            :disabled="!canAnalyze"
+            :loading="usefulnessLoading"
+            outlined
+            @click="analyzeUsefulness()"
+            >方案有用度排序</Button
+          >
+        </div>
       </div>
     </header>
 
@@ -251,13 +253,13 @@ onMounted(async () => {
               :alt="row.item.name"
             /><i v-else>{{ slotLabel(row.item.slot).slice(0, 1) }}</i></span
           >
-          <span class="scanner-item-identity"
-            ><b>{{ row.item.setName }}</b
-            ><small
-              >{{ row.bestLabel }} · {{ row.weightedRolls.toFixed(2) }} rolls ·
-              {{ tagLabel[row.overallTag] ?? row.overallTag }}</small
-            ></span
-          >
+          <span class="scanner-item-identity usefulness-identity">
+            <b>{{ row.item.setName }} <em class="relic-level">+{{ row.item.level }}</em></b>
+            <div class="usefulness-stats">
+              <span class="usefulness-tag" :data-tag="row.overallTag">{{ tagLabel[row.overallTag] ?? row.overallTag }}</span>
+              <small>{{ row.bestLabel }} · {{ row.weightedRolls.toFixed(2) }} rolls</small>
+            </div>
+          </span>
           <span class="scanner-item-arrow" aria-hidden="true">查看 ›</span>
         </button>
       </div>
@@ -372,11 +374,21 @@ onMounted(async () => {
   border-radius: 50%;
   content: "";
 }
-.scanner-title,
-.scanner-command {
+.scanner-title {
   display: grid;
   z-index: 1;
   gap: 6px;
+}
+.scanner-command {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 1;
+  gap: 8px;
+}
+.scanner-command-buttons {
+  display: flex;
+  gap: 16px;
 }
 .scanner-title-line {
   display: flex;
@@ -395,9 +407,6 @@ onMounted(async () => {
   color: var(--ink-soft);
   font-size: 13px;
 }
-.scanner-command {
-  justify-items: end;
-}
 .scanner-command > small,
 .scanner-rules small,
 .scanner-result-heading small,
@@ -411,11 +420,22 @@ onMounted(async () => {
 .scanner-command :deep(.p-button) {
   min-width: 144px;
   padding: 11px 18px;
-  border: 1px solid #1c4b93;
   border-radius: 0;
+  font-weight: 700;
+}
+.scanner-command :deep(.p-button:not(.p-button-outlined)) {
+  border: 1px solid #1c4b93;
   background: linear-gradient(135deg, #1a478d, #326cc1);
   box-shadow: 7px 7px 0 rgba(199, 165, 90, 0.28);
-  font-weight: 700;
+  color: #fff;
+}
+.scanner-command :deep(.p-button-outlined) {
+  border: 1px solid rgba(46, 79, 126, 0.4);
+  background: transparent;
+  color: #1c4b93;
+}
+.scanner-command :deep(.p-button-outlined:hover) {
+  background: rgba(46, 79, 126, 0.05);
 }
 .command-marker {
   margin-right: 5px;
@@ -634,6 +654,40 @@ onMounted(async () => {
   color: var(--ink);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.relic-level {
+  font-style: normal;
+  color: var(--blue);
+  font-size: 13px;
+  margin-left: 2px;
+}
+.usefulness-identity {
+  grid-row: 2 / span 2;
+  align-self: center;
+}
+.usefulness-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.usefulness-tag {
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.usefulness-tag[data-tag="lock"] {
+  background: rgba(220, 160, 90, 0.15);
+  color: #c77b32;
+}
+.usefulness-tag[data-tag="farm"] {
+  background: rgba(45, 110, 200, 0.1);
+  color: #2d6ec8;
+}
+.usefulness-tag[data-tag="discard-candidate"] {
+  background: rgba(200, 80, 80, 0.1);
+  color: #c85050;
 }
 .scanner-stat-compare {
   display: grid;
