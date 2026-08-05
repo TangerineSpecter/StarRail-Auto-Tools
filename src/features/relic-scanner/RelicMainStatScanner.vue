@@ -4,6 +4,7 @@ import Button from "primevue/button";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
 import { scoreRelicForPlans } from "@/shared/utils/relic-score";
+import { characterByName } from "@/shared/catalogue";
 import type {
   BuildDashboardEntry,
   RelicListItem,
@@ -73,6 +74,7 @@ const hasMore = computed(() => !!result.value && result.value.items.length < res
 const slotLabel = (slot: string) => slotLabels[slot] ?? slot;
 const statLabel = (stat: string) => statLabels[stat] ?? stat;
 const allowedStats = (item: RelicListItem) => result.value?.allowedMainStats[item.slot] ?? [];
+const characterElement = (name: string) => characterByName.get(name)?.element ?? null;
 
 function loadMoreOnScroll(event: Event) {
   const container = event.currentTarget as HTMLElement;
@@ -88,6 +90,10 @@ function loadMoreOnScroll(event: Event) {
 async function analyze(append = false) {
   if (!canAnalyze.value && !append) return;
   error.value = "";
+  if (!append) {
+    usefulnessRows.value = [];
+    usefulnessScanned.value = 0;
+  }
   if (append) loadingMore.value = true;
   else loading.value = true;
   try {
@@ -108,6 +114,7 @@ async function analyzeUsefulness() {
   const requestId = ++usefulnessRequestId;
   usefulnessLoading.value = true;
   error.value = "";
+  result.value = null;
   usefulnessTruncated.value = false;
   usefulnessScanned.value = 0;
   usefulnessTotal.value = 0;
@@ -211,15 +218,6 @@ onMounted(async () => {
       </div>
     </header>
 
-    <div class="scanner-rules" aria-label="扫描规则">
-      <div>
-        <small>ANALYSIS SOURCE</small><b>{{ planCount ?? "--" }} 个培养方案</b>
-      </div>
-      <div><small>INCLUDED ITEMS</small><b>仅未装备遗器</b></div>
-      <div><small>JUDGEMENT</small><b>主词条 / 词条有用度</b></div>
-      <i aria-hidden="true" />
-    </div>
-
     <div v-if="usefulnessRows.length" class="scanner-usefulness">
       <div class="scanner-result-heading">
         <div>
@@ -257,15 +255,19 @@ onMounted(async () => {
             <b>{{ row.item.setName }} <em class="relic-level">+{{ row.item.level }}</em></b>
             <div class="usefulness-stats">
               <span class="usefulness-tag" :data-tag="row.overallTag">{{ tagLabel[row.overallTag] ?? row.overallTag }}</span>
-              <small>{{ row.bestLabel }} · {{ row.weightedRolls.toFixed(2) }} rolls</small>
+              <span :class="['character-tag', `element-${characterElement(row.bestLabel)}`]">{{ row.bestLabel }}</span>
+              <span class="score-tag">✦ <b>{{ row.weightedRolls.toFixed(2) }}</b> <small>rolls</small></span>
             </div>
           </span>
           <span class="scanner-item-arrow" aria-hidden="true">查看 ›</span>
         </button>
       </div>
     </div>
+    <div v-else-if="usefulnessScanned > 0" class="scanner-state success">
+      当前没有可分析的未装备遗器。
+    </div>
 
-    <p v-if="error" class="scanner-state error">{{ error }}</p>
+    <p v-else-if="error" class="scanner-state error">{{ error }}</p>
     <div v-else-if="planCount === null" class="scanner-state">正在读取培养方案…</div>
     <div v-else-if="planCount === 0" class="scanner-state">
       请先在数据管理的角色档案中保存至少一个“培养方案 / 毕业目标”。
@@ -408,7 +410,6 @@ onMounted(async () => {
   font-size: 13px;
 }
 .scanner-command > small,
-.scanner-rules small,
 .scanner-result-heading small,
 .scanner-stat-compare small {
   color: var(--muted);
@@ -430,49 +431,17 @@ onMounted(async () => {
   color: #fff;
 }
 .scanner-command :deep(.p-button-outlined) {
-  border: 1px solid rgba(46, 79, 126, 0.4);
-  background: transparent;
+  border: 1px solid #1c4b93;
+  background: #ffffff;
   color: #1c4b93;
+  box-shadow: 7px 7px 0 rgba(46, 79, 126, 0.12);
 }
 .scanner-command :deep(.p-button-outlined:hover) {
-  background: rgba(46, 79, 126, 0.05);
+  background: #f4f7fa;
 }
 .command-marker {
   margin-right: 5px;
   color: #f3d78e;
-}
-.scanner-rules {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(160px, 1fr)) 46px;
-  gap: 1px;
-  min-height: 58px;
-  border: 1px solid var(--line);
-  background: var(--line);
-}
-.scanner-rules > div {
-  display: grid;
-  align-content: center;
-  gap: 7px;
-  padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.74);
-}
-.scanner-rules b {
-  color: var(--blue-deep);
-  font-size: 12px;
-}
-.scanner-rules > i {
-  position: relative;
-  background: rgba(255, 255, 255, 0.74);
-}
-.scanner-rules > i::after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--gold);
-  content: "";
-  transform: translate(-50%, -50%) rotate(45deg);
 }
 .scanner-state,
 .scanner-intro {
@@ -551,9 +520,14 @@ onMounted(async () => {
     transform: rotate(360deg);
   }
 }
+.scanner-usefulness {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 .scanner-result-heading {
-  align-self: end;
-  padding: 3px 3px 0;
+  padding: 3px 3px 10px;
 }
 .scanner-result-heading > div {
   display: grid;
@@ -688,6 +662,40 @@ onMounted(async () => {
 .usefulness-tag[data-tag="discard-candidate"] {
   background: rgba(200, 80, 80, 0.1);
   color: #c85050;
+}
+.character-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.character-tag.element-火 { background: #ffebe5; color: #d13d21; }
+.character-tag.element-冰 { background: #e5f5ff; color: #1a7ec2; }
+.character-tag.element-雷 { background: #f3ebfc; color: #8843cf; }
+.character-tag.element-风 { background: #e6f6eb; color: #279447; }
+.character-tag.element-物理 { background: #f0f2f5; color: #5c6470; }
+.character-tag.element-量子 { background: #f1eaf7; color: #58338e; }
+.character-tag.element-虚数 { background: #fdf5e5; color: #c48310; }
+.character-tag.element-null { background: #f0f2f5; color: var(--muted); }
+
+.score-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  color: #c59849;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 2px;
+}
+.score-tag b {
+  font-size: 12px;
+  color: var(--ink);
+}
+.score-tag small {
+  color: var(--muted);
+  font-size: 9px;
 }
 .scanner-stat-compare {
   display: grid;

@@ -438,13 +438,7 @@ defineExpose({ reload: loadDashboard });
     <p v-if="loading" class="dashboard-state">正在汇总毕业进度…</p>
     <p v-else-if="error" class="dashboard-state error">{{ error }}</p>
     <p v-else-if="!cards.length" class="dashboard-state">暂无具备完整站街属性的毕业方案。</p>
-    <div v-else class="build-progress-table" role="table" aria-label="毕业进度列表">
-      <div class="build-progress-table-head" role="row">
-        <span role="columnheader">角色档案</span>
-        <span role="columnheader">推荐套装</span>
-        <span role="columnheader">当前毕业属性进度</span>
-        <span role="columnheader">有效词条统计</span>
-      </div>
+    <div v-else class="build-card-list" aria-label="毕业进度列表">
       <article
         v-for="card in cards"
         :key="card.character.characterId"
@@ -454,135 +448,161 @@ defineExpose({ reload: loadDashboard });
           { 'drag-over': dragOverCharacterId === card.character.characterId },
         ]"
         :data-character-id="card.character.characterId"
-        role="row"
+        role="article"
       >
-        <div class="build-character" role="cell">
-          <button
-            type="button"
-            class="build-drag-handle"
-            :disabled="!canDrag || actionCharacterId !== null"
-            :aria-label="`拖动调整${card.character.name}顺序`"
-            title="拖动调整顺序"
-            @pointerdown="
-              pointerDragStart(
-                { characterId: card.character.characterId, pinned: card.entry.pinned },
-                $event,
-              )
-            "
-          >
-            ⠿
-          </button>
-          <div class="build-character-avatar-wrap">
+        <header class="build-card-header">
+          <div class="build-card-identity">
+            <button
+              type="button"
+              class="build-drag-handle"
+              :disabled="!canDrag || actionCharacterId !== null"
+              :aria-label="`拖动调整${card.character.name}顺序`"
+              title="拖动调整顺序"
+              @pointerdown="
+                pointerDragStart(
+                  { characterId: card.character.characterId, pinned: card.entry.pinned },
+                  $event,
+                )
+              "
+            >
+              ⠿
+            </button>
             <div class="build-character-avatar">
               <img v-if="card.image" :src="card.image" :alt="`${card.character.name} 头像`" />
               <span v-else>{{ characterInitial(card.character.name) }}</span>
             </div>
-            <button
-              type="button"
-              :class="['build-pin-toggle', { pinned: card.entry.pinned }]"
-              :disabled="actionCharacterId !== null"
-              :aria-label="
-                card.entry.pinned ? `取消${card.character.name}置顶` : `置顶${card.character.name}`
-              "
-              :aria-pressed="card.entry.pinned"
-              title="置顶"
-              @click="togglePinned(card)"
-            >
-              {{ card.entry.pinned ? "★" : "☆" }}
-            </button>
-          </div>
-          <div class="build-character-content">
-            <div class="build-character-title">
-              <p>{{ card.character.name }}</p>
-              <button
-                v-if="planNote(card.entry.plan)"
-                type="button"
-                class="build-note-info"
-                :aria-expanded="notePopover?.characterId === card.character.characterId"
-                :aria-label="`查看${card.character.name}的说明`"
-                title="查看说明"
-                @click.stop="toggleNotePopover($event, card)"
-              >
-                i
-              </button>
+            <div class="build-character-info">
+              <div class="build-character-title">
+                <p>{{ card.character.name }}</p>
+                <button
+                  type="button"
+                  :class="['build-pin-inline', { pinned: card.entry.pinned }]"
+                  :disabled="actionCharacterId !== null"
+                  :aria-label="card.entry.pinned ? `取消${card.character.name}置顶` : `置顶${card.character.name}`"
+                  :aria-pressed="card.entry.pinned"
+                  title="置顶"
+                  @click="togglePinned(card)"
+                >
+                  <svg v-if="card.entry.pinned" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </button>
+                <button
+                  v-if="planNote(card.entry.plan)"
+                  type="button"
+                  class="build-note-info"
+                  :aria-expanded="notePopover?.characterId === card.character.characterId"
+                  :aria-label="`查看${card.character.name}的说明`"
+                  title="查看说明"
+                  @click.stop="toggleNotePopover($event, card)"
+                >i</button>
+              </div>
+              <div class="build-character-actions">
+                <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
+                <button
+                  type="button"
+                  class="build-target-edit"
+                  :aria-label="`编辑${card.character.name}的毕业目标`"
+                  @click="emit('editBuild', card.character.characterId)"
+                >
+                  <span aria-hidden="true">✎</span> 编辑目标
+                </button>
+              </div>
             </div>
-            <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
-            <button
-              type="button"
-              class="build-target-edit"
-              :aria-label="`编辑${card.character.name}的毕业目标`"
-              @click="emit('editBuild', card.character.characterId)"
-            >
-              <span aria-hidden="true">✎</span> 编辑目标
-            </button>
           </div>
-        </div>
-        <div class="recommended-set-list" role="cell">
-          <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
-            <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
-            <span v-else class="recommended-set-fallback">遗</span>
-            <p>
-              {{ item.set.name }}
-              <b>{{ item.pieces }}件</b>
-            </p>
-            <span
-              :class="['recommended-set-status', { matched: item.matched }]"
-              role="img"
-              :aria-label="
-                item.matched
-                  ? `${item.set.name}已装备${item.pieces}件`
-                  : `${item.set.name}未装备${item.pieces}件`
-              "
-              >{{ item.matched ? "✓" : "×" }}</span
-            >
-          </div>
-        </div>
-        <div class="target-progress-list" role="cell">
-          <div
-            v-for="target in card.targets"
-            :key="target.statKey"
-            :class="['target-progress-row', getProgressClass(target.percent)]"
-          >
-            <div class="target-progress-label">
-              <b>{{ statLabel(target.statKey) }}</b>
-              <span v-if="target.percent !== null"
-                >{{ formatBuildProgressValue(target.statKey, target.current ?? 0) }} /
-                {{ target.target }}</span
-              >
-              <span v-else>不可映射</span>
+          <div class="build-card-metrics">
+            <div class="metric-box">
+              <strong>{{ (card.quality.combinedRatio * 100).toFixed(0) }}%</strong>
+              <span>综合完成</span>
             </div>
-            <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
-            <small>
-              {{ (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%` }}
-            </small>
+            <div class="metric-box">
+              <strong>{{ card.effectiveTotal }}</strong>
+              <span>有效词条</span>
+            </div>
+            <div v-if="card.weakSlot" class="metric-box weak">
+              <strong>{{ slotLabel(card.weakSlot) }}</strong>
+              <span>短板位置</span>
+            </div>
           </div>
-        </div>
-        <div class="effective-summary" role="cell">
-          <b>{{ card.effectiveTotal }}<small>次</small></b>
-          <div v-if="card.effective.length" class="effective-detail">
-            <span v-for="item in card.effective" :key="item.key"
-              >{{ statLabel(item.key) }} {{ item.count }}</span
+        </header>
+
+        <div class="build-card-body">
+          <div class="build-card-section progress-section">
+            <h4 class="section-title">属性目标进度</h4>
+            <div
+              v-for="target in card.targets"
+              :key="target.statKey"
+              :class="['target-progress-row', getProgressClass(target.percent)]"
             >
+              <div class="target-progress-label">
+                <b>{{ statLabel(target.statKey) }}</b>
+                <span v-if="target.percent !== null"
+                  >{{ formatBuildProgressValue(target.statKey, target.current ?? 0) }} /
+                  {{ target.target }}</span
+                >
+                <span v-else>不可映射</span>
+              </div>
+              <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
+              <small>
+                {{ (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%` }}
+              </small>
+            </div>
           </div>
-          <small v-else>暂无命中词条</small>
-          <div class="build-score-strip" aria-label="词条质量摘要">
-            <span class="build-score-chip"
-              >潜力 {{ card.averagePotentialPct.toFixed(0) }}%</span
-            >
-            <span class="build-score-chip"
-              >质量 {{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
-            >
-            <span class="build-score-chip"
-              >主属性 {{ card.quality.mainStatCorrectCount }}/{{
-                card.quality.mainStatTotal
-              }}</span
-            >
-            <span class="build-score-chip muted"
-              >完成 {{ (card.quality.combinedRatio * 100).toFixed(0) }}%</span
-            >
-            <span v-if="card.weakSlot" class="build-score-chip weak"
-              >短板 {{ slotLabel(card.weakSlot) }}</span
-            >
+
+          <div class="build-card-section sets-section">
+            <h4 class="section-title">遗器套装状态</h4>
+            <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
+              <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
+              <span v-else class="recommended-set-fallback">遗</span>
+              <p>
+                {{ item.set.name }}
+                <b>{{ item.pieces }}件</b>
+              </p>
+              <span
+                :class="['recommended-set-status', { matched: item.matched }]"
+                role="img"
+                :aria-label="item.matched ? `${item.set.name}已装备${item.pieces}件` : `${item.set.name}未装备${item.pieces}件`"
+              >{{ item.matched ? "✓" : "×" }}</span>
+            </div>
+          </div>
+
+          <div class="build-card-section details-section">
+            <h4 class="section-title">装备质量评级</h4>
+            <div class="quality-visuals">
+              <div class="quality-row">
+                <span class="quality-label">主属性</span>
+                <div class="quality-segments" :aria-label="`主属性正确 ${card.quality.mainStatCorrectCount} / ${card.quality.mainStatTotal}`">
+                  <i v-for="n in card.quality.mainStatTotal" :key="'main'+n" :class="{ active: n <= card.quality.mainStatCorrectCount }"></i>
+                </div>
+              </div>
+              <div class="quality-row">
+                <span class="quality-label">及格件数</span>
+                <div class="quality-segments" :aria-label="`质量达标 ${card.quality.qualityPassCount} / ${card.quality.qualityTotal}`">
+                  <i v-for="n in card.quality.qualityTotal" :key="'qual'+n" :class="{ active: n <= card.quality.qualityPassCount }"></i>
+                </div>
+              </div>
+              <div class="quality-row">
+                <span class="quality-label">词条潜力</span>
+                <div class="quality-bar">
+                  <em :style="{ width: `${card.averagePotentialPct}%` }"></em>
+                </div>
+                <span class="quality-value">{{ card.averagePotentialPct.toFixed(0) }}%</span>
+              </div>
+            </div>
+
+            <h4 class="section-title mt-2">有效词条分布</h4>
+            <div class="affix-tags">
+              <template v-if="card.effective.length">
+                <div v-for="item in card.effective" :key="item.key" class="affix-tag">
+                  <span class="affix-name">{{ statLabel(item.key).replace('百分比', '%') }}</span>
+                  <span class="affix-val">{{ item.count }}</span>
+                </div>
+              </template>
+              <span v-else class="muted">暂无命中词条</span>
+            </div>
           </div>
         </div>
       </article>
@@ -718,50 +738,33 @@ defineExpose({ reload: loadDashboard });
   background: #e1f4ee;
   color: #20725f;
 }
-.build-progress-table {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 14px 32px rgba(36, 86, 166, 0.06);
-}
-.build-progress-table-head,
-.build-progress-row {
-  display: grid;
-  grid-template-columns: minmax(225px, 0.9fr) minmax(260px, 1.15fr) minmax(390px, 1.85fr) minmax(
-      175px,
-      0.75fr
-    );
-}
-.build-progress-table-head {
-  min-height: 44px;
-  align-items: center;
-  padding: 0 24px;
-  background: linear-gradient(90deg, #edf4fb, #f7faff);
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+.build-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1160px;
+  margin: 0 auto;
 }
 .build-progress-row {
   position: relative;
   z-index: 0;
-  align-items: stretch;
-  min-height: 112px;
-  padding: 16px 24px;
-  border-top: 1px solid var(--line);
-  transition:
-    background 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 24px rgba(36, 86, 166, 0.05);
+  transition: box-shadow 160ms ease, transform 160ms ease;
+  overflow: hidden;
 }
 .build-progress-row:hover {
-  background: linear-gradient(90deg, rgba(239, 246, 253, 0.72), rgba(255, 255, 255, 0));
+  box-shadow: 0 14px 32px rgba(36, 86, 166, 0.1);
+  transform: translateY(-2px);
 }
 .build-progress-row.dragging {
   z-index: 0;
   border: 1px dashed rgba(93, 143, 202, 0.45);
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(230, 240, 251, 0.48);
   box-shadow: none;
   opacity: 0.45;
@@ -773,7 +776,7 @@ defineExpose({ reload: loadDashboard });
   margin: 0;
   pointer-events: none;
   border: 1px solid rgba(93, 143, 202, 0.55);
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.98);
   box-shadow:
     0 16px 30px rgba(49, 86, 132, 0.2),
@@ -784,34 +787,68 @@ defineExpose({ reload: loadDashboard });
 .build-progress-row.drag-over {
   box-shadow: inset 0 2px 0 #3d8ed0;
 }
-.build-character {
+.build-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, rgba(237, 244, 251, 0.6), transparent);
+  border-bottom: 1px solid rgba(46, 79, 126, 0.06);
+}
+.build-card-identity {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-right: 20px;
+  gap: 16px;
 }
-.build-character p,
-.build-character b {
-  margin: 0;
-}
-.build-character-content {
-  min-width: 0;
-}
-.build-character-avatar-wrap {
-  position: relative;
-  flex: 0 0 56px;
+.build-character-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .build-character-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
 }
 .build-character-title p {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0;
+}
+.build-character-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+}
+.build-character-actions b {
+  color: #55769b;
+  font-weight: normal;
+}
+.build-card-metrics {
+  display: flex;
+  align-items: flex-end;
+  gap: 32px;
+}
+.build-card-body {
+  display: grid;
+  grid-template-columns: minmax(320px, 1.4fr) minmax(220px, 1fr) minmax(260px, 1.2fr);
+  gap: 40px;
+  padding: 20px 24px 24px 72px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.section-title {
+  color: #7994b4;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 14px 0;
+}
+.progress-section, .sets-section, .details-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .build-note-info {
   display: grid;
@@ -874,46 +911,41 @@ defineExpose({ reload: loadDashboard });
   cursor: grabbing;
 }
 .build-drag-handle:focus-visible,
-.build-pin-toggle:focus-visible {
+.build-pin-inline:focus-visible {
   outline: 2px solid rgba(53, 110, 174, 0.42);
   outline-offset: 3px;
   border-radius: 2px;
 }
 .build-drag-handle:disabled,
-.build-pin-toggle:disabled {
+.build-pin-inline:disabled {
   cursor: default;
 }
-.build-pin-toggle {
-  position: absolute;
-  top: -11px;
-  right: -11px;
+.build-pin-inline {
   display: grid;
-  width: 24px;
-  height: 24px;
   place-items: center;
-  border: 1px solid #d8e5f4;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.96);
-  color: #a9b9cd;
-  font-size: 17px;
-  line-height: 1;
-  box-shadow: 0 2px 6px rgba(43, 87, 146, 0.12);
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #cdd6e0;
+  cursor: pointer;
   transition:
     color 160ms ease,
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease;
+    transform 160ms ease;
 }
-.build-pin-toggle:hover:not(:disabled),
-.build-pin-toggle.pinned {
-  color: #d59a35;
+.build-pin-inline svg {
+  width: 15px;
+  height: 15px;
 }
-.build-pin-toggle:hover:not(:disabled),
-.build-pin-toggle.pinned {
-  border-color: rgba(213, 154, 53, 0.42);
-  background: #fff8e8;
+.build-pin-inline.pinned {
+  color: #e5a93e;
 }
-.build-pin-toggle:active:not(:disabled) {
+.build-pin-inline:hover:not(:disabled) {
+  color: #df9d28;
+  transform: scale(1.1);
+}
+.build-pin-inline:active:not(:disabled) {
   transform: scale(0.9);
 }
 .build-character-avatar {
@@ -953,7 +985,6 @@ defineExpose({ reload: loadDashboard });
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 7px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -983,12 +1014,7 @@ defineExpose({ reload: loadDashboard });
   outline-offset: 3px;
   border-radius: 2px;
 }
-.recommended-set-list {
-  display: grid;
-  align-content: center;
-  gap: 6px;
-  padding: 0 22px 0 4px;
-}
+
 .recommended-set {
   display: flex;
   align-items: center;
@@ -1048,12 +1074,7 @@ defineExpose({ reload: loadDashboard });
   background: #2e9675;
   color: #fff;
 }
-.target-progress-list {
-  display: grid;
-  align-content: center;
-  gap: 7px;
-  padding-right: 24px;
-}
+
 .target-progress-row {
   display: grid;
   grid-template-columns: minmax(152px, 0.9fr) minmax(90px, 1.35fr) 40px;
@@ -1132,68 +1153,118 @@ defineExpose({ reload: loadDashboard });
 .target-progress-row.progress-low small {
   color: #c74a4a;
 }
-.effective-summary {
-  display: grid;
-  align-content: center;
-  gap: 7px;
-  padding-left: 24px;
-  border-left: 1px solid var(--line);
+
+.metric-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
-.effective-summary > b {
+.metric-box strong {
   color: var(--blue);
-  font-size: 28px;
+  font-size: 21px;
+  font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-}
-.effective-summary > b small {
-  margin-left: 3px;
-  font-size: 12px;
-}
-.effective-detail {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.effective-detail span {
-  padding: 3px 6px;
-  border-radius: 3px;
-  background: #eef4fa;
-  color: #506a8c;
-  font-size: 10px;
-}
-.effective-summary > small {
-  color: var(--muted);
-  font-size: 11px;
-}
-.build-score-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
-}
-.build-score-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 7px;
-  border: 1px solid rgba(36, 86, 166, 0.12);
-  border-radius: 999px;
-  background: linear-gradient(180deg, #f7faff 0%, #eef4fb 100%);
-  color: #3d5f8f;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.2;
   white-space: nowrap;
 }
-.build-score-chip.muted {
-  border-color: rgba(48, 75, 117, 0.1);
-  background: #f4f6f9;
-  color: var(--ink-soft);
-  font-weight: 500;
+.metric-box span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
 }
-.build-score-chip.weak {
-  border-color: rgba(199, 165, 90, 0.35);
-  background: linear-gradient(180deg, #fffaf0 0%, #f8efd8 100%);
-  color: #8a6a2a;
+.metric-box.weak strong {
+  color: #c77b32;
+  font-size: 14px;
+}
+.quality-visuals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.quality-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quality-label {
+  width: 50px;
+  color: #55769b;
+  font-size: 11px;
+}
+.quality-segments {
+  display: flex;
+  gap: 3px;
+}
+.quality-segments i {
+  display: block;
+  width: 16px;
+  height: 6px;
+  border-radius: 2px;
+  background: #e7eef6;
+  transition: background 0.3s ease;
+}
+.quality-segments i.active {
+  background: #64a1e0;
+}
+.quality-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #e7eef6;
+  overflow: hidden;
+}
+.quality-bar em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f0c27b, #e09938);
+  transition: width 0.3s ease;
+}
+.quality-value {
+  width: 28px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.mt-2 {
+  margin-top: 6px !important;
+}
+
+.affix-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.affix-tag {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  border: 1px solid rgba(83, 137, 203, 0.2);
+  border-radius: 4px;
+  background: rgba(240, 246, 253, 0.6);
+  overflow: hidden;
+  font-size: 11px;
+}
+.affix-name {
+  padding: 0 6px;
+  color: #4a6c92;
+}
+.affix-val {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 100%;
+  background: rgba(83, 137, 203, 0.12);
+  color: #1c4b93;
+  font-weight: 700;
+}
+.summary-details .muted {
+  color: var(--muted);
 }
 .dashboard-state {
   padding: 48px;
