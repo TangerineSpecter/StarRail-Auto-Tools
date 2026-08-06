@@ -586,16 +586,31 @@
   color: var(--muted);
 }
 .character-detail-card > .relic-detail-footer {
-  grid-template-columns: repeat(2, 1fr);
-  margin-top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 32px;
+  padding: 10px 16px;
+  background: rgba(246, 250, 255, 0.6);
+  border: 1px dashed rgba(42, 91, 159, 0.15);
+  border-radius: 6px;
+  gap: 32px;
 }
 .character-detail-card > .relic-detail-footer div {
-  padding: 12px;
-  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 .character-detail-card > .relic-detail-footer span {
+  display: inline;
+  margin: 0;
   font-size: 11px;
 }
 .character-detail-card > .relic-detail-footer b {
-  font-size: 13px;
+  display: inline;
+  font-size: 12px;
+  color: var(--blue);
 }
