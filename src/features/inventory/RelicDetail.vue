@@ -47,14 +47,13 @@ const substatRows = computed(() =>
         <p class="detail-set-name">{{ detail.setName }}</p>
         <h3>{{ detail.name }}</h3>
         <div class="detail-tags">
-          <span class="detail-slot-tag">{{ slotLabel(detail.slot) }}</span
-          ><span class="detail-id-tag">#{{ detail.itemId }}</span>
+          <span class="detail-slot-tag">{{ slotLabel(detail.slot) }}</span>
+          <div class="detail-rarity-stars detail-inline-stars" :aria-label="`${detail.rarity} 星`">
+            <i v-for="value in detail.rarity" :key="value">✦</i>
+          </div>
         </div>
       </div>
       <b :class="['detail-relic-level', { 'is-max': detail.level === 15 }]">+{{ detail.level }}</b>
-    </div>
-    <div class="detail-rarity-stars" :aria-label="`${detail.rarity} 星`">
-      <i v-for="value in detail.rarity" :key="value">✦</i>
     </div>
     <section class="detail-main-stat">
       <div class="stat-header">
@@ -112,3 +111,9 @@ const substatRows = computed(() =>
     </footer>
   </section>
 </template>
+
+<style scoped>
+.detail-substats {
+  margin-bottom: 24px;
+}
+</style>

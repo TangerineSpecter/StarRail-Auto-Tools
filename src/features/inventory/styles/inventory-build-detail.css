@@ -1285,10 +1285,13 @@ button.score-piece.is-weak-slot.is-open {
   border-radius: 4px;
   font-variant-numeric: tabular-nums;
 }
-.equipped-relic-peek-inline-stars {
+.detail-inline-stars {
   margin: 0;
   font-size: 11px;
   letter-spacing: 1px;
+}
+.relic-score-panel {
+  margin-top: 24px;
 }
 .equipped-relic-peek-metrics {
   display: flex;

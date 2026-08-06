@@ -90,7 +90,7 @@ const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
         <h3>{{ relic.name }}</h3>
         <div class="detail-tags">
           <span class="detail-slot-tag">{{ slotLabel(relic.slot) }}</span>
-          <div class="detail-rarity-stars equipped-relic-peek-inline-stars" :aria-label="`${relic.rarity} 星`">
+          <div class="detail-rarity-stars detail-inline-stars" :aria-label="`${relic.rarity} 星`">
             <i v-for="value in relic.rarity" :key="value">✦</i>
           </div>
         </div>
