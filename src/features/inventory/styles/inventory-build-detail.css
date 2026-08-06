@@ -842,23 +842,36 @@
     sans-serif;
 }
 .character-data-section {
-  margin-top: 15px;
+  margin-top: 32px;
 }
 .character-data-section > header {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  border-bottom: none; /* Removed the old harsh border */
 }
 .character-data-section h3 {
-  margin: 3px 0 0;
+  margin: 6px 0 0;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 16px; /* Larger */
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.character-data-section p.eyebrow {
+  color: var(--blue); /* Colored eyebrow for accent */
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-size: 10px;
+  margin-bottom: 2px;
 }
 .character-data-section > header small {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(36, 86, 166, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 .character-data-list {
   display: grid;
@@ -1159,7 +1172,6 @@ button.score-piece.is-open {
   font-size: inherit;
   font-weight: inherit;
 }
-/* Only the lowest-potential slot — not related to letter grade (S/SS/etc.). */
 .score-piece.is-weak-slot {
   border-color: rgba(199, 165, 90, 0.45);
   background: linear-gradient(180deg, #fffdf7 0%, #faf3e4 100%);

@@ -301,62 +301,109 @@
   font-size: 13px;
 }
 .character-data-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  background: linear-gradient(
+    90deg, 
+    rgba(88, 108, 135, 0.06) 0%, 
+    rgba(179, 126, 34, 0.06) 33%, 
+    rgba(38, 90, 158, 0.06) 66%, 
+    rgba(100, 56, 153, 0.06) 100%
+  );
+  border: 1px solid rgba(42, 91, 159, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(36, 86, 166, 0.04);
 }
 .character-data-grid div {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 13px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: #fff;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+  position: relative;
+}
+.character-data-grid div:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 12px;
+  width: 1px;
+  background: rgba(42, 91, 159, 0.15);
 }
 .character-data-grid span {
-  color: var(--ink-soft);
-  text-transform: capitalize;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
 }
 .character-data-grid b {
-  font-size: 14px;
-  color: var(--blue);
+  font-size: 16px;
+  font-family: "Bahnschrift", sans-serif;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
+.character-data-grid div:nth-child(1) span,
+.character-data-grid div:nth-child(1) b {
+  color: #586c87;
+}
+.character-data-grid div:nth-child(2) span,
+.character-data-grid div:nth-child(2) b {
+  color: #b37e22;
+}
+.character-data-grid div:nth-child(3) span,
+.character-data-grid div:nth-child(3) b {
+  color: #265a9e;
+}
+.character-data-grid div:nth-child(4) span,
+.character-data-grid div:nth-child(4) b {
+  color: #643899;
+}
+
 .lightcone-base-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
 }
 .lightcone-base-stat-grid div {
-  display: grid;
-  gap: 5px;
-  padding: 11px 12px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: #fff;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  position: relative;
+}
+.lightcone-base-stat-grid div::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px dashed rgba(36, 86, 166, 0.2);
+  margin: 0 12px 6px 12px;
 }
 .lightcone-base-stat-grid span {
   color: var(--ink-soft);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
 .lightcone-base-stat-grid b {
   color: var(--blue);
-  font-size: 19px;
+  font-size: 22px;
   font-variant-numeric: tabular-nums;
+  font-family: "Bahnschrift", sans-serif;
+  order: 3;
 }
 .lightcone-skill-effect {
-  margin: 10px 0 0;
+  margin: 24px 0 0;
   color: var(--ink);
-  font-size: 12px;
-  line-height: 1.7;
+  font-size: 13px;
+  line-height: 1.8;
+  padding-left: 12px;
+  border-left: 3px solid rgba(36, 86, 166, 0.3);
 }
 .lightcone-standing-bonuses {
-  margin: 8px 0 0;
+  margin: 16px 0 0;
   color: var(--blue);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
 }
 .lightcone-standing-bonuses.muted {
@@ -365,120 +412,175 @@
 .standing-stat-section {
   position: relative;
   overflow: hidden;
-  border-color: rgba(34, 86, 165, 0.32);
-  background:
-    linear-gradient(120deg, rgba(222, 235, 251, 0.78), rgba(255, 255, 255, 0.78) 48%),
-    rgba(255, 255, 255, 0.55);
+  margin-top: 32px;
 }
 .standing-stat-section::after {
   position: absolute;
   right: -26px;
   bottom: -43px;
-  width: 150px;
-  height: 150px;
-  border: 1px solid rgba(46, 91, 164, 0.16);
+  width: 250px;
+  height: 250px;
+  border: 1px solid rgba(46, 91, 164, 0.08);
   border-radius: 50%;
   content: "";
   pointer-events: none;
 }
 .standing-stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
-  padding-top: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 40px;
+  row-gap: 12px;
+  padding-top: 16px;
 }
 .standing-stat-grid > div {
-  display: grid;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   position: relative;
   z-index: 1;
-  min-height: 60px;
-  align-content: center;
-  gap: 4px;
-  padding: 8px 10px;
-  border: 1px solid rgba(37, 83, 153, 0.2);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.76);
+}
+.standing-stat-grid > div::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px dashed rgba(36, 86, 166, 0.2);
+  margin: 0 12px 5px 12px;
 }
 .standing-stat-grid span {
   color: var(--ink-soft);
-  font-size: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 .standing-stat-grid b {
   color: var(--blue);
   font-family: "Bahnschrift", sans-serif;
-  font-size: 19px;
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
+  order: 3;
 }
 .standing-stat-unavailable,
 .standing-stat-section > footer {
   position: relative;
   z-index: 1;
-  margin: 10px 0 0;
+  margin: 24px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 .standing-stat-unavailable {
-  padding: 10px;
-  border: 1px dashed rgba(36, 86, 166, 0.32);
-  border-radius: 4px;
+  padding: 12px 0;
   color: var(--ink-soft);
-  background: rgba(255, 255, 255, 0.55);
 }
 .trace-stat-section > header small {
   font-size: 10px;
 }
 .trace-stat-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding-top: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 32px;
+  padding-top: 16px;
+  padding-bottom: 8px;
+  position: relative;
+}
+.trace-stat-list::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  bottom: 8px;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(36, 86, 166, 0.15);
 }
 .trace-stat-list button {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 62px;
-  padding: 8px 10px;
-  border: 1px solid rgba(36, 86, 166, 0.25);
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  row-gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid rgba(42, 91, 159, 0.15);
   border-radius: 4px;
   color: var(--ink);
   background: #fff;
   cursor: pointer;
-  text-align: left;
+  transition: all 0.2s;
 }
-.trace-stat-list button:hover {
-  border-color: var(--blue);
+.trace-stat-list button:nth-child(odd) {
+  border-right: 3px solid var(--blue);
+}
+.trace-stat-list button:nth-child(even) {
+  border-left: 3px solid var(--blue);
 }
 .trace-stat-list button.disabled {
   border-color: var(--line);
   color: var(--muted);
-  background: rgba(245, 247, 250, 0.72);
-  text-decoration: line-through;
+  background: rgba(245, 247, 250, 0.8);
 }
+.trace-stat-list button:nth-child(odd).disabled {
+  border-right-color: var(--line);
+}
+.trace-stat-list button:nth-child(even).disabled {
+  border-left-color: var(--line);
+}
+
+/* Wires */
+.trace-stat-list button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 2px;
+  background: rgba(36, 86, 166, 0.15);
+  transition: all 0.2s;
+}
+.trace-stat-list button:nth-child(odd)::after {
+  right: -16px;
+}
+.trace-stat-list button:nth-child(even)::after {
+  left: -16px;
+}
+.trace-stat-list button:not(.disabled)::after {
+  background: var(--blue);
+  opacity: 0.5;
+}
+.trace-stat-list button:hover:not(.disabled) {
+  border-color: rgba(42, 91, 159, 0.3);
+  box-shadow: 0 4px 12px rgba(36, 86, 166, 0.08);
+  background: rgba(246, 250, 255, 0.8);
+}
+.trace-stat-list button:hover:not(.disabled)::after {
+  opacity: 1;
+}
+
+/* Contents */
 .trace-stat-list span {
-  display: grid;
-  gap: 2px;
+  display: contents;
 }
 .trace-stat-list b {
-  overflow: hidden;
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  grid-column: 1 / -1;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+}
+.trace-stat-list button.disabled b {
+  text-decoration: line-through;
+  opacity: 0.7;
 }
 .trace-stat-list small {
+  grid-column: 1;
+  text-align: left;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 .trace-stat-list em {
+  grid-column: 2;
+  text-align: right;
   color: var(--blue);
-  font-size: 13px;
+  font-size: 14px;
   font-style: normal;
+  font-family: "Bahnschrift", sans-serif;
   font-weight: 700;
-  white-space: nowrap;
 }
 .trace-stat-list button.disabled em {
   color: var(--muted);

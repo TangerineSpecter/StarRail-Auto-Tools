@@ -123,10 +123,6 @@ function toggleTrace(id: number) {
           <p class="eyebrow">STATIC PROFILE</p>
           <h3>站街属性</h3>
         </div>
-        <small v-if="standingStats.available"
-          >遗器 {{ detail.equippedRelics?.length ?? 0 }} 件 · 行迹
-          {{ selectedTraces.length }} 条</small
-        ><small v-else>满级后可计算</small>
       </header>
       <div v-if="standingStats.available" class="standing-stat-grid">
         <div v-for="stat in standingStats.stats" :key="stat.key">
@@ -145,7 +141,6 @@ function toggleTrace(id: number) {
           <p class="eyebrow">SKILL LEVELS</p>
           <h3>技能等级</h3>
         </div>
-        <small>{{ characterSkillEntries(detail.skills).length }} 项</small>
       </header>
       <div v-if="characterSkillEntries(detail.skills).length" class="character-data-grid">
         <div v-for="skill in characterSkillEntries(detail.skills)" :key="skill.key">
