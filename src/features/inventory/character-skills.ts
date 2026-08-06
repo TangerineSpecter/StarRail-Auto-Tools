@@ -9,6 +9,12 @@ const skillLabels: Record<string, string> = {
   skill: "战技",
   talent: "天赋",
   ult: "终结技",
+  elation: "欢愉技",
+  remembrance: "记忆技",
+  memo: "忆灵技能",
+  memosprite: "忆灵技能",
+  technique: "秘技",
+  special: "特殊技能",
 };
 
 export function characterSkillEntries(
