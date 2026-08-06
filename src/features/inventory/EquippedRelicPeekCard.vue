@@ -9,22 +9,32 @@ import {
 } from "@/shared/utils/relic-score";
 import type { RelicDetailData } from "./detail-types";
 
-const props = defineProps<{
-  relic: RelicDetailData;
-  letterGrade?: string | null;
-  potentialPct?: number | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    relic: RelicDetailData;
+    letterGrade?: string | null;
+    potentialPct?: number | null;
+    /** Plan “有效词条”; wanted lines get a flowing border (not a fill color). */
+    effectiveSubstats?: string[];
+  }>(),
+  { effectiveSubstats: () => [] },
+);
 
 const enhancementMode = computed(() => usesEnhancementHitCount(props.relic.substats));
+
+const effectiveKeys = computed(() => new Set(props.effectiveSubstats ?? []));
 
 const substatRows = computed(() =>
   (props.relic.substats ?? []).map((stat, index) => {
     const hits = enhancementHitsOnLine(stat, { enhancementHits: enhancementMode.value });
+    const isEffective =
+      (!stat.kind || stat.kind === "normal") && effectiveKeys.value.has(stat.key);
     return {
       stat,
       index,
       hits,
       badge: formatEnhancementHitBadge(hits),
+      isEffective,
     };
   }),
 );
@@ -47,7 +57,6 @@ const substatRows = computed(() =>
         <h3>{{ relic.name }}</h3>
         <div class="detail-tags">
           <span class="detail-slot-tag">{{ slotLabel(relic.slot) }}</span>
-          <span class="detail-slot-tag">+{{ relic.level }}</span>
           <span
             v-if="letterGrade != null || potentialPct != null"
             class="equipped-relic-peek-score"
@@ -91,7 +100,10 @@ const substatRows = computed(() =>
           :class="[
             'detail-substat-row',
             `hit-${row.hits}`,
-            { auxiliary: row.stat.kind !== 'normal' },
+            {
+              auxiliary: row.stat.kind !== 'normal',
+              'is-effective': row.isEffective,
+            },
           ]"
         >
           <span class="detail-substat-name">{{ statLabel(row.stat.key) }}</span>

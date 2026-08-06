@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { slotLabel } from "@/shared/catalogue/relic-options";
+import { letterGradeFromPotential } from "@/shared/utils/relic-score";
 import {
   type RadarPieceInput,
   normalizeRadarPieces,
@@ -24,6 +25,10 @@ const props = withDefaults(
     minPotentialPct: 40,
     size: 176,
   },
+);
+
+const averageLetterGrade = computed(() =>
+  letterGradeFromPotential(props.averagePotentialPct),
 );
 
 const VIEW = 200;
@@ -96,7 +101,7 @@ const ariaLabel = computed(() => {
     return `${name} ${grade} ${Math.round(axis.potentialPct)}%`;
   });
   const weak = props.weakSlot ? `，短板 ${slotLabel(props.weakSlot)}` : "";
-  return `六件词条潜力：${parts.join("，")}，平均 ${props.averagePotentialPct.toFixed(0)}%${weak}`;
+  return `六件词条潜力：${parts.join("，")}，平均 ${averageLetterGrade.value} ${props.averagePotentialPct.toFixed(0)}%${weak}`;
 });
 
 const hasAnyPiece = computed(() => axes.value.some((axis) => !axis.missing));
@@ -194,6 +199,7 @@ const hoveredSlot = ref<string | null>(null);
       </g>
     </svg>
     <div class="radar-center" aria-hidden="true">
+      <em class="radar-center-grade">{{ averageLetterGrade }}</em>
       <strong>{{ averagePotentialPct.toFixed(0) }}%</strong>
       <span>平均潜力</span>
     </div>
@@ -294,14 +300,25 @@ const hoveredSlot = ref<string | null>(null);
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  gap: 1px;
+  gap: 0;
   transform: translateY(1px);
+}
+.radar-center-grade {
+  color: #3d7ec4;
+  font-size: 13px;
+  font-weight: 800;
+  font-style: normal;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.95),
+    0 0 3px rgba(255, 255, 255, 0.9);
 }
 .radar-center strong {
   color: var(--ink, #172643);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
   text-shadow:
     0 0 8px rgba(255, 255, 255, 0.95),

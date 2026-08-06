@@ -78,34 +78,53 @@ watch(
   { deep: true, immediate: true },
 );
 
+/**
+ * Persist whatever is currently shown (template / inferred) into the plan model.
+ * Used when leaving empty-weights display-only mode without wiping values.
+ */
 function materializeIfNeeded() {
   if (hasStoredWeights.value) return;
-  weights.value = {
-    ...resolvePlanWeights({
-      substatWeights: {},
-      effectiveSubstats: props.effectiveSubstats,
-    }),
-  };
+  weights.value = { ...displayWeights.value };
 }
 
 function applyRole(role: WeightRole | null) {
-  selectedRole.value = role;
-  if (!role) return;
+  if (!role) {
+    // Explicit “自定义权重”: keep on-screen values (do not zero the grid).
+    materializeIfNeeded();
+    selectedRole.value = null;
+    return;
+  }
   applyingTemplate = true;
+  selectedRole.value = role;
   weights.value = { ...roleWeights(role) };
   queueMicrotask(() => {
     applyingTemplate = false;
   });
 }
 
-/** Clamp to [0, 1]; allow free decimals (not locked to 0.25). */
+/**
+ * Clamp to [0, 1]; allow free decimals (not locked to 0.25).
+ * Ignore null/non-finite emissions from InputNumber rebinds so materializing a
+ * template into stored weights does not cascade into all-zero via null updates.
+ *
+ * Single assignment: when stored weights are still empty, spread the current
+ * display map (template/inferred) so we do not emit a sparse `{ [stat]: next }`
+ * after a prop-synced defineModel write.
+ */
 function setWeight(stat: string, value: number | null) {
-  materializeIfNeeded();
-  let next = value ?? 0;
-  if (!Number.isFinite(next)) next = 0;
+  if (value === null || value === undefined) {
+    materializeIfNeeded();
+    return;
+  }
+  let next = Number(value);
+  if (!Number.isFinite(next)) {
+    materializeIfNeeded();
+    return;
+  }
   next = Math.min(1, Math.max(0, next));
   next = Math.round(next * 1000) / 1000;
-  weights.value = { ...weights.value, [stat]: next };
+  const base = hasStoredWeights.value ? { ...weights.value } : { ...displayWeights.value };
+  weights.value = { ...base, [stat]: next };
 }
 
 const roleSelectModel = computed({

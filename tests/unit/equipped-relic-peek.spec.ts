@@ -76,7 +76,9 @@ describe("CharacterScorePanel equipped relic peek", () => {
     });
 
     await nextTick();
-    const piece = wrapper.get('button.score-piece[aria-label="查看头部当前装备"]');
+    const piece = wrapper.get("button.score-piece");
+    expect(piece.attributes("aria-label")).toMatch(/^查看头部当前装备/);
+    expect(piece.text()).toMatch(/加权/);
     await piece.trigger("click");
     await nextTick();
 
@@ -85,6 +87,12 @@ describe("CharacterScorePanel equipped relic peek", () => {
     expect(popover?.textContent).toContain("云无留迹的过客");
     expect(popover?.textContent).toContain("过客的礼帽");
     expect(popover?.textContent).toContain("暴击率");
+    // Grade + potential under the name; level only on the right (no duplicate +N tag).
+    expect(popover?.querySelector(".equipped-relic-peek-score")?.textContent).toMatch(/潜力/);
+    expect(popover?.querySelectorAll(".detail-slot-tag").length).toBe(1);
+    // Effective substats from the plan get a flowing-border marker class.
+    const effectiveRows = popover?.querySelectorAll(".detail-substat-row.is-effective") ?? [];
+    expect(effectiveRows.length).toBe(4);
     // Live counts (no zero lines): count=2 → 1 enhancement; count=1 → no badge.
     // This fixture has count:0 on SPD so legacy mode: count=2 shows +2.
     expect(popover?.textContent).toMatch(/\+2/);

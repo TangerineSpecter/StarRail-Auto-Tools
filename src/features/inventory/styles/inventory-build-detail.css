@@ -1046,6 +1046,16 @@ button.score-piece.is-open {
   font-size: 9px;
   font-variant-numeric: tabular-nums;
 }
+.score-piece-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+.score-piece-metrics span {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
 /* Only the lowest-potential slot — not related to letter grade (S/SS/etc.). */
 .score-piece.is-weak-slot {
   border-color: rgba(199, 165, 90, 0.45);
@@ -1167,8 +1177,56 @@ button.score-piece.is-weak-slot.is-open {
   font-size: 10px;
 }
 .equipped-relic-peek .detail-substat-row {
+  position: relative;
   padding: 8px 10px;
   gap: 8px;
+  overflow: hidden;
+}
+/* Flowing border for plan-effective substats — soft blue, lighter than the first pass. */
+.equipped-relic-peek .detail-substat-row.is-effective::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(120, 170, 220, 0.12) 18%,
+    rgba(150, 195, 240, 0.55) 38%,
+    rgba(200, 225, 255, 0.8) 50%,
+    rgba(150, 195, 240, 0.55) 62%,
+    rgba(120, 170, 220, 0.12) 82%,
+    transparent 100%
+  );
+  background-size: 240% 100%;
+  animation: effective-substat-flow 2.6s linear infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes effective-substat-flow {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -100% 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .equipped-relic-peek .detail-substat-row.is-effective::before {
+    animation: none;
+    background: rgba(150, 195, 240, 0.55);
+    background-size: auto;
+    padding: 1px;
+  }
 }
 .equipped-relic-peek .detail-substat-name {
   font-size: 11px;

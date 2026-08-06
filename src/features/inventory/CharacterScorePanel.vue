@@ -8,6 +8,7 @@ import {
   averageCharacterPotential,
   characterFarmInvestment,
   farmingPriorityRows,
+  letterGradeFromPotential,
   planQualityCompletion,
   planTargetSetIdsForSlot,
   rankSlotReplacements,
@@ -102,6 +103,10 @@ const summary = computed(() =>
   averageCharacterPotential(equippedInputs.value, weights.value, {
     allowedMainStats: props.plan?.mainStats,
   }),
+);
+
+const averageLetterGrade = computed(() =>
+  letterGradeFromPotential(summary.value.averagePotentialPct),
 );
 
 const completion = computed(() =>
@@ -348,7 +353,8 @@ async function computeFarmPriority() {
         <h3>六件词条质量</h3>
       </div>
       <small v-if="equippedInputs.length"
-        >平均潜力 {{ summary.averagePotentialPct.toFixed(1) }}% · 启发式非伤害</small
+        >{{ averageLetterGrade }} · 平均潜力 {{ summary.averagePotentialPct.toFixed(1) }}% ·
+        启发式非伤害</small
       >
       <small v-else>需装备遗器</small>
     </header>
@@ -360,6 +366,10 @@ async function computeFarmPriority() {
     <div v-if="!equippedInputs.length" class="score-empty">未装备遗器，无法汇总质量分。</div>
     <template v-else>
       <div class="score-metric-grid">
+        <div>
+          <span>平均评级</span>
+          <b>{{ averageLetterGrade }}</b>
+        </div>
         <div>
           <span>平均潜力</span>
           <b>{{ summary.averagePotentialPct.toFixed(1) }}%</b>
@@ -383,7 +393,9 @@ async function computeFarmPriority() {
       </div>
 
       <p class="score-hint">
-        下方六格为各部位字母评级与潜力%；点击可查看当前装备遗器。仅<strong>潜力最低的短板部位</strong>会标「短板」（与等级字母无关）。
+        下方六格为各部位字母评级、潜力%与加权 Rolls；点击可查看当前装备遗器。仅<strong
+          >潜力最低的短板部位</strong
+        >会标「短板」（与等级字母无关）。
       </p>
       <div class="score-piece-grid">
         <button
@@ -400,7 +412,7 @@ async function computeFarmPriority() {
           :aria-expanded="peek?.slot === piece.slot"
           aria-haspopup="dialog"
           :aria-controls="peek?.slot === piece.slot ? 'equipped-relic-peek-dialog' : undefined"
-          :aria-label="`查看${slotLabel(piece.slot)}当前装备`"
+          :aria-label="`查看${slotLabel(piece.slot)}当前装备，${piece.letterGrade ?? '无评级'}，潜力 ${piece.potentialPct.toFixed(0)}%，加权 ${piece.weightedRolls.toFixed(2)}`"
           :disabled="!equippedBySlot.get(piece.slot)"
           @click="openPeek($event, piece)"
         >
@@ -409,7 +421,10 @@ async function computeFarmPriority() {
             <em v-if="piece.slot === summary.weakSlot" class="score-piece-badge">短板</em>
           </div>
           <b>{{ piece.letterGrade ?? "—" }}</b>
-          <small>潜力 {{ piece.potentialPct.toFixed(0) }}%</small>
+          <small class="score-piece-metrics">
+            <span>潜力 {{ piece.potentialPct.toFixed(0) }}%</span>
+            <span>加权 {{ piece.weightedRolls.toFixed(2) }}</span>
+          </small>
         </button>
       </div>
 
@@ -529,6 +544,7 @@ async function computeFarmPriority() {
           :relic="peek.relic"
           :letter-grade="peek.letterGrade"
           :potential-pct="peek.potentialPct"
+          :effective-substats="plan?.effectiveSubstats ?? []"
         />
       </div>
     </Teleport>
