@@ -471,25 +471,25 @@
   padding: 12px 0;
   color: var(--ink-soft);
 }
-/* Redesigned Trace Attribute Section */
+/* Compact Trace Attribute Section */
 .trace-stat-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .trace-section-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
 .trace-title-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .trace-title-row h3 {
@@ -502,24 +502,24 @@
   color: var(--blue);
   background: rgba(36, 86, 166, 0.08);
   border: 1px solid rgba(36, 86, 166, 0.15);
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 1px 7px;
+  border-radius: 10px;
 }
 
 .trace-quick-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .trace-action-btn {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--blue);
   background: rgba(246, 250, 255, 0.9);
   border: 1px solid rgba(36, 86, 166, 0.2);
-  border-radius: 6px;
-  padding: 4px 12px;
+  border-radius: 4px;
+  padding: 2px 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -528,7 +528,7 @@
   background: var(--blue);
   color: #fff;
   border-color: var(--blue);
-  box-shadow: 0 2px 8px rgba(36, 86, 166, 0.2);
+  box-shadow: 0 2px 6px rgba(36, 86, 166, 0.2);
 }
 
 .trace-action-btn:disabled {
@@ -538,20 +538,20 @@
   color: var(--muted);
 }
 
-/* Summary Bar */
+/* Compact Summary Bar */
 .trace-summary-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: linear-gradient(135deg, rgba(246, 250, 255, 0.95), rgba(238, 244, 255, 0.8));
   border: 1px solid rgba(36, 86, 166, 0.12);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 6px;
+  padding: 6px 12px;
   box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6);
 }
 
 .summary-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--ink-soft);
   white-space: nowrap;
@@ -560,19 +560,19 @@
 .summary-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 10px;
+  gap: 4px 8px;
 }
 
 .summary-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-size: 12px;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
   background: #fff;
   border: 1px solid rgba(36, 86, 166, 0.15);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .summary-chip .chip-name {
@@ -587,36 +587,36 @@
 }
 
 .trace-summary-empty {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
   background: rgba(245, 247, 250, 0.6);
   border: 1px dashed var(--line);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 6px;
+  padding: 6px 12px;
   text-align: center;
 }
 
-/* Node Grid */
+/* Compact Node Grid */
 .trace-node-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
+  gap: 6px 10px;
 }
 
 .trace-node-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 6px 10px;
   background: #ffffff;
   border: 1px solid rgba(42, 91, 159, 0.15);
-  border-radius: 8px;
+  border-radius: 6px;
   text-align: left;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
 }
 
 .trace-node-card::before {
@@ -654,9 +654,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
   background: rgba(36, 86, 166, 0.06);
   color: var(--blue);
   flex-shrink: 0;
@@ -664,8 +664,8 @@
 }
 
 .trace-card-icon {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
 }
 
 .trace-card-content {
@@ -673,42 +673,43 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
 }
 
 .trace-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .trace-card-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .trace-card-status {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
 .status-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #10b981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
 }
 
 .status-text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #059669;
 }
@@ -717,7 +718,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
+  line-height: 1.2;
 }
 
 .trace-card-label {
@@ -729,7 +731,7 @@
 }
 
 .trace-card-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   font-family: "Bahnschrift", sans-serif;
   color: var(--blue);
