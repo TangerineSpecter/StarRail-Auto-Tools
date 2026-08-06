@@ -1358,6 +1358,7 @@ button.score-piece.is-weak-slot.is-open {
   padding: 8px 10px;
   gap: 8px;
   overflow: hidden;
+  min-height: 34px;
 }
 /* Clean left ribbon indicator for effective substats */
 .equipped-relic-peek .detail-substat-row.is-effective::before {
