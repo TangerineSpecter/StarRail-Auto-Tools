@@ -609,7 +609,8 @@ button.catalogue-card:focus-visible {
   .standing-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .trace-stat-list {
+  .trace-stat-list,
+  .trace-node-grid {
     grid-template-columns: 1fr;
   }
 }

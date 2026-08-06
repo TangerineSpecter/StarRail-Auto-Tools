@@ -79,6 +79,65 @@ function toggleTrace(id: number) {
   disabledTraceNodes.value = { ...disabledTraceNodes.value, [key]: [...current] };
   localStorage.setItem(traceSettingsStorageKey, JSON.stringify(disabledTraceNodes.value));
 }
+
+const enabledTraceCount = computed(() =>
+  traceNodes.value.filter((node) => traceEnabled(node.id)).length,
+);
+
+const masterTraceStatOrder = computed(() => {
+  const keys: string[] = [];
+  for (const node of traceNodes.value) {
+    for (const stat of node.stats) {
+      if (!keys.includes(stat.key)) {
+        keys.push(stat.key);
+      }
+    }
+  }
+  return keys;
+});
+
+const activeTraceSummary = computed(() => {
+  const summaryMap = new Map<string, number>();
+  for (const stat of selectedTraces.value) {
+    summaryMap.set(stat.key, (summaryMap.get(stat.key) ?? 0) + stat.value);
+  }
+  return masterTraceStatOrder.value
+    .filter((key) => summaryMap.has(key) && (summaryMap.get(key) ?? 0) > 0)
+    .map((key) => {
+      const value = summaryMap.get(key)!;
+      return {
+        key,
+        value,
+        formatted: formatTraceStat(value),
+      };
+    });
+});
+
+function selectAllTraces() {
+  const key = String(props.detail.characterId);
+  disabledTraceNodes.value = { ...disabledTraceNodes.value, [key]: [] };
+  localStorage.setItem(traceSettingsStorageKey, JSON.stringify(disabledTraceNodes.value));
+}
+
+function clearAllTraces() {
+  const key = String(props.detail.characterId);
+  const allIds = traceNodes.value.map((n) => n.id);
+  disabledTraceNodes.value = { ...disabledTraceNodes.value, [key]: allIds };
+  localStorage.setItem(traceSettingsStorageKey, JSON.stringify(disabledTraceNodes.value));
+}
+
+function getStatCategory(key: string): { type: string; colorClass: string } {
+  if (key.includes("防御")) return { type: "def", colorClass: "stat-def" };
+  if (key.includes("速度")) return { type: "spd", colorClass: "stat-spd" };
+  if (key.includes("击破")) return { type: "break", colorClass: "stat-break" };
+  if (key.includes("暴击")) return { type: "crit", colorClass: "stat-crit" };
+  if (key.includes("生命")) return { type: "hp", colorClass: "stat-hp" };
+  if (key.includes("攻击")) return { type: "atk", colorClass: "stat-atk" };
+  if (key.includes("抵抗")) return { type: "res", colorClass: "stat-res" };
+  if (key.includes("命中")) return { type: "hit", colorClass: "stat-hit" };
+  if (key.includes("伤害") || key.includes("属性")) return { type: "elem", colorClass: "stat-elem" };
+  return { type: "general", colorClass: "stat-general" };
+}
 </script>
 
 <template>
@@ -151,26 +210,123 @@ function toggleTrace(id: number) {
       <p v-else class="empty-substats">未同步技能数据。</p>
     </section>
     <section v-if="traceNodes.length" class="character-data-section trace-stat-section">
-      <header>
-        <div>
+      <header class="trace-section-header">
+        <div class="trace-header-main">
           <p class="eyebrow">TRACE ATTRIBUTES</p>
-          <h3>行迹属性</h3>
+          <div class="trace-title-row">
+            <h3>行迹属性</h3>
+            <span class="trace-count-badge">
+              {{ enabledTraceCount }} / {{ traceNodes.length }} 已启用
+            </span>
+          </div>
         </div>
-        <small>默认全选 · 可取消</small>
+        <div class="trace-quick-actions">
+          <button
+            type="button"
+            class="trace-action-btn"
+            :disabled="enabledTraceCount === traceNodes.length"
+            @click="selectAllTraces"
+          >
+            全选
+          </button>
+          <button
+            type="button"
+            class="trace-action-btn"
+            :disabled="enabledTraceCount === 0"
+            @click="clearAllTraces"
+          >
+            全清
+          </button>
+        </div>
       </header>
-      <div class="trace-stat-list">
+
+      <!-- 激活加成汇总 -->
+      <div v-if="activeTraceSummary.length" class="trace-summary-bar">
+        <span class="summary-label">已加成总计</span>
+        <div class="summary-chips">
+          <span
+            v-for="stat in activeTraceSummary"
+            :key="stat.key"
+            class="summary-chip"
+            :class="getStatCategory(stat.key).colorClass"
+          >
+            <span class="chip-name">{{ stat.key }}</span>
+            <span class="chip-val">{{ stat.formatted }}</span>
+          </span>
+        </div>
+      </div>
+      <div v-else class="trace-summary-empty">
+        未启用任何行迹属性节点
+      </div>
+
+      <!-- 节点卡片列表 -->
+      <div class="trace-node-grid">
         <button
           v-for="trace in traceNodes"
           :key="trace.id"
           type="button"
-          :class="{ disabled: !traceEnabled(trace.id) }"
+          class="trace-node-card"
+          :class="[
+            { disabled: !traceEnabled(trace.id) },
+            getStatCategory(trace.stats[0]?.key || '').colorClass,
+          ]"
           :aria-pressed="traceEnabled(trace.id)"
           @click="toggleTrace(trace.id)"
         >
-          <span
-            ><b>{{ trace.name }}</b
-            ><small>{{ trace.stats.map((stat) => stat.key).join(" · ") }}</small></span
-          ><em>{{ trace.stats.map((stat) => formatTraceStat(stat.value)).join(" / ") }}</em>
+          <div class="trace-card-icon-wrap">
+            <svg
+              class="trace-card-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                v-if="getStatCategory(trace.stats[0]?.key || '').type === 'def'"
+                d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+              />
+              <path
+                v-else-if="getStatCategory(trace.stats[0]?.key || '').type === 'spd'"
+                d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+              />
+              <path
+                v-else-if="getStatCategory(trace.stats[0]?.key || '').type === 'break'"
+                d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"
+              />
+              <path
+                v-else-if="getStatCategory(trace.stats[0]?.key || '').type === 'crit'"
+                d="M12 22a10 10 0 100-20 10 10 0 000 20zm0-6a4 4 0 100-8 4 4 0 000 8z"
+              />
+              <path
+                v-else-if="getStatCategory(trace.stats[0]?.key || '').type === 'hp'"
+                d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+              />
+              <path
+                v-else-if="getStatCategory(trace.stats[0]?.key || '').type === 'atk'"
+                d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 22l4-4"
+              />
+              <path
+                v-else-if="getStatCategory(trace.stats[0]?.key || '').type === 'elem'"
+                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+              />
+              <circle v-else cx="12" cy="12" r="9" />
+            </svg>
+          </div>
+          <div class="trace-card-content">
+            <div class="trace-card-header">
+              <span class="trace-card-title">{{ trace.name }}</span>
+              <span class="trace-card-status">
+                <span class="status-dot"></span>
+                <span class="status-text">{{ traceEnabled(trace.id) ? "已激活" : "未激活" }}</span>
+              </span>
+            </div>
+            <div class="trace-card-body">
+              <span class="trace-card-label">{{ trace.stats.map((s) => s.key).join(" · ") }}</span>
+              <span class="trace-card-value">{{ trace.stats.map((s) => formatTraceStat(s.value)).join(" / ") }}</span>
+            </div>
+          </div>
         </button>
       </div>
     </section>
