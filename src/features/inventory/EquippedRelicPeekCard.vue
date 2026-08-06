@@ -90,23 +90,13 @@ const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
         <h3>{{ relic.name }}</h3>
         <div class="detail-tags">
           <span class="detail-slot-tag">{{ slotLabel(relic.slot) }}</span>
-          <span
-            v-if="letterGrade != null || potentialPct != null"
-            class="equipped-relic-peek-score"
-          >
-            {{ letterGrade ?? "—" }}
-            <template v-if="potentialPct != null">
-              · 潜力 {{ potentialPct.toFixed(0) }}%
-            </template>
-          </span>
+          <div class="detail-rarity-stars equipped-relic-peek-inline-stars" :aria-label="`${relic.rarity} 星`">
+            <i v-for="value in relic.rarity" :key="value">✦</i>
+          </div>
         </div>
       </div>
       <b :class="['detail-relic-level', { 'is-max': relic.level === 15 }]">+{{ relic.level }}</b>
     </header>
-
-    <div class="detail-rarity-stars equipped-relic-peek-stars" :aria-label="`${relic.rarity} 星`">
-      <i v-for="value in relic.rarity" :key="value">✦</i>
-    </div>
 
     <div v-if="hasScoreMetrics" class="equipped-relic-peek-metrics" aria-label="词条质量摘要">
       <div>
