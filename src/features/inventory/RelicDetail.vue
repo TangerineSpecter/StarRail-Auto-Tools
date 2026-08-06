@@ -82,13 +82,13 @@ const substatRows = computed(() =>
             { auxiliary: row.stat.kind !== 'normal' },
           ]"
         >
-          <span class="detail-substat-name">{{ statLabel(row.stat.key) }}</span
-          ><b class="detail-substat-value"
-            >+{{ formatStatValue(row.stat.key, row.stat.value) }}</b
-          >
-          <div class="detail-substat-meta">
-            <i v-if="row.badge" class="detail-hit-badge">{{ row.badge }}</i
-            ><em v-if="row.stat.kind !== 'normal'">{{
+          <span class="detail-substat-name">{{ statLabel(row.stat.key) }}</span>
+          <div class="detail-substat-val-group">
+            <b class="detail-substat-value"
+              >+{{ formatStatValue(row.stat.key, row.stat.value) }}</b
+            >
+            <i v-if="row.badge" class="detail-hit-badge">{{ row.badge }}</i>
+            <em v-if="row.stat.kind !== 'normal'">{{
               row.stat.kind === "reroll" ? "重铸" : "预览"
             }}</em>
           </div>

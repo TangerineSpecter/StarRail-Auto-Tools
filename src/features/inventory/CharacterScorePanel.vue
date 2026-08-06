@@ -310,7 +310,12 @@ function onDocumentPointerDown(event: PointerEvent) {
 }
 
 function onDocumentKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") closeAllOverlays();
+  if (event.key === "Escape" && !event.isComposing) {
+    if (peek.value || replaceCompare.value) {
+      event.stopPropagation();
+      closeAllOverlays();
+    }
+  }
 }
 
 function onWindowScrollOrResize(event: Event) {

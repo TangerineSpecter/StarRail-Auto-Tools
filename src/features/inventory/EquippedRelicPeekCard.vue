@@ -157,10 +157,10 @@ const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
               >{{ row.contribution.toFixed(2) }}</i
             >
           </span>
-          <b class="detail-substat-value"
-            >+{{ formatStatValue(row.stat.key, row.stat.value) }}</b
-          >
-          <div class="detail-substat-meta">
+          <div class="detail-substat-val-group">
+            <b class="detail-substat-value"
+              >+{{ formatStatValue(row.stat.key, row.stat.value) }}</b
+            >
             <i v-if="row.badge" class="detail-hit-badge">{{ row.badge }}</i>
             <em v-if="row.stat.kind !== 'normal'">{{
               row.stat.kind === "reroll" ? "重铸" : "预览"

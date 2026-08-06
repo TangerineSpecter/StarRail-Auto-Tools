@@ -536,9 +536,9 @@
   gap: 8px;
 }
 .detail-substat-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 10px 14px;
   background: #f8fbff;
@@ -553,20 +553,23 @@
 .detail-substat-name {
   color: var(--ink-soft);
   font-size: 12px;
+  flex: 1;
+}
+.detail-substat-val-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 84px;
 }
 .detail-substat-value {
   color: var(--blue);
   font:
     700 14px/1 "Bahnschrift",
     sans-serif;
+  width: 56px;
+  text-align: left;
 }
-.detail-substat-meta {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  width: 26px;
-}
+
 .detail-hit-badge {
   font-size: 10px;
   font-weight: 800;
