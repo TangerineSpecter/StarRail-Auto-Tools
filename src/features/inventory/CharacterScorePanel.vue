@@ -13,12 +13,15 @@ import {
   planTargetSetIdsForSlot,
   rankSlotReplacements,
   resolvePlanWeights,
+  scoreRelic,
   spdBreakpointHelper,
+  type RelicScoreResult,
   type ScoreRelicInput,
 } from "@/shared/utils/relic-score";
 import type { CharacterBuildPlan, RelicListItem } from "@/types";
 import type { CharacterDetailData, RelicDetailData } from "./detail-types";
 import EquippedRelicPeekCard from "./EquippedRelicPeekCard.vue";
+import RelicReplaceComparePopover from "./RelicReplaceComparePopover.vue";
 
 const props = defineProps<{
   detail: CharacterDetailData;
@@ -52,12 +55,81 @@ const peek = ref<{
   relic: RelicDetailData;
   letterGrade: string | null;
   potentialPct: number;
+  weightedRolls: number;
   top: number;
   left: number;
   placeAbove: boolean;
 } | null>(null);
 const peekPopoverEl = ref<HTMLElement | null>(null);
+const replaceCompare = ref<{
+  itemId: number;
+  current: RelicDetailData;
+  currentScore: RelicScoreResult;
+  candidate: RelicDetailData;
+  candidateScore: RelicScoreResult;
+  deltaWeightedRolls: number;
+} | null>(null);
 let farmRequestId = 0;
+
+function listItemToDetail(item: RelicListItem): RelicDetailData {
+  return {
+    itemId: item.itemId,
+    setId: item.setId,
+    name: item.name,
+    setName: item.setName,
+    slot: item.slot,
+    rarity: item.rarity,
+    level: item.level,
+    mainStat: item.mainStat,
+    mainStatValue: item.mainStatValue,
+    location: item.location,
+    equippedCharacterId: item.equippedCharacterId,
+    locked: item.locked,
+    discard: item.discard,
+    updatedAt: item.updatedAt,
+    substats: item.substats,
+  };
+}
+
+function candidateToDetail(
+  relic: ScoreRelicInput & {
+    itemId?: number;
+    name?: string;
+    setName?: string;
+    setId?: number;
+    mainStatValue?: number;
+    location?: string;
+    equippedCharacterId?: number | null;
+    locked?: boolean;
+    discard?: boolean;
+    updatedAt?: number;
+  },
+): RelicDetailData {
+  return {
+    itemId: relic.itemId ?? 0,
+    setId: relic.setId ?? 0,
+    name: relic.name ?? "未知遗器",
+    setName: relic.setName ?? "",
+    slot: relic.slot,
+    rarity: relic.rarity ?? 5,
+    level: relic.level ?? 0,
+    mainStat: relic.mainStat,
+    mainStatValue: relic.mainStatValue ?? 0,
+    location: relic.location ?? "",
+    equippedCharacterId: relic.equippedCharacterId ?? null,
+    locked: relic.locked ?? false,
+    discard: relic.discard ?? false,
+    updatedAt: relic.updatedAt ?? 0,
+    substats: (relic.substats ?? []).map((stat, index) => ({
+      kind: stat.kind ?? "normal",
+      position: index,
+      key: stat.key,
+      value: stat.value ?? 0,
+      count: stat.count ?? 0,
+      step: stat.step ?? 0,
+    })),
+  };
+}
 
 watch(
   () => props.plan?.spdTarget,
@@ -78,6 +150,7 @@ watch(
     inventoryLoaded.value = false;
     inventoryRelics.value = [];
     closePeek();
+    closeReplaceCompare();
   },
 );
 
@@ -128,9 +201,61 @@ function closePeek() {
   peek.value = null;
 }
 
+function closeReplaceCompare() {
+  replaceCompare.value = null;
+}
+
+function closeAllOverlays() {
+  closePeek();
+  closeReplaceCompare();
+}
+
+function initialFloatingPosition(
+  trigger: HTMLElement,
+  width: number,
+  preferredBelowHeight: number,
+): { top: number; left: number; placeAbove: boolean } {
+  const rect = trigger.getBoundingClientRect();
+  const gap = 8;
+  const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+  const spaceBelow = window.innerHeight - rect.bottom - gap;
+  const spaceAbove = rect.top - gap;
+  const placeAbove = spaceBelow < preferredBelowHeight && spaceAbove > spaceBelow;
+  return {
+    top: placeAbove ? rect.top - gap : rect.bottom + gap,
+    left,
+    placeAbove,
+  };
+}
+
+async function refineFloatingPosition(
+  state: { top: number; left: number; placeAbove: boolean },
+  el: HTMLElement | null,
+  width: number,
+): Promise<{ top: number; left: number; placeAbove: boolean }> {
+  await nextTick();
+  if (!el) return state;
+  const next = { ...state };
+  const height = el.getBoundingClientRect().height;
+  if (next.placeAbove) {
+    const minBottom = 12 + height;
+    if (next.top < minBottom) next.top = minBottom;
+  } else {
+    const maxTop = window.innerHeight - height - 12;
+    if (next.top > maxTop) next.top = Math.max(12, maxTop);
+  }
+  next.left = Math.max(12, Math.min(next.left, window.innerWidth - width - 12));
+  return next;
+}
+
 async function openPeek(
   event: MouseEvent,
-  piece: { slot: string; letterGrade: string | null; potentialPct: number },
+  piece: {
+    slot: string;
+    letterGrade: string | null;
+    potentialPct: number;
+    weightedRolls: number;
+  },
 ) {
   const relic = equippedBySlot.value.get(piece.slot);
   if (!relic) return;
@@ -139,55 +264,105 @@ async function openPeek(
     return;
   }
 
+  closeReplaceCompare();
   const trigger = event.currentTarget as HTMLElement;
-  const rect = trigger.getBoundingClientRect();
   const width = 320;
-  const gap = 8;
-  const preferredBelowHeight = 220;
-  const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
-  const spaceBelow = window.innerHeight - rect.bottom - gap;
-  const spaceAbove = rect.top - gap;
-  const placeAbove = spaceBelow < preferredBelowHeight && spaceAbove > spaceBelow;
-
+  const pos = initialFloatingPosition(trigger, width, 220);
   peek.value = {
     slot: piece.slot,
     relic,
     letterGrade: piece.letterGrade,
     potentialPct: piece.potentialPct,
-    top: placeAbove ? rect.top - gap : rect.bottom + gap,
-    left,
-    placeAbove,
+    weightedRolls: piece.weightedRolls,
+    ...pos,
   };
-
-  await nextTick();
-  const popoverEl = peekPopoverEl.value;
-  if (!popoverEl || !peek.value) return;
-  const height = popoverEl.getBoundingClientRect().height;
-  if (peek.value.placeAbove) {
-    const minBottom = 12 + height;
-    if (peek.value.top < minBottom) {
-      peek.value = { ...peek.value, top: minBottom };
-    }
-  } else {
-    const maxTop = window.innerHeight - height - 12;
-    if (peek.value.top > maxTop) {
-      peek.value = { ...peek.value, top: Math.max(12, maxTop) };
-    }
+  const refined = await refineFloatingPosition(pos, peekPopoverEl.value, width);
+  if (peek.value?.slot === piece.slot) {
+    peek.value = { ...peek.value, ...refined };
   }
 }
 
-function onDocumentPointerDown(event: PointerEvent) {
-  if (!peek.value) return;
-  const target = event.target as Element | null;
-  if (target?.closest(".score-piece, .equipped-relic-peek-popover")) return;
+function openReplaceCompare(item: {
+  relic: ScoreRelicInput & {
+    itemId?: number;
+    name?: string;
+    setName?: string;
+    setId?: number;
+    mainStatValue?: number;
+    location?: string;
+    equippedCharacterId?: number | null;
+    locked?: boolean;
+    discard?: boolean;
+    updatedAt?: number;
+  };
+  score: RelicScoreResult;
+  deltaWeightedRolls: number;
+}) {
+  const itemId = item.relic.itemId;
+  if (itemId == null) return;
+  if (replaceCompare.value?.itemId === itemId) {
+    closeReplaceCompare();
+    return;
+  }
+
+  const weakSlot = summary.value.weakSlot;
+  if (!weakSlot) return;
+  const current = equippedBySlot.value.get(weakSlot);
+  if (!current) return;
+
   closePeek();
+  const scoreOptions = { allowedMainStats: props.plan?.mainStats };
+  const currentScore = scoreRelic(
+    {
+      slot: current.slot,
+      mainStat: current.mainStat,
+      rarity: current.rarity,
+      level: current.level,
+      setId: current.setId,
+      substats: current.substats,
+    },
+    weights.value,
+    scoreOptions,
+  );
+
+  // Prefer full list row when available (richer display fields).
+  const listRow = inventoryRelics.value.find((row) => row.itemId === itemId);
+  const candidate = listRow ? listItemToDetail(listRow) : candidateToDetail(item.relic);
+
+  replaceCompare.value = {
+    itemId,
+    current,
+    currentScore,
+    candidate,
+    candidateScore: item.score,
+    deltaWeightedRolls: item.deltaWeightedRolls,
+  };
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+  if (!peek.value && !replaceCompare.value) return;
+  const target = event.target as Element | null;
+  if (
+    target?.closest(
+      ".score-piece, .score-replace-item, .equipped-relic-peek-popover, .relic-replace-compare-popover",
+    )
+  ) {
+    return;
+  }
+  // Backdrop of the centered compare modal.
+  if (target?.closest(".relic-replace-compare-root")) {
+    closeReplaceCompare();
+    return;
+  }
+  closeAllOverlays();
 }
 
 function onDocumentKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") closePeek();
+  if (event.key === "Escape") closeAllOverlays();
 }
 
 function onWindowScrollOrResize(event: Event) {
+  // Centered compare modal stays put; only the equip-peek popover tracks viewport.
   if (!peek.value) return;
   // Capture-phase scroll fires for any scroller; keep popover open when scrolling its content.
   if (event.type === "scroll") {
@@ -281,11 +456,19 @@ const replacements = computed(() => {
     .map((item) => ({
       slot: item.slot,
       mainStat: item.mainStat,
+      rarity: item.rarity,
+      level: item.level,
+      setId: item.setId,
       substats: item.substats,
       itemId: item.itemId,
       name: item.name,
       setName: item.setName,
-      setId: item.setId,
+      mainStatValue: item.mainStatValue,
+      location: item.location,
+      equippedCharacterId: item.equippedCharacterId,
+      locked: item.locked,
+      discard: item.discard,
+      updatedAt: item.updatedAt,
     }));
   return rankSlotReplacements(equipped, candidates, weights.value, {
     allowedMainStats: props.plan?.mainStats,
@@ -508,7 +691,7 @@ async function computeFarmPriority() {
           </button>
         </div>
         <p class="score-hint">
-          仅同部位、同主属性且加权分更高的件。
+          仅同部位、同主属性且加权分更高的件。点击候选可对比当前装备与替换件的潜力、加权分与各词条评分。
           <template v-if="replacementSetNames.length">
             已限制为培养方案目标套装：{{ replacementSetNames.join("、") }}。
           </template>
@@ -516,9 +699,24 @@ async function computeFarmPriority() {
         </p>
         <ul v-if="replacements.length" class="score-replace-list">
           <li v-for="item in replacements" :key="item.relic.itemId">
-            <span>#{{ item.relic.itemId }} {{ item.relic.setName || item.relic.name }}</span>
-            <em>+{{ item.deltaWeightedRolls.toFixed(2) }}</em>
-            <b>{{ item.score.letterGrade ?? "—" }}</b>
+            <button
+              type="button"
+              class="score-replace-item"
+              :class="{ 'is-open': replaceCompare?.itemId === item.relic.itemId }"
+              :aria-expanded="replaceCompare?.itemId === item.relic.itemId"
+              aria-haspopup="dialog"
+              :aria-controls="
+                replaceCompare?.itemId === item.relic.itemId
+                  ? 'relic-replace-compare-dialog'
+                  : undefined
+              "
+              :aria-label="`对比${slotLabel(summary.weakSlot ?? '')}当前装备与候选 #${item.relic.itemId}，加权 +${item.deltaWeightedRolls.toFixed(2)}，${item.score.letterGrade ?? '无评级'}`"
+              @click="openReplaceCompare(item)"
+            >
+              <span>#{{ item.relic.itemId }} {{ item.relic.setName || item.relic.name }}</span>
+              <em>+{{ item.deltaWeightedRolls.toFixed(2) }}</em>
+              <b>{{ item.score.letterGrade ?? "—" }}</b>
+            </button>
           </li>
         </ul>
         <p v-else-if="inventoryLoaded" class="score-hint">
@@ -544,8 +742,32 @@ async function computeFarmPriority() {
           :relic="peek.relic"
           :letter-grade="peek.letterGrade"
           :potential-pct="peek.potentialPct"
+          :weighted-rolls="peek.weightedRolls"
           :effective-substats="plan?.effectiveSubstats ?? []"
         />
+      </div>
+      <div
+        v-if="replaceCompare"
+        class="relic-replace-compare-root"
+        role="presentation"
+        @pointerdown.self="closeReplaceCompare"
+      >
+        <div
+          id="relic-replace-compare-dialog"
+          class="relic-replace-compare-popover"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="`${slotLabel(replaceCompare.current.slot)}替换对比`"
+        >
+          <RelicReplaceComparePopover
+            :current="replaceCompare.current"
+            :current-score="replaceCompare.currentScore"
+            :candidate="replaceCompare.candidate"
+            :candidate-score="replaceCompare.candidateScore"
+            :delta-weighted-rolls="replaceCompare.deltaWeightedRolls"
+            :effective-substats="plan?.effectiveSubstats ?? []"
+          />
+        </div>
       </div>
     </Teleport>
   </section>

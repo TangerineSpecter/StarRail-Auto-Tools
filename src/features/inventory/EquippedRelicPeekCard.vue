@@ -6,6 +6,7 @@ import {
   enhancementHitsOnLine,
   formatEnhancementHitBadge,
   usesEnhancementHitCount,
+  type WeightedRollBreakdown,
 } from "@/shared/utils/relic-score";
 import type { RelicDetailData } from "./detail-types";
 
@@ -14,34 +15,66 @@ const props = withDefaults(
     relic: RelicDetailData;
     letterGrade?: string | null;
     potentialPct?: number | null;
+    weightedRolls?: number | null;
+    /** Per-substat score rows from scoreRelic().breakdown */
+    breakdown?: WeightedRollBreakdown[];
     /** Plan “有效词条”; wanted lines get a flowing border (not a fill color). */
     effectiveSubstats?: string[];
+    /** Optional column caption, e.g. 当前装备 / 推荐替换 */
+    caption?: string;
   }>(),
-  { effectiveSubstats: () => [] },
+  { effectiveSubstats: () => [], breakdown: () => [] },
 );
 
 const enhancementMode = computed(() => usesEnhancementHitCount(props.relic.substats));
 
 const effectiveKeys = computed(() => new Set(props.effectiveSubstats ?? []));
 
+const breakdownByKey = computed(() => {
+  const map = new Map<string, WeightedRollBreakdown>();
+  for (const row of props.breakdown ?? []) {
+    map.set(row.key, row);
+  }
+  return map;
+});
+
+const hasScoreMetrics = computed(
+  () =>
+    props.letterGrade != null ||
+    props.potentialPct != null ||
+    props.weightedRolls != null,
+);
+
 const substatRows = computed(() =>
   (props.relic.substats ?? []).map((stat, index) => {
     const hits = enhancementHitsOnLine(stat, { enhancementHits: enhancementMode.value });
     const isEffective =
       (!stat.kind || stat.kind === "normal") && effectiveKeys.value.has(stat.key);
+    const scoreRow =
+      !stat.kind || stat.kind === "normal" ? breakdownByKey.value.get(stat.key) : undefined;
     return {
       stat,
       index,
       hits,
       badge: formatEnhancementHitBadge(hits),
       isEffective,
+      contribution: scoreRow?.contribution ?? null,
+      rolls: scoreRow?.rolls ?? null,
+      weight: scoreRow?.weight ?? null,
     };
   }),
 );
+
+const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
 </script>
 
 <template>
-  <article class="equipped-relic-peek" :aria-label="`${slotLabel(relic.slot)}当前装备`">
+  <article
+    class="equipped-relic-peek"
+    :class="{ 'has-substat-score': showSubstatScore }"
+    :aria-label="caption ? `${caption} · ${slotLabel(relic.slot)}` : `${slotLabel(relic.slot)}当前装备`"
+  >
+    <p v-if="caption" class="equipped-relic-peek-caption">{{ caption }}</p>
     <header class="equipped-relic-peek-identity">
       <div :class="['detail-icon-box', `rarity-${relic.rarity}`]">
         <img
@@ -75,6 +108,21 @@ const substatRows = computed(() =>
       <i v-for="value in relic.rarity" :key="value">✦</i>
     </div>
 
+    <div v-if="hasScoreMetrics" class="equipped-relic-peek-metrics" aria-label="词条质量摘要">
+      <div>
+        <span>评级</span>
+        <b>{{ letterGrade ?? "—" }}</b>
+      </div>
+      <div>
+        <span>潜力</span>
+        <b>{{ potentialPct != null ? `${potentialPct.toFixed(1)}%` : "—" }}</b>
+      </div>
+      <div>
+        <span>加权分</span>
+        <b>{{ weightedRolls != null ? weightedRolls.toFixed(2) : "—" }}</b>
+      </div>
+    </div>
+
     <section class="equipped-relic-peek-main">
       <div class="stat-header">
         <p>主属性 <span>MAIN STAT</span></p>
@@ -106,7 +154,19 @@ const substatRows = computed(() =>
             },
           ]"
         >
-          <span class="detail-substat-name">{{ statLabel(row.stat.key) }}</span>
+          <span class="detail-substat-name">
+            {{ statLabel(row.stat.key) }}
+            <i
+              v-if="row.contribution != null"
+              class="detail-substat-score-tag"
+              :title="
+                row.rolls != null && row.weight != null
+                  ? `${row.rolls} roll · w ${row.weight.toFixed(2)}`
+                  : undefined
+              "
+              >{{ row.contribution.toFixed(2) }}</i
+            >
+          </span>
           <b class="detail-substat-value"
             >+{{ formatStatValue(row.stat.key, row.stat.value) }}</b
           >

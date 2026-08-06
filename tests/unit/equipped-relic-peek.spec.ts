@@ -89,6 +89,7 @@ describe("CharacterScorePanel equipped relic peek", () => {
     expect(popover?.textContent).toContain("暴击率");
     // Grade + potential under the name; level only on the right (no duplicate +N tag).
     expect(popover?.querySelector(".equipped-relic-peek-score")?.textContent).toMatch(/潜力/);
+    expect(popover?.querySelector(".equipped-relic-peek-score")?.textContent).not.toMatch(/加权/);
     expect(popover?.querySelectorAll(".detail-slot-tag").length).toBe(1);
     // Effective substats from the plan get a flowing-border marker class.
     const effectiveRows = popover?.querySelectorAll(".detail-substat-row.is-effective") ?? [];
