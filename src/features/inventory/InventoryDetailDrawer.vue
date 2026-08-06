@@ -79,25 +79,13 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         },
       ]"
     >
-      <header>
+      <header v-if="detail?.kind !== 'character'">
         <div>
           <p class="eyebrow">
-            {{
-              detail?.kind === "relic"
-                ? "RELIC ANALYSIS"
-                : detail?.kind === "character"
-                  ? "CHARACTER DOSSIER"
-                  : "LIGHT CONE DATA"
-            }}
+            {{ detail?.kind === "relic" ? "RELIC ANALYSIS" : "LIGHT CONE DATA" }}
           </p>
           <h2>
-            {{
-              detail?.kind === "relic"
-                ? "遗器档案详情"
-                : detail?.kind === "character"
-                  ? "角色档案详情"
-                  : "光锥档案详情"
-            }}
+            {{ detail?.kind === "relic" ? "遗器档案详情" : "光锥档案详情" }}
           </h2>
         </div>
         <button type="button" aria-label="关闭详情" @click="emit('close')">×</button>

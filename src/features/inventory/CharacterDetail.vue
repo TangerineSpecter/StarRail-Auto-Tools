@@ -83,31 +83,31 @@ function toggleTrace(id: number) {
 
 <template>
   <section class="character-detail-card">
-    <div class="character-identity">
-      <img
-        v-if="catalogue?.image"
-        class="character-detail-avatar"
-        :src="catalogue.image"
-        :alt="`${detail.name} 头像`"
-      />
-      <div v-else class="path-seal">{{ pathLabel(detail.path).slice(0, 1) }}</div>
-      <div>
-        <p>{{ pathLabel(detail.path) }} · PATH</p>
-        <h3>{{ detail.name }}</h3>
+    <header class="character-banner" :data-element="catalogue?.element ?? '物理'">
+      <div class="character-banner-content">
+        <div class="character-banner-text">
+          <p class="eyebrow">BASELINE PROFILE</p>
+          <h2>{{ detail.name }}</h2>
+          <p class="character-banner-subtitle">{{ catalogue?.element ?? '未知' }} · {{ pathLabel(detail.path) }}</p>
+        </div>
+        <div class="character-banner-metrics">
+          <div><span>等级</span><b>Lv.{{ detail.level }}</b></div>
+          <div><span>突破</span><b>{{ detail.ascension }}</b></div>
+          <div><span>星魂</span><b>{{ detail.eidolon }}</b></div>
+          <div><span>能力</span><b>V{{ detail.abilityVersion }}</b></div>
+        </div>
       </div>
-      <b>Lv.{{ detail.level }}</b>
-    </div>
-    <div class="character-metrics">
-      <div>
-        <span>突破</span><b>{{ detail.ascension }}</b>
+      
+      <div class="character-banner-image-wrapper">
+        <img
+          v-if="catalogue?.image"
+          class="character-banner-image"
+          :src="catalogue.image"
+          :alt="`${detail.name} 档案形象`"
+        />
+        <div v-else class="path-seal large">{{ pathLabel(detail.path).slice(0, 1) }}</div>
       </div>
-      <div>
-        <span>星魂</span><b>{{ detail.eidolon }}</b>
-      </div>
-      <div>
-        <span>能力版本</span><b>V{{ detail.abilityVersion }}</b>
-      </div>
-    </div>
+    </header>
     <CharacterScorePanel
       :detail="detail"
       :plan="plan"
