@@ -56,9 +56,6 @@ const peek = ref<{
   letterGrade: string | null;
   potentialPct: number;
   weightedRolls: number;
-  top: number;
-  left: number;
-  placeAbove: boolean;
 } | null>(null);
 const peekPopoverEl = ref<HTMLElement | null>(null);
 const replaceCompare = ref<{
@@ -210,43 +207,6 @@ function closeAllOverlays() {
   closeReplaceCompare();
 }
 
-function initialFloatingPosition(
-  trigger: HTMLElement,
-  width: number,
-  preferredBelowHeight: number,
-): { top: number; left: number; placeAbove: boolean } {
-  const rect = trigger.getBoundingClientRect();
-  const gap = 8;
-  const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
-  const spaceBelow = window.innerHeight - rect.bottom - gap;
-  const spaceAbove = rect.top - gap;
-  const placeAbove = spaceBelow < preferredBelowHeight && spaceAbove > spaceBelow;
-  return {
-    top: placeAbove ? rect.top - gap : rect.bottom + gap,
-    left,
-    placeAbove,
-  };
-}
-
-async function refineFloatingPosition(
-  state: { top: number; left: number; placeAbove: boolean },
-  el: HTMLElement | null,
-  width: number,
-): Promise<{ top: number; left: number; placeAbove: boolean }> {
-  await nextTick();
-  if (!el) return state;
-  const next = { ...state };
-  const height = el.getBoundingClientRect().height;
-  if (next.placeAbove) {
-    const minBottom = 12 + height;
-    if (next.top < minBottom) next.top = minBottom;
-  } else {
-    const maxTop = window.innerHeight - height - 12;
-    if (next.top > maxTop) next.top = Math.max(12, maxTop);
-  }
-  next.left = Math.max(12, Math.min(next.left, window.innerWidth - width - 12));
-  return next;
-}
 
 async function openPeek(
   event: MouseEvent,
@@ -265,21 +225,13 @@ async function openPeek(
   }
 
   closeReplaceCompare();
-  const trigger = event.currentTarget as HTMLElement;
-  const width = 320;
-  const pos = initialFloatingPosition(trigger, width, 220);
   peek.value = {
     slot: piece.slot,
     relic,
     letterGrade: piece.letterGrade,
     potentialPct: piece.potentialPct,
     weightedRolls: piece.weightedRolls,
-    ...pos,
   };
-  const refined = await refineFloatingPosition(pos, peekPopoverEl.value, width);
-  if (peek.value?.slot === piece.slot) {
-    peek.value = { ...peek.value, ...refined };
-  }
 }
 
 function openReplaceCompare(item: {
@@ -729,22 +681,26 @@ async function computeFarmPriority() {
     <Teleport to="body">
       <div
         v-if="peek"
-        ref="peekPopoverEl"
-        id="equipped-relic-peek-dialog"
-        class="equipped-relic-peek-popover"
-        :class="{ 'place-above': peek.placeAbove }"
-        role="dialog"
-        aria-modal="false"
-        :aria-label="`${slotLabel(peek.slot)}当前装备`"
-        :style="{ top: `${peek.top}px`, left: `${peek.left}px` }"
+        class="equipped-relic-peek-root"
+        role="presentation"
+        @pointerdown.self="closePeek"
       >
-        <EquippedRelicPeekCard
-          :relic="peek.relic"
-          :letter-grade="peek.letterGrade"
-          :potential-pct="peek.potentialPct"
-          :weighted-rolls="peek.weightedRolls"
-          :effective-substats="plan?.effectiveSubstats ?? []"
-        />
+        <div
+          ref="peekPopoverEl"
+          id="equipped-relic-peek-dialog"
+          class="equipped-relic-peek-popover"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="`${slotLabel(peek.slot)}当前装备`"
+        >
+          <EquippedRelicPeekCard
+            :relic="peek.relic"
+            :letter-grade="peek.letterGrade"
+            :potential-pct="peek.potentialPct"
+            :weighted-rolls="peek.weightedRolls"
+            :effective-substats="plan?.effectiveSubstats ?? []"
+          />
+        </div>
       </div>
       <div
         v-if="replaceCompare"
