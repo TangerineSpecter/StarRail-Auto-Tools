@@ -86,11 +86,11 @@ onBeforeUnmount(() => {
   <div class="build-set-picker">
     <span class="build-set-picker-label">{{ label }}</span>
     <button
+      ref="trigger"
       class="build-set-picker-trigger"
       type="button"
       :aria-expanded="open"
       aria-haspopup="dialog"
-      ref="trigger"
       @click="showDialog"
     >
       <img v-if="selectedSet?.image" :src="selectedSet.image" alt="" />

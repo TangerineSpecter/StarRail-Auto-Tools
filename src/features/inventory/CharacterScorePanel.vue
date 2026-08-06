@@ -202,6 +202,38 @@ function closeReplaceCompare() {
   replaceCompare.value = null;
 }
 
+function applySpdPreset(preset: number) {
+  localSpdTarget.value = preset;
+}
+
+function gradeBadgeClass(grade: string | null): string {
+  if (!grade) return "grade-none";
+  if (grade.startsWith("SSS")) return "grade-sss";
+  if (grade.startsWith("SS")) return "grade-ss";
+  if (grade.startsWith("S+")) return "grade-sp";
+  if (grade.startsWith("S")) return "grade-s";
+  if (grade.startsWith("A")) return "grade-a";
+  if (grade.startsWith("B")) return "grade-b";
+  return "grade-c";
+}
+
+function adviceClass(advice: string): string {
+  if (advice === "可停刷") return "is-stop";
+  if (advice === "主属性不符") return "is-mismatch";
+  if (advice === "优先刷") return "is-priority";
+  return "is-continue";
+}
+
+const spdHelpIsMet = computed(() => {
+  if (!spdHelp.value) return false;
+  return spdHelp.value.note.includes("已达到") || spdHelp.value.note.includes("超过");
+});
+
+const spdHelpStatusClass = computed(() => {
+  if (!spdHelp.value) return "";
+  return spdHelpIsMet.value ? "is-met" : "is-gap";
+});
+
 function closeAllOverlays() {
   closePeek();
   closeReplaceCompare();
@@ -568,92 +600,190 @@ async function computeFarmPriority() {
         </button>
       </div>
 
-      <div class="score-subblock">
+      <!-- Sub-block 1: 副本优先级（预计开拓力） -->
+      <div class="score-subblock score-farm-block">
         <div class="score-subhead">
-          <h4>刷本优先级（预计开拓力）</h4>
+          <div class="score-subhead-title">
+            <div>
+              <h4>副本优先级（预计开拓力）</h4>
+              <p class="score-subhead-desc">基于期望开销估算各部位优化收益与投入成本</p>
+            </div>
+          </div>
           <button
             type="button"
             class="score-action"
             :disabled="farmBusy"
             @click="computeFarmPriority"
           >
-            {{ farmBusy ? "计算中…" : farmEnabled ? "重新计算" : "计算刷本成本" }}
+            <span v-if="farmBusy" class="score-spinner"></span>
+            <span>{{ farmBusy ? "计算中…" : farmEnabled ? "重新计算" : "计算刷本成本" }}</span>
           </button>
         </div>
-        <p v-if="!farmEnabled" class="score-hint">
-          完整 Estimated TBP 计算量较大，点击后再估算各部位期望天数。
-        </p>
+
+        <div v-if="!farmEnabled" class="score-notice-card">
+          <p>完整 Estimated TBP 计算量较大，点击「计算刷本成本」后估算各部位期望天数。</p>
+        </div>
+
         <template v-else-if="farmRows.length">
-          <div class="score-priority-table">
-            <div class="score-priority-head">
-              <span>部位</span><span>等级</span><span>加权</span><span>期望</span><span>建议</span>
-            </div>
-            <div v-for="row in farmRows" :key="row.slot" class="score-priority-row">
-              <span>{{ slotLabel(row.slot) }}</span>
-              <span>{{ row.letterGrade ?? "—" }}</span>
-              <span>{{ row.weightedRolls.toFixed(2) }}</span>
-              <span>{{ formatDays(row.days) }}</span>
-              <span>{{ row.advice }}</span>
+          <div class="score-priority-table-wrapper">
+            <div class="score-priority-table" role="table" aria-label="刷本优先级">
+              <div class="score-priority-head" role="row">
+                <span role="columnheader">部位</span>
+                <span role="columnheader">当前评级</span>
+                <span role="columnheader">加权分</span>
+                <span role="columnheader">期望天数</span>
+                <span role="columnheader">培养建议</span>
+              </div>
+              <div
+                v-for="row in farmRows"
+                :key="row.slot"
+                class="score-priority-row"
+                :class="{ 'is-bottleneck': farmInvestment?.bottleneckSlot === row.slot }"
+                role="row"
+              >
+                <span role="cell" class="score-cell-slot">
+                  <span class="slot-dot"></span>
+                  {{ slotLabel(row.slot) }}
+                </span>
+                <span role="cell">
+                  <span :class="['score-grade-badge', gradeBadgeClass(row.letterGrade)]">
+                    {{ row.letterGrade ?? "—" }}
+                  </span>
+                </span>
+                <span role="cell" class="score-cell-weighted">
+                  {{ row.weightedRolls.toFixed(2) }}
+                </span>
+                <span role="cell" class="score-cell-days">
+                  {{ formatDays(row.days) }}
+                </span>
+                <span role="cell">
+                  <span :class="['score-advice-pill', adviceClass(row.advice)]">
+                    <i v-if="row.advice === '可停刷'">✓</i>
+                    <i v-else-if="row.advice === '主属性不符'">✕</i>
+                    <i v-else-if="row.advice === '优先刷'">↑</i>
+                    <i v-else>↻</i>
+                    {{ row.advice }}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
-          <p v-if="farmInvestment" class="score-hint">
-            瓶颈：{{
-              farmInvestment.bottleneckSlot ? slotLabel(farmInvestment.bottleneckSlot) : "—"
-            }}
-            （{{ formatDays(farmInvestment.bottleneckDays) }}）· 角色级投入估
-            {{ formatDays(farmInvestment.estimateDays) }}
-          </p>
+
+          <div v-if="farmInvestment" class="score-farm-summary">
+            <div class="summary-chip summary-chip--bottleneck">
+              <span class="chip-label">瓶颈部位</span>
+              <strong class="chip-value">
+                {{ farmInvestment.bottleneckSlot ? slotLabel(farmInvestment.bottleneckSlot) : "—" }}
+                ({{ formatDays(farmInvestment.bottleneckDays) }})
+              </strong>
+            </div>
+            <div class="summary-chip summary-chip--estimate">
+              <span class="chip-label">角色级预计投入</span>
+              <strong class="chip-value">{{ formatDays(farmInvestment.estimateDays) }}</strong>
+            </div>
+          </div>
         </template>
       </div>
 
-      <div class="score-subblock">
-        <h4>速度断点（目标速度阈值）</h4>
-        <p class="score-hint">
-          「断点」= 你想达到的<strong>总速度门槛</strong>（如 134 / 143 / 160），用来估算还差多少速度副词条，<strong>不是</strong>「速度永远越高越好」。低速反击角色（克拉拉/云璃等）通常不必用此工具，权重模板请选「低速反击输出」。
-        </p>
-        <div class="score-spd">
-          <label>
-            <span>目标速度阈值</span>
-            <InputNumber v-model="localSpdTarget" :min="0" :max="300" :step="1" />
-          </label>
-          <div v-if="spdHelp" class="score-spd-result">
-            <p v-if="spdHelp.mode === 'total'">
-              当前站街 <b>{{ currentSpdForHelper.toFixed(1) }}</b> · 目标
-              <b>{{ spdHelp.targetSpd }}</b>
-              <small v-if="relicSpdBonus > 0">（遗器约 +{{ relicSpdBonus.toFixed(1) }}）</small>
-            </p>
-            <p v-else>
-              目标缺口 <b>{{ spdHelp.targetSpd }}</b> 速（gap-only）
-            </p>
-            <p>{{ spdHelp.note }}</p>
+      <!-- Sub-block 2: 速度断点（目标速度阈值） -->
+      <div class="score-subblock score-spd-block">
+        <div class="score-subhead">
+          <div class="score-subhead-title">
+            <div>
+              <h4>速度断点（目标速度阈值）</h4>
+              <p class="score-subhead-desc">估算目标速度门槛所缺的副词条数量</p>
+            </div>
           </div>
-          <p v-else class="score-hint">
-            填写目标阈值，或在培养方案中设置 SPD 属性目标 / 速度断点字段。
-          </p>
+        </div>
+
+        <div class="score-spd-content">
+          <div class="score-spd-input-group">
+            <div class="score-spd-field">
+              <label>目标速度阈值 (SPD)</label>
+              <InputNumber v-model="localSpdTarget" :min="0" :max="300" :step="1" placeholder="例如 134" />
+            </div>
+
+            <div class="score-spd-presets">
+              <span class="presets-label">常用断点快捷选择：</span>
+              <div class="presets-buttons">
+                <button
+                  v-for="preset in [120, 134, 143, 160]"
+                  :key="preset"
+                  type="button"
+                  :class="['score-spd-preset-btn', { 'is-active': localSpdTarget === preset }]"
+                  @click="applySpdPreset(preset)"
+                >
+                  {{ preset }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="spdHelp" class="score-spd-result-card" :class="spdHelpStatusClass">
+            <div class="spd-result-header">
+              <div class="spd-result-main">
+                <template v-if="spdHelp.mode === 'total'">
+                  <div class="spd-result-stats">
+                    <span>当前站街 <b>{{ currentSpdForHelper.toFixed(1) }}</b></span>
+                    <span class="spd-divider">/</span>
+                    <span>目标 <b>{{ spdHelp.targetSpd }}</b></span>
+                    <small v-if="relicSpdBonus > 0">（遗器约 +{{ relicSpdBonus.toFixed(1) }}）</small>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="spd-result-stats">
+                    <span>目标缺口 <b>{{ spdHelp.targetSpd }}</b> 速（gap-only）</span>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <p class="spd-result-note">{{ spdHelp.note }}</p>
+          </div>
+          <div v-else class="score-notice-card">
+            <p>填写目标阈值，或在培养方案中设置 SPD 属性目标 / 速度断点字段。</p>
+          </div>
+
+          <details class="score-spd-explanation">
+            <summary>什么是速度断点？</summary>
+            <p>
+              「断点」= 你想达到的<strong>总速度门槛</strong>（如 134 / 143 / 160），用来估算还差多少速度副词条，<strong>不是</strong>「速度永远越高越好」。低速反击角色（克拉拉/云璃等）通常不必用此工具，权重模板请选「低速反击输出」。
+            </p>
+          </details>
         </div>
       </div>
 
-      <div class="score-subblock">
+      <!-- Sub-block 3: 短板部位替换 -->
+      <div class="score-subblock score-replace-block">
         <div class="score-subhead">
-          <h4>短板部位替换</h4>
+          <div class="score-subhead-title">
+            <div>
+              <h4>短板部位替换</h4>
+              <p class="score-subhead-desc">
+                检索同部位、同主属性且加权分更高的候选遗器
+              </p>
+            </div>
+          </div>
           <button
             type="button"
             class="score-action"
             :disabled="inventoryBusy"
             @click="loadInventoryPool"
           >
-            {{
-              inventoryBusy ? "检索中…" : inventoryLoaded ? "已加载候选" : "从背包检索可替换遗器"
-            }}
+            <span v-if="inventoryBusy" class="score-spinner"></span>
+            <span>
+              {{
+                inventoryBusy ? "检索中…" : inventoryLoaded ? "已加载候选" : "从背包检索可替换遗器"
+              }}
+            </span>
           </button>
         </div>
-        <p class="score-hint">
-          仅同部位、同主属性且加权分更高的件。点击候选可对比当前装备与替换件的潜力、加权分与各词条评分。
-          <template v-if="replacementSetNames.length">
-            已限制为培养方案目标套装：{{ replacementSetNames.join("、") }}。
-          </template>
-          <template v-else>方案未配置目标套装时，在背包同部位中检索。</template>
-        </p>
+
+        <div v-if="replacementSetNames.length" class="score-filter-badge-bar">
+          <span class="filter-tag">
+            已限制目标套装：{{ replacementSetNames.join("、") }}
+          </span>
+        </div>
+
         <ul v-if="replacements.length" class="score-replace-list">
           <li v-for="item in replacements" :key="item.relic.itemId">
             <button
@@ -670,16 +800,26 @@ async function computeFarmPriority() {
               :aria-label="`对比${slotLabel(summary.weakSlot ?? '')}当前装备与候选 #${item.relic.itemId}，加权 +${item.deltaWeightedRolls.toFixed(2)}，${item.score.letterGrade ?? '无评级'}`"
               @click="openReplaceCompare(item)"
             >
-              <span>#{{ item.relic.itemId }} {{ item.relic.setName || item.relic.name }}</span>
-              <em>+{{ item.deltaWeightedRolls.toFixed(2) }}</em>
-              <b>{{ item.score.letterGrade ?? "—" }}</b>
+              <div class="replace-item-main">
+                <span class="replace-item-id">#{{ item.relic.itemId }}</span>
+                <span class="replace-item-name">{{ item.relic.setName || item.relic.name }}</span>
+              </div>
+              <div class="replace-item-metrics">
+                <span class="delta-badge">+{{ item.deltaWeightedRolls.toFixed(2) }} ↑</span>
+                <span :class="['score-grade-badge', gradeBadgeClass(item.score.letterGrade)]">
+                  {{ item.score.letterGrade ?? "—" }}
+                </span>
+                <span class="compare-action-hint">对比 ➔</span>
+              </div>
             </button>
           </li>
         </ul>
-        <p v-else-if="inventoryLoaded" class="score-hint">
-          未找到符合条件的候选（同部位
-          {{ replacementSetFilter?.length ? "· 目标套装" : "" }} · 主属性 · 更高加权分）。
-        </p>
+        <div v-else-if="inventoryLoaded" class="score-notice-card">
+          <p>
+            未找到符合条件的候选（同部位
+            {{ replacementSetFilter?.length ? "· 目标套装" : "" }} · 主属性 · 更高加权分）。
+          </p>
+        </div>
       </div>
     </template>
 
@@ -691,8 +831,8 @@ async function computeFarmPriority() {
         @pointerdown.self="closePeek"
       >
         <div
-          ref="peekPopoverEl"
           id="equipped-relic-peek-dialog"
+          ref="peekPopoverEl"
           class="equipped-relic-peek-popover"
           role="dialog"
           aria-modal="true"

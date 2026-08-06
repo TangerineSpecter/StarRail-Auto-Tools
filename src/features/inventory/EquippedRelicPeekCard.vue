@@ -23,7 +23,14 @@ const props = withDefaults(
     /** Optional column caption, e.g. 当前装备 / 推荐替换 */
     caption?: string;
   }>(),
-  { effectiveSubstats: () => [], breakdown: () => [] },
+  {
+    letterGrade: null,
+    potentialPct: null,
+    weightedRolls: null,
+    caption: undefined,
+    effectiveSubstats: () => [],
+    breakdown: () => [],
+  },
 );
 
 const enhancementMode = computed(() => usesEnhancementHitCount(props.relic.substats));
@@ -88,6 +95,9 @@ const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
       <div class="equipped-relic-peek-text">
         <p class="detail-set-name">{{ relic.setName || "未知套装" }}</p>
         <h3>{{ relic.name }}</h3>
+        <p v-if="letterGrade || potentialPct != null" class="equipped-relic-peek-score">
+          {{ letterGrade ?? "—" }} · 潜力 {{ potentialPct != null ? potentialPct.toFixed(1) + "%" : "—" }}
+        </p>
         <div class="detail-tags">
           <span class="detail-slot-tag">{{ slotLabel(relic.slot) }}</span>
           <div class="detail-rarity-stars detail-inline-stars" :aria-label="`${relic.rarity} 星`">
