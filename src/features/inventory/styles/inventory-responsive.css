@@ -471,6 +471,111 @@
   padding: 12px 0;
   color: var(--ink-soft);
 }
+
+/* Standing Stat Unavailable Box (Uncarded, Compact) */
+.standing-stat-unavailable-box {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.unavailable-reason-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reason-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  background: #fff7ed;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #c2410c;
+  flex-shrink: 0;
+}
+
+.reason-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ea580c;
+}
+
+.reason-text {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.unavailable-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  transition: all 0.15s ease;
+}
+
+.inline-status-tag.is-met {
+  background: #f0fdf4;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #065f46;
+}
+
+.inline-status-tag.is-unmet {
+  background: #fff1f2;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  color: #9f1239;
+}
+
+.tag-icon {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tag-label {
+  font-weight: 600;
+}
+
+.tag-pill {
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.is-met .tag-pill {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.is-unmet .tag-pill {
+  background: rgba(244, 63, 94, 0.15);
+  color: #e11d48;
+}
+
+@media (max-width: 640px) {
+  .checklist-grid {
+    grid-template-columns: 1fr;
+  }
+}
 /* Compact Trace Attribute Section */
 .trace-stat-section {
   display: flex;

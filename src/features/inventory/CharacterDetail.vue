@@ -17,6 +17,7 @@ import { formatTime, formatTraceStat } from "@/shared/utils/display";
 import type { CharacterBuildPlan } from "@/types";
 import { characterSkillEntries } from "./character-skills";
 import CharacterScorePanel from "./CharacterScorePanel.vue";
+import StandingStatEmptyCard from "./StandingStatEmptyCard.vue";
 import { pathLabel } from "./options";
 import type { CharacterDetailData } from "./detail-types";
 
@@ -189,8 +190,12 @@ function getStatCategory(key: string): { type: string; colorClass: string } {
           ><b>{{ formatStandingStat(stat) }}</b>
         </div>
       </div>
-      <p v-else class="standing-stat-unavailable">{{ standingStats.reason }}</p>
-      <footer>
+      <StandingStatEmptyCard
+        v-else
+        :detail="detail"
+        :reason="standingStats.reason"
+      />
+      <footer v-if="standingStats.available">
         已计入基础属性、光锥三围、光锥无条件技能加成、遗器主/副属性、无条件 2 件套与当前勾选行迹。
       </footer>
     </section>
