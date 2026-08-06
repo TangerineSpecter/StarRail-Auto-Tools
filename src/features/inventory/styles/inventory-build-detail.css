@@ -1695,10 +1695,18 @@ button.score-piece.is-weak-slot.is-open {
 .score-priority-head,
 .score-priority-row {
   display: grid;
-  grid-template-columns: 1.1fr 0.7fr 0.85fr 0.95fr 0.95fr;
+  grid-template-columns: 1.1fr 1fr 1fr 1.1fr 1.3fr;
   gap: 6px;
   padding: 7px 9px;
   align-items: center;
+}
+
+.score-priority-head > span,
+.score-priority-row > span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
 }
 
 .score-priority-head {
@@ -1725,7 +1733,7 @@ button.score-piece.is-weak-slot.is-open {
 
 .score-priority-row.is-bottleneck {
   background: #fffbf5;
-  border-left: 3px solid #f59e0b;
+  box-shadow: inset 3px 0 0 #f59e0b;
 }
 
 .score-cell-slot {
