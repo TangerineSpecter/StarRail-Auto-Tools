@@ -4,7 +4,8 @@ import Button from "primevue/button";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
 import { scanUpgradeRecommendations } from "@/shared/utils/relic-score";
-import { resolveCharacterCatalogue } from "@/shared/catalogue";
+import { characterDisplayName, relicImage, resolveCharacterCatalogue } from "@/shared/catalogue";
+import { formatStatValue } from "@/shared/catalogue/relic-options";
 import type { BuildDashboardEntry, RelicListItem, RelicMainStatScanResult } from "@/types";
 
 const props = defineProps<{ imageFor: (relic: RelicListItem) => string | undefined }>();
@@ -21,6 +22,9 @@ const usefulnessRows = ref<
     item: RelicListItem;
     bestCharacterId: number | null;
     bestLabel: string;
+    characterDisplayLabel: string;
+    characterAvatar: string | null;
+    characterElement: string | null;
     grade: string | null;
     weightedRolls: number;
     equippedWeightedRolls: number | null;
@@ -73,8 +77,11 @@ const hasMore = computed(() => !!result.value && result.value.items.length < res
 const slotLabel = (slot: string) => slotLabels[slot] ?? slot;
 const statLabel = (stat: string) => statLabels[stat] ?? stat;
 const allowedStats = (item: RelicListItem) => result.value?.allowedMainStats[item.slot] ?? [];
-const characterElement = (name: string, characterId?: number | null) =>
-  resolveCharacterCatalogue({ characterId, name })?.element ?? null;
+
+const gradeClass = (grade: string | null) => {
+  if (!grade) return "grade-none";
+  return `grade-${grade.toLowerCase().replace("+", "-plus")}`;
+};
 
 function loadMoreOnScroll(event: Event) {
   const container = event.currentTarget as HTMLElement;
@@ -152,14 +159,14 @@ async function analyzeUsefulness() {
         slot: relic.slot!,
         mainStat: relic.mainStat,
         setId: relic.setId,
-        substats: relic.substats,
+        substats: (relic.substats ?? []).map((s) => ({ ...s, key: s.key ?? (s as any).stat })),
       })),
     }));
     const recommendations = scanUpgradeRecommendations(
       page.items.map((item) => ({
         slot: item.slot,
         mainStat: item.mainStat,
-        substats: item.substats,
+        substats: (item.substats ?? []).map((s) => ({ ...s, key: s.key ?? (s as any).stat })),
         rarity: item.rarity,
         level: item.level,
         setId: item.setId,
@@ -174,10 +181,21 @@ async function analyzeUsefulness() {
       .map((row) => {
         const item = itemById.get(row.relic.itemId ?? -1);
         if (!item) return null;
+        const catalogueEntry = resolveCharacterCatalogue({
+          characterId: row.characterId,
+          name: row.planLabel ?? "",
+        });
+        const characterDisplayLabel = characterDisplayName({
+          characterId: row.characterId,
+          name: row.planLabel ?? "—",
+        });
         return {
           item,
           bestCharacterId: row.characterId,
           bestLabel: row.planLabel ?? "—",
+          characterDisplayLabel,
+          characterAvatar: catalogueEntry?.image ?? null,
+          characterElement: catalogueEntry?.element ?? null,
           grade: row.candidateScore.letterGrade,
           weightedRolls: row.candidateScore.weightedRolls,
           equippedWeightedRolls: row.equippedScore?.weightedRolls ?? null,
@@ -247,50 +265,101 @@ onMounted(async () => {
         </div>
         <p class="scanner-result-note">按相对当前穿戴的加权分增量排序</p>
       </div>
-      <div class="scanner-list" role="list" aria-label="替换推荐扫描">
-        <button
+      <div class="scanner-upgrade-grid" role="list" aria-label="替换推荐扫描">
+        <article
           v-for="row in usefulnessRows"
           :key="row.item.itemId"
-          class="scanner-item"
-          type="button"
+          class="upgrade-card"
           role="listitem"
+          tabindex="0"
           @click="emit('open-relic', row.item)"
+          @keydown.enter="emit('open-relic', row.item)"
         >
-          <span class="scanner-card-kicker"
-            ><i>UPGRADE</i
-            ><small>{{ slotLabel(row.item.slot) }} · {{ row.grade ?? "—" }}</small></span
-          >
-          <span :class="['scanner-item-image', `rarity-${row.item.rarity}`]"
-            ><img
-              v-if="props.imageFor(row.item)"
-              :src="props.imageFor(row.item)"
-              :alt="row.item.name"
-            /><i v-else>{{ slotLabel(row.item.slot).slice(0, 1) }}</i></span
-          >
-          <span class="scanner-item-identity usefulness-identity">
-            <b
-              >{{ row.item.setName }} <em class="relic-level">+{{ row.item.level }}</em></b
-            >
-            <div class="usefulness-stats">
-              <span class="usefulness-tag" data-tag="upgrade">推荐替换</span>
-              <span :class="['character-tag', `element-${characterElement(row.bestLabel)}`]">{{
-                row.bestLabel
-              }}</span>
-              <span class="score-tag"
-                >↑ <b>+{{ row.deltaWeightedRolls.toFixed(2) }}</b>
-                <small
-                  >rolls（{{ row.weightedRolls.toFixed(2)
-                  }}{{
-                    row.equippedWeightedRolls != null
-                      ? ` vs ${row.equippedWeightedRolls.toFixed(2)}`
-                      : " / 空槽"
-                  }}）</small
-                ></span
-              >
+          <!-- Top Bar Header -->
+          <div class="upgrade-card-header">
+            <div class="upgrade-badge">
+              <i class="sparkle">✦</i> 替换推荐
             </div>
-          </span>
-          <span class="scanner-item-arrow" aria-hidden="true">查看 ›</span>
-        </button>
+            <div class="upgrade-card-tags">
+              <span class="slot-pill">{{ slotLabel(row.item.slot) }}</span>
+              <span :class="['grade-pill', gradeClass(row.grade)]">
+                {{ row.grade ?? "—" }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Main Info Section -->
+          <div class="upgrade-card-main">
+            <!-- Relic Icon Frame -->
+            <div :class="['relic-thumb', `rarity-${row.item.rarity}`]">
+              <img
+                v-if="props.imageFor(row.item) || relicImage(row.item.setId, row.item.slot)"
+                :src="props.imageFor(row.item) || relicImage(row.item.setId, row.item.slot)"
+                :alt="row.item.name"
+              />
+              <span v-else class="relic-thumb-fallback">{{ slotLabel(row.item.slot).slice(0, 1) }}</span>
+              <span class="relic-level-tag">+{{ row.item.level }}</span>
+            </div>
+
+            <!-- Set & Main Stat -->
+            <div class="relic-meta">
+              <div class="relic-name-row">
+                <b class="relic-set-name">{{ row.item.setName }}</b>
+              </div>
+              <div class="main-stat-badge">
+                <small>主词条</small>
+                <strong>{{ statLabel(row.item.mainStat) }}</strong>
+                <em v-if="row.item.mainStatValue">+{{ formatStatValue(row.item.mainStat, row.item.mainStatValue) }}</em>
+              </div>
+            </div>
+          </div>
+
+          <!-- Target Character Banner -->
+          <div class="target-character-bar">
+            <div class="character-avatar-wrapper">
+              <img
+                v-if="row.characterAvatar"
+                :src="row.characterAvatar"
+                :alt="row.characterDisplayLabel"
+                class="character-avatar-img"
+              />
+              <span v-else :class="['character-avatar-fallback', `element-${row.characterElement}`]">
+                {{ row.characterDisplayLabel.slice(0, 1) }}
+              </span>
+            </div>
+            <div class="character-target-info">
+              <span class="target-caption">推荐替换件适配</span>
+              <span :class="['target-character-name', `element-${row.characterElement}`]">
+                {{ row.characterDisplayLabel }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Substats Chips Preview -->
+          <div v-if="row.item.substats && row.item.substats.length" class="substat-chips-row">
+            <span
+              v-for="(sub, idx) in row.item.substats.slice(0, 4)"
+              :key="idx"
+              class="substat-chip"
+            >
+              {{ statLabel(sub.key ?? (sub as any).stat) }} <em>+{{ formatStatValue(sub.key ?? (sub as any).stat, sub.value) }}</em>
+            </span>
+          </div>
+
+          <!-- Score Footer -->
+          <div class="upgrade-card-footer">
+            <div class="roll-score-info">
+              <span class="roll-delta-tag">
+                <i class="up-arrow">↑</i> +{{ row.deltaWeightedRolls.toFixed(2) }} <small>rolls</small>
+              </span>
+              <span class="roll-vs-detail">
+                {{ row.weightedRolls.toFixed(2) }} <small>vs</small>
+                {{ row.equippedWeightedRolls != null ? row.equippedWeightedRolls.toFixed(2) : "空槽" }}
+              </span>
+            </div>
+            <span class="card-view-btn">查看详情 ›</span>
+          </div>
+        </article>
       </div>
     </div>
     <div v-else-if="usefulnessDone && usefulnessScanned > 0" class="scanner-state success">
@@ -582,6 +651,394 @@ onMounted(async () => {
   color: var(--gold);
   font-size: 15px;
 }
+.scanner-upgrade-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  align-items: stretch;
+  gap: 14px;
+  overflow: auto;
+  padding: 4px 4px 16px;
+}
+
+.upgrade-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(45, 75, 116, 0.18);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 245, 253, 0.88));
+  box-shadow: 0 4px 16px rgba(42, 69, 105, 0.06);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  height: max-content;
+  min-height: min-content;
+}
+.upgrade-card > div {
+  flex-shrink: 0;
+}
+
+.upgrade-card:hover {
+  border-color: rgba(37, 95, 185, 0.55);
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(35, 70, 130, 0.14), 0 0 0 1px rgba(50, 120, 220, 0.2);
+  transform: translateY(-3px);
+}
+
+.upgrade-card:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.upgrade-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.upgrade-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(39, 148, 71, 0.12);
+  color: #1e7e38;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.upgrade-badge .sparkle {
+  color: #16a34a;
+  font-style: normal;
+  font-size: 11px;
+}
+
+.upgrade-card-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slot-pill {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(220, 230, 242, 0.5);
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.grade-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font: 800 11px/1.2 "Bahnschrift", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.grade-pill.grade-sss {
+  background: linear-gradient(135deg, #eab308, #ca8a04);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(234, 179, 8, 0.35);
+}
+
+.grade-pill.grade-ss {
+  background: linear-gradient(135deg, #a855f7, #7e22ce);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(168, 85, 247, 0.3);
+}
+
+.grade-pill.grade-s-plus,
+.grade-pill.grade-s {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #fff;
+}
+
+.grade-pill.grade-aeon {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
+}
+
+.grade-pill.grade-a {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
+}
+
+.grade-pill.grade-b,
+.grade-pill.grade-none {
+  background: rgba(148, 163, 184, 0.18);
+  color: #475569;
+}
+
+.upgrade-card-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.relic-thumb {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(199, 165, 90, 0.58);
+  background: #ffffff;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.04);
+}
+
+.relic-thumb.rarity-5 {
+  border-color: #dcb05a;
+  background: linear-gradient(135deg, #fffcf5, #f5e9d3);
+}
+
+.relic-thumb.rarity-4 {
+  border-color: #a855f7;
+  background: linear-gradient(135deg, #fbf5ff, #ebd5ff);
+}
+
+.relic-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.relic-thumb-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.relic-level-tag {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(28, 75, 147, 0.88);
+  color: #fff;
+  font: 700 9px/1 "Bahnschrift", sans-serif;
+  padding: 2px 4px;
+  border-top-left-radius: 3px;
+}
+
+.relic-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.relic-set-name {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main-stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(28, 75, 147, 0.06);
+  border: 1px solid rgba(28, 75, 147, 0.12);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.main-stat-badge small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.main-stat-badge strong {
+  color: #1a478d;
+  font-size: 11px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main-stat-badge em {
+  color: var(--blue);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.target-character-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(236, 242, 251, 0.65);
+  border: 1px solid rgba(46, 79, 126, 0.08);
+}
+
+.character-avatar-wrapper {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(199, 165, 90, 0.45);
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.character-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.character-avatar-fallback {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.character-target-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.target-caption {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.target-character-name {
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.target-character-name.element-火,
+.character-avatar-fallback.element-火 {
+  color: #d13d21;
+}
+.target-character-name.element-冰,
+.character-avatar-fallback.element-冰 {
+  color: #1a7ec2;
+}
+.target-character-name.element-雷,
+.character-avatar-fallback.element-雷 {
+  color: #8843cf;
+}
+.target-character-name.element-风,
+.character-avatar-fallback.element-风 {
+  color: #279447;
+}
+.target-character-name.element-物理,
+.character-avatar-fallback.element-物理 {
+  color: #5c6470;
+}
+.target-character-name.element-量子,
+.character-avatar-fallback.element-量子 {
+  color: #58338e;
+}
+.target-character-name.element-虚数,
+.character-avatar-fallback.element-虚数 {
+  color: #c48310;
+}
+
+.substat-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.substat-chip {
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(46, 79, 126, 0.12);
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+.substat-chip em {
+  font-style: normal;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.upgrade-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(46, 79, 126, 0.12);
+}
+
+.roll-score-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.roll-delta-tag {
+  color: #16a34a;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.roll-delta-tag .up-arrow {
+  font-style: normal;
+  font-size: 12px;
+}
+
+.roll-delta-tag small {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.roll-vs-detail {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.roll-vs-detail small {
+  color: var(--muted);
+}
+
+.card-view-btn {
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .scanner-list {
   flex: 1;
   min-height: 0;
@@ -592,6 +1049,7 @@ onMounted(async () => {
   overflow: auto;
   padding: 2px 2px 14px;
 }
+
 .scanner-item {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) auto;
@@ -607,18 +1065,21 @@ onMounted(async () => {
   box-shadow: 0 8px 20px rgba(42, 69, 105, 0.05);
   text-align: left;
 }
+
 .scanner-item:hover {
   border-color: rgba(37, 86, 166, 0.48);
   background: #fff;
   box-shadow: 0 12px 25px rgba(42, 69, 105, 0.12);
   transform: translateY(-2px);
 }
+
 .scanner-card-kicker {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+
 .scanner-card-kicker i {
   color: #ae6954;
   font:
@@ -627,11 +1088,13 @@ onMounted(async () => {
   letter-spacing: 0.15em;
   font-style: normal;
 }
+
 .scanner-card-kicker small,
 .scanner-item-identity small {
   color: var(--muted);
   font-size: 10px;
 }
+
 .scanner-item-image {
   display: grid;
   grid-row: 2 / span 2;
@@ -642,122 +1105,38 @@ onMounted(async () => {
   border: 1px solid rgba(199, 165, 90, 0.58);
   background: #fff;
 }
+
 .scanner-item-image img {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
+
 .scanner-item-image i {
   color: var(--gold);
   font-style: normal;
   font-weight: 700;
 }
+
 .scanner-item-identity {
   display: grid;
   gap: 5px;
 }
+
 .scanner-item-identity > b {
   overflow: hidden;
   color: var(--ink);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .relic-level {
   font-style: normal;
   color: var(--blue);
   font-size: 13px;
   margin-left: 2px;
 }
-.usefulness-identity {
-  grid-row: 2 / span 2;
-  align-self: center;
-}
-.usefulness-stats {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
-}
-.usefulness-tag {
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-weight: 700;
-}
-.usefulness-tag[data-tag="upgrade"] {
-  background: rgba(39, 148, 71, 0.12);
-  color: #279447;
-}
-.usefulness-tag[data-tag="lock"] {
-  background: rgba(220, 160, 90, 0.15);
-  color: #c77b32;
-}
-.usefulness-tag[data-tag="farm"] {
-  background: rgba(45, 110, 200, 0.1);
-  color: #2d6ec8;
-}
-.usefulness-tag[data-tag="discard-candidate"] {
-  background: rgba(200, 80, 80, 0.1);
-  color: #c85050;
-}
-.character-tag {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.character-tag.element-火 {
-  background: #ffebe5;
-  color: #d13d21;
-}
-.character-tag.element-冰 {
-  background: #e5f5ff;
-  color: #1a7ec2;
-}
-.character-tag.element-雷 {
-  background: #f3ebfc;
-  color: #8843cf;
-}
-.character-tag.element-风 {
-  background: #e6f6eb;
-  color: #279447;
-}
-.character-tag.element-物理 {
-  background: #f0f2f5;
-  color: #5c6470;
-}
-.character-tag.element-量子 {
-  background: #f1eaf7;
-  color: #58338e;
-}
-.character-tag.element-虚数 {
-  background: #fdf5e5;
-  color: #c48310;
-}
-.character-tag.element-null {
-  background: #f0f2f5;
-  color: var(--muted);
-}
 
-.score-tag {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 3px;
-  color: #c59849;
-  font-size: 10px;
-  font-weight: 700;
-  margin-left: 2px;
-}
-.score-tag b {
-  font-size: 12px;
-  color: var(--ink);
-}
-.score-tag small {
-  color: var(--muted);
-  font-size: 9px;
-}
 .scanner-stat-compare {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1.4fr);
