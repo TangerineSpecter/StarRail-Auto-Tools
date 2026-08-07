@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import Button from "primevue/button";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
-import { scoreRelicForPlans } from "@/shared/utils/relic-score";
+import { scanUpgradeRecommendations } from "@/shared/utils/relic-score";
 import { resolveCharacterCatalogue } from "@/shared/catalogue";
 import type { BuildDashboardEntry, RelicListItem, RelicMainStatScanResult } from "@/types";
 
@@ -23,13 +23,16 @@ const usefulnessRows = ref<
     bestLabel: string;
     grade: string | null;
     weightedRolls: number;
-    overallTag: string;
+    equippedWeightedRolls: number | null;
+    deltaWeightedRolls: number;
   }>
 >([]);
 /** True when inventory has more unequipped relics than the scan page size. */
 const usefulnessTruncated = ref(false);
 const usefulnessScanned = ref(0);
 const usefulnessTotal = ref(0);
+/** True after upgrade scan finishes (used to show empty-success when no upgrades). */
+const usefulnessDone = ref(false);
 const USEFULNESS_PAGE_SIZE = 200;
 let usefulnessRequestId = 0;
 
@@ -90,6 +93,7 @@ async function analyze(append = false) {
   if (!append) {
     usefulnessRows.value = [];
     usefulnessScanned.value = 0;
+    usefulnessDone.value = false;
   }
   if (append) loadingMore.value = true;
   else loading.value = true;
@@ -115,8 +119,10 @@ async function analyzeUsefulness() {
   usefulnessTruncated.value = false;
   usefulnessScanned.value = 0;
   usefulnessTotal.value = 0;
+  usefulnessDone.value = false;
+  usefulnessRows.value = [];
   try {
-    if (!plans.value.length) plans.value = await buildPlanApi.dashboard();
+    plans.value = await buildPlanApi.dashboard();
     if (requestId !== usefulnessRequestId) return;
     planCount.value = plans.value.length;
     if (!plans.value.length) {
@@ -138,30 +144,48 @@ async function analyzeUsefulness() {
       substatWeights: entry.plan.substatWeights,
       effectiveSubstats: entry.plan.effectiveSubstats,
       mainStats: entry.plan.mainStats,
-      minPotentialPct: entry.plan.minPotentialPct,
+      cavernMode: entry.plan.cavernMode,
+      cavernSetA: entry.plan.cavernSetA,
+      cavernSetB: entry.plan.cavernSetB,
+      planarSetId: entry.plan.planarSetId,
+      equippedRelics: (entry.character.equippedRelics ?? []).filter((relic) => relic.slot != null).map((relic) => ({
+        slot: relic.slot!,
+        mainStat: relic.mainStat,
+        setId: relic.setId,
+        substats: relic.substats,
+      })),
     }));
-    usefulnessRows.value = page.items
-      .map((item) => {
-        const scored = scoreRelicForPlans(
-          {
-            slot: item.slot,
-            mainStat: item.mainStat,
-            substats: item.substats,
-            rarity: item.rarity,
-            level: item.level,
-          },
-          planInputs,
-        );
+    const recommendations = scanUpgradeRecommendations(
+      page.items.map((item) => ({
+        slot: item.slot,
+        mainStat: item.mainStat,
+        substats: item.substats,
+        rarity: item.rarity,
+        level: item.level,
+        setId: item.setId,
+        itemId: item.itemId,
+        name: item.name,
+        setName: item.setName,
+      })),
+      planInputs,
+    );
+    const itemById = new Map(page.items.map((item) => [item.itemId, item]));
+    usefulnessRows.value = recommendations
+      .map((row) => {
+        const item = itemById.get(row.relic.itemId ?? -1);
+        if (!item) return null;
         return {
           item,
-          bestCharacterId: scored.best?.characterId ?? null,
-          bestLabel: scored.best?.planLabel ?? "—",
-          grade: scored.best?.score.letterGrade ?? null,
-          weightedRolls: scored.best?.score.weightedRolls ?? 0,
-          overallTag: scored.overallTag,
+          bestCharacterId: row.characterId,
+          bestLabel: row.planLabel ?? "—",
+          grade: row.candidateScore.letterGrade,
+          weightedRolls: row.candidateScore.weightedRolls,
+          equippedWeightedRolls: row.equippedScore?.weightedRolls ?? null,
+          deltaWeightedRolls: row.deltaWeightedRolls,
         };
       })
-      .sort((a, b) => b.weightedRolls - a.weightedRolls);
+      .filter((row): row is NonNullable<typeof row> => row != null);
+    usefulnessDone.value = true;
   } catch (cause) {
     if (requestId !== usefulnessRequestId) return;
     error.value = String(cause);
@@ -169,12 +193,6 @@ async function analyzeUsefulness() {
     if (requestId === usefulnessRequestId) usefulnessLoading.value = false;
   }
 }
-
-const tagLabel: Record<string, string> = {
-  lock: "建议锁定",
-  farm: "可继续刷",
-  "discard-candidate": "分解候选",
-};
 
 onMounted(async () => {
   try {
@@ -196,7 +214,7 @@ onMounted(async () => {
           <span class="scanner-sigil" aria-hidden="true">◇</span>
           <h2>背包扫描</h2>
         </div>
-        <p>比对已保存的培养方案，定位没有去向的闲置遗器。</p>
+        <p>比对已保存的培养方案，定位无去向闲置件，或优于当前穿戴的替换候选。</p>
       </div>
       <div class="scanner-command">
         <small>MAIN-STAT ANALYZER</small>
@@ -209,7 +227,7 @@ onMounted(async () => {
             :loading="usefulnessLoading"
             outlined
             @click="analyzeUsefulness()"
-            >方案有用度排序</Button
+            >替换推荐扫描</Button
           >
         </div>
       </div>
@@ -218,18 +236,18 @@ onMounted(async () => {
     <div v-if="usefulnessRows.length" class="scanner-usefulness">
       <div class="scanner-result-heading">
         <div>
-          <small>PLAN USEFULNESS / RANKED</small>
+          <small>UPGRADE / BETTER THAN EQUIPPED</small>
           <p>
-            <b>{{ usefulnessRows.length }}</b> 件未装备遗器（按最佳方案加权分）
+            <b>{{ usefulnessRows.length }}</b> 件可替换推荐（主属性 + 套装匹配且词条分更高）
           </p>
           <p v-if="usefulnessTruncated" class="scanner-result-note">
             仅分析前 {{ usefulnessScanned }} /
             {{ usefulnessTotal }} 件未装备遗器（性能上限），结果可能不完整。
           </p>
         </div>
-        <p class="scanner-result-note">启发式评分，不是 DPS</p>
+        <p class="scanner-result-note">按相对当前穿戴的加权分增量排序</p>
       </div>
-      <div class="scanner-list" role="list" aria-label="方案有用度排序">
+      <div class="scanner-list" role="list" aria-label="替换推荐扫描">
         <button
           v-for="row in usefulnessRows"
           :key="row.item.itemId"
@@ -239,8 +257,8 @@ onMounted(async () => {
           @click="emit('open-relic', row.item)"
         >
           <span class="scanner-card-kicker"
-            ><i>{{ row.grade ?? "—" }}</i
-            ><small>{{ slotLabel(row.item.slot) }}</small></span
+            ><i>UPGRADE</i
+            ><small>{{ slotLabel(row.item.slot) }} · {{ row.grade ?? "—" }}</small></span
           >
           <span :class="['scanner-item-image', `rarity-${row.item.rarity}`]"
             ><img
@@ -254,14 +272,20 @@ onMounted(async () => {
               >{{ row.item.setName }} <em class="relic-level">+{{ row.item.level }}</em></b
             >
             <div class="usefulness-stats">
-              <span class="usefulness-tag" :data-tag="row.overallTag">{{
-                tagLabel[row.overallTag] ?? row.overallTag
-              }}</span>
+              <span class="usefulness-tag" data-tag="upgrade">推荐替换</span>
               <span :class="['character-tag', `element-${characterElement(row.bestLabel)}`]">{{
                 row.bestLabel
               }}</span>
               <span class="score-tag"
-                >✦ <b>{{ row.weightedRolls.toFixed(2) }}</b> <small>rolls</small></span
+                >↑ <b>+{{ row.deltaWeightedRolls.toFixed(2) }}</b>
+                <small
+                  >rolls（{{ row.weightedRolls.toFixed(2)
+                  }}{{
+                    row.equippedWeightedRolls != null
+                      ? ` vs ${row.equippedWeightedRolls.toFixed(2)}`
+                      : " / 空槽"
+                  }}）</small
+                ></span
               >
             </div>
           </span>
@@ -269,7 +293,10 @@ onMounted(async () => {
         </button>
       </div>
     </div>
-    <div v-else-if="usefulnessScanned > 0" class="scanner-state success">
+    <div v-else-if="usefulnessDone && usefulnessScanned > 0" class="scanner-state success">
+      未发现优于当前穿戴的未装备遗器（主属性、套装均匹配且词条分更高）。
+    </div>
+    <div v-else-if="usefulnessDone && usefulnessScanned === 0" class="scanner-state success">
       当前没有可分析的未装备遗器。
     </div>
 
@@ -656,6 +683,10 @@ onMounted(async () => {
   border-radius: 3px;
   font-size: 10px;
   font-weight: 700;
+}
+.usefulness-tag[data-tag="upgrade"] {
+  background: rgba(39, 148, 71, 0.12);
+  color: #279447;
 }
 .usefulness-tag[data-tag="lock"] {
   background: rgba(220, 160, 90, 0.15);

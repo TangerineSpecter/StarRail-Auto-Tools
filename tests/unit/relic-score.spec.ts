@@ -15,6 +15,7 @@ import {
   rankSlotReplacements,
   rerollPotential,
   roleWeights,
+  scanUpgradeRecommendations,
   scoreRelic,
   scoreRelicForPlans,
   spdBreakpointHelper,
@@ -342,6 +343,346 @@ describe("relic-score core", () => {
     });
     expect(ranked[0]?.relic.itemId).toBe(2);
     expect(ranked[0]?.deltaWeightedRolls).toBeGreaterThan(0);
+  });
+
+  it("scanUpgradeRecommendations only keeps main+set matches that beat equipped score", () => {
+    const plan = {
+      characterId: 1112,
+      planLabel: "托帕",
+      substatWeights: critWeights,
+      mainStats: { Body: ["CRIT Rate"], PlanarSphere: ["Fire DMG Boost"] },
+      cavernMode: "fourPiece" as const,
+      cavernSetA: 101,
+      cavernSetB: null,
+      planarSetId: 301,
+      equippedRelics: [
+        {
+          slot: "Body",
+          mainStat: "CRIT Rate",
+          setId: 101,
+          substats: [
+            { key: "ATK%", count: 1, step: 1 },
+            { key: "DEF", count: 1, step: 0 },
+          ],
+        },
+        {
+          slot: "PlanarSphere",
+          mainStat: "Fire DMG Boost",
+          setId: 301,
+          substats: [{ key: "HP", count: 1, step: 0 }],
+        },
+      ],
+    };
+
+    const betterBody = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 101,
+      itemId: 10,
+      substats: [
+        { key: "CRIT DMG", count: 3, step: 4 },
+        { key: "ATK%", count: 2, step: 3 },
+        { key: "SPD", count: 1, step: 2 },
+      ],
+    };
+    const worseBody = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 101,
+      itemId: 11,
+      substats: [{ key: "DEF%", count: 1, step: 0 }],
+    };
+    const wrongMain = {
+      slot: "Body",
+      mainStat: "HP%",
+      setId: 101,
+      itemId: 12,
+      substats: [
+        { key: "CRIT DMG", count: 4, step: 5 },
+        { key: "CRIT Rate", count: 3, step: 4 },
+      ],
+    };
+    const wrongSet = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 999,
+      itemId: 13,
+      substats: [
+        { key: "CRIT DMG", count: 4, step: 5 },
+        { key: "ATK%", count: 3, step: 4 },
+      ],
+    };
+    const betterSphere = {
+      slot: "PlanarSphere",
+      mainStat: "Fire DMG Boost",
+      setId: 301,
+      itemId: 14,
+      substats: [
+        { key: "CRIT Rate", count: 2, step: 3 },
+        { key: "CRIT DMG", count: 2, step: 2 },
+      ],
+    };
+
+    const upgrades = scanUpgradeRecommendations(
+      [betterBody, worseBody, wrongMain, wrongSet, betterSphere],
+      [plan],
+    );
+    const ids = upgrades.map((row) => row.relic.itemId);
+    expect(ids).toContain(10);
+    expect(ids).toContain(14);
+    expect(ids).not.toContain(11);
+    expect(ids).not.toContain(12);
+    expect(ids).not.toContain(13);
+    expect(upgrades[0]?.deltaWeightedRolls).toBeGreaterThan(0);
+    expect(upgrades.every((row) => row.deltaWeightedRolls > 0)).toBe(true);
+  });
+
+  it("scanUpgradeRecommendations returns empty when nothing beats equipped", () => {
+    const plan = {
+      characterId: 1,
+      planLabel: "测试",
+      substatWeights: critWeights,
+      mainStats: { Body: ["CRIT Rate"] },
+      cavernMode: "fourPiece" as const,
+      cavernSetA: 101,
+      planarSetId: 0,
+      equippedRelics: [
+        {
+          slot: "Body",
+          mainStat: "CRIT Rate",
+          setId: 101,
+          substats: [
+            { key: "CRIT DMG", count: 4, step: 5 },
+            { key: "ATK%", count: 3, step: 4 },
+            { key: "SPD", count: 2, step: 3 },
+          ],
+        },
+      ],
+    };
+    const mediocre = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 101,
+      itemId: 20,
+      substats: [{ key: "DEF%", count: 1, step: 0 }],
+    };
+    expect(scanUpgradeRecommendations([mediocre], [plan])).toEqual([]);
+  });
+
+  it("scanUpgradeRecommendations uses base=0 for empty slot (no equipped piece)", () => {
+    const plan = {
+      characterId: 1,
+      planLabel: "测试",
+      substatWeights: critWeights,
+      mainStats: { Feet: ["SPD"] },
+      cavernMode: "fourPiece" as const,
+      cavernSetA: 101,
+      planarSetId: 0,
+      equippedRelics: [],
+    };
+    const candidate = {
+      slot: "Feet",
+      mainStat: "SPD",
+      setId: 101,
+      itemId: 30,
+      substats: [
+        { key: "CRIT Rate", count: 1, step: 1 },
+        { key: "ATK%", count: 1, step: 1 },
+      ],
+    };
+    const upgrades = scanUpgradeRecommendations([candidate], [plan]);
+    expect(upgrades).toHaveLength(1);
+    expect(upgrades[0]?.equippedScore).toBeNull();
+    expect(upgrades[0]?.deltaWeightedRolls).toBe(upgrades[0]?.candidateScore.weightedRolls);
+  });
+
+  it("scanUpgradeRecommendations passes Head/Hands with fixed main stats", () => {
+    const plan = {
+      characterId: 1,
+      planLabel: "测试",
+      substatWeights: critWeights,
+      mainStats: { Body: ["CRIT Rate"] },
+      cavernSetA: 101,
+      cavernMode: "fourPiece" as const,
+      equippedRelics: [],
+    };
+    const head = {
+      slot: "Head",
+      mainStat: "HP",
+      setId: 101,
+      itemId: 40,
+      substats: [
+        { key: "CRIT Rate", count: 2, step: 3 },
+        { key: "CRIT DMG", count: 1, step: 2 },
+      ],
+    };
+    const hands = {
+      slot: "Hands",
+      mainStat: "ATK",
+      setId: 101,
+      itemId: 41,
+      substats: [
+        { key: "CRIT DMG", count: 2, step: 3 },
+        { key: "SPD", count: 1, step: 1 },
+      ],
+    };
+    const upgrades = scanUpgradeRecommendations([head, hands], [plan]);
+    expect(upgrades.map((r) => r.relic.itemId)).toContain(40);
+    expect(upgrades.map((r) => r.relic.itemId)).toContain(41);
+  });
+
+  it("scanUpgradeRecommendations matches both sets in 2+2 mode", () => {
+    const plan = {
+      characterId: 1,
+      planLabel: "测试",
+      substatWeights: critWeights,
+      mainStats: { Body: ["CRIT Rate"] },
+      cavernMode: "twoPlusTwo" as const,
+      cavernSetA: 101,
+      cavernSetB: 102,
+      equippedRelics: [],
+    };
+    const setA = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 101,
+      itemId: 50,
+      substats: [{ key: "CRIT DMG", count: 2, step: 3 }],
+    };
+    const setB = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 102,
+      itemId: 51,
+      substats: [{ key: "ATK%", count: 2, step: 3 }],
+    };
+    const setC = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 999,
+      itemId: 52,
+      substats: [{ key: "CRIT DMG", count: 3, step: 5 }],
+    };
+    const upgrades = scanUpgradeRecommendations([setA, setB, setC], [plan]);
+    const ids = upgrades.map((r) => r.relic.itemId);
+    expect(ids).toContain(50);
+    expect(ids).toContain(51);
+    expect(ids).not.toContain(52);
+  });
+
+  it("scanUpgradeRecommendations allows any set when plan has no set configured", () => {
+    const plan = {
+      characterId: 1,
+      planLabel: "测试",
+      substatWeights: critWeights,
+      mainStats: { Body: ["CRIT Rate"] },
+      cavernSetA: 0,
+      planarSetId: 0,
+      equippedRelics: [],
+    };
+    const anySet = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 777,
+      itemId: 60,
+      substats: [{ key: "CRIT DMG", count: 2, step: 3 }],
+    };
+    const upgrades = scanUpgradeRecommendations([anySet], [plan]);
+    expect(upgrades).toHaveLength(1);
+    expect(upgrades[0]?.relic.itemId).toBe(60);
+  });
+
+  it("scanUpgradeRecommendations skips candidate with missing setId when plan targets sets", () => {
+    const plan = {
+      characterId: 1,
+      planLabel: "测试",
+      substatWeights: critWeights,
+      mainStats: { Body: ["CRIT Rate"] },
+      cavernMode: "fourPiece" as const,
+      cavernSetA: 101,
+      equippedRelics: [],
+    };
+    const noSetId = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      itemId: 70,
+      substats: [{ key: "CRIT DMG", count: 3, step: 5 }],
+    };
+    const upgrades = scanUpgradeRecommendations([noSetId], [plan]);
+    expect(upgrades).toEqual([]);
+  });
+
+  it("scanUpgradeRecommendations picks best delta across multiple plans", () => {
+    const weakPlan = {
+      characterId: 1,
+      planLabel: "弱方案",
+      substatWeights: { ...critWeights, "CRIT DMG": 0.3 },
+      mainStats: { Body: ["CRIT Rate"] },
+      cavernSetA: 101,
+      cavernMode: "fourPiece" as const,
+      equippedRelics: [
+        {
+          slot: "Body",
+          mainStat: "CRIT Rate",
+          setId: 101,
+          substats: [{ key: "ATK%", count: 1, step: 1 }],
+        },
+      ],
+    };
+    const strongPlan = {
+      characterId: 2,
+      planLabel: "强方案",
+      substatWeights: critWeights,
+      mainStats: { Body: ["CRIT Rate"] },
+      cavernSetA: 101,
+      cavernMode: "fourPiece" as const,
+      equippedRelics: [],
+    };
+    const candidate = {
+      slot: "Body",
+      mainStat: "CRIT Rate",
+      setId: 101,
+      itemId: 80,
+      substats: [
+        { key: "CRIT DMG", count: 3, step: 4 },
+        { key: "ATK%", count: 2, step: 3 },
+      ],
+    };
+    const upgrades = scanUpgradeRecommendations([candidate], [weakPlan, strongPlan]);
+    expect(upgrades).toHaveLength(1);
+    // strongPlan has empty slot (base=0) so delta is the full score → larger delta wins
+    expect(upgrades[0]?.characterId).toBe(2);
+    expect(upgrades[0]?.planLabel).toBe("强方案");
+  });
+
+  it("scoreRelicForPlans returns byPlan in original insertion order (no sort side-effect)", () => {
+    const plans = [
+      {
+        characterId: 1,
+        planLabel: "A",
+        substatWeights: { ...critWeights, "CRIT DMG": 0.1 },
+      },
+      {
+        characterId: 2,
+        planLabel: "B",
+        substatWeights: critWeights,
+      },
+      {
+        characterId: 3,
+        planLabel: "C",
+        substatWeights: { ...critWeights, "CRIT Rate": 0.1 },
+      },
+    ];
+    const relic = {
+      slot: "Head" as const,
+      mainStat: "HP",
+      substats: [
+        { key: "CRIT DMG", count: 2, step: 3 },
+        { key: "ATK%", count: 1, step: 1 },
+      ],
+    };
+    const result = scoreRelicForPlans(relic, plans);
+    expect(result.byPlan.map((p) => p.planLabel)).toEqual(["A", "B", "C"]);
   });
 
   it("builds farming priority rows and plan quality completion", () => {

@@ -142,7 +142,7 @@ export function scoreRelicForPlans(
   usefulPlans.sort((a, b) => b.score.weightedRolls - a.score.weightedRolls);
   const best =
     usefulPlans[0] ??
-    byPlan.sort((a, b) => b.score.weightedRolls - a.score.weightedRolls)[0] ??
+    [...byPlan].sort((a, b) => b.score.weightedRolls - a.score.weightedRolls)[0] ??
     null;
 
   let overallTag: ScoredForPlans["overallTag"] = "discard-candidate";
@@ -150,6 +150,96 @@ export function scoreRelicForPlans(
   else if (byPlan.some((entry) => entry.tag === "farm")) overallTag = "farm";
 
   return { best, byPlan, overallTag };
+}
+
+export interface PlanUpgradeTarget {
+  characterId: number;
+  planLabel?: string;
+  substatWeights?: Record<string, number>;
+  effectiveSubstats?: string[];
+  mainStats?: Record<string, string[]>;
+  cavernMode?: string;
+  cavernSetA?: number | null;
+  cavernSetB?: number | null;
+  planarSetId?: number | null;
+  /** Currently equipped relics for this character (slot used for matching). */
+  equippedRelics?: Array<ScoreRelicInput & { setId?: number }>;
+}
+
+export interface UpgradeRecommendation {
+  relic: ScoreRelicInput & { itemId?: number; name?: string; setName?: string; setId?: number };
+  characterId: number;
+  planLabel?: string;
+  slot: string;
+  candidateScore: RelicScoreResult;
+  equippedScore: RelicScoreResult | null;
+  deltaWeightedRolls: number;
+}
+
+/**
+ * Scan unequipped (or free) inventory pieces for upgrades vs each plan's equipped gear.
+ *
+ * A candidate is recommended only when for some plan:
+ * 1. main stat matches the plan target for that slot
+ * 2. set matches the plan target set(s) for that slot (skipped when plan has no set)
+ * 3. weighted substat score strictly beats the piece currently worn in that slot
+ *    (empty slot ⇒ base score 0)
+ *
+ * One row per candidate relic (best plan by delta). Empty list ⇒ nothing better.
+ */
+export function scanUpgradeRecommendations(
+  candidates: Array<
+    ScoreRelicInput & { itemId?: number; name?: string; setName?: string; setId?: number }
+  >,
+  plans: PlanUpgradeTarget[],
+  options?: { limit?: number },
+): UpgradeRecommendation[] {
+  const rows: UpgradeRecommendation[] = [];
+
+  for (const relic of candidates) {
+    let best: UpgradeRecommendation | null = null;
+
+    for (const plan of plans) {
+      const weights = resolvePlanWeights({
+        substatWeights: plan.substatWeights,
+        effectiveSubstats: plan.effectiveSubstats,
+      });
+      const scoreOpts = { allowedMainStats: plan.mainStats };
+      const candidateScore = scoreRelic(relic, weights, scoreOpts);
+
+      // Require an explicit pass on main-stat target (fixed Head/Hands still pass).
+      if (candidateScore.mainStatCorrect !== true) continue;
+
+      const targetSets = planTargetSetIdsForSlot(plan, relic.slot);
+      if (targetSets && typeof relic.setId === "number" && !targetSets.includes(relic.setId)) {
+        continue;
+      }
+      // If plan targets sets but candidate has no setId, cannot verify match.
+      if (targetSets && typeof relic.setId !== "number") continue;
+
+      const equipped = (plan.equippedRelics ?? []).find((piece) => piece.slot === relic.slot);
+      const equippedScore = equipped ? scoreRelic(equipped, weights, scoreOpts) : null;
+      const base = equippedScore?.weightedRolls ?? 0;
+      const delta = candidateScore.weightedRolls - base;
+      if (delta <= 1e-6) continue;
+
+      const entry: UpgradeRecommendation = {
+        relic,
+        characterId: plan.characterId,
+        planLabel: plan.planLabel,
+        slot: relic.slot,
+        candidateScore,
+        equippedScore,
+        deltaWeightedRolls: delta,
+      };
+      if (!best || entry.deltaWeightedRolls > best.deltaWeightedRolls) best = entry;
+    }
+
+    if (best) rows.push(best);
+  }
+
+  rows.sort((a, b) => b.deltaWeightedRolls - a.deltaWeightedRolls);
+  return rows.slice(0, options?.limit ?? rows.length);
 }
 
 export function resolvePlanWeights(plan: {
