@@ -81,8 +81,8 @@ function toggleTrace(id: number) {
   localStorage.setItem(traceSettingsStorageKey, JSON.stringify(disabledTraceNodes.value));
 }
 
-const enabledTraceCount = computed(() =>
-  traceNodes.value.filter((node) => traceEnabled(node.id)).length,
+const enabledTraceCount = computed(
+  () => traceNodes.value.filter((node) => traceEnabled(node.id)).length,
 );
 
 const masterTraceStatOrder = computed(() => {
@@ -136,7 +136,8 @@ function getStatCategory(key: string): { type: string; colorClass: string } {
   if (key.includes("攻击")) return { type: "atk", colorClass: "stat-atk" };
   if (key.includes("抵抗")) return { type: "res", colorClass: "stat-res" };
   if (key.includes("命中")) return { type: "hit", colorClass: "stat-hit" };
-  if (key.includes("伤害") || key.includes("属性")) return { type: "elem", colorClass: "stat-elem" };
+  if (key.includes("伤害") || key.includes("属性"))
+    return { type: "elem", colorClass: "stat-elem" };
   return { type: "general", colorClass: "stat-general" };
 }
 </script>
@@ -148,16 +149,26 @@ function getStatCategory(key: string): { type: string; colorClass: string } {
         <div class="character-banner-text">
           <p class="eyebrow">BASELINE PROFILE</p>
           <h2>{{ detail.name }}</h2>
-          <p class="character-banner-subtitle">{{ catalogue?.element ?? '未知' }} · {{ pathLabel(detail.path) }}</p>
+          <p class="character-banner-subtitle">
+            {{ catalogue?.element ?? "未知" }} · {{ pathLabel(detail.path) }}
+          </p>
         </div>
         <div class="character-banner-metrics">
-          <div><span>等级</span><b>Lv.{{ detail.level }}</b></div>
-          <div><span>突破</span><b>{{ detail.ascension }}</b></div>
-          <div><span>星魂</span><b>{{ detail.eidolon }}</b></div>
-          <div><span>能力</span><b>V{{ detail.abilityVersion }}</b></div>
+          <div>
+            <span>等级</span><b>Lv.{{ detail.level }}</b>
+          </div>
+          <div>
+            <span>突破</span><b>{{ detail.ascension }}</b>
+          </div>
+          <div>
+            <span>星魂</span><b>{{ detail.eidolon }}</b>
+          </div>
+          <div>
+            <span>能力</span><b>V{{ detail.abilityVersion }}</b>
+          </div>
         </div>
       </div>
-      
+
       <div class="character-banner-image-wrapper">
         <img
           v-if="catalogue?.image"
@@ -190,11 +201,7 @@ function getStatCategory(key: string): { type: string; colorClass: string } {
           ><b>{{ formatStandingStat(stat) }}</b>
         </div>
       </div>
-      <StandingStatEmptyCard
-        v-else
-        :detail="detail"
-        :reason="standingStats.reason"
-      />
+      <StandingStatEmptyCard v-else :detail="detail" :reason="standingStats.reason" />
       <footer v-if="standingStats.available">
         已计入基础属性、光锥三围、光锥无条件技能加成、遗器主/副属性、无条件 2 件套与当前勾选行迹。
       </footer>
@@ -260,9 +267,7 @@ function getStatCategory(key: string): { type: string; colorClass: string } {
           </span>
         </div>
       </div>
-      <div v-else class="trace-summary-empty">
-        未启用任何行迹属性节点
-      </div>
+      <div v-else class="trace-summary-empty">未启用任何行迹属性节点</div>
 
       <!-- 节点卡片列表 -->
       <div class="trace-node-grid">
@@ -329,7 +334,9 @@ function getStatCategory(key: string): { type: string; colorClass: string } {
             </div>
             <div class="trace-card-body">
               <span class="trace-card-label">{{ trace.stats.map((s) => s.key).join(" · ") }}</span>
-              <span class="trace-card-value">{{ trace.stats.map((s) => formatTraceStat(s.value)).join(" / ") }}</span>
+              <span class="trace-card-value">{{
+                trace.stats.map((s) => formatTraceStat(s.value)).join(" / ")
+              }}</span>
             </div>
           </div>
         </button>

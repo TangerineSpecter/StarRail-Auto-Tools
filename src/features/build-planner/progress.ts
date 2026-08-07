@@ -1,7 +1,4 @@
-import {
-  totalRollsOnLine,
-  usesEnhancementHitCount,
-} from "@/shared/utils/relic-score";
+import { totalRollsOnLine, usesEnhancementHitCount } from "@/shared/utils/relic-score";
 import type { BuildTarget } from "@/types";
 
 type StandingStat = { key: string; value: number };

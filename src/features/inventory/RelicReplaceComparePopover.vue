@@ -24,10 +24,7 @@ const deltaPotential = computed(
 const allSubstatKeys = computed(() => {
   const keys: string[] = [];
   const seen = new Set<string>();
-  for (const row of [
-    ...props.currentScore.breakdown,
-    ...props.candidateScore.breakdown,
-  ]) {
+  for (const row of [...props.currentScore.breakdown, ...props.candidateScore.breakdown]) {
     if (seen.has(row.key)) continue;
     seen.add(row.key);
     keys.push(row.key);
@@ -80,10 +77,7 @@ const substatCompareRows = computed(() => {
         </span>
         <span>
           评级
-          <b
-            >{{ currentScore.letterGrade ?? "—" }} →
-            {{ candidateScore.letterGrade ?? "—" }}</b
-          >
+          <b>{{ currentScore.letterGrade ?? "—" }} → {{ candidateScore.letterGrade ?? "—" }}</b>
         </span>
       </div>
     </header>
@@ -124,11 +118,7 @@ const substatCompareRows = computed(() => {
         <span>替换</span>
         <span>差值</span>
       </div>
-      <div
-        v-for="row in substatCompareRows"
-        :key="row.key"
-        class="relic-replace-compare-table-row"
-      >
+      <div v-for="row in substatCompareRows" :key="row.key" class="relic-replace-compare-table-row">
         <span>{{ statLabel(row.key) }}</span>
         <span :class="{ muted: row.onlyCandidate }">{{
           row.onlyCandidate ? "—" : row.current.toFixed(2)

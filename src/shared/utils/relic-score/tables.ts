@@ -22,23 +22,21 @@ export const SUBSTAT_KEYS = [
 export type SubstatKey = (typeof SUBSTAT_KEYS)[number];
 
 /** Grade-5 low / mid / high roll values for substats. */
-export const GRADE5_SUBSTAT_ROLLS: Record<
-  SubstatKey,
-  { low: number; mid: number; high: number }
-> = {
-  HP: { low: 33.87, mid: 38.10375, high: 42.3375 },
-  ATK: { low: 16.935, mid: 19.051875, high: 21.16875 },
-  DEF: { low: 16.935, mid: 19.051875, high: 21.16875 },
-  "HP%": { low: 3.456, mid: 3.888, high: 4.32 },
-  "ATK%": { low: 3.456, mid: 3.888, high: 4.32 },
-  "DEF%": { low: 4.32, mid: 4.86, high: 5.4 },
-  SPD: { low: 2.0, mid: 2.3, high: 2.6 },
-  "CRIT Rate": { low: 2.592, mid: 2.916, high: 3.24 },
-  "CRIT DMG": { low: 5.184, mid: 5.832, high: 6.48 },
-  "Effect Hit Rate": { low: 3.456, mid: 3.888, high: 4.32 },
-  "Effect RES": { low: 3.456, mid: 3.888, high: 4.32 },
-  "Break Effect": { low: 5.184, mid: 5.832, high: 6.48 },
-};
+export const GRADE5_SUBSTAT_ROLLS: Record<SubstatKey, { low: number; mid: number; high: number }> =
+  {
+    HP: { low: 33.87, mid: 38.10375, high: 42.3375 },
+    ATK: { low: 16.935, mid: 19.051875, high: 21.16875 },
+    DEF: { low: 16.935, mid: 19.051875, high: 21.16875 },
+    "HP%": { low: 3.456, mid: 3.888, high: 4.32 },
+    "ATK%": { low: 3.456, mid: 3.888, high: 4.32 },
+    "DEF%": { low: 4.32, mid: 4.86, high: 5.4 },
+    SPD: { low: 2.0, mid: 2.3, high: 2.6 },
+    "CRIT Rate": { low: 2.592, mid: 2.916, high: 3.24 },
+    "CRIT DMG": { low: 5.184, mid: 5.832, high: 6.48 },
+    "Effect Hit Rate": { low: 3.456, mid: 3.888, high: 4.32 },
+    "Effect RES": { low: 3.456, mid: 3.888, high: 4.32 },
+    "Break Effect": { low: 5.184, mid: 5.832, high: 6.48 },
+  };
 
 /** Crit DMG high roll used as the potential-scale baseline. */
 export const POTENTIAL_BASELINE_HIGH = GRADE5_SUBSTAT_ROLLS["CRIT DMG"].high;
@@ -89,13 +87,7 @@ export const P_THREE_LINER = 0.8;
 /** Correct set drop among two sets per domain. */
 export const P_CORRECT_SET = 0.5;
 
-export type RelicSlotName =
-  | "Head"
-  | "Hands"
-  | "Body"
-  | "Feet"
-  | "PlanarSphere"
-  | "LinkRope";
+export type RelicSlotName = "Head" | "Hands" | "Body" | "Feet" | "PlanarSphere" | "LinkRope";
 
 export function probabilityOfCorrectSlot(slot: string): number {
   switch (slot) {
@@ -158,7 +150,9 @@ export function probabilityOfCorrectMainStat(slot: string, mainStat: string): nu
 }
 
 export function probabilityOfMain(slot: string, mainStat: string): number {
-  return P_CORRECT_SET * probabilityOfCorrectSlot(slot) * probabilityOfCorrectMainStat(slot, mainStat);
+  return (
+    P_CORRECT_SET * probabilityOfCorrectSlot(slot) * probabilityOfCorrectMainStat(slot, mainStat)
+  );
 }
 
 /** Letter grades from potential percent (5% steps). */
@@ -444,8 +438,7 @@ export function inferWeightsFromEffectiveSubstats(
   if ((hasHp || hasDef) && !hasCrit && !hasAtk && !hasEhr && !hasBreak)
     return roleWeights("sustain");
   // Speed-first support without damage lines
-  if (set.has("SPD") && !hasCrit && !hasAtk && !hasEhr && !hasBreak)
-    return roleWeights("support");
+  if (set.has("SPD") && !hasCrit && !hasAtk && !hasEhr && !hasBreak) return roleWeights("support");
   if (hasCrit || hasAtk) return roleWeights("critDps");
   return roleWeights("critDps");
 }

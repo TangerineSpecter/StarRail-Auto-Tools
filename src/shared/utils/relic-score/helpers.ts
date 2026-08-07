@@ -28,10 +28,7 @@ export interface SpdBreakpointResult {
   note: string;
 }
 
-export function spdBreakpointHelper(
-  currentSpd: number,
-  targetSpd: number,
-): SpdBreakpointResult {
+export function spdBreakpointHelper(currentSpd: number, targetSpd: number): SpdBreakpointResult {
   const gap = Math.max(0, targetSpd - currentSpd);
   const high = GRADE5_SUBSTAT_ROLLS.SPD.high;
   const mid = GRADE5_SUBSTAT_ROLLS.SPD.mid;
@@ -70,9 +67,7 @@ export function rankSlotReplacements(
     limit?: number;
   },
 ): SlotReplacementCandidate[] {
-  const base = equipped
-    ? scoreRelic(equipped, weights, options).weightedRolls
-    : 0;
+  const base = equipped ? scoreRelic(equipped, weights, options).weightedRolls : 0;
   const slot = equipped?.slot;
   const main = equipped?.mainStat;
   const scored = candidates
@@ -145,7 +140,10 @@ export function scoreRelicForPlans(
 
   const usefulPlans = byPlan.filter((entry) => entry.useful);
   usefulPlans.sort((a, b) => b.score.weightedRolls - a.score.weightedRolls);
-  const best = usefulPlans[0] ?? byPlan.sort((a, b) => b.score.weightedRolls - a.score.weightedRolls)[0] ?? null;
+  const best =
+    usefulPlans[0] ??
+    byPlan.sort((a, b) => b.score.weightedRolls - a.score.weightedRolls)[0] ??
+    null;
 
   let overallTag: ScoredForPlans["overallTag"] = "discard-candidate";
   if (byPlan.some((entry) => entry.tag === "lock")) overallTag = "lock";

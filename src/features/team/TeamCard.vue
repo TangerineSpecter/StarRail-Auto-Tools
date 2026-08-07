@@ -47,6 +47,16 @@ function memberLabel(member: TeamMember) {
   });
 }
 
+function gradeClass(grade?: string): string {
+  if (!grade) return "grade-default";
+  const first = grade.charAt(0).toUpperCase();
+  if (first === "S") return "grade-s";
+  if (first === "A") return "grade-a";
+  if (first === "B") return "grade-b";
+  if (first === "C" || first === "D") return "grade-c";
+  return "grade-default";
+}
+
 const slots = computed(() =>
   props.team.members.map((member, index) => {
     const score =
@@ -67,72 +77,156 @@ const slots = computed(() =>
 <template>
   <article class="team-card">
     <header class="team-card-header">
-      <div class="team-card-title">
-        <h3>{{ team.name }}</h3>
-        <span class="team-card-count">{{ filledSlotCount(team) }}/4</span>
-      </div>
-      <p v-if="team.note" class="team-card-note">{{ team.note }}</p>
-      <p v-else class="team-card-note is-empty">暂无备注</p>
-    </header>
-    <div class="team-slot-row" aria-label="配队成员">
-      <div
-        v-for="slot in slots"
-        :key="`${team.teamId}-${slot.index}`"
-        :class="['team-slot', { empty: !slot.member, orphan: slot.member && !slot.member.owned }]"
-      >
-        <template v-if="slot.member">
-          <img v-if="slot.avatar" class="team-slot-avatar" :src="slot.avatar" :alt="slot.label" />
-          <div
-            v-else
-            class="team-slot-avatar-fallback"
-            :style="{ background: avatarColor(slot.member.name) }"
+      <div class="team-card-header-main">
+        <div class="team-card-title-group">
+          <span class="team-card-accent-pill" />
+          <h3>{{ team.name }}</h3>
+        </div>
+        <span class="team-card-count" title="已配置角色数">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
           >
-            {{ memberInitial(slot.member) }}
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          {{ filledSlotCount(team) }}/4
+        </span>
+      </div>
+      <p v-if="team.note" class="team-card-note">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+        </svg>
+        <span>{{ team.note }}</span>
+      </p>
+      <p v-else class="team-card-note is-empty">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        </svg>
+        <span>暂无备注</span>
+      </p>
+    </header>
+
+    <div class="team-slot-row" aria-label="配队成员">
+      <template v-for="slot in slots" :key="`${team.teamId}-${slot.index}`">
+        <div
+          v-if="slot.member"
+          :class="['team-slot', { orphan: !slot.member.owned }]"
+        >
+          <div class="team-slot-avatar-wrap">
+            <img v-if="slot.avatar" class="team-slot-avatar" :src="slot.avatar" :alt="slot.label" />
+            <div
+              v-else
+              class="team-slot-avatar-fallback"
+              :style="{ background: avatarColor(slot.member.name) }"
+            >
+              {{ memberInitial(slot.member) }}
+            </div>
+            <img
+              v-if="slot.member.path"
+              class="team-slot-path-badge"
+              :src="pathIconSrc(slot.member.path)"
+              :alt="pathLabel(slot.member.path)"
+              :title="pathLabel(slot.member.path)"
+            />
           </div>
           <div class="team-slot-meta">
-            <strong>{{ slot.label }}</strong>
-            <small v-if="slot.member.owned">
-              <img
-                v-if="slot.member.path"
-                class="team-slot-path"
-                :src="pathIconSrc(slot.member.path)"
-                :alt="pathLabel(slot.member.path)"
-              />
-              Lv.{{ slot.member.level }}
-            </small>
-            <small v-else class="team-slot-orphan">已不在档案</small>
+            <div class="team-slot-name-row">
+              <strong>{{ slot.label }}</strong>
+              <span v-if="slot.member.owned" class="team-slot-level">Lv.{{ slot.member.level }}</span>
+            </div>
+            <small v-if="!slot.member.owned" class="team-slot-orphan">已不在档案</small>
             <div v-if="slot.score" class="team-slot-scores">
-              <span class="team-score-grade" :title="`评级 ${slot.score.letterGrade}`">
-                <em>评级</em>{{ slot.score.letterGrade }}
+              <span
+                :class="['team-score-badge', gradeClass(slot.score.letterGrade)]"
+                :title="`评级 ${slot.score.letterGrade}`"
+              >
+                <em>评级</em><strong>{{ slot.score.letterGrade }}</strong>
               </span>
               <span
-                class="team-score-potential"
+                class="team-score-metric"
                 :title="`潜力 ${formatScorePct(slot.score.potentialPct)}`"
               >
-                <em>潜力</em>{{ formatScorePct(slot.score.potentialPct) }}
+                <em>潜力</em><strong>{{ formatScorePct(slot.score.potentialPct) }}</strong>
               </span>
               <span
-                class="team-score-completion"
+                class="team-score-metric"
                 :title="`综合完成 ${formatScorePct(slot.score.completionPct)}`"
               >
-                <em>完成</em>{{ formatScorePct(slot.score.completionPct) }}
+                <em>完成</em><strong>{{ formatScorePct(slot.score.completionPct) }}</strong>
               </span>
             </div>
             <small v-else-if="slot.member.owned" class="team-slot-score-empty">
               {{ scoresReady === false ? "评分加载中…" : "未装备遗器" }}
             </small>
           </div>
-        </template>
-        <template v-else>
-          <div class="team-slot-empty">空位</div>
-        </template>
-      </div>
+        </div>
+
+        <div v-else :class="['team-slot', 'empty']">
+          <div class="team-slot-empty-icon">+</div>
+          <span class="team-slot-empty-label">空位</span>
+        </div>
+      </template>
     </div>
+
     <footer class="team-card-actions">
-      <Button class="row-action" type="button" text @click="emit('edit')">编辑</Button>
-      <Button class="row-action team-delete-action" type="button" text @click="emit('delete')"
-        >删除</Button
-      >
+      <Button class="row-action team-edit-btn" type="button" text @click="emit('edit')">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+        编辑
+      </Button>
+      <Button class="row-action team-delete-btn" type="button" text @click="emit('delete')">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <line x1="10" y1="11" x2="10" y2="17" />
+          <line x1="14" y1="11" x2="14" y2="17" />
+        </svg>
+        删除
+      </Button>
     </footer>
   </article>
 </template>

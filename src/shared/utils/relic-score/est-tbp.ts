@@ -85,8 +85,7 @@ function permutations<T>(items: T[]): T[][] {
 
 export function probabilityOfInitialSubs(mainStat: string, subs: string[]): number {
   let total = 0;
-  const lineWeight = (key: string) =>
-    SUBSTAT_LINE_WEIGHT[key as SubstatKey] ?? 0;
+  const lineWeight = (key: string) => SUBSTAT_LINE_WEIGHT[key as SubstatKey] ?? 0;
   for (const perm of permutations(subs.slice(0, Math.min(4, subs.length)))) {
     let remaining = TOTAL_SUBSTAT_LINE_WEIGHT - lineWeight(mainStat);
     let p = 1;
@@ -191,7 +190,9 @@ export function estimateTbp(
   const pSub = probabilitySubAboveScore(relic.mainStat, weights, scoreToBeat);
   const p = pMain * pSub;
   const estRelicCount = p > 0 ? 1 / p : Number.POSITIVE_INFINITY;
-  const estTbp = Number.isFinite(estRelicCount) ? estRelicCount * TBP_PER_RELIC : Number.POSITIVE_INFINITY;
+  const estTbp = Number.isFinite(estRelicCount)
+    ? estRelicCount * TBP_PER_RELIC
+    : Number.POSITIVE_INFINITY;
   const days = Number.isFinite(estTbp) ? estTbp / TBP_PER_DAY : Number.POSITIVE_INFINITY;
 
   let advice: EstTbpResult["advice"] = "可继续";
@@ -212,9 +213,7 @@ export function estimateTbp(
   };
 }
 
-export function characterFarmInvestment(
-  slotEstimates: Array<{ slot: string; days: number }>,
-): {
+export function characterFarmInvestment(slotEstimates: Array<{ slot: string; days: number }>): {
   bottleneckSlot: string | null;
   bottleneckDays: number;
   sumDays: number;

@@ -306,10 +306,10 @@
   margin-top: 12px;
   margin-bottom: 8px;
   background: linear-gradient(
-    90deg, 
-    rgba(88, 108, 135, 0.06) 0%, 
-    rgba(179, 126, 34, 0.06) 33%, 
-    rgba(38, 90, 158, 0.06) 66%, 
+    90deg,
+    rgba(88, 108, 135, 0.06) 0%,
+    rgba(179, 126, 34, 0.06) 33%,
+    rgba(38, 90, 158, 0.06) 66%,
     rgba(100, 56, 153, 0.06) 100%
   );
   border: 1px solid rgba(42, 91, 159, 0.1);
@@ -736,24 +736,69 @@
 }
 
 /* Stat color themes for card accent lines and icon badges */
-.trace-node-card.stat-def::before, .summary-chip.stat-def .chip-val { color: #2563eb; }
-.trace-node-card.stat-def::before { background: #3b82f6; }
-.trace-node-card.stat-spd::before, .summary-chip.stat-spd .chip-val { color: #0891b2; }
-.trace-node-card.stat-spd::before { background: #06b6d4; }
-.trace-node-card.stat-break::before, .summary-chip.stat-break .chip-val { color: #7c3aed; }
-.trace-node-card.stat-break::before { background: #8b5cf6; }
-.trace-node-card.stat-crit::before, .summary-chip.stat-crit .chip-val { color: #dc2626; }
-.trace-node-card.stat-crit::before { background: #ef4444; }
-.trace-node-card.stat-hp::before, .summary-chip.stat-hp .chip-val { color: #059669; }
-.trace-node-card.stat-hp::before { background: #10b981; }
-.trace-node-card.stat-atk::before, .summary-chip.stat-atk .chip-val { color: #d97706; }
-.trace-node-card.stat-atk::before { background: #f59e0b; }
-.trace-node-card.stat-res::before, .summary-chip.stat-res .chip-val { color: #4f46e5; }
-.trace-node-card.stat-res::before { background: #6366f1; }
-.trace-node-card.stat-hit::before, .summary-chip.stat-hit .chip-val { color: #0284c7; }
-.trace-node-card.stat-hit::before { background: #0284c7; }
-.trace-node-card.stat-elem::before, .summary-chip.stat-elem .chip-val { color: #db2777; }
-.trace-node-card.stat-elem::before { background: #ec4899; }
+.trace-node-card.stat-def::before,
+.summary-chip.stat-def .chip-val {
+  color: #2563eb;
+}
+.trace-node-card.stat-def::before {
+  background: #3b82f6;
+}
+.trace-node-card.stat-spd::before,
+.summary-chip.stat-spd .chip-val {
+  color: #0891b2;
+}
+.trace-node-card.stat-spd::before {
+  background: #06b6d4;
+}
+.trace-node-card.stat-break::before,
+.summary-chip.stat-break .chip-val {
+  color: #7c3aed;
+}
+.trace-node-card.stat-break::before {
+  background: #8b5cf6;
+}
+.trace-node-card.stat-crit::before,
+.summary-chip.stat-crit .chip-val {
+  color: #dc2626;
+}
+.trace-node-card.stat-crit::before {
+  background: #ef4444;
+}
+.trace-node-card.stat-hp::before,
+.summary-chip.stat-hp .chip-val {
+  color: #059669;
+}
+.trace-node-card.stat-hp::before {
+  background: #10b981;
+}
+.trace-node-card.stat-atk::before,
+.summary-chip.stat-atk .chip-val {
+  color: #d97706;
+}
+.trace-node-card.stat-atk::before {
+  background: #f59e0b;
+}
+.trace-node-card.stat-res::before,
+.summary-chip.stat-res .chip-val {
+  color: #4f46e5;
+}
+.trace-node-card.stat-res::before {
+  background: #6366f1;
+}
+.trace-node-card.stat-hit::before,
+.summary-chip.stat-hit .chip-val {
+  color: #0284c7;
+}
+.trace-node-card.stat-hit::before {
+  background: #0284c7;
+}
+.trace-node-card.stat-elem::before,
+.summary-chip.stat-elem .chip-val {
+  color: #db2777;
+}
+.trace-node-card.stat-elem::before {
+  background: #ec4899;
+}
 
 .trace-card-icon-wrap {
   display: flex;

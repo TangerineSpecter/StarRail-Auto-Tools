@@ -57,8 +57,7 @@ describe("CharacterDetail Trace Attributes Section", () => {
       props: { detail: mockDetail },
     });
 
-    const getSummaryKeys = () =>
-      wrapper.findAll(".summary-chip .chip-name").map((el) => el.text());
+    const getSummaryKeys = () => wrapper.findAll(".summary-chip .chip-name").map((el) => el.text());
 
     const initialOrder = getSummaryKeys();
     expect(initialOrder.length).toBeGreaterThan(1);

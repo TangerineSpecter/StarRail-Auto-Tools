@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
-import {
-  qualityTagFromScore,
-  resolvePlanWeights,
-  scoreRelic,
-} from "@/shared/utils/relic-score";
+import { qualityTagFromScore, resolvePlanWeights, scoreRelic } from "@/shared/utils/relic-score";
 import type { BuildDashboardEntry, CharacterBuildPlan, RelicListItem } from "@/types";
 
 const props = defineProps<{
@@ -241,7 +237,11 @@ onMounted(() => {
       </p>
       <div>
         <button type="button" class="score-action" @click="applyConfirmed">确认</button>
-        <button type="button" class="score-action score-action--ghost" @click="confirmAction = null">
+        <button
+          type="button"
+          class="score-action score-action--ghost"
+          @click="confirmAction = null"
+        >
           取消
         </button>
       </div>

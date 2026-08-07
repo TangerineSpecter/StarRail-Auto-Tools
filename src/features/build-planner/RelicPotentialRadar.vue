@@ -27,9 +27,7 @@ const props = withDefaults(
   },
 );
 
-const averageLetterGrade = computed(() =>
-  letterGradeFromPotential(props.averagePotentialPct),
-);
+const averageLetterGrade = computed(() => letterGradeFromPotential(props.averagePotentialPct));
 
 const VIEW = 200;
 const CX = 100;
@@ -131,11 +129,7 @@ const hoveredSlot = ref<string | null>(null);
         :points="ring.points"
       />
       <!-- Quality threshold ring -->
-      <polygon
-        v-if="thresholdRing"
-        class="radar-threshold-ring"
-        :points="thresholdRing"
-      />
+      <polygon v-if="thresholdRing" class="radar-threshold-ring" :points="thresholdRing" />
       <!-- Axis rays -->
       <line
         v-for="(ray, index) in axisRays"
@@ -147,11 +141,7 @@ const hoveredSlot = ref<string | null>(null);
         :y2="ray.y2"
       />
       <!-- Value area -->
-      <polygon
-        v-if="hasAnyPiece"
-        class="radar-value-area"
-        :points="valuePolygon"
-      />
+      <polygon v-if="hasAnyPiece" class="radar-value-area" :points="valuePolygon" />
       <!-- Vertices -->
       <circle
         v-for="vertex in vertices"
@@ -161,7 +151,7 @@ const hoveredSlot = ref<string | null>(null);
           'is-weak': vertex.isWeak,
           'is-missing': vertex.missing,
           'is-ungraded': !vertex.missing && vertex.letterGrade === null,
-          'is-hovered': hoveredSlot === vertex.slot
+          'is-hovered': hoveredSlot === vertex.slot,
         }"
         :cx="vertex.point.x"
         :cy="vertex.point.y"
@@ -188,12 +178,7 @@ const hoveredSlot = ref<string | null>(null);
         @mouseleave="hoveredSlot = null"
       >
         <title>{{ label.title }}</title>
-        <text
-          :x="label.x"
-          :y="label.y"
-          text-anchor="middle"
-          dominant-baseline="middle"
-        >
+        <text :x="label.x" :y="label.y" text-anchor="middle" dominant-baseline="middle">
           {{ label.shortLabel }}
         </text>
       </g>
@@ -210,7 +195,10 @@ const hoveredSlot = ref<string | null>(null);
       :key="`tooltip-${vertex.slot}`"
       class="radar-html-tooltip"
       :class="{ visible: hoveredSlot === vertex.slot }"
-      :style="{ left: `${(vertex.point.x / VIEW) * 100}%`, top: `${(vertex.point.y / VIEW) * 100}%` }"
+      :style="{
+        left: `${(vertex.point.x / VIEW) * 100}%`,
+        top: `${(vertex.point.y / VIEW) * 100}%`,
+      }"
       aria-hidden="true"
     >
       <div class="tooltip-content">
@@ -259,7 +247,10 @@ const hoveredSlot = ref<string | null>(null);
   fill: #3d7ec4;
   stroke: #fff;
   stroke-width: 1;
-  transition: r 0.2s ease, fill 0.2s ease, stroke-width 0.2s ease;
+  transition:
+    r 0.2s ease,
+    fill 0.2s ease,
+    stroke-width 0.2s ease;
 }
 .radar-vertex.is-hovered {
   fill: #2d65a3;
@@ -340,7 +331,9 @@ const hoveredSlot = ref<string | null>(null);
   z-index: 10;
   opacity: 0;
   transform: translate(-50%, -100%) scale(0.9);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   margin-top: -8px;
 }
 .radar-html-tooltip.visible {

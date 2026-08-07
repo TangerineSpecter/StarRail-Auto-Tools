@@ -164,80 +164,123 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 <template>
   <div class="detail-backdrop team-editor-backdrop" @click.self="emit('close')">
     <aside class="detail-drawer team-editor-drawer">
-      <header>
+      <header class="team-editor-header">
         <div>
           <p class="eyebrow">TEAM COMPOSITION</p>
           <h2>{{ title }}</h2>
-          <small>从已拥有角色中编排 4 人配队，槽位可留空。</small>
+          <small class="team-editor-subtitle">从已拥有角色中编排 4 人配队，槽位可留空。</small>
         </div>
-        <button type="button" aria-label="关闭配队编辑" @click="emit('close')">×</button>
+        <button
+          type="button"
+          class="team-editor-close-btn"
+          aria-label="关闭配队编辑"
+          @click="emit('close')"
+        >
+          ×
+        </button>
       </header>
 
       <div class="team-editor-body">
         <label class="team-field">
-          <span>配队名称</span>
+          <div class="team-field-header">
+            <span>配队名称</span>
+            <small class="team-field-counter">{{ draft.name.length }}/{{ MAX_TEAM_NAME_LEN }}</small>
+          </div>
           <InputText
             v-model="draft.name"
             :maxlength="MAX_TEAM_NAME_LEN"
-            placeholder="例如：末日一队"
+            placeholder="例如：末日一队、飞霄追击队"
           />
         </label>
+
         <label class="team-field">
-          <span>备注</span>
+          <div class="team-field-header">
+            <span>备注</span>
+            <small class="team-field-counter">{{ draft.note.length }}/{{ MAX_TEAM_NOTE_LEN }}</small>
+          </div>
           <Textarea
             v-model="draft.note"
             :maxlength="MAX_TEAM_NOTE_LEN"
             rows="3"
             auto-resize
-            placeholder="可选：用途、轮次、注意事项"
+            placeholder="可选：用途、输出轮次、替换注意事项等"
           />
         </label>
 
         <section class="team-editor-slots">
           <div class="team-editor-slots-heading">
-            <h3>角色槽位</h3>
-            <small v-if="loadingCharacters">同步角色列表…</small>
+            <h3>角色槽位 ({{ draft.characterIds.filter((id) => id != null).length }}/4)</h3>
+            <small v-if="loadingCharacters" class="team-loading-hint">同步角色列表中…</small>
           </div>
           <div class="team-editor-slot-grid">
-            <div v-for="index in TEAM_SLOT_COUNT" :key="index" class="team-editor-slot">
-              <button type="button" class="team-editor-slot-main" @click="openPicker(index - 1)">
+            <div
+              v-for="index in TEAM_SLOT_COUNT"
+              :key="index"
+              :class="['team-editor-slot-wrapper', { 'is-filled': slotMember(index - 1) != null }]"
+            >
+              <button
+                type="button"
+                :class="['team-editor-slot-main', { 'is-empty': !slotMember(index - 1) }]"
+                @click="openPicker(index - 1)"
+              >
                 <template v-if="slotMember(index - 1)">
-                  <img
-                    v-if="slotAvatar(index - 1)"
-                    class="team-slot-avatar"
-                    :src="slotAvatar(index - 1)"
-                    :alt="slotDisplayName(index - 1)"
-                  />
-                  <div v-else class="team-slot-avatar-fallback">
-                    {{ memberInitial(slotMember(index - 1)!) }}
+                  <div class="team-slot-avatar-wrap">
+                    <img
+                      v-if="slotAvatar(index - 1)"
+                      class="team-slot-avatar"
+                      :src="slotAvatar(index - 1)"
+                      :alt="slotDisplayName(index - 1)"
+                    />
+                    <div v-else class="team-slot-avatar-fallback">
+                      {{ memberInitial(slotMember(index - 1)!) }}
+                    </div>
+                    <img
+                      v-if="slotMember(index - 1)?.path"
+                      class="team-slot-path-badge"
+                      :src="pathIconSrc(slotMember(index - 1)!.path)"
+                      :alt="pathLabel(slotMember(index - 1)!.path)"
+                    />
                   </div>
                   <div class="team-slot-meta">
-                    <strong>{{ slotDisplayName(index - 1) }}</strong>
-                    <small v-if="slotMember(index - 1)?.owned">
-                      <img
-                        v-if="slotMember(index - 1)?.path"
-                        class="team-slot-path"
-                        :src="pathIconSrc(slotMember(index - 1)!.path)"
-                        :alt="pathLabel(slotMember(index - 1)!.path)"
-                      />
-                      Lv.{{ slotMember(index - 1)?.level }}
-                    </small>
-                    <small v-else class="team-slot-orphan">已不在档案，点击替换</small>
+                    <strong class="team-slot-name">{{ slotDisplayName(index - 1) }}</strong>
+                    <div class="team-slot-subinfo">
+                      <small v-if="slotMember(index - 1)?.owned" class="team-slot-level-tag">
+                        Lv.{{ slotMember(index - 1)?.level }}
+                      </small>
+                      <small v-else class="team-slot-orphan">已不在档案</small>
+                      <span class="team-slot-replace-hint">点击替换</span>
+                    </div>
                   </div>
                 </template>
                 <template v-else>
                   <div class="team-editor-slot-empty">
-                    <span>槽位 {{ index }}</span>
-                    <strong>选择角色</strong>
+                    <div class="team-slot-plus-icon">+</div>
+                    <div class="team-slot-empty-text">
+                      <span>槽位 {{ index }}</span>
+                      <strong>选择角色</strong>
+                    </div>
                   </div>
                 </template>
               </button>
+
               <button
                 v-if="draft.characterIds[index - 1] != null"
                 type="button"
                 class="team-editor-slot-clear"
+                title="清除槽位角色"
                 @click="clearSlot(index - 1)"
               >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
                 清除
               </button>
             </div>
@@ -246,10 +289,12 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
       </div>
 
       <footer class="team-editor-footer">
-        <Button type="button" text :disabled="busy" @click="emit('close')">取消</Button>
-        <Button class="capture-action-btn" type="button" :disabled="busy" @click="submit"
-          >保存配队</Button
-        >
+        <Button class="team-cancel-btn" type="button" text :disabled="busy" @click="emit('close')">
+          取消
+        </Button>
+        <Button class="team-save-btn" type="button" :disabled="busy" @click="submit">
+          保存配队
+        </Button>
       </footer>
 
       <div v-if="pickingSlot != null" class="team-picker-overlay" @click.self="pickingSlot = null">

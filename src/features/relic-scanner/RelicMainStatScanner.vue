@@ -5,11 +5,7 @@ import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
 import { scoreRelicForPlans } from "@/shared/utils/relic-score";
 import { resolveCharacterCatalogue } from "@/shared/catalogue";
-import type {
-  BuildDashboardEntry,
-  RelicListItem,
-  RelicMainStatScanResult,
-} from "@/types";
+import type { BuildDashboardEntry, RelicListItem, RelicMainStatScanResult } from "@/types";
 
 const props = defineProps<{ imageFor: (relic: RelicListItem) => string | undefined }>();
 const emit = defineEmits<{ "open-relic": [relic: RelicListItem] }>();
@@ -227,7 +223,8 @@ onMounted(async () => {
             <b>{{ usefulnessRows.length }}</b> 件未装备遗器（按最佳方案加权分）
           </p>
           <p v-if="usefulnessTruncated" class="scanner-result-note">
-            仅分析前 {{ usefulnessScanned }} / {{ usefulnessTotal }} 件未装备遗器（性能上限），结果可能不完整。
+            仅分析前 {{ usefulnessScanned }} /
+            {{ usefulnessTotal }} 件未装备遗器（性能上限），结果可能不完整。
           </p>
         </div>
         <p class="scanner-result-note">启发式评分，不是 DPS</p>
@@ -253,11 +250,19 @@ onMounted(async () => {
             /><i v-else>{{ slotLabel(row.item.slot).slice(0, 1) }}</i></span
           >
           <span class="scanner-item-identity usefulness-identity">
-            <b>{{ row.item.setName }} <em class="relic-level">+{{ row.item.level }}</em></b>
+            <b
+              >{{ row.item.setName }} <em class="relic-level">+{{ row.item.level }}</em></b
+            >
             <div class="usefulness-stats">
-              <span class="usefulness-tag" :data-tag="row.overallTag">{{ tagLabel[row.overallTag] ?? row.overallTag }}</span>
-              <span :class="['character-tag', `element-${characterElement(row.bestLabel)}`]">{{ row.bestLabel }}</span>
-              <span class="score-tag">✦ <b>{{ row.weightedRolls.toFixed(2) }}</b> <small>rolls</small></span>
+              <span class="usefulness-tag" :data-tag="row.overallTag">{{
+                tagLabel[row.overallTag] ?? row.overallTag
+              }}</span>
+              <span :class="['character-tag', `element-${characterElement(row.bestLabel)}`]">{{
+                row.bestLabel
+              }}</span>
+              <span class="score-tag"
+                >✦ <b>{{ row.weightedRolls.toFixed(2) }}</b> <small>rolls</small></span
+              >
             </div>
           </span>
           <span class="scanner-item-arrow" aria-hidden="true">查看 ›</span>
@@ -672,14 +677,38 @@ onMounted(async () => {
   font-weight: 700;
   white-space: nowrap;
 }
-.character-tag.element-火 { background: #ffebe5; color: #d13d21; }
-.character-tag.element-冰 { background: #e5f5ff; color: #1a7ec2; }
-.character-tag.element-雷 { background: #f3ebfc; color: #8843cf; }
-.character-tag.element-风 { background: #e6f6eb; color: #279447; }
-.character-tag.element-物理 { background: #f0f2f5; color: #5c6470; }
-.character-tag.element-量子 { background: #f1eaf7; color: #58338e; }
-.character-tag.element-虚数 { background: #fdf5e5; color: #c48310; }
-.character-tag.element-null { background: #f0f2f5; color: var(--muted); }
+.character-tag.element-火 {
+  background: #ffebe5;
+  color: #d13d21;
+}
+.character-tag.element-冰 {
+  background: #e5f5ff;
+  color: #1a7ec2;
+}
+.character-tag.element-雷 {
+  background: #f3ebfc;
+  color: #8843cf;
+}
+.character-tag.element-风 {
+  background: #e6f6eb;
+  color: #279447;
+}
+.character-tag.element-物理 {
+  background: #f0f2f5;
+  color: #5c6470;
+}
+.character-tag.element-量子 {
+  background: #f1eaf7;
+  color: #58338e;
+}
+.character-tag.element-虚数 {
+  background: #fdf5e5;
+  color: #c48310;
+}
+.character-tag.element-null {
+  background: #f0f2f5;
+  color: var(--muted);
+}
 
 .score-tag {
   display: inline-flex;

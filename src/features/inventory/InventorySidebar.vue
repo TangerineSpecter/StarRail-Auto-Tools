@@ -67,7 +67,7 @@ const entries = [
     <Button class="capture-action-btn" :disabled="busy" @click="emit('import')">
       <svg class="crop-icon" viewBox="0 0 24 24" width="1.2em" height="1.2em" aria-hidden="true">
         <path d="M5 20h14v-2H5v2Zm7-3 5-5h-3V6h-4v6H7l5 5Z" fill="currentColor" /></svg
-      ><span>导入 JSON</span>
+      ><span>导入数据</span>
     </Button>
   </aside>
 </template>

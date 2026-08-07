@@ -2,10 +2,7 @@
  * Expected perfection change if substats were fully rerolled (analytical average).
  */
 
-import {
-  SUBSTAT_KEYS,
-  effectiveWeight,
-} from "./tables";
+import { SUBSTAT_KEYS, effectiveWeight } from "./tables";
 import { maxWeightedRolls, scoreRelic, type ScoreRelicInput } from "./score";
 import { probabilityOfInitialSubs } from "./est-tbp";
 
@@ -63,8 +60,7 @@ export function rerollPotential(
   const maxRolls = maxWeightedRolls(relic.mainStat, weights);
   const expectedRolls = expectedWeightedRollsAfterReroll(relic.mainStat, weights);
   const currentPerfectionPct = scored.perfectionPct;
-  const expectedPerfectionPct =
-    maxRolls > 0 ? Math.min(100, (expectedRolls / maxRolls) * 100) : 0;
+  const expectedPerfectionPct = maxRolls > 0 ? Math.min(100, (expectedRolls / maxRolls) * 100) : 0;
   const deltaPct = expectedPerfectionPct - currentPerfectionPct;
   let summary = "重塑期望接近当前水平。";
   if (deltaPct <= -10) summary = "重塑大概率变差，不建议。";

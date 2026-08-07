@@ -73,7 +73,9 @@ describe("BuildDashboard", () => {
     expect(wrapper.get(".equipped-light-cone").text()).toContain("叠影");
     expect(wrapper.get(".equipped-light-cone").text()).toContain("1");
     expect(wrapper.get(".recommended-set-status").text()).toBe("×");
-    expect(wrapper.get(".relic-potential-radar").attributes("aria-label")).toContain("六件词条潜力");
+    expect(wrapper.get(".relic-potential-radar").attributes("aria-label")).toContain(
+      "六件词条潜力",
+    );
     expect(wrapper.get(".quality-section").text()).toContain("主属性");
     expect(wrapper.emitted("editBuild")).toEqual([[1005]]);
   });

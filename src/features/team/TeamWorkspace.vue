@@ -67,7 +67,11 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
           @click="archive.resetSearch"
           >清空</Button
         >
-        <Button class="capture-action-btn" type="button" :disabled="busy" @click="openCreate">
+        <Button class="capture-action-btn team-create-btn" type="button" :disabled="busy" @click="openCreate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
           新建配队
         </Button>
         <span class="toolbar-spacer" />
@@ -86,12 +90,16 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
         @delete="onDelete(team)"
       />
       <div v-if="!archive.result.value.items.length" class="team-empty">
-        <span>◇</span>
+        <div class="team-empty-symbol">◇</div>
         <strong>{{ busy ? "正在读取配队…" : "还没有配队" }}</strong>
         <small>新建一支配队，从已拥有角色中安排 4 人阵容</small>
-        <Button v-if="!busy" class="capture-action-btn" type="button" @click="openCreate"
-          >新建配队</Button
-        >
+        <Button v-if="!busy" class="capture-action-btn team-create-btn" type="button" @click="openCreate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          新建配队
+        </Button>
       </div>
       <div v-if="archive.appending.value" class="team-appending">加载更多…</div>
     </div>

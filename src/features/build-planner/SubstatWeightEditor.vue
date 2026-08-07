@@ -178,8 +178,9 @@ const roleHints = WEIGHT_ROLE_HINTS;
     </div>
     <p class="weight-editor-hint">
       权重用于词条质量、字母评级与预计刷本成本，<strong>不是</strong>战斗伤害。范围
-      <strong>0～1</strong>，可直接输入。角色模板是按常见配队<strong>定位预设</strong>（非官方角色表）；「生命倍率输出」指技能公式吃生命面板。纯输出模板默认<strong>不计效果抵抗</strong>，避免死词条抬分。小攻/小生/小防按对应 % 权重的
-      40% 计。手动改动后模板会变为「自定义权重」。改完后需保存。
+      <strong>0～1</strong
+      >，可直接输入。角色模板是按常见配队<strong>定位预设</strong>（非官方角色表）；「生命倍率输出」指技能公式吃生命面板。纯输出模板默认<strong>不计效果抵抗</strong>，避免死词条抬分。小攻/小生/小防按对应
+      % 权重的 40% 计。手动改动后模板会变为「自定义权重」。改完后需保存。
     </p>
     <p v-if="showingInferred" class="weight-editor-hint weight-editor-role-hint">
       当前方案<strong>尚未保存词条权重</strong>。下方为与评分相同的<strong>推断结果（仅展示）</strong>；直接点保存不会写入权重。选择角色模板或改动任意数值后才会写入方案并在保存时持久化。

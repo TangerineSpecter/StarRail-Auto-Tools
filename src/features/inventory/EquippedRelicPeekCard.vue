@@ -46,17 +46,13 @@ const breakdownByKey = computed(() => {
 });
 
 const hasScoreMetrics = computed(
-  () =>
-    props.letterGrade != null ||
-    props.potentialPct != null ||
-    props.weightedRolls != null,
+  () => props.letterGrade != null || props.potentialPct != null || props.weightedRolls != null,
 );
 
 const substatRows = computed(() =>
   (props.relic.substats ?? []).map((stat, index) => {
     const hits = enhancementHitsOnLine(stat, { enhancementHits: enhancementMode.value });
-    const isEffective =
-      (!stat.kind || stat.kind === "normal") && effectiveKeys.value.has(stat.key);
+    const isEffective = (!stat.kind || stat.kind === "normal") && effectiveKeys.value.has(stat.key);
     const scoreRow =
       !stat.kind || stat.kind === "normal" ? breakdownByKey.value.get(stat.key) : undefined;
     return {
@@ -79,7 +75,9 @@ const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
   <article
     class="equipped-relic-peek"
     :class="{ 'has-substat-score': showSubstatScore }"
-    :aria-label="caption ? `${caption} · ${slotLabel(relic.slot)}` : `${slotLabel(relic.slot)}当前装备`"
+    :aria-label="
+      caption ? `${caption} · ${slotLabel(relic.slot)}` : `${slotLabel(relic.slot)}当前装备`
+    "
   >
     <p v-if="caption" class="equipped-relic-peek-caption">{{ caption }}</p>
     <header class="equipped-relic-peek-identity">
@@ -96,7 +94,8 @@ const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
         <p class="detail-set-name">{{ relic.setName || "未知套装" }}</p>
         <h3>{{ relic.name }}</h3>
         <p v-if="letterGrade || potentialPct != null" class="equipped-relic-peek-score">
-          {{ letterGrade ?? "—" }} · 潜力 {{ potentialPct != null ? potentialPct.toFixed(1) + "%" : "—" }}
+          {{ letterGrade ?? "—" }} · 潜力
+          {{ potentialPct != null ? potentialPct.toFixed(1) + "%" : "—" }}
         </p>
         <div class="detail-tags">
           <span class="detail-slot-tag">{{ slotLabel(relic.slot) }}</span>
@@ -168,9 +167,7 @@ const showSubstatScore = computed(() => (props.breakdown?.length ?? 0) > 0);
             >
           </span>
           <div class="detail-substat-val-group">
-            <b class="detail-substat-value"
-              >+{{ formatStatValue(row.stat.key, row.stat.value) }}</b
-            >
+            <b class="detail-substat-value">+{{ formatStatValue(row.stat.key, row.stat.value) }}</b>
             <i v-if="row.badge" class="detail-hit-badge">{{ row.badge }}</i>
             <em v-if="row.stat.kind !== 'normal'">{{
               row.stat.kind === "reroll" ? "重铸" : "预览"

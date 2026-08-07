@@ -125,11 +125,7 @@ async function computeTbp() {
       <div>
         <span>主属性</span
         ><b>{{
-          score.mainStatCorrect === null
-            ? "未绑定方案"
-            : score.mainStatCorrect
-              ? "符合"
-              : "不符"
+          score.mainStatCorrect === null ? "未绑定方案" : score.mainStatCorrect ? "符合" : "不符"
         }}</b>
       </div>
     </div>

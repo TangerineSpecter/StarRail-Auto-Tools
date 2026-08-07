@@ -29,11 +29,7 @@ import { useDashboardDrag } from "./useDashboardDrag";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
 import { resolveCharacterCatalogue } from "@/shared/catalogue";
-import type {
-  BuildDashboardEntry,
-  LightConeCatalogue,
-  RelicSetCatalogue,
-} from "@/types";
+import type { BuildDashboardEntry, LightConeCatalogue, RelicSetCatalogue } from "@/types";
 
 const entries = ref<BuildDashboardEntry[]>([]);
 const loading = ref(true);
@@ -271,7 +267,9 @@ const cards = computed(() =>
         allowedMainStats: entry.plan.mainStats,
       });
       const cone = character.equippedLightCone;
-      const coneEntry = cone ? lightCones.lightCones.find((item) => item.id === cone.templateId) : undefined;
+      const coneEntry = cone
+        ? lightCones.lightCones.find((item) => item.id === cone.templateId)
+        : undefined;
       return {
         entry,
         character,
@@ -495,16 +493,32 @@ defineExpose({ reload: loadDashboard });
                   type="button"
                   :class="['build-pin-inline', { pinned: card.entry.pinned }]"
                   :disabled="actionCharacterId !== null"
-                  :aria-label="card.entry.pinned ? `取消${card.character.name}置顶` : `置顶${card.character.name}`"
+                  :aria-label="
+                    card.entry.pinned
+                      ? `取消${card.character.name}置顶`
+                      : `置顶${card.character.name}`
+                  "
                   :aria-pressed="card.entry.pinned"
                   title="置顶"
                   @click="togglePinned(card)"
                 >
                   <svg v-if="card.entry.pinned" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                    <path
+                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+                    />
                   </svg>
-                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  <svg
+                    v-else
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    ></polygon>
                   </svg>
                 </button>
                 <button
@@ -515,7 +529,9 @@ defineExpose({ reload: loadDashboard });
                   :aria-label="`查看${card.character.name}的说明`"
                   title="查看说明"
                   @click.stop="toggleNotePopover($event, card)"
-                >i</button>
+                >
+                  i
+                </button>
               </div>
               <div class="build-character-actions">
                 <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
@@ -575,7 +591,11 @@ defineExpose({ reload: loadDashboard });
 
               <div class="build-card-section sets-section">
                 <h4 class="section-title">遗器套装状态</h4>
-                <div v-for="item in card.recommendedSets" :key="item.set.id" class="recommended-set">
+                <div
+                  v-for="item in card.recommendedSets"
+                  :key="item.set.id"
+                  class="recommended-set"
+                >
                   <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
                   <span v-else class="recommended-set-fallback">遗</span>
                   <p>
@@ -585,8 +605,13 @@ defineExpose({ reload: loadDashboard });
                   <span
                     :class="['recommended-set-status', { matched: item.matched }]"
                     role="img"
-                    :aria-label="item.matched ? `${item.set.name}已装备${item.pieces}件` : `${item.set.name}未装备${item.pieces}件`"
-                  >{{ item.matched ? "✓" : "×" }}</span>
+                    :aria-label="
+                      item.matched
+                        ? `${item.set.name}已装备${item.pieces}件`
+                        : `${item.set.name}未装备${item.pieces}件`
+                    "
+                    >{{ item.matched ? "✓" : "×" }}</span
+                  >
                 </div>
               </div>
             </div>
@@ -608,7 +633,9 @@ defineExpose({ reload: loadDashboard });
                 </div>
                 <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
                 <small>
-                  {{ (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%` }}
+                  {{
+                    (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%`
+                  }}
                 </small>
               </div>
             </div>
@@ -828,7 +855,9 @@ defineExpose({ reload: loadDashboard });
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 10px 24px rgba(36, 86, 166, 0.05);
-  transition: box-shadow 160ms ease, transform 160ms ease;
+  transition:
+    box-shadow 160ms ease,
+    transform 160ms ease;
   overflow: hidden;
 }
 .build-progress-row:hover {
@@ -1000,7 +1029,10 @@ defineExpose({ reload: loadDashboard });
   border-radius: 50%;
   background: #eef5fd;
   color: #356eae;
-  font: italic 700 11px/1 Georgia, "Times New Roman", serif;
+  font:
+    italic 700 11px/1 Georgia,
+    "Times New Roman",
+    serif;
   cursor: pointer;
   transition:
     background 160ms ease,

@@ -39,20 +39,22 @@ describe("InventoryDetailDrawer", () => {
     const slow = new Promise((resolve) => {
       resolveSlow = resolve;
     });
-    getPlan.mockImplementationOnce(() => slow).mockResolvedValueOnce({
-      characterId: 2,
-      cavernMode: "fourPiece",
-      cavernSetA: 1,
-      cavernSetB: null,
-      planarSetId: 1,
-      mainStats: {},
-      targets: [{ statKey: "SPD", target: 134, minimum: 120, priority: 1 }],
-      effectiveSubstats: [],
-      note: "fast",
-      substatWeights: {},
-      minPotentialPct: 40,
-      spdTarget: 0,
-    });
+    getPlan
+      .mockImplementationOnce(() => slow)
+      .mockResolvedValueOnce({
+        characterId: 2,
+        cavernMode: "fourPiece",
+        cavernSetA: 1,
+        cavernSetB: null,
+        planarSetId: 1,
+        mainStats: {},
+        targets: [{ statKey: "SPD", target: 134, minimum: 120, priority: 1 }],
+        effectiveSubstats: [],
+        note: "fast",
+        substatWeights: {},
+        minPotentialPct: 40,
+        spdTarget: 0,
+      });
 
     const wrapper = mount(InventoryDetailDrawer, {
       props: {

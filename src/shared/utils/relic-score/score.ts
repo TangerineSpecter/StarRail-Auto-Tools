@@ -170,10 +170,7 @@ export function weightedRollsOfRelic(
  * Do NOT multiply by potentialScale here — that path is for raw value×scale scoring;
  * applying both double-counts CR vs CD display magnitudes.
  */
-export function idealPotentialUnits(
-  mainStat: string,
-  weights: Record<string, number>,
-): number {
+export function idealPotentialUnits(mainStat: string, weights: Record<string, number>): number {
   const candidates = SUBSTAT_KEYS.filter((key) => key !== mainStat)
     .map((key) => ({
       key,
@@ -208,10 +205,7 @@ export function currentPotentialUnits(
 }
 
 /** Maximum weighted rolls for perfection: 4 openers + 5 upgrades, all high (1.0), best weights. */
-export function maxWeightedRolls(
-  mainStat: string,
-  weights: Record<string, number>,
-): number {
+export function maxWeightedRolls(mainStat: string, weights: Record<string, number>): number {
   const candidates = SUBSTAT_KEYS.filter((key) => key !== mainStat)
     .map((key) => ({ key, w: effectiveWeight(key, weights) }))
     .filter((item) => item.w > 0)
@@ -241,16 +235,10 @@ export function scoreRelic(
   const { total, breakdown } = weightedRollsOfRelic(relic, weights);
   const ideal = idealPotentialUnits(relic.mainStat, weights);
   const current = currentPotentialUnits(relic, weights);
-  const mainStatCorrect = isMainStatAllowed(
-    relic.slot,
-    relic.mainStat,
-    options?.allowedMainStats,
-  );
+  const mainStatCorrect = isMainStatAllowed(relic.slot, relic.mainStat, options?.allowedMainStats);
   // Wrong selectable main stats do not receive a letter grade (Stat Score guide).
   const selectableWrong =
-    mainStatCorrect === false &&
-    relic.slot !== "Head" &&
-    relic.slot !== "Hands";
+    mainStatCorrect === false && relic.slot !== "Head" && relic.slot !== "Hands";
   const potentialPct = ideal > 0 ? (current / ideal) * 100 : 0;
   const maxRolls = maxWeightedRolls(relic.mainStat, weights);
   const perfectionPct = maxRolls > 0 ? Math.min(100, (total / maxRolls) * 100) : 0;

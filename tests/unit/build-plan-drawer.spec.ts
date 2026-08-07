@@ -70,7 +70,9 @@ describe("BuildPlanDrawer", () => {
     expect(wrapper.get(".build-note-section").exists()).toBe(true);
     expect(wrapper.get(".build-note-input").element).toHaveProperty("value", "遗器优先速度鞋");
     expect(wrapper.get(".build-note-hint").text()).toContain("i");
-    expect(wrapper.get(".build-note-input").attributes("aria-label") ?? "毕业目标说明").toBeTruthy();
+    expect(
+      wrapper.get(".build-note-input").attributes("aria-label") ?? "毕业目标说明",
+    ).toBeTruthy();
     // Note field stays at the bottom of the scrollable form content.
     const sections = wrapper.findAll(".build-scroll > .build-section");
     expect(sections.at(-1)?.classes()).toContain("build-note-section");

@@ -42,9 +42,7 @@ const coneMaxed = computed(() => {
       <!-- Tag 2: 装备光锥 -->
       <div :class="['inline-status-tag', hasCone ? 'is-met' : 'is-unmet']">
         <span class="tag-icon">{{ hasCone ? "✓" : "✕" }}</span>
-        <span class="tag-label">
-          装备光锥 {{ hasCone ? `(${lightConeName})` : "" }}
-        </span>
+        <span class="tag-label"> 装备光锥 {{ hasCone ? `(${lightConeName})` : "" }} </span>
         <span class="tag-pill">{{ hasCone ? "已装备" : "未装备" }}</span>
       </div>
 

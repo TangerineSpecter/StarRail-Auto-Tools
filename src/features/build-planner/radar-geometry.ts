@@ -93,7 +93,9 @@ export function ringPoints(
   radius: number,
   axisCount: number = RADAR_SLOT_ORDER.length,
 ): Point[] {
-  return Array.from({ length: axisCount }, (_, index) => polarPoint(cx, cy, radius, index, axisCount));
+  return Array.from({ length: axisCount }, (_, index) =>
+    polarPoint(cx, cy, radius, index, axisCount),
+  );
 }
 
 /** Closed SVG polygon points string: "x,y x,y …". */
