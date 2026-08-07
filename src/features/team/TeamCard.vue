@@ -241,13 +241,13 @@ const teamTopGrade = computed(() => {
             >
               {{ memberInitial(slot.member) }}
             </div>
-            <img
-              v-if="slot.member.path"
-              class="team-slot-path-badge"
-              :src="pathIconSrc(slot.member.path)"
-              :alt="pathLabel(slot.member.path)"
-              :title="pathLabel(slot.member.path)"
-            />
+            <span
+              v-if="slot.score"
+              :class="['team-score-badge', 'avatar-corner-badge', gradeClass(slot.score.letterGrade)]"
+              :title="`评级 ${slot.score.letterGrade}`"
+            >
+              {{ slot.score.letterGrade }}
+            </span>
           </div>
           <div class="team-slot-meta">
             <div class="team-slot-name-row">
@@ -257,12 +257,6 @@ const teamTopGrade = computed(() => {
             <small v-if="!slot.member.owned" class="team-slot-orphan">已不在档案</small>
 
             <div v-if="slot.score" class="team-slot-score-section">
-              <span
-                :class="['team-score-badge', gradeClass(slot.score.letterGrade)]"
-                :title="`评级 ${slot.score.letterGrade}`"
-              >
-                {{ slot.score.letterGrade }}
-              </span>
               <div class="team-slot-bars">
                 <div class="team-progress-item" :title="`潜力 ${formatScorePct(slot.score.potentialPct)}`">
                   <div class="team-progress-label">
@@ -272,7 +266,7 @@ const teamTopGrade = computed(() => {
                   <div class="team-progress-track">
                     <div
                       class="team-progress-fill potential"
-                      :style="{ width: `${Math.min(100, Math.max(0, (slot.score.potentialPct || 0) * 100))}%` }"
+                      :style="{ width: `${Math.min(100, Math.max(0, slot.score.potentialPct || 0))}%` }"
                     />
                   </div>
                 </div>
@@ -284,7 +278,7 @@ const teamTopGrade = computed(() => {
                   <div class="team-progress-track">
                     <div
                       class="team-progress-fill completion"
-                      :style="{ width: `${Math.min(100, Math.max(0, (slot.score.completionPct || 0) * 100))}%` }"
+                      :style="{ width: `${Math.min(100, Math.max(0, slot.score.completionPct || 0))}%` }"
                     />
                   </div>
                 </div>

@@ -67,6 +67,7 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
           @click="archive.resetSearch"
           >清空</Button
         >
+        <span class="toolbar-spacer" />
         <Button class="capture-action-btn team-create-btn" type="button" :disabled="busy" @click="openCreate">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -74,7 +75,6 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
           </svg>
           新建配队
         </Button>
-        <span class="toolbar-spacer" />
         <span class="result-count">{{ archive.result.value.total }} 支配队</span>
       </div>
     </header>
