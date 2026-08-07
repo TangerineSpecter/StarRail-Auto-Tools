@@ -1,5 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia } from "pinia";
 import { nextTick } from "vue";
 import CharacterScorePanel from "@/features/inventory/CharacterScorePanel.vue";
 import type { CharacterDetailData } from "@/features/inventory/detail-types";
@@ -117,6 +118,7 @@ describe("CharacterScorePanel replace compare", () => {
       attachTo: document.body,
       props: { detail, plan },
       global: {
+        plugins: [createPinia()],
         stubs: { InputNumber: true },
       },
     });

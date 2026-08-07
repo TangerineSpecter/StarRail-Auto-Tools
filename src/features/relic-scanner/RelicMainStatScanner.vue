@@ -194,6 +194,130 @@ async function analyzeUsefulness() {
   }
 }
 
+// Added state & computeds for main stat scanning review dashboard
+const searchQuery = ref("");
+const slotFilter = ref("all");
+const categoryFilter = ref("all");
+const viewMode = ref<"grid" | "list">("grid");
+const collapsedSetIds = ref<Set<number>>(new Set());
+
+function toggleSetCollapse(setId: number) {
+  const newSet = new Set(collapsedSetIds.value);
+  if (newSet.has(setId)) {
+    newSet.delete(setId);
+  } else {
+    newSet.add(setId);
+  }
+  collapsedSetIds.value = newSet;
+}
+
+function collapseAllSets() {
+  if (!result.value) return;
+  collapsedSetIds.value = new Set(result.value.groups.map((g) => g.setId));
+}
+
+function expandAllSets() {
+  collapsedSetIds.value = new Set();
+}
+
+const isPlanarSet = (setGroup: { setId: number; parts: { slot: string }[] }) => {
+  return (
+    setGroup.setId >= 300 ||
+    setGroup.parts.some((p) => p.slot === "PlanarSphere" || p.slot === "LinkRope")
+  );
+};
+
+const getSetHeaderIcon = (setGroup: { setId: number; parts: { slot: string }[] }) => {
+  if (isPlanarSet(setGroup)) {
+    return relicImage(setGroup.setId, "PlanarSphere") || relicImage(setGroup.setId, "Head");
+  }
+  return relicImage(setGroup.setId, "Head") || relicImage(setGroup.setId, "Body");
+};
+
+const summaryStats = computed(() => {
+  if (!result.value) return null;
+  let cavernCount = 0;
+  let planarCount = 0;
+  let cavernSets = 0;
+  let planarSets = 0;
+  const slotCounts: Record<string, number> = {
+    Body: 0,
+    Feet: 0,
+    PlanarSphere: 0,
+    LinkRope: 0,
+    Head: 0,
+    Hands: 0,
+  };
+
+  result.value.groups.forEach((g) => {
+    const isPlanar = isPlanarSet(g);
+    let groupTotal = 0;
+    g.parts.forEach((p) => {
+      const pCount = p.stats.reduce((acc, s) => acc + s.count, 0);
+      groupTotal += pCount;
+      slotCounts[p.slot] = (slotCounts[p.slot] || 0) + pCount;
+    });
+    if (isPlanar) {
+      planarCount += groupTotal;
+      planarSets += 1;
+    } else {
+      cavernCount += groupTotal;
+      cavernSets += 1;
+    }
+  });
+
+  return {
+    cavernCount,
+    planarCount,
+    cavernSets,
+    planarSets,
+    slotCounts,
+  };
+});
+
+const filteredGroups = computed(() => {
+  if (!result.value) return [];
+  const q = searchQuery.value.trim().toLowerCase();
+  return result.value.groups
+    .map((group) => {
+      const isPlanar = isPlanarSet(group);
+      if (categoryFilter.value === "cavern" && isPlanar) return null;
+      if (categoryFilter.value === "planar" && !isPlanar) return null;
+
+      if (q && !group.setName.toLowerCase().includes(q)) return null;
+
+      let filteredParts = group.parts;
+      if (slotFilter.value !== "all") {
+        filteredParts = filteredParts.filter((p) => p.slot === slotFilter.value);
+      }
+
+      if (!filteredParts.length) return null;
+
+      const groupTotal = filteredParts.reduce(
+        (sum, p) => sum + p.stats.reduce((acc, s) => acc + s.count, 0),
+        0,
+      );
+
+      return {
+        ...group,
+        parts: filteredParts,
+        groupTotal,
+        isPlanar,
+      };
+    })
+    .filter((g): g is NonNullable<typeof g> => g !== null);
+});
+
+function getStatThemeClass(mainStat: string) {
+  if (["CRIT Rate", "CRIT DMG"].includes(mainStat)) return "stat-crit";
+  if (["Outgoing Healing Boost"].includes(mainStat)) return "stat-heal";
+  if (["Energy Regeneration Rate"].includes(mainStat)) return "stat-energy";
+  if (["SPD"].includes(mainStat)) return "stat-speed";
+  if (mainStat.endsWith("DMG Boost")) return "stat-element";
+  if (["Break Effect", "Effect Hit Rate"].includes(mainStat)) return "stat-special";
+  return "stat-basic";
+}
+
 onMounted(async () => {
   try {
     planCount.value = await inventoryApi.relicMainStatScanPlanCount();
@@ -377,34 +501,111 @@ onMounted(async () => {
       未发现无目标主词条的未装备遗器。
     </div>
     <template v-else>
-      <div class="scanner-result-heading">
-        <div>
+      <!-- Compact Cleaning Header -->
+      <div class="cleaning-header-compact">
+        <div class="compact-left">
           <small>SCAN RESULT / UNASSIGNED PIECES</small>
-          <p>
-            <b>{{ result.total }}</b> 件待复核
-          </p>
-        </div>
-        <p class="scanner-result-note">
-          已按 <span>套装 > 部位 > 主属性</span> 聚合，方便在游戏中比对清理
-        </p>
-      </div>
-      <div class="scanner-grouped-list" role="list" aria-label="无目标主词条遗器">
-        <div v-for="setGroup in result.groups" :key="setGroup.setId" class="grouped-set-card">
-          <div class="set-header">
-            <img
-              :src="relicImage(setGroup.setId, 'Head')"
-              :alt="setGroup.setName"
-              class="set-icon"
-            />
-            <h4>{{ setGroup.setName }}</h4>
+          <div class="compact-title-row">
+            <span class="compact-total"><b>{{ result.total }}</b> 件待复核</span>
+            <span v-if="summaryStats" class="compact-sub-info">
+              (遗器 <b>{{ summaryStats.cavernCount }}</b> 件 / 饰品 <b>{{ summaryStats.planarCount }}</b> 件)
+            </span>
           </div>
-          <div class="set-body">
-            <div v-for="part in setGroup.parts" :key="part.slot" class="part-row">
-              <div class="part-label">{{ slotLabel(part.slot) }}</div>
-              <div class="stat-chips">
-                <div v-for="stat in part.stats" :key="stat.mainStat" class="stat-chip">
-                  <span class="stat-name">{{ statLabel(stat.mainStat) }}</span>
-                  <span class="stat-count">{{ stat.count }} 件</span>
+        </div>
+
+        <div class="compact-right">
+          <!-- Quick Search -->
+          <div class="search-input-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="搜索套装..."
+              class="search-input"
+            />
+            <button v-if="searchQuery" class="clear-search-btn" @click="searchQuery = ''">✕</button>
+          </div>
+
+          <button class="collapse-toggle-btn" @click="collapsedSetIds.size > 0 ? expandAllSets() : collapseAllSets()">
+            {{ collapsedSetIds.size > 0 ? '全部展开' : '全部折叠' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Empty State -->
+      <div v-if="!filteredGroups.length" class="scanner-state">
+        没有匹配当前条件的待复核遗器。
+      </div>
+
+      <!-- Main Set Groups Container (Grid view) -->
+      <div
+        v-else
+        class="scanner-grouped-container view-grid"
+        role="list"
+        aria-label="无目标主词条遗器"
+      >
+        <div
+          v-for="setGroup in filteredGroups"
+          :key="setGroup.setId"
+          :class="['modern-set-card', { collapsed: collapsedSetIds.has(setGroup.setId) }]"
+        >
+          <!-- Set Header -->
+          <div class="set-card-header" @click="toggleSetCollapse(setGroup.setId)">
+            <div class="set-title-group">
+              <div class="set-icon-frame">
+                <img
+                  :src="getSetHeaderIcon(setGroup)"
+                  :alt="setGroup.setName"
+                  class="set-icon-img"
+                />
+              </div>
+              <div class="set-meta">
+                <h4 class="set-name-text">{{ setGroup.setName }}</h4>
+                <span :class="['set-type-tag', setGroup.isPlanar ? 'planar' : 'cavern']">
+                  {{ setGroup.isPlanar ? '位面饰品 2件套' : '隧洞遗器 4件套' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="set-header-right">
+              <div class="set-total-badge">
+                <small>待复核</small>
+                <b>{{ setGroup.groupTotal }}</b> 件
+              </div>
+              <span class="collapse-chevron" aria-hidden="true">
+                {{ collapsedSetIds.has(setGroup.setId) ? '❯' : '❮' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Set Body (Parts & Main Stats) -->
+          <div v-show="!collapsedSetIds.has(setGroup.setId)" class="set-card-body">
+            <div v-for="part in setGroup.parts" :key="part.slot" class="modern-part-row">
+              <!-- Part Slot Badge -->
+              <div class="part-badge">
+                <span class="part-slot-icon">
+                  <template v-if="part.slot === 'Body'">🎽</template>
+                  <template v-else-if="part.slot === 'Feet'">👟</template>
+                  <template v-else-if="part.slot === 'PlanarSphere'">🔮</template>
+                  <template v-else-if="part.slot === 'LinkRope'">📿</template>
+                  <template v-else-if="part.slot === 'Head'">🪖</template>
+                  <template v-else-if="part.slot === 'Hands'">🥊</template>
+                </span>
+                <span class="part-name">{{ slotLabel(part.slot) }}</span>
+              </div>
+
+              <!-- Main Stats Chips -->
+              <div class="modern-stat-chips">
+                <div
+                  v-for="stat in part.stats"
+                  :key="stat.mainStat"
+                  :class="['modern-stat-chip', getStatThemeClass(stat.mainStat)]"
+                >
+                  <span class="chip-stat-label">{{ statLabel(stat.mainStat) }}</span>
+                  <span class="chip-count-pill">{{ stat.count }} 件</span>
                 </div>
               </div>
             </div>
@@ -414,6 +615,7 @@ onMounted(async () => {
     </template>
   </section>
 </template>
+
 
 <style scoped>
 .relic-scanner {
@@ -1018,86 +1220,451 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.scanner-grouped-list {
+/* Compact Cleaning Header */
+.cleaning-header-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 4px 10px;
+}
+
+.compact-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.compact-left small {
+  color: var(--muted);
+  font:
+    700 9px/1 "Bahnschrift",
+    sans-serif;
+  letter-spacing: 0.13em;
+}
+
+.compact-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.compact-total {
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.compact-total b {
+  color: #1a478d;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.compact-sub-info {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.compact-sub-info b {
+  color: #2b6cb0;
+  font-weight: 700;
+}
+
+.compact-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 170px;
+  height: 30px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 24px 0 28px;
+  border: 1px solid rgba(46, 79, 126, 0.18);
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12px;
+  color: var(--ink);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #2b6cb0;
+  box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.15);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.collapse-toggle-btn {
+  height: 30px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid rgba(46, 79, 126, 0.18);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.collapse-toggle-btn:hover {
+  background: #f4f7fa;
+  color: var(--ink);
+}
+
+/* Modern Set Groups Container (Grid & List View) */
+.scanner-grouped-container {
   flex: 1;
   min-height: 0;
-  display: block;
   overflow: auto;
   padding: 4px 4px 16px;
 }
-.grouped-set-card {
-  margin-bottom: 16px;
-  border: 1px solid rgba(45, 75, 116, 0.15);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 6px 16px rgba(42, 69, 105, 0.04);
-  overflow: hidden;
+
+.scanner-grouped-container.view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 14px;
 }
-.set-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  background: linear-gradient(135deg, rgba(236, 242, 251, 0.8), rgba(245, 248, 252, 0.5));
-  border-bottom: 1px solid rgba(45, 75, 116, 0.08);
-}
-.set-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-.set-header h4 {
-  font-size: 15px;
-  color: var(--ink);
-  font-weight: 700;
-}
-.set-body {
+
+.scanner-grouped-container.view-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
-.part-row {
+
+/* Modern Set Card */
+.modern-set-card {
   display: flex;
-  align-items: flex-start;
-  padding: 12px 16px;
+  flex-direction: column;
+  border: 1px solid rgba(46, 79, 126, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(244, 248, 255, 0.85));
+  box-shadow: 0 4px 14px rgba(37, 75, 122, 0.05);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.part-row:not(:last-child) {
-  border-bottom: 1px dashed rgba(45, 75, 116, 0.08);
+
+.modern-set-card:hover {
+  border-color: rgba(37, 95, 185, 0.45);
+  box-shadow: 0 8px 24px rgba(37, 75, 122, 0.1);
 }
-.part-label {
-  width: 70px;
+
+.modern-set-card.collapsed {
+  background: #ffffff;
+}
+
+/* Set Header */
+.set-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(236, 243, 253, 0.75), rgba(246, 249, 254, 0.4));
+  border-bottom: 1px solid rgba(46, 79, 126, 0.1);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.set-card-header:hover {
+  background: rgba(226, 237, 252, 0.85);
+}
+
+.set-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.set-icon-frame {
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  padding-top: 4px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(199, 165, 90, 0.4);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
-.stat-chips {
+
+.set-icon-img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+.set-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.set-name-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.set-type-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  width: fit-content;
+}
+
+.set-type-tag.cavern {
+  color: #2563eb;
+}
+
+.set-type-tag.planar {
+  color: #9333ea;
+}
+
+.set-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.set-total-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(28, 75, 147, 0.08);
+  border: 1px solid rgba(28, 75, 147, 0.14);
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.set-total-badge small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.set-total-badge b {
+  color: #1a478d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.collapse-chevron {
+  font-size: 11px;
+  color: var(--muted);
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+}
+
+.modern-set-card.collapsed .collapse-chevron {
+  transform: rotate(0deg);
+}
+
+/* Set Body & Part Rows */
+.set-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 14px 12px;
+  gap: 10px;
+}
+
+.modern-part-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modern-part-row:not(:last-child) {
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(46, 79, 126, 0.1);
+}
+
+.part-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(220, 230, 242, 0.5);
+  width: fit-content;
+}
+
+.part-slot-icon {
+  font-size: 12px;
+}
+
+.part-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2e4f7e;
+}
+
+/* Modern Stat Chips */
+.modern-stat-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
-.stat-chip {
+
+.modern-stat-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 9px;
+  border-radius: 5px;
   background: #ffffff;
-  border: 1px solid rgba(45, 75, 116, 0.15);
-  color: var(--ink);
+  border: 1px solid rgba(46, 79, 126, 0.15);
   font-size: 12px;
-  box-shadow: 0 2px 4px rgba(42, 69, 105, 0.02);
+  box-shadow: 0 2px 5px rgba(37, 75, 122, 0.03);
+  transition: all 0.15s ease;
 }
-.stat-chip .stat-name {
+
+.modern-stat-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 75, 122, 0.08);
+}
+
+.chip-stat-label {
   font-weight: 600;
-  color: #a85b4d;
 }
-.stat-chip .stat-count {
-  background: rgba(28, 75, 147, 0.06);
-  color: var(--blue-deep);
-  padding: 2px 6px;
+
+.chip-count-pill {
+  padding: 1px 6px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
+
+/* Categorized Stat Color Themes */
+/* 暴击/爆伤 */
+.modern-stat-chip.stat-crit {
+  background: linear-gradient(135deg, #fffcf0, #fff7d6);
+  border-color: rgba(217, 119, 6, 0.4);
+}
+.modern-stat-chip.stat-crit .chip-stat-label {
+  color: #b45309;
+}
+.modern-stat-chip.stat-crit .chip-count-pill {
+  background: #d97706;
+  color: #ffffff;
+}
+
+/* 治疗加成 */
+.modern-stat-chip.stat-heal {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border-color: rgba(22, 163, 74, 0.35);
+}
+.modern-stat-chip.stat-heal .chip-stat-label {
+  color: #15803d;
+}
+.modern-stat-chip.stat-heal .chip-count-pill {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+/* 能量恢复 */
+.modern-stat-chip.stat-energy {
+  background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+  border-color: rgba(147, 51, 234, 0.35);
+}
+.modern-stat-chip.stat-energy .chip-stat-label {
+  color: #7e22ce;
+}
+.modern-stat-chip.stat-energy .chip-count-pill {
+  background: #9333ea;
+  color: #ffffff;
+}
+
+/* 速度 */
+.modern-stat-chip.stat-speed {
+  background: linear-gradient(135deg, #fffbe3, #fef08a);
+  border-color: rgba(202, 138, 4, 0.4);
+}
+.modern-stat-chip.stat-speed .chip-stat-label {
+  color: #a16207;
+}
+.modern-stat-chip.stat-speed .chip-count-pill {
+  background: #ca8a04;
+  color: #ffffff;
+}
+
+/* 属性伤害 */
+.modern-stat-chip.stat-element {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+.modern-stat-chip.stat-element .chip-stat-label {
+  color: #1d4ed8;
+}
+.modern-stat-chip.stat-element .chip-count-pill {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* 特殊词条 */
+.modern-stat-chip.stat-special {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border-color: rgba(234, 88, 12, 0.35);
+}
+.modern-stat-chip.stat-special .chip-stat-label {
+  color: #c2410c;
+}
+.modern-stat-chip.stat-special .chip-count-pill {
+  background: #ea580c;
+  color: #ffffff;
+}
+
+/* 基础词条 */
+.modern-stat-chip.stat-basic {
+  background: #ffffff;
+  border-color: rgba(46, 79, 126, 0.16);
+}
+.modern-stat-chip.stat-basic .chip-stat-label {
+  color: #334155;
+}
+.modern-stat-chip.stat-basic .chip-count-pill {
+  background: rgba(28, 75, 147, 0.08);
+  color: #1a478d;
+}
 </style>
+

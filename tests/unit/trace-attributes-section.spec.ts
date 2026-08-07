@@ -1,5 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
+import { createPinia } from "pinia";
 import CharacterDetail from "@/features/inventory/CharacterDetail.vue";
 
 describe("CharacterDetail Trace Attributes Section", () => {
@@ -25,6 +26,7 @@ describe("CharacterDetail Trace Attributes Section", () => {
   it("renders trace section header with count badge and summary bar", () => {
     const wrapper = mount(CharacterDetail, {
       props: { detail: mockDetail },
+      global: { plugins: [createPinia()] },
     });
 
     const traceSection = wrapper.find(".trace-stat-section");
@@ -39,6 +41,7 @@ describe("CharacterDetail Trace Attributes Section", () => {
   it("toggles all trace nodes when clicking quick action buttons", async () => {
     const wrapper = mount(CharacterDetail, {
       props: { detail: mockDetail },
+      global: { plugins: [createPinia()] },
     });
 
     const clearBtn = wrapper.find(".trace-quick-actions button:last-child");
@@ -55,6 +58,7 @@ describe("CharacterDetail Trace Attributes Section", () => {
   it("maintains a stable stat summary order when individual nodes are toggled", async () => {
     const wrapper = mount(CharacterDetail, {
       props: { detail: mockDetail },
+      global: { plugins: [createPinia()] },
     });
 
     const getSummaryKeys = () => wrapper.findAll(".summary-chip .chip-name").map((el) => el.text());

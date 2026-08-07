@@ -2,17 +2,27 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RelicMainStatScanner from "@/features/relic-scanner/RelicMainStatScanner.vue";
 
-const { relicMainStatScanPlanCount, scanRelicsByMainStat, listRelics, dashboard } = vi.hoisted(
-  () => ({
-    relicMainStatScanPlanCount: vi.fn(),
-    scanRelicsByMainStat: vi.fn(),
-    listRelics: vi.fn(),
-    dashboard: vi.fn(),
-  }),
-);
+const {
+  relicMainStatScanPlanCount,
+  scanRelicsByMainStat,
+  scanRelicsByMainStatGrouped,
+  listRelics,
+  dashboard,
+} = vi.hoisted(() => ({
+  relicMainStatScanPlanCount: vi.fn(),
+  scanRelicsByMainStat: vi.fn(),
+  scanRelicsByMainStatGrouped: vi.fn(),
+  listRelics: vi.fn(),
+  dashboard: vi.fn(),
+}));
 
 vi.mock("@/shared/api/inventory", () => ({
-  inventoryApi: { relicMainStatScanPlanCount, scanRelicsByMainStat, listRelics },
+  inventoryApi: {
+    relicMainStatScanPlanCount,
+    scanRelicsByMainStat,
+    scanRelicsByMainStatGrouped,
+    listRelics,
+  },
 }));
 
 vi.mock("@/shared/api/build-plan", () => ({
@@ -28,6 +38,7 @@ describe("RelicMainStatScanner", () => {
   beforeEach(() => {
     relicMainStatScanPlanCount.mockReset();
     scanRelicsByMainStat.mockReset();
+    scanRelicsByMainStatGrouped.mockReset();
     listRelics.mockReset();
     dashboard.mockReset();
     dashboard.mockResolvedValue([]);
@@ -47,18 +58,18 @@ describe("RelicMainStatScanner", () => {
     expect(wrapper.find("button").attributes("disabled")).toBeDefined();
   });
 
-  it("shows unconfigured-slot context for selectable slots and emits the selected relic", async () => {
+  it("shows grouped relics dashboard with slot and main stat cards upon scanning", async () => {
     relicMainStatScanPlanCount.mockResolvedValue(1);
     dashboard.mockResolvedValue([
       {
         plan: {
           characterId: 1,
           cavernMode: "fourPiece",
-          cavernSetA: 1,
+          cavernSetA: 101,
           cavernSetB: null,
-          planarSetId: 1,
+          planarSetId: 301,
           mainStats: {},
-          targets: [{ statKey: "SPD", target: 134, minimum: 120, priority: 1 }],
+          targets: [],
           effectiveSubstats: [],
           note: "",
           substatWeights: {},
@@ -70,31 +81,20 @@ describe("RelicMainStatScanner", () => {
         pinned: false,
       },
     ]);
-    // Backend always injects fixed Head/Hands targets when plans exist; Body still unconfigured.
-    scanRelicsByMainStat.mockResolvedValue({
-      items: [
+    scanRelicsByMainStatGrouped.mockResolvedValue({
+      groups: [
         {
-          itemId: 7,
           setId: 101,
-          name: "测试遗器",
-          setName: "测试套装",
-          slot: "Body",
-          rarity: 5,
-          level: 15,
-          mainStat: "DEF%",
-          mainStatValue: 50,
-          location: "",
-          equippedCharacterId: null,
-          locked: false,
-          discard: false,
-          source: "test",
-          updatedAt: 0,
-          substats: [],
+          setName: "密林卧雪的猎人",
+          parts: [
+            {
+              slot: "Body",
+              stats: [{ mainStat: "Outgoing Healing Boost", count: 1 }],
+            },
+          ],
         },
       ],
       total: 1,
-      page: 1,
-      pageSize: 50,
       planCount: 1,
       allowedMainStats: { Head: ["HP"], Hands: ["ATK"] },
     });
@@ -106,41 +106,40 @@ describe("RelicMainStatScanner", () => {
     await wrapper.find("button").trigger("click");
     await flushPromises();
 
-    expect(wrapper.text()).toContain("尚未设置目标主词条");
+    expect(wrapper.text()).toContain("件待复核");
+    expect(wrapper.text()).toContain("密林卧雪的猎人");
     expect(wrapper.text()).toContain("躯干");
-    await wrapper.find(".scanner-item").trigger("click");
-    expect(wrapper.emitted("open-relic")?.[0][0]).toMatchObject({ itemId: 7 });
+    expect(wrapper.text()).toContain("治疗量加成");
   });
 
-  it("shows fixed Head target labels when scan includes fixed allowed mains", async () => {
+  it("supports filtering set search and slot segments in main stat scan", async () => {
     relicMainStatScanPlanCount.mockResolvedValue(1);
-    scanRelicsByMainStat.mockResolvedValue({
-      items: [
+    scanRelicsByMainStatGrouped.mockResolvedValue({
+      groups: [
         {
-          itemId: 9,
           setId: 101,
-          name: "错误头",
-          setName: "测试套装",
-          // Synthetic mismatch display path (backend would not return normal HP heads).
-          slot: "Head",
-          rarity: 5,
-          level: 0,
-          mainStat: "ATK",
-          mainStatValue: 1,
-          location: "",
-          equippedCharacterId: null,
-          locked: false,
-          discard: false,
-          source: "test",
-          updatedAt: 0,
-          substats: [],
+          setName: "密林卧雪的猎人",
+          parts: [
+            {
+              slot: "Body",
+              stats: [{ mainStat: "Outgoing Healing Boost", count: 1 }],
+            },
+          ],
+        },
+        {
+          setId: 301,
+          setName: "繁星璀璨的天才",
+          parts: [
+            {
+              slot: "Feet",
+              stats: [{ mainStat: "HP%", count: 2 }],
+            },
+          ],
         },
       ],
-      total: 1,
-      page: 1,
-      pageSize: 50,
+      total: 3,
       planCount: 1,
-      allowedMainStats: { Head: ["HP"], Hands: ["ATK"] },
+      allowedMainStats: {},
     });
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
@@ -150,8 +149,16 @@ describe("RelicMainStatScanner", () => {
     await wrapper.find("button").trigger("click");
     await flushPromises();
 
-    expect(wrapper.text()).not.toContain("尚未设置目标主词条");
-    expect(wrapper.text()).toContain("生命值");
+    expect(wrapper.text()).toContain("密林卧雪的猎人");
+    expect(wrapper.text()).toContain("繁星璀璨的天才");
+
+    // Search filter test
+    const searchInput = wrapper.find(".search-input");
+    await searchInput.setValue("猎人");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("密林卧雪的猎人");
+    expect(wrapper.text()).not.toContain("繁星璀璨的天才");
   });
 
   it("renders redesigned upgrade recommendation cards with main stat, target character and roll increase", async () => {
