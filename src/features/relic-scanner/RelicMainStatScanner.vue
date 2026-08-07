@@ -199,7 +199,17 @@ const searchQuery = ref("");
 const slotFilter = ref("all");
 const categoryFilter = ref("all");
 const viewMode = ref<"grid" | "list">("grid");
+const displayView = ref<"matrix" | "cards" | "slots">("matrix");
 const collapsedSetIds = ref<Set<number>>(new Set());
+
+const allSlots = [
+  { key: "Body", label: "躯干", icon: "🎽" },
+  { key: "Feet", label: "脚部", icon: "👟" },
+  { key: "PlanarSphere", label: "位面球", icon: "🔮" },
+  { key: "LinkRope", label: "连结绳", icon: "📿" },
+  { key: "Head", label: "头部", icon: "🪖" },
+  { key: "Hands", label: "手部", icon: "🥊" },
+];
 
 function toggleSetCollapse(setId: number) {
   const newSet = new Set(collapsedSetIds.value);
@@ -306,6 +316,49 @@ const filteredGroups = computed(() => {
       };
     })
     .filter((g): g is NonNullable<typeof g> => g !== null);
+});
+
+const groupedBySlot = computed(() => {
+  if (!result.value) return [];
+  const map = new Map<
+    string,
+    Array<{
+      setName: string;
+      setId: number;
+      isPlanar: boolean;
+      stats: Array<{ mainStat: string; count: number }>;
+    }>
+  >();
+
+  filteredGroups.value.forEach((group) => {
+    group.parts.forEach((part) => {
+      if (!map.has(part.slot)) map.set(part.slot, []);
+      map.get(part.slot)!.push({
+        setName: group.setName,
+        setId: group.setId,
+        isPlanar: group.isPlanar,
+        stats: part.stats,
+      });
+    });
+  });
+
+  return allSlots
+    .filter((s) => slotFilter.value === "all" || slotFilter.value === s.key)
+    .map((s) => {
+      const items = map.get(s.key) ?? [];
+      const total = items.reduce(
+        (sum, item) => sum + item.stats.reduce((acc, st) => acc + st.count, 0),
+        0,
+      );
+      return {
+        slot: s.key,
+        label: s.label,
+        icon: s.icon,
+        items,
+        total,
+      };
+    })
+    .filter((s) => s.items.length > 0);
 });
 
 function getStatThemeClass(mainStat: string) {
@@ -501,19 +554,56 @@ onMounted(async () => {
       未发现无目标主词条的未装备遗器。
     </div>
     <template v-else>
-      <!-- Compact Cleaning Header -->
+      <!-- Next-Gen Station Terminal Control Header -->
       <div class="cleaning-header-compact">
         <div class="compact-left">
-          <small>SCAN RESULT / UNASSIGNED PIECES</small>
+          <small>SCAN RESULT // UNASSIGNED RELIC MATRIX</small>
           <div class="compact-title-row">
             <span class="compact-total"><b>{{ result.total }}</b> 件待复核</span>
             <span v-if="summaryStats" class="compact-sub-info">
-              (遗器 <b>{{ summaryStats.cavernCount }}</b> 件 / 饰品 <b>{{ summaryStats.planarCount }}</b> 件)
+              (隧洞 <b>{{ summaryStats.cavernCount }}</b> 件 / 位面 <b>{{ summaryStats.planarCount }}</b> 件)
             </span>
+          </div>
+
+          <!-- Quick Category Filters -->
+          <div class="category-tabs-group">
+            <button
+              :class="['cat-tab-btn', { active: categoryFilter === 'all' }]"
+              @click="categoryFilter = 'all'"
+            >
+              全部 ({{ result.total }})
+            </button>
+            <button
+              v-if="summaryStats"
+              :class="['cat-tab-btn', 'cavern', { active: categoryFilter === 'cavern' }]"
+              @click="categoryFilter = 'cavern'"
+            >
+              隧洞遗器 ({{ summaryStats.cavernCount }})
+            </button>
+            <button
+              v-if="summaryStats"
+              :class="['cat-tab-btn', 'planar', { active: categoryFilter === 'planar' }]"
+              @click="categoryFilter = 'planar'"
+            >
+              位面饰品 ({{ summaryStats.planarCount }})
+            </button>
           </div>
         </div>
 
         <div class="compact-right">
+          <!-- Slot Segment Filter -->
+          <div class="slot-filter-select-wrapper">
+            <select v-model="slotFilter" class="slot-filter-select">
+              <option value="all">所有部位</option>
+              <option value="Body">躯干</option>
+              <option value="Feet">脚部</option>
+              <option value="PlanarSphere">位面球</option>
+              <option value="LinkRope">连结绳</option>
+              <option value="Head">头部</option>
+              <option value="Hands">手部</option>
+            </select>
+          </div>
+
           <!-- Quick Search -->
           <div class="search-input-wrapper">
             <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -528,10 +618,6 @@ onMounted(async () => {
             />
             <button v-if="searchQuery" class="clear-search-btn" @click="searchQuery = ''">✕</button>
           </div>
-
-          <button class="collapse-toggle-btn" @click="collapsedSetIds.size > 0 ? expandAllSets() : collapseAllSets()">
-            {{ collapsedSetIds.size > 0 ? '全部展开' : '全部折叠' }}
-          </button>
         </div>
       </div>
 
@@ -540,76 +626,98 @@ onMounted(async () => {
         没有匹配当前条件的待复核遗器。
       </div>
 
-      <!-- Main Set Groups Container (Grid view) -->
-      <div
-        v-else
-        class="scanner-grouped-container view-grid"
-        role="list"
-        aria-label="无目标主词条遗器"
-      >
-        <div
-          v-for="setGroup in filteredGroups"
-          :key="setGroup.setId"
-          :class="['modern-set-card', { collapsed: collapsedSetIds.has(setGroup.setId) }]"
-        >
-          <!-- Set Header -->
-          <div class="set-card-header" @click="toggleSetCollapse(setGroup.setId)">
-            <div class="set-title-group">
-              <div class="set-icon-frame">
-                <img
-                  :src="getSetHeaderIcon(setGroup)"
-                  :alt="setGroup.setName"
-                  class="set-icon-img"
-                />
-              </div>
-              <div class="set-meta">
-                <h4 class="set-name-text">{{ setGroup.setName }}</h4>
-                <span :class="['set-type-tag', setGroup.isPlanar ? 'planar' : 'cavern']">
-                  {{ setGroup.isPlanar ? '位面饰品 2件套' : '隧洞遗器 4件套' }}
-                </span>
-              </div>
-            </div>
-
-            <div class="set-header-right">
-              <div class="set-total-badge">
-                <small>待复核</small>
-                <b>{{ setGroup.groupTotal }}</b> 件
-              </div>
-              <span class="collapse-chevron" aria-hidden="true">
-                {{ collapsedSetIds.has(setGroup.setId) ? '❯' : '❮' }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Set Body (Parts & Main Stats) -->
-          <div v-show="!collapsedSetIds.has(setGroup.setId)" class="set-card-body">
-            <div v-for="part in setGroup.parts" :key="part.slot" class="modern-part-row">
-              <!-- Part Slot Badge -->
-              <div class="part-badge">
-                <span class="part-slot-icon">
-                  <template v-if="part.slot === 'Body'">🎽</template>
-                  <template v-else-if="part.slot === 'Feet'">👟</template>
-                  <template v-else-if="part.slot === 'PlanarSphere'">🔮</template>
-                  <template v-else-if="part.slot === 'LinkRope'">📿</template>
-                  <template v-else-if="part.slot === 'Head'">🪖</template>
-                  <template v-else-if="part.slot === 'Hands'">🥊</template>
-                </span>
-                <span class="part-name">{{ slotLabel(part.slot) }}</span>
-              </div>
-
-              <!-- Main Stats Chips -->
-              <div class="modern-stat-chips">
-                <div
-                  v-for="stat in part.stats"
-                  :key="stat.mainStat"
-                  :class="['modern-stat-chip', getStatThemeClass(stat.mainStat)]"
+      <!-- MATRIX BOARD (二维矩阵热力看板) -->
+      <div v-else class="matrix-board-container">
+        <div class="matrix-table-wrapper">
+          <table class="modern-matrix-table" role="grid" aria-label="待复核遗器二维矩阵">
+            <thead>
+              <tr>
+                <th class="col-set-info">套装名称 / 类型</th>
+                <th
+                  v-for="s in allSlots.filter(s => slotFilter === 'all' || slotFilter === s.key)"
+                  :key="s.key"
+                  class="col-slot-header"
                 >
-                  <span class="chip-stat-label">{{ statLabel(stat.mainStat) }}</span>
-                  <span class="chip-count-pill">{{ stat.count }} 件</span>
-                </div>
-              </div>
-            </div>
-          </div>
+                  <span class="slot-header-icon">
+                    <svg v-if="s.key === 'Body'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 3h12l3 6-3 12H6L3 9z" />
+                      <path d="M12 3v18" />
+                      <path d="M8 9h8" />
+                    </svg>
+                    <svg v-else-if="s.key === 'Feet'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 16v-6a3 3 0 0 1 3-3h3l3 4h7a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4z" />
+                      <circle cx="8" cy="16" r="1" />
+                    </svg>
+                    <svg v-else-if="s.key === 'PlanarSphere'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="7" />
+                      <path d="M4.5 14.5c4.5 3 10.5 3 15 0" />
+                      <path d="M4.5 9.5c4.5-3 10.5-3 15 0" />
+                    </svg>
+                    <svg v-else-if="s.key === 'LinkRope'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10 14l-2 2a3 3 0 1 1-4.24-4.24l2-2a3 3 0 0 1 4.24 0" />
+                      <path d="M14 10l2-2a3 3 0 1 1 4.24 4.24l-2 2a3 3 0 0 1-4.24 0" />
+                      <line x1="8" y1="16" x2="16" y2="8" />
+                    </svg>
+                    <svg v-else-if="s.key === 'Head'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 4a8 8 0 0 0-8 8v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3a8 8 0 0 0-8-8z" />
+                      <path d="M4 14h16" />
+                    </svg>
+                    <svg v-else-if="s.key === 'Hands'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5" />
+                      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6" />
+                      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-3.5" />
+                    </svg>
+                  </span>
+                  <span class="slot-header-name">{{ s.label }}</span>
+                </th>
+                <th class="col-total">待复核件数</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="setGroup in filteredGroups" :key="setGroup.setId" class="matrix-row">
+                <!-- 套装列 -->
+                <td class="cell-set-info">
+                  <div class="matrix-set-cell">
+                    <img :src="getSetHeaderIcon(setGroup)" :alt="setGroup.setName" class="matrix-set-icon" />
+                    <div class="matrix-set-meta">
+                      <span class="matrix-set-name">{{ setGroup.setName }}</span>
+                      <span :class="['set-type-tag', setGroup.isPlanar ? 'planar' : 'cavern']">
+                        {{ setGroup.isPlanar ? '2件套' : '4件套' }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- 部位交叉单元格 -->
+                <td
+                  v-for="s in allSlots.filter(s => slotFilter === 'all' || slotFilter === s.key)"
+                  :key="s.key"
+                  class="cell-slot-data"
+                >
+                  <template v-if="setGroup.parts.find(p => p.slot === s.key)">
+                    <div class="matrix-chip-list">
+                      <div
+                        v-for="stat in setGroup.parts.find(p => p.slot === s.key)!.stats"
+                        :key="stat.mainStat"
+                        :class="['modern-stat-chip', 'matrix-chip', getStatThemeClass(stat.mainStat)]"
+                      >
+                        <span class="chip-stat-label">{{ statLabel(stat.mainStat) }}</span>
+                        <span class="chip-count-pill">{{ stat.count }} 件</span>
+                      </div>
+                    </div>
+                  </template>
+                  <span v-else class="cell-empty">—</span>
+                </td>
+
+                <!-- 总计列 -->
+                <td class="cell-total">
+                  <div class="set-total-badge matrix-badge">
+                    <b>{{ setGroup.groupTotal }}</b> <small>件</small>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </template>
@@ -1220,19 +1328,21 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* Compact Cleaning Header */
+/* Compact Cleaning Header & Station Control Terminal */
 .cleaning-header-compact {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  padding: 4px 4px 10px;
+  padding: 4px 6px 12px;
+  border-bottom: 1px solid rgba(46, 79, 126, 0.12);
+  margin-bottom: 4px;
 }
 
 .compact-left {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
 }
 
 .compact-left small {
@@ -1246,7 +1356,7 @@ onMounted(async () => {
 .compact-title-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
 }
 
 .compact-total {
@@ -1270,17 +1380,83 @@ onMounted(async () => {
   font-weight: 700;
 }
 
+/* Category Quick Tabs */
+.category-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.cat-tab-btn {
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(46, 79, 126, 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cat-tab-btn:hover {
+  background: #ffffff;
+  border-color: rgba(43, 108, 176, 0.35);
+  color: var(--ink);
+}
+
+.cat-tab-btn.active {
+  background: #1a478d;
+  border-color: #1a478d;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(26, 71, 141, 0.25);
+}
+
+.cat-tab-btn.cavern.active {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+}
+
+.cat-tab-btn.planar.active {
+  background: linear-gradient(135deg, #6b21a8, #9333ea);
+}
+
 .compact-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.slot-filter-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.slot-filter-select {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(46, 79, 126, 0.18);
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12px;
+  color: var(--ink-soft);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.slot-filter-select:hover,
+.slot-filter-select:focus {
+  border-color: #2b6cb0;
 }
 
 .search-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  width: 170px;
+  width: 150px;
   height: 30px;
 }
 
@@ -1320,13 +1496,41 @@ onMounted(async () => {
   cursor: pointer;
 }
 
+/* View Mode Toggle */
+.view-mode-toggle {
+  display: flex;
+  align-items: center;
+  background: rgba(226, 237, 252, 0.5);
+  border: 1px solid rgba(46, 79, 126, 0.16);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.view-toggle-btn {
+  padding: 3px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.view-toggle-btn.active {
+  background: #ffffff;
+  color: #1a478d;
+  box-shadow: 0 1px 4px rgba(37, 75, 122, 0.12);
+}
+
 .collapse-toggle-btn {
   height: 30px;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 12px;
+  padding: 0 10px;
   border: 1px solid rgba(46, 79, 126, 0.18);
   border-radius: 6px;
   background: #ffffff;
@@ -1352,37 +1556,52 @@ onMounted(async () => {
 
 .scanner-grouped-container.view-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   grid-auto-rows: max-content;
   align-content: start;
-  gap: 14px;
+  gap: 12px;
 }
 
 .scanner-grouped-container.view-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 /* Modern Set Card */
 .modern-set-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(46, 79, 126, 0.16);
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(244, 248, 255, 0.85));
-  box-shadow: 0 4px 14px rgba(37, 75, 122, 0.05);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(243, 247, 254, 0.9));
+  box-shadow: 0 4px 16px rgba(37, 75, 122, 0.04);
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modern-set-card:hover {
-  border-color: rgba(37, 95, 185, 0.45);
-  box-shadow: 0 8px 24px rgba(37, 75, 122, 0.1);
+  border-color: rgba(43, 108, 176, 0.45);
+  box-shadow: 0 8px 24px rgba(37, 75, 122, 0.11), 0 0 0 1px rgba(66, 153, 225, 0.15);
+  transform: translateY(-2px);
 }
 
 .modern-set-card.collapsed {
   background: #ffffff;
+}
+
+.card-accent-strip {
+  height: 3px;
+  width: 100%;
+}
+
+.card-accent-strip.cavern {
+  background: linear-gradient(90deg, #2563eb, #3b82f6, transparent);
+}
+
+.card-accent-strip.planar {
+  background: linear-gradient(90deg, #9333ea, #c084fc, transparent);
 }
 
 /* Set Header */
@@ -1390,9 +1609,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, rgba(236, 243, 253, 0.75), rgba(246, 249, 254, 0.4));
-  border-bottom: 1px solid rgba(46, 79, 126, 0.1);
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(236, 243, 253, 0.65), rgba(248, 251, 255, 0.35));
+  border-bottom: 1px solid rgba(46, 79, 126, 0.08);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s ease;
@@ -1410,22 +1629,27 @@ onMounted(async () => {
 }
 
 .set-icon-frame {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   border-radius: 6px;
   background: #ffffff;
-  border: 1px solid rgba(199, 165, 90, 0.4);
+  border: 1px solid rgba(199, 165, 90, 0.45);
   display: grid;
   place-items: center;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .set-icon-img {
   width: 90%;
   height: 90%;
   object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.modern-set-card:hover .set-icon-img {
+  transform: scale(1.08);
 }
 
 .set-meta {
@@ -1435,8 +1659,14 @@ onMounted(async () => {
   min-width: 0;
 }
 
+.set-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .set-name-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink);
   overflow: hidden;
@@ -1459,10 +1689,48 @@ onMounted(async () => {
   color: #9333ea;
 }
 
+.set-slots-overview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.overview-slot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(46, 79, 126, 0.12);
+  font-size: 10px;
+  color: var(--ink-soft);
+  line-height: 1.2;
+}
+
+.slot-mini-icon {
+  font-size: 10px;
+}
+
+.slot-mini-name {
+  color: #3b5998;
+  font-weight: 600;
+}
+
+.slot-mini-count {
+  font-weight: 700;
+  color: #1a478d;
+  background: rgba(28, 75, 147, 0.08);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
 .set-header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -1470,7 +1738,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: baseline;
   gap: 3px;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   background: rgba(28, 75, 147, 0.08);
   border: 1px solid rgba(28, 75, 147, 0.14);
@@ -1504,64 +1772,81 @@ onMounted(async () => {
 .set-card-body {
   display: flex;
   flex-direction: column;
-  padding: 8px 14px 12px;
-  gap: 10px;
+  padding: 8px 10px 10px;
+  gap: 8px;
 }
 
 .modern-part-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(46, 79, 126, 0.08);
+  transition: background 0.15s ease;
 }
 
-.modern-part-row:not(:last-child) {
-  padding-bottom: 8px;
-  border-bottom: 1px dashed rgba(46, 79, 126, 0.1);
+.modern-part-row:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(46, 79, 126, 0.14);
+}
+
+.part-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .part-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 2px 7px;
+  gap: 4px;
+  padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(220, 230, 242, 0.5);
-  width: fit-content;
+  background: rgba(215, 228, 244, 0.6);
+  border: 1px solid rgba(46, 79, 126, 0.1);
 }
 
 .part-slot-icon {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .part-name {
   font-size: 11px;
   font-weight: 700;
-  color: #2e4f7e;
+  color: #2b5288;
+}
+
+.part-subtotal-tag {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 500;
 }
 
 /* Modern Stat Chips */
 .modern-stat-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .modern-stat-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 9px;
-  border-radius: 5px;
+  gap: 5px;
+  padding: 3px 7px;
+  border-radius: 4px;
   background: #ffffff;
-  border: 1px solid rgba(46, 79, 126, 0.15);
-  font-size: 12px;
-  box-shadow: 0 2px 5px rgba(37, 75, 122, 0.03);
+  border: 1px solid rgba(46, 79, 126, 0.14);
+  font-size: 11px;
+  box-shadow: 0 1px 3px rgba(37, 75, 122, 0.03);
   transition: all 0.15s ease;
 }
 
 .modern-stat-chip:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(37, 75, 122, 0.08);
+  box-shadow: 0 3px 8px rgba(37, 75, 122, 0.08);
 }
 
 .chip-stat-label {
@@ -1569,8 +1854,8 @@ onMounted(async () => {
 }
 
 .chip-count-pill {
-  padding: 1px 6px;
-  border-radius: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
   font-size: 10px;
   font-weight: 700;
 }
@@ -1665,6 +1950,252 @@ onMounted(async () => {
 .modern-stat-chip.stat-basic .chip-count-pill {
   background: rgba(28, 75, 147, 0.08);
   color: #1a478d;
+}
+/* Display Engine Mode Switcher */
+.display-engine-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(226, 237, 252, 0.6);
+  border: 1px solid rgba(46, 79, 126, 0.18);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.engine-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.engine-btn:hover {
+  color: var(--ink);
+}
+
+.engine-btn.active {
+  background: linear-gradient(135deg, #1c4b93, #2b6cb0);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(28, 75, 147, 0.25);
+}
+
+/* 1. DISPLAY VIEW: MATRIX BOARD (二维矩阵热力看板) */
+.matrix-board-container {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 2px 16px;
+}
+
+.matrix-table-wrapper {
+  border: 1px solid rgba(46, 79, 126, 0.16);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(37, 75, 122, 0.05);
+  overflow: hidden;
+}
+
+.modern-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+
+.modern-matrix-table th {
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(236, 243, 253, 0.95), rgba(244, 248, 255, 0.8));
+  border-bottom: 2px solid rgba(46, 79, 126, 0.14);
+  color: #1a478d;
+  font-weight: 700;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.col-set-info {
+  width: 220px;
+  min-width: 180px;
+}
+
+.col-slot-header {
+  text-align: center;
+}
+
+.slot-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: text-bottom;
+  margin-right: 4px;
+  color: #2b6cb0;
+}
+
+.slot-svg-icon {
+  display: inline-block;
+  vertical-align: middle;
+  stroke-width: 2.2;
+}
+
+.col-total {
+  text-align: center;
+  width: 100px;
+}
+
+.matrix-row {
+  border-bottom: 1px solid rgba(46, 79, 126, 0.08);
+  transition: background 0.15s ease;
+}
+
+.matrix-row:hover {
+  background: rgba(236, 244, 255, 0.45);
+}
+
+.cell-set-info {
+  padding: 8px 12px;
+  vertical-align: middle;
+}
+
+.matrix-set-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.matrix-set-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid rgba(199, 165, 90, 0.4);
+  background: #ffffff;
+  padding: 1px;
+}
+
+.matrix-set-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.matrix-set-name {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.cell-slot-data {
+  padding: 8px;
+  vertical-align: middle;
+  text-align: center;
+  border-left: 1px dashed rgba(46, 79, 126, 0.08);
+}
+
+.matrix-chip-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.matrix-chip {
+  margin: 0;
+  width: fit-content;
+}
+
+.cell-empty {
+  color: rgba(46, 79, 126, 0.25);
+  font-weight: 300;
+}
+
+.cell-total {
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+  border-left: 1px dashed rgba(46, 79, 126, 0.12);
+}
+
+.matrix-badge {
+  margin: 0 auto;
+}
+
+/* 2. DISPLAY VIEW: SLOT HUB VIEW (部位视角) */
+.slot-hub-container {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+  padding: 4px 2px 16px;
+}
+
+.slot-hub-card {
+  border: 1px solid rgba(46, 79, 126, 0.16);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 75, 122, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.slot-hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(236, 243, 253, 0.85), rgba(246, 249, 254, 0.5));
+  border-bottom: 1px solid rgba(46, 79, 126, 0.1);
+}
+
+.slot-hub-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slot-hub-icon {
+  font-size: 16px;
+}
+
+.slot-hub-title h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a478d;
+}
+
+.slot-hub-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slot-hub-item-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(245, 248, 252, 0.7);
+  border: 1px solid rgba(46, 79, 126, 0.08);
+}
+
+.hub-set-name-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hub-set-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
 }
 </style>
 
