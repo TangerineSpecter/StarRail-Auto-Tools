@@ -83,6 +83,17 @@ export function memberInitial(member: Pick<TeamMember, "name"> | null | undefine
   return member?.name?.slice(0, 1) || "?";
 }
 
+export function gradeClass(grade?: string): string {
+  if (!grade) return "grade-default";
+  const upper = grade.toUpperCase();
+  if (upper === "SS") return "grade-ss";
+  if (upper.startsWith("S")) return "grade-s";
+  if (upper.startsWith("A")) return "grade-a";
+  if (upper.startsWith("B")) return "grade-b";
+  if (upper.startsWith("C") || upper.startsWith("D")) return "grade-c";
+  return "grade-default";
+}
+
 export function filledSlotCount(team: Pick<Team, "members">): number {
   return team.members.filter(Boolean).length;
 }

@@ -109,6 +109,7 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
     v-if="editing !== null"
     :team="editing === 'new' ? null : editing"
     :busy="busy"
+    :member-scores="archive.memberScores.value"
     @close="editing = null"
     @save="onSave"
     @error="error = $event"

@@ -3,9 +3,8 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
-import { characterDisplayName, pathIconSrc, resolveCharacterCatalogue } from "@/shared/catalogue";
-import { pathLabel } from "@/shared/catalogue/relic-options";
-import type { CharacterListItem, Team, TeamInput } from "@/types";
+import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
+import type { CharacterBuildScore, CharacterListItem, Team, TeamInput } from "@/types";
 import { listAllOwnedCharacters } from "./list-owned-characters";
 import TeamCharacterPicker from "./TeamCharacterPicker.vue";
 import {
@@ -14,6 +13,7 @@ import {
   TEAM_SLOT_COUNT,
   characterIdsFromTeam,
   emptyCharacterIds,
+  gradeClass,
   memberInitial,
   normalizeTeamInput,
 } from "./team-utils";
@@ -21,6 +21,7 @@ import {
 const props = defineProps<{
   team: Team | null;
   busy: boolean;
+  memberScores?: Map<number, CharacterBuildScore>;
 }>();
 const emit = defineEmits<{
   close: [];
@@ -36,6 +37,12 @@ const draft = reactive({
 const characterMap = ref<Map<number, CharacterListItem>>(new Map());
 const pickingSlot = ref<number | null>(null);
 const loadingCharacters = ref(false);
+
+function slotScore(index: number): CharacterBuildScore | null {
+  const id = draft.characterIds[index];
+  if (id == null) return null;
+  return props.memberScores?.get(id) ?? null;
+}
 
 const isEdit = computed(() => props.team != null);
 const title = computed(() => (isEdit.value ? "编辑配队" : "新建配队"));
@@ -234,12 +241,13 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     <div v-else class="team-slot-avatar-fallback">
                       {{ memberInitial(slotMember(index - 1)!) }}
                     </div>
-                    <img
-                      v-if="slotMember(index - 1)?.path"
-                      class="team-slot-path-badge"
-                      :src="pathIconSrc(slotMember(index - 1)!.path)"
-                      :alt="pathLabel(slotMember(index - 1)!.path)"
-                    />
+                    <span
+                      v-if="slotScore(index - 1)"
+                      :class="['team-score-badge', 'avatar-corner-badge', gradeClass(slotScore(index - 1)!.letterGrade)]"
+                      :title="`评级 ${slotScore(index - 1)!.letterGrade}`"
+                    >
+                      {{ slotScore(index - 1)!.letterGrade }}
+                    </span>
                   </div>
                   <div class="team-slot-meta">
                     <strong class="team-slot-name">{{ slotDisplayName(index - 1) }}</strong>
