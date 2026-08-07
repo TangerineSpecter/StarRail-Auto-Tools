@@ -7,6 +7,7 @@ import {
   estimateTbp,
   farmingPriorityRows,
   inferWeightsFromEffectiveSubstats,
+  isMainStatAllowed,
   letterGradeFromPotential,
   planQualityCompletion,
   planTargetSetIdsForSlot,
@@ -255,6 +256,29 @@ describe("relic-score core", () => {
     );
     expect(summary.weakSlot).toBe("Feet");
     expect(summary.averagePotentialPct).toBeGreaterThan(0);
+  });
+
+  it("treats Head/Hands main stats as fixed when a plan map is present", () => {
+    // Empty or missing Head/Hands keys behave as already configured (HP / ATK).
+    expect(isMainStatAllowed("Head", "HP", {})).toBe(true);
+    expect(isMainStatAllowed("Head", "HP", { Head: [] })).toBe(true);
+    expect(isMainStatAllowed("Hands", "ATK", { Body: ["CRIT Rate"] })).toBe(true);
+    expect(isMainStatAllowed("Head", "ATK", { Head: ["HP"] })).toBe(false);
+    // Selectable slots still treat empty as unconfigured.
+    expect(isMainStatAllowed("Body", "CRIT Rate", { Body: [] })).toBeNull();
+    expect(isMainStatAllowed("Body", "CRIT Rate", {})).toBeNull();
+    expect(isMainStatAllowed("Body", "CRIT Rate", { Body: ["CRIT Rate"] })).toBe(true);
+    expect(isMainStatAllowed("Body", "HP%", { Body: ["CRIT Rate"] })).toBe(false);
+    // No plan context at all → null for every slot.
+    expect(isMainStatAllowed("Head", "HP", undefined)).toBeNull();
+
+    const headOk = scoreRelic(
+      { slot: "Head", mainStat: "HP", substats: [] },
+      critWeights,
+      { allowedMainStats: { Body: ["CRIT Rate"] } },
+    );
+    expect(headOk.mainStatCorrect).toBe(true);
+    expect(headOk.letterGrade).not.toBeNull();
   });
 
   it("tags quality and ranks plan usefulness", () => {

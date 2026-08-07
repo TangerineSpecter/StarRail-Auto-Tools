@@ -47,7 +47,7 @@ describe("RelicMainStatScanner", () => {
     expect(wrapper.find("button").attributes("disabled")).toBeDefined();
   });
 
-  it("shows unconfigured-slot context and emits the selected relic", async () => {
+  it("shows unconfigured-slot context for selectable slots and emits the selected relic", async () => {
     relicMainStatScanPlanCount.mockResolvedValue(1);
     dashboard.mockResolvedValue([
       {
@@ -70,6 +70,7 @@ describe("RelicMainStatScanner", () => {
         pinned: false,
       },
     ]);
+    // Backend always injects fixed Head/Hands targets when plans exist; Body still unconfigured.
     scanRelicsByMainStat.mockResolvedValue({
       items: [
         {
@@ -77,11 +78,11 @@ describe("RelicMainStatScanner", () => {
           setId: 101,
           name: "测试遗器",
           setName: "测试套装",
-          slot: "Head",
+          slot: "Body",
           rarity: 5,
           level: 15,
-          mainStat: "HP",
-          mainStatValue: 705,
+          mainStat: "DEF%",
+          mainStatValue: 50,
           location: "",
           equippedCharacterId: null,
           locked: false,
@@ -95,7 +96,7 @@ describe("RelicMainStatScanner", () => {
       page: 1,
       pageSize: 50,
       planCount: 1,
-      allowedMainStats: {},
+      allowedMainStats: { Head: ["HP"], Hands: ["ATK"] },
     });
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
@@ -106,7 +107,50 @@ describe("RelicMainStatScanner", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("尚未设置目标主词条");
+    expect(wrapper.text()).toContain("躯干");
     await wrapper.find(".scanner-item").trigger("click");
     expect(wrapper.emitted("open-relic")?.[0][0]).toMatchObject({ itemId: 7 });
+  });
+
+  it("shows fixed Head target labels when scan includes fixed allowed mains", async () => {
+    relicMainStatScanPlanCount.mockResolvedValue(1);
+    scanRelicsByMainStat.mockResolvedValue({
+      items: [
+        {
+          itemId: 9,
+          setId: 101,
+          name: "错误头",
+          setName: "测试套装",
+          // Synthetic mismatch display path (backend would not return normal HP heads).
+          slot: "Head",
+          rarity: 5,
+          level: 0,
+          mainStat: "ATK",
+          mainStatValue: 1,
+          location: "",
+          equippedCharacterId: null,
+          locked: false,
+          discard: false,
+          source: "test",
+          updatedAt: 0,
+          substats: [],
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 50,
+      planCount: 1,
+      allowedMainStats: { Head: ["HP"], Hands: ["ATK"] },
+    });
+    const wrapper = mount(RelicMainStatScanner, {
+      props: { imageFor: () => undefined },
+      global: { stubs: { Button: buttonStub } },
+    });
+    await flushPromises();
+    await wrapper.find("button").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("尚未设置目标主词条");
+    expect(wrapper.text()).toContain("生命值");
   });
 });

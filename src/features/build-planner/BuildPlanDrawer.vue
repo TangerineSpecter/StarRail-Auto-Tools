@@ -10,8 +10,8 @@ import SubstatWeightEditor from "./SubstatWeightEditor.vue";
 import { useBuildPlanEditor } from "./useBuildPlanEditor";
 import {
   relicMainStats,
-  relicSlots,
   relicSubStats,
+  selectableMainStatSlots,
   slotLabel,
   statLabel,
 } from "@/shared/catalogue/relic-options";
@@ -115,8 +115,11 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         </section>
         <section class="build-section">
           <h3>各部位允许主词条</h3>
+          <p class="main-stat-fixed-note">
+            头部 / 手部主词条由游戏固定（生命值 / 攻击力），无需设置目标。
+          </p>
           <div class="main-stat-grid">
-            <fieldset v-for="slot in relicSlots" :key="slot.value">
+            <fieldset v-for="slot in selectableMainStatSlots" :key="slot.value">
               <legend>{{ slot.label }}</legend>
               <label
                 v-for="stat in relicMainStats[slot.value] ?? []"

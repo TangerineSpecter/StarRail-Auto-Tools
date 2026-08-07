@@ -4,6 +4,10 @@
  */
 
 import {
+  fixedMainStatsForSlot,
+  isFixedMainStatSlot,
+} from "@/shared/catalogue/relic-options";
+import {
   FLAT_SUBSTATS,
   GRADE5_SUBSTAT_ROLLS,
   SUBSTAT_KEYS,
@@ -222,6 +226,9 @@ export function isMainStatAllowed(
   allowedMainStats?: Record<string, string[]>,
 ): boolean | null {
   if (!allowedMainStats) return null;
+  // Head/Hands have a single fixed main stat in-game; plan set-or-unset is equivalent.
+  const fixed = fixedMainStatsForSlot(slot);
+  if (fixed) return fixed.includes(mainStat);
   const allowed = allowedMainStats[slot];
   if (!allowed || allowed.length === 0) return null;
   return allowed.includes(mainStat);
@@ -237,8 +244,7 @@ export function scoreRelic(
   const current = currentPotentialUnits(relic, weights);
   const mainStatCorrect = isMainStatAllowed(relic.slot, relic.mainStat, options?.allowedMainStats);
   // Wrong selectable main stats do not receive a letter grade (Stat Score guide).
-  const selectableWrong =
-    mainStatCorrect === false && relic.slot !== "Head" && relic.slot !== "Hands";
+  const selectableWrong = mainStatCorrect === false && !isFixedMainStatSlot(relic.slot);
   const potentialPct = ideal > 0 ? (current / ideal) * 100 : 0;
   const maxRolls = maxWeightedRolls(relic.mainStat, weights);
   const perfectionPct = maxRolls > 0 ? Math.min(100, (total / maxRolls) * 100) : 0;

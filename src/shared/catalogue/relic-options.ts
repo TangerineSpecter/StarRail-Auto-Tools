@@ -50,6 +50,22 @@ export const relicMainStats: Record<string, string[]> = {
   LinkRope: ["HP%", "ATK%", "DEF%", "Break Effect", "Energy Regeneration Rate"],
 };
 
+/** Head and Hands have a single game-fixed main stat; not user plan goals. */
+export const isFixedMainStatSlot = (slot: string): boolean =>
+  slot === "Head" || slot === "Hands";
+
+/** Fixed main stats when a plan context exists (set or unset on the plan is equivalent). */
+export const fixedMainStatsForSlot = (slot: string): readonly string[] | null => {
+  if (slot === "Head") return relicMainStats.Head;
+  if (slot === "Hands") return relicMainStats.Hands;
+  return null;
+};
+
+/** Body / Feet / Sphere / Rope — user-configurable main-stat goals in plan UI. */
+export const selectableMainStatSlots = relicSlots.filter(
+  (slot) => !isFixedMainStatSlot(slot.value),
+);
+
 export const statLabels: Record<string, string> = {
   HP: "生命值",
   "HP%": "生命百分比",

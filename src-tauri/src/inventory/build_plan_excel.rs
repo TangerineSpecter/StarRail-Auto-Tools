@@ -7,7 +7,9 @@ use calamine::{open_workbook_auto, Data, Reader};
 use rust_xlsxwriter::{DataValidation, Format, FormatAlign, Workbook, Worksheet};
 use serde::Deserialize;
 
-use super::models::{normalize_build_plan_note, BuildTarget, CharacterBuildPlan};
+use super::models::{
+    fixed_main_stat_for_slot, normalize_build_plan_note, BuildTarget, CharacterBuildPlan,
+};
 use crate::error::AppError;
 
 pub(super) const SHEET_NAME: &str = "角色目标";
@@ -501,6 +503,12 @@ pub(super) fn import(
                 match stat_key(&value) {
                     Some(stat) if allowed.contains(&stat.as_str()) => values.push(stat),
                     _ => malformed_main_stats = true,
+                }
+            }
+            // Head/Hands are game-fixed; empty cells normalize to the only legal main.
+            if values.is_empty() {
+                if let Some(fixed) = fixed_main_stat_for_slot(slot) {
+                    values.push(fixed.to_owned());
                 }
             }
             main_stats.insert(slot.to_owned(), values);

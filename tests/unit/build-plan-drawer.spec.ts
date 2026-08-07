@@ -67,6 +67,12 @@ describe("BuildPlanDrawer", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("说明");
+    // Head/Hands mains are game-fixed; UI must not offer checkboxes for those slots.
+    expect(wrapper.text()).toContain("头部 / 手部主词条由游戏固定");
+    const legends = wrapper.findAll(".main-stat-grid legend").map((node) => node.text());
+    expect(legends).not.toContain("头部");
+    expect(legends).not.toContain("手部");
+    expect(legends).toEqual(expect.arrayContaining(["躯干", "脚部", "位面球", "连结绳"]));
     expect(wrapper.get(".build-note-section").exists()).toBe(true);
     expect(wrapper.get(".build-note-input").element).toHaveProperty("value", "遗器优先速度鞋");
     expect(wrapper.get(".build-note-hint").text()).toContain("i");

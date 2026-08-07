@@ -1166,6 +1166,13 @@ impl InventoryStore {
                 }
             }
         }
+        // Head/Hands always have a single fixed main stat; treat as configured even when
+        // plans omit them so unequipped pieces are not flagged as "no target main stat".
+        if plan_count > 0 {
+            for &(slot, main) in FIXED_MAIN_STATS {
+                allowed_main_stats.insert(slot.to_owned(), vec![main.to_owned()]);
+            }
+        }
         for stats in allowed_main_stats.values_mut() {
             stats.sort();
         }
@@ -1779,6 +1786,10 @@ fn build_candidates(
     Ok(items
         .into_iter()
         .filter(|item| {
+            // Head/Hands fixed mains: set-or-unset on the plan is equivalent.
+            if let Some(fixed) = fixed_main_stat_for_slot(&item.slot) {
+                return item.main_stat == fixed;
+            }
             plan.main_stats
                 .get(&item.slot)
                 .map(|values| values.is_empty() || values.contains(&item.main_stat))
@@ -3747,13 +3758,20 @@ mod tests {
         assert_eq!(scan.total, 1);
         assert_eq!(scan.items[0].item_id, 3);
         assert_eq!(scan.allowed_main_stats["Body"], ["ATK%", "CRIT Rate"]);
+        // Fixed slots always present when plans exist.
+        assert_eq!(scan.allowed_main_stats["Head"], ["HP"]);
+        assert_eq!(scan.allowed_main_stats["Hands"], ["ATK"]);
     }
 
     #[test]
-    fn relic_main_stat_scan_returns_unconfigured_slots_and_paginates() {
+    fn relic_main_stat_scan_treats_head_hands_as_fixed_and_flags_body_mismatches() {
         let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[1, 2, 3]);
+        // Two Head HP (fixed allowed) + one Body DEF% (unconfigured Body → mismatch).
+        snapshot.relics[2].slot = "Body".to_owned();
+        snapshot.relics[2].mainstat = "DEF%".to_owned();
         store
-            .apply_full_snapshot(&import(10001, &[1, 2]))
+            .apply_full_snapshot(&snapshot)
             .unwrap()
             .unwrap();
         let plan = CharacterBuildPlan {
@@ -3762,7 +3780,8 @@ mod tests {
             cavern_set_a: 101,
             cavern_set_b: None,
             planar_set_id: 201,
-            main_stats: HashMap::new(),
+            // Only Body empty / missing Head/Hands — fixed slots still configured by default.
+            main_stats: HashMap::from([("Body".to_owned(), vec![])]),
             targets: vec![BuildTarget {
                 stat_key: "SPD".to_owned(),
                 target: 160.0,
@@ -3777,23 +3796,33 @@ mod tests {
         };
         store.save_build_plan(&plan).unwrap();
 
-        let first_page = store
+        let scan = store
+            .scan_relics_by_main_stat(&PageQuery::default())
+            .unwrap();
+        assert_eq!(scan.allowed_main_stats["Head"], ["HP"]);
+        assert_eq!(scan.allowed_main_stats["Hands"], ["ATK"]);
+        // Head HP pieces are allowed by fixed defaults; only Body shows as unconfigured mismatch.
+        assert_eq!(scan.total, 1);
+        assert_eq!(scan.items[0].slot, "Body");
+        assert!(!scan.allowed_main_stats.contains_key("Body"));
+
+        // Plans with only selectable slots configured: Head/Hands fixed still suppress matches.
+        let mut body_plan = plan;
+        body_plan.character_id = 1002;
+        body_plan.main_stats =
+            HashMap::from([("Body".to_owned(), vec!["CRIT Rate".to_owned()])]);
+        store.save_build_plan(&body_plan).unwrap();
+        let scan2 = store
             .scan_relics_by_main_stat(&PageQuery {
                 page: 1,
                 page_size: 1,
             })
             .unwrap();
-        assert_eq!(first_page.total, 2);
-        assert_eq!(first_page.items.len(), 1);
-        assert!(!first_page.allowed_main_stats.contains_key("Head"));
-        let second_page = store
-            .scan_relics_by_main_stat(&PageQuery {
-                page: 2,
-                page_size: 1,
-            })
-            .unwrap();
-        assert_eq!(second_page.items.len(), 1);
-        assert_ne!(first_page.items[0].item_id, second_page.items[0].item_id);
+        assert_eq!(scan2.total, 1);
+        assert_eq!(scan2.items.len(), 1);
+        assert_eq!(scan2.items[0].slot, "Body");
+        assert_eq!(scan2.allowed_main_stats["Head"], ["HP"]);
+        assert_eq!(scan2.allowed_main_stats["Body"], ["CRIT Rate"]);
     }
 
     #[test]
