@@ -13,6 +13,7 @@ import type {
   PagedResult,
   RelicFilter,
   RelicListItem,
+  RelicMainStatGroupedResult,
   RelicMainStatScanResult,
 } from "@/types";
 
@@ -23,6 +24,8 @@ export const inventoryApi = {
   relicMainStatScanPlanCount: () => invoke<number>("get_relic_main_stat_scan_plan_count"),
   scanRelicsByMainStat: (page: PageQuery) =>
     invoke<RelicMainStatScanResult>("scan_relics_by_main_stat", { page }),
+  scanRelicsByMainStatGrouped: () =>
+    invoke<RelicMainStatGroupedResult>("scan_relics_by_main_stat_grouped"),
   listLightCones: (filter: LightConeFilter) =>
     invoke<PagedResult<LightConeListItem>>("list_light_cones", { filter }),
   listCharacters: (filter: CharacterFilter) =>

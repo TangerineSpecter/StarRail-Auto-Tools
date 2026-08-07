@@ -9,7 +9,8 @@ use crate::{
         CharacterBuildPlan, CharacterFilter, ClearInventoryRequest, DeleteItemsRequest,
         InventoryDetail, InventoryImportResult, InventoryKind, InventoryStore, InventorySummary,
         LightConeFilter, LightConeListItem, PageQuery, PagedResult, RelicFilter, RelicListItem,
-        CharacterBuildScore, RelicMainStatScanResult, RelicSetRecommendedCharacter, Team,
+        CharacterBuildScore, RelicMainStatGroupedResult, RelicMainStatScanResult,
+        RelicSetRecommendedCharacter, Team,
         TeamFilter, TeamInput,
     },
     scanner::ScannerState,
@@ -194,6 +195,13 @@ pub fn scan_relics_by_main_stat(
     store: State<'_, InventoryStore>,
 ) -> Result<RelicMainStatScanResult, AppError> {
     store.scan_relics_by_main_stat(&page)
+}
+
+#[tauri::command]
+pub fn scan_relics_by_main_stat_grouped(
+    store: State<'_, InventoryStore>,
+) -> Result<RelicMainStatGroupedResult, AppError> {
+    store.scan_relics_by_main_stat_grouped()
 }
 
 #[tauri::command]

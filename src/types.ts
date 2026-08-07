@@ -197,6 +197,29 @@ export interface RelicMainStatScanResult extends PagedResult<RelicListItem> {
   allowedMainStats: Record<string, string[]>;
 }
 
+export interface RelicMainStatEntry {
+  mainStat: string;
+  count: number;
+}
+
+export interface RelicMainStatPartGroup {
+  slot: string;
+  stats: RelicMainStatEntry[];
+}
+
+export interface RelicMainStatSetGroup {
+  setId: number;
+  setName: string;
+  parts: RelicMainStatPartGroup[];
+}
+
+export interface RelicMainStatGroupedResult {
+  groups: RelicMainStatSetGroup[];
+  total: number;
+  planCount: number;
+  allowedMainStats: Record<string, string[]>;
+}
+
 export interface LightConeListItem {
   itemId: number;
   templateId: number;

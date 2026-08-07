@@ -175,6 +175,41 @@ pub struct RelicMainStatScanResult {
     pub allowed_main_stats: HashMap<String, Vec<String>>,
 }
 
+/// Per main-stat aggregated count within a slot.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicMainStatEntry {
+    pub main_stat: String,
+    pub count: u64,
+}
+
+/// Per-slot group containing aggregated main-stat entries.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicMainStatPartGroup {
+    pub slot: String,
+    pub stats: Vec<RelicMainStatEntry>,
+}
+
+/// Per-set group containing per-slot breakdowns.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicMainStatSetGroup {
+    pub set_id: u32,
+    pub set_name: String,
+    pub parts: Vec<RelicMainStatPartGroup>,
+}
+
+/// Grouped scan result — no pagination needed.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicMainStatGroupedResult {
+    pub groups: Vec<RelicMainStatSetGroup>,
+    pub total: u64,
+    pub plan_count: u64,
+    pub allowed_main_stats: HashMap<String, Vec<String>>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LightConeListItem {

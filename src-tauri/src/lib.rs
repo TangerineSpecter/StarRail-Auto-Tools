@@ -48,6 +48,7 @@ pub fn run() {
             commands::list_relics,
             commands::get_relic_main_stat_scan_plan_count,
             commands::scan_relics_by_main_stat,
+            commands::scan_relics_by_main_stat_grouped,
             commands::list_light_cones,
             commands::list_characters,
             commands::get_inventory_detail,

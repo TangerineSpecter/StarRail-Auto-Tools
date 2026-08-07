@@ -1213,6 +1213,128 @@ impl InventoryStore {
         })
     }
 
+    /// Returns relic main-stat scan results grouped by set → slot → main stat.
+    /// No pagination needed — the GROUP BY query produces a compact summary.
+    pub fn scan_relics_by_main_stat_grouped(
+        &self,
+    ) -> Result<RelicMainStatGroupedResult, AppError> {
+        let connection = self.connect()?;
+        let plans = connection
+            .prepare("SELECT main_stats_json FROM character_build_plans")?
+            .query_map([], |row| row.get::<_, String>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        let plan_count = plans.len() as u64;
+        let mut allowed_main_stats = HashMap::<String, Vec<String>>::new();
+        for main_stats_json in plans {
+            let main_stats = serde_json::from_str::<HashMap<String, Vec<String>>>(&main_stats_json)
+                .unwrap_or_default();
+            for (slot, stats) in main_stats {
+                if stats.is_empty() {
+                    continue;
+                }
+                let allowed = allowed_main_stats.entry(slot).or_default();
+                for stat in stats {
+                    if !allowed.contains(&stat) {
+                        allowed.push(stat);
+                    }
+                }
+            }
+        }
+        if plan_count > 0 {
+            for &(slot, main) in FIXED_MAIN_STATS {
+                allowed_main_stats.insert(slot.to_owned(), vec![main.to_owned()]);
+            }
+        }
+        for stats in allowed_main_stats.values_mut() {
+            stats.sort();
+        }
+
+        let mut clauses = vec!["equipped_character_id IS NULL".to_owned()];
+        let mut values = Vec::new();
+        for (slot, stats) in &allowed_main_stats {
+            let placeholders = std::iter::repeat_n("?", stats.len())
+                .collect::<Vec<_>>()
+                .join(", ");
+            clauses.push(format!("(slot != ? OR main_stat NOT IN ({placeholders}))"));
+            values.push(SqlValue::Text(slot.clone()));
+            values.extend(stats.iter().cloned().map(SqlValue::Text));
+        }
+        let where_sql = make_where(&clauses);
+        let total = query_count(&connection, "relics", &where_sql, &values)?;
+
+        let sql = format!(
+            "SELECT set_id, set_name, slot, main_stat, COUNT(*) AS cnt
+             FROM relics {where_sql}
+             GROUP BY set_id, set_name, slot, main_stat
+             ORDER BY set_name ASC, set_id ASC, slot ASC, cnt DESC"
+        );
+        let mut statement = connection.prepare(&sql)?;
+
+        // Slot display ordering.
+        let slot_order: HashMap<&str, usize> = [
+            ("Head", 0),
+            ("Hands", 1),
+            ("Body", 2),
+            ("Feet", 3),
+            ("PlanarSphere", 4),
+            ("LinkRope", 5),
+        ]
+        .into_iter()
+        .collect();
+
+        let mut groups: Vec<RelicMainStatSetGroup> = Vec::new();
+
+        let rows = statement.query_map(params_from_iter(values.iter()), |row| {
+            Ok((
+                row.get::<_, u32>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, u64>(4)?,
+            ))
+        })?;
+
+        for row in rows {
+            let (set_id, set_name, slot, main_stat, count) = row?;
+            let set_group = match groups.iter_mut().find(|g| g.set_id == set_id) {
+                Some(g) => g,
+                None => {
+                    groups.push(RelicMainStatSetGroup {
+                        set_id,
+                        set_name: set_name.clone(),
+                        parts: Vec::new(),
+                    });
+                    groups.last_mut().unwrap()
+                }
+            };
+            match set_group.parts.iter_mut().find(|p| p.slot == slot) {
+                Some(p) => {
+                    p.stats.push(RelicMainStatEntry { main_stat, count });
+                }
+                None => {
+                    set_group.parts.push(RelicMainStatPartGroup {
+                        slot,
+                        stats: vec![RelicMainStatEntry { main_stat, count }],
+                    });
+                }
+            }
+        }
+
+        // Sort parts within each set by slot order.
+        for set_group in &mut groups {
+            set_group.parts.sort_by_key(|p| {
+                *slot_order.get(p.slot.as_str()).unwrap_or(&99)
+            });
+        }
+
+        Ok(RelicMainStatGroupedResult {
+            groups,
+            total,
+            plan_count,
+            allowed_main_stats,
+        })
+    }
+
     pub fn list_light_cones(
         &self,
         filter: &LightConeFilter,

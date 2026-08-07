@@ -6,16 +6,15 @@ import { inventoryApi } from "@/shared/api/inventory";
 import { scanUpgradeRecommendations } from "@/shared/utils/relic-score";
 import { characterDisplayName, relicImage, resolveCharacterCatalogue } from "@/shared/catalogue";
 import { formatStatValue } from "@/shared/catalogue/relic-options";
-import type { BuildDashboardEntry, RelicListItem, RelicMainStatScanResult } from "@/types";
+import type { BuildDashboardEntry, RelicListItem, RelicMainStatGroupedResult } from "@/types";
 
 const props = defineProps<{ imageFor: (relic: RelicListItem) => string | undefined }>();
 const emit = defineEmits<{ "open-relic": [relic: RelicListItem] }>();
 const planCount = ref<number | null>(null);
 const loading = ref(false);
-const loadingMore = ref(false);
 const usefulnessLoading = ref(false);
 const error = ref("");
-const result = ref<RelicMainStatScanResult | null>(null);
+const result = ref<RelicMainStatGroupedResult | null>(null);
 const plans = ref<BuildDashboardEntry[]>([]);
 const usefulnessRows = ref<
   Array<{
@@ -71,50 +70,31 @@ const statLabels: Record<string, string> = {
   "Imaginary DMG Boost": "虚数伤害提高",
 };
 const canAnalyze = computed(
-  () => planCount.value !== null && planCount.value > 0 && !loading.value && !loadingMore.value,
+  () => planCount.value !== null && planCount.value > 0 && !loading.value,
 );
-const hasMore = computed(() => !!result.value && result.value.items.length < result.value.total);
 const slotLabel = (slot: string) => slotLabels[slot] ?? slot;
 const statLabel = (stat: string) => statLabels[stat] ?? stat;
-const allowedStats = (item: RelicListItem) => result.value?.allowedMainStats[item.slot] ?? [];
 
 const gradeClass = (grade: string | null) => {
   if (!grade) return "grade-none";
   return `grade-${grade.toLowerCase().replace("+", "-plus")}`;
 };
 
-function loadMoreOnScroll(event: Event) {
-  const container = event.currentTarget as HTMLElement;
-  if (
-    hasMore.value &&
-    !loadingMore.value &&
-    container.scrollTop + container.clientHeight >= container.scrollHeight - 80
-  ) {
-    void analyze(true);
-  }
-}
-
-async function analyze(append = false) {
-  if (!canAnalyze.value && !append) return;
+async function analyze() {
+  if (!canAnalyze.value) return;
   error.value = "";
-  if (!append) {
-    usefulnessRows.value = [];
-    usefulnessScanned.value = 0;
-    usefulnessDone.value = false;
-  }
-  if (append) loadingMore.value = true;
-  else loading.value = true;
+  usefulnessRows.value = [];
+  usefulnessScanned.value = 0;
+  usefulnessDone.value = false;
+  loading.value = true;
   try {
-    const page = append ? (result.value?.page ?? 1) + 1 : 1;
-    const next = await inventoryApi.scanRelicsByMainStat({ page, pageSize: 50 });
-    planCount.value = next.planCount;
-    result.value =
-      append && result.value ? { ...next, items: [...result.value.items, ...next.items] } : next;
+    const grouped = await inventoryApi.scanRelicsByMainStatGrouped();
+    planCount.value = grouped.planCount;
+    result.value = grouped;
   } catch (cause) {
     error.value = String(cause);
   } finally {
     loading.value = false;
-    loadingMore.value = false;
   }
 }
 
@@ -155,12 +135,14 @@ async function analyzeUsefulness() {
       cavernSetA: entry.plan.cavernSetA,
       cavernSetB: entry.plan.cavernSetB,
       planarSetId: entry.plan.planarSetId,
-      equippedRelics: (entry.character.equippedRelics ?? []).filter((relic) => relic.slot != null).map((relic) => ({
-        slot: relic.slot!,
-        mainStat: relic.mainStat,
-        setId: relic.setId,
-        substats: (relic.substats ?? []).map((s) => ({ ...s, key: s.key ?? (s as any).stat })),
-      })),
+      equippedRelics: (entry.character.equippedRelics ?? [])
+        .filter((relic) => relic.slot != null)
+        .map((relic) => ({
+          slot: relic.slot!,
+          mainStat: relic.mainStat,
+          setId: relic.setId,
+          substats: (relic.substats ?? []).map((s) => ({ ...s, key: s.key ?? (s as any).stat })),
+        })),
     }));
     const recommendations = scanUpgradeRecommendations(
       page.items.map((item) => ({
@@ -277,9 +259,7 @@ onMounted(async () => {
         >
           <!-- Top Bar Header -->
           <div class="upgrade-card-header">
-            <div class="upgrade-badge">
-              <i class="sparkle">✦</i> 替换推荐
-            </div>
+            <div class="upgrade-badge"><i class="sparkle">✦</i> 替换推荐</div>
             <div class="upgrade-card-tags">
               <span class="slot-pill">{{ slotLabel(row.item.slot) }}</span>
               <span :class="['grade-pill', gradeClass(row.grade)]">
@@ -297,7 +277,9 @@ onMounted(async () => {
                 :src="props.imageFor(row.item) || relicImage(row.item.setId, row.item.slot)"
                 :alt="row.item.name"
               />
-              <span v-else class="relic-thumb-fallback">{{ slotLabel(row.item.slot).slice(0, 1) }}</span>
+              <span v-else class="relic-thumb-fallback">{{
+                slotLabel(row.item.slot).slice(0, 1)
+              }}</span>
               <span class="relic-level-tag">+{{ row.item.level }}</span>
             </div>
 
@@ -309,7 +291,9 @@ onMounted(async () => {
               <div class="main-stat-badge">
                 <small>主词条</small>
                 <strong>{{ statLabel(row.item.mainStat) }}</strong>
-                <em v-if="row.item.mainStatValue">+{{ formatStatValue(row.item.mainStat, row.item.mainStatValue) }}</em>
+                <em v-if="row.item.mainStatValue"
+                  >+{{ formatStatValue(row.item.mainStat, row.item.mainStatValue) }}</em
+                >
               </div>
             </div>
           </div>
@@ -323,7 +307,10 @@ onMounted(async () => {
                 :alt="row.characterDisplayLabel"
                 class="character-avatar-img"
               />
-              <span v-else :class="['character-avatar-fallback', `element-${row.characterElement}`]">
+              <span
+                v-else
+                :class="['character-avatar-fallback', `element-${row.characterElement}`]"
+              >
                 {{ row.characterDisplayLabel.slice(0, 1) }}
               </span>
             </div>
@@ -342,7 +329,8 @@ onMounted(async () => {
               :key="idx"
               class="substat-chip"
             >
-              {{ statLabel(sub.key ?? (sub as any).stat) }} <em>+{{ formatStatValue(sub.key ?? (sub as any).stat, sub.value) }}</em>
+              {{ statLabel(sub.key ?? (sub as any).stat) }}
+              <em>+{{ formatStatValue(sub.key ?? (sub as any).stat, sub.value) }}</em>
             </span>
           </div>
 
@@ -350,11 +338,14 @@ onMounted(async () => {
           <div class="upgrade-card-footer">
             <div class="roll-score-info">
               <span class="roll-delta-tag">
-                <i class="up-arrow">↑</i> +{{ row.deltaWeightedRolls.toFixed(2) }} <small>rolls</small>
+                <i class="up-arrow">↑</i> +{{ row.deltaWeightedRolls.toFixed(2) }}
+                <small>rolls</small>
               </span>
               <span class="roll-vs-detail">
                 {{ row.weightedRolls.toFixed(2) }} <small>vs</small>
-                {{ row.equippedWeightedRolls != null ? row.equippedWeightedRolls.toFixed(2) : "空槽" }}
+                {{
+                  row.equippedWeightedRolls != null ? row.equippedWeightedRolls.toFixed(2) : "空槽"
+                }}
               </span>
             </div>
             <span class="card-view-btn">查看详情 ›</span>
@@ -382,7 +373,7 @@ onMounted(async () => {
         ><small>本次分析只读取数据，不会删除或标记任何遗器。</small>
       </div>
     </div>
-    <div v-else-if="!result.items.length" class="scanner-state success">
+    <div v-else-if="!result.groups.length" class="scanner-state success">
       未发现无目标主词条的未装备遗器。
     </div>
     <template v-else>
@@ -393,50 +384,32 @@ onMounted(async () => {
             <b>{{ result.total }}</b> 件待复核
           </p>
         </div>
-        <p class="scanner-result-note">点击遗器查看完整词条与来源 <span>↗</span></p>
+        <p class="scanner-result-note">
+          已按 <span>套装 > 部位 > 主属性</span> 聚合，方便在游戏中比对清理
+        </p>
       </div>
-      <div
-        class="scanner-list"
-        role="list"
-        aria-label="无目标主词条遗器"
-        @scroll="loadMoreOnScroll"
-      >
-        <button
-          v-for="item in result.items"
-          :key="item.itemId"
-          class="scanner-item"
-          type="button"
-          role="listitem"
-          @click="emit('open-relic', item)"
-        >
-          <span class="scanner-card-kicker"
-            ><i>NO MATCH</i><small>{{ slotLabel(item.slot) }}</small></span
-          >
-          <span :class="['scanner-item-image', `rarity-${item.rarity}`]"
-            ><img v-if="props.imageFor(item)" :src="props.imageFor(item)" :alt="item.name" /><i
-              v-else
-              >{{ slotLabel(item.slot).slice(0, 1) }}</i
-            ></span
-          >
-          <span class="scanner-item-identity"
-            ><b>{{ item.setName }}</b
-            ><small>{{ item.rarity }} 星 · 强化 +{{ item.level }}</small></span
-          >
-          <span class="scanner-stat-compare"
-            ><span
-              ><small>当前</small><b>{{ statLabel(item.mainStat) }}</b></span
-            ><i>≠</i
-            ><span
-              ><small>目标</small
-              ><b v-if="allowedStats(item).length">{{
-                allowedStats(item).map(statLabel).join(" / ")
-              }}</b
-              ><em v-else>尚未设置目标主词条</em></span
-            ></span
-          >
-          <span class="scanner-item-arrow" aria-hidden="true">查看 ›</span>
-        </button>
-        <p v-if="loadingMore" class="scanner-loading">正在继续分析…</p>
+      <div class="scanner-grouped-list" role="list" aria-label="无目标主词条遗器">
+        <div v-for="setGroup in result.groups" :key="setGroup.setId" class="grouped-set-card">
+          <div class="set-header">
+            <img
+              :src="relicImage(setGroup.setId, 'Head')"
+              :alt="setGroup.setName"
+              class="set-icon"
+            />
+            <h4>{{ setGroup.setName }}</h4>
+          </div>
+          <div class="set-body">
+            <div v-for="part in setGroup.parts" :key="part.slot" class="part-row">
+              <div class="part-label">{{ slotLabel(part.slot) }}</div>
+              <div class="stat-chips">
+                <div v-for="stat in part.stats" :key="stat.mainStat" class="stat-chip">
+                  <span class="stat-name">{{ statLabel(stat.mainStat) }}</span>
+                  <span class="stat-count">{{ stat.count }} 件</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </template>
   </section>
@@ -689,7 +662,9 @@ onMounted(async () => {
 .upgrade-card:hover {
   border-color: rgba(37, 95, 185, 0.55);
   background: #ffffff;
-  box-shadow: 0 10px 28px rgba(35, 70, 130, 0.14), 0 0 0 1px rgba(50, 120, 220, 0.2);
+  box-shadow:
+    0 10px 28px rgba(35, 70, 130, 0.14),
+    0 0 0 1px rgba(50, 120, 220, 0.2);
   transform: translateY(-3px);
 }
 
@@ -744,7 +719,9 @@ onMounted(async () => {
   justify-content: center;
   padding: 2px 8px;
   border-radius: 4px;
-  font: 800 11px/1.2 "Bahnschrift", sans-serif;
+  font:
+    800 11px/1.2 "Bahnschrift",
+    sans-serif;
   letter-spacing: 0.05em;
 }
 
@@ -832,7 +809,9 @@ onMounted(async () => {
   right: 0;
   background: rgba(28, 75, 147, 0.88);
   color: #fff;
-  font: 700 9px/1 "Bahnschrift", sans-serif;
+  font:
+    700 9px/1 "Bahnschrift",
+    sans-serif;
   padding: 2px 4px;
   border-top-left-radius: 3px;
 }
@@ -1039,147 +1018,86 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.scanner-list {
+.scanner-grouped-list {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  align-content: start;
-  gap: 10px;
+  display: block;
   overflow: auto;
-  padding: 2px 2px 14px;
+  padding: 4px 4px 16px;
 }
-
-.scanner-item {
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) auto;
-  grid-template-rows: auto auto auto;
-  align-items: center;
-  column-gap: 12px;
-  row-gap: 7px;
-  min-height: 142px;
-  padding: 13px 15px;
+.grouped-set-card {
+  margin-bottom: 16px;
   border: 1px solid rgba(45, 75, 116, 0.15);
-  border-radius: 2px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 8px 20px rgba(42, 69, 105, 0.05);
-  text-align: left;
+  box-shadow: 0 6px 16px rgba(42, 69, 105, 0.04);
+  overflow: hidden;
 }
-
-.scanner-item:hover {
-  border-color: rgba(37, 86, 166, 0.48);
-  background: #fff;
-  box-shadow: 0 12px 25px rgba(42, 69, 105, 0.12);
-  transform: translateY(-2px);
-}
-
-.scanner-card-kicker {
-  grid-column: 1 / -1;
+.set-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(236, 242, 251, 0.8), rgba(245, 248, 252, 0.5));
+  border-bottom: 1px solid rgba(45, 75, 116, 0.08);
 }
-
-.scanner-card-kicker i {
-  color: #ae6954;
-  font:
-    700 8px/1 "Bahnschrift",
-    sans-serif;
-  letter-spacing: 0.15em;
-  font-style: normal;
-}
-
-.scanner-card-kicker small,
-.scanner-item-identity small {
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.scanner-item-image {
-  display: grid;
-  grid-row: 2 / span 2;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  overflow: hidden;
-  border: 1px solid rgba(199, 165, 90, 0.58);
-  background: #fff;
-}
-
-.scanner-item-image img {
-  width: 100%;
-  height: 100%;
+.set-icon {
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
-
-.scanner-item-image i {
-  color: var(--gold);
-  font-style: normal;
+.set-header h4 {
+  font-size: 15px;
+  color: var(--ink);
   font-weight: 700;
 }
-
-.scanner-item-identity {
-  display: grid;
-  gap: 5px;
+.set-body {
+  display: flex;
+  flex-direction: column;
 }
-
-.scanner-item-identity > b {
-  overflow: hidden;
-  color: var(--ink);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.part-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
 }
-
-.relic-level {
-  font-style: normal;
-  color: var(--blue);
-  font-size: 13px;
-  margin-left: 2px;
+.part-row:not(:last-child) {
+  border-bottom: 1px dashed rgba(45, 75, 116, 0.08);
 }
-
-.scanner-stat-compare {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1.4fr);
-  grid-column: 2;
-  align-items: center;
-  gap: 5px;
-}
-.scanner-stat-compare span {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-.scanner-stat-compare > i {
-  color: var(--gold);
-  font-style: normal;
-}
-.scanner-stat-compare b {
-  overflow: hidden;
-  color: #a85b4d;
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.scanner-stat-compare span:last-child b {
-  color: var(--blue-deep);
-}
-.scanner-stat-compare em {
-  color: #ae7c32;
-  font-size: 12px;
-  font-style: normal;
-}
-.scanner-item-arrow {
-  grid-column: 3;
-  grid-row: 3;
-  color: var(--blue);
-  font-size: 10px;
-  white-space: nowrap;
-}
-.scanner-loading {
-  grid-column: 1 / -1;
-  margin: 2px 0 10px;
+.part-label {
+  width: 70px;
+  flex-shrink: 0;
   color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  padding-top: 4px;
+}
+.stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid rgba(45, 75, 116, 0.15);
+  color: var(--ink);
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(42, 69, 105, 0.02);
+}
+.stat-chip .stat-name {
+  font-weight: 600;
+  color: #a85b4d;
+}
+.stat-chip .stat-count {
+  background: rgba(28, 75, 147, 0.06);
+  color: var(--blue-deep);
+  padding: 2px 6px;
+  border-radius: 10px;
   font-size: 11px;
-  text-align: center;
+  font-weight: 700;
 }
 </style>
