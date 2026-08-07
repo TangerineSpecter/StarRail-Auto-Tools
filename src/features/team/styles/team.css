@@ -77,47 +77,31 @@
 .team-card-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
-.team-card-more-btn {
+.team-card-icon-btn {
   width: 28px !important;
   height: 28px !important;
   padding: 0 !important;
   border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   color: var(--muted) !important;
   background: rgba(0, 0, 0, 0.03) !important;
   transition: all 0.15s ease !important;
 }
 
-.team-card-more-btn:hover {
-  background: rgba(36, 86, 166, 0.1) !important;
+.team-card-icon-btn.edit-btn:hover {
+  background: rgba(36, 86, 166, 0.12) !important;
   color: var(--blue-deep) !important;
 }
 
-:deep(.team-menu-delete-item) .p-menuitem-link {
+.team-card-icon-btn.delete-btn:hover {
+  background: rgba(228, 74, 74, 0.12) !important;
   color: #b42318 !important;
-}
-:deep(.team-menu-delete-item:hover) .p-menuitem-link {
-  background: rgba(228, 74, 74, 0.1) !important;
-  color: #891b12 !important;
-}
-
-.team-menu-icon {
-  margin-right: 6px;
-  flex-shrink: 0;
-}
-
-.team-card-dropdown-menu .p-menuitem-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.15s ease;
 }
 
 .team-card-accent-pill {

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import Button from "primevue/button";
-import Menu from "primevue/menu";
-import { characterDisplayName, pathIconSrc, resolveCharacterCatalogue } from "@/shared/catalogue";
-import { pathLabel } from "@/shared/catalogue/relic-options";
+import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
 import type { Team, TeamMember } from "@/types";
 import type { CharacterBuildScore } from "@/types";
 import { formatScorePct } from "./team-member-score";
@@ -19,25 +17,6 @@ const emit = defineEmits<{
   edit: [];
   delete: [];
 }>();
-
-const menu = ref();
-const menuItems = [
-  {
-    id: "edit",
-    label: "编辑",
-    command: () => emit("edit"),
-  },
-  {
-    id: "delete",
-    label: "删除",
-    class: "team-menu-delete-item",
-    command: () => emit("delete"),
-  },
-];
-
-function toggleMenu(event: Event) {
-  menu.value?.toggle(event);
-}
 
 const avatarColors = ["#1ea2e8", "#e84a4a", "#8740e5", "#33b061", "#f0a21d", "#e0427f"];
 
@@ -141,58 +120,52 @@ const teamTopGrade = computed(() => {
           </span>
           <Button
             type="button"
-            class="team-card-more-btn"
-            aria-haspopup="true"
-            title="更多操作"
+            class="team-card-icon-btn edit-btn"
+            title="编辑"
+            aria-label="编辑配队"
             text
             rounded
-            @click="toggleMenu"
+            @click="emit('edit')"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="5" cy="12" r="2.2" />
-              <circle cx="12" cy="12" r="2.2" />
-              <circle cx="19" cy="12" r="2.2" />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </Button>
-          <Menu ref="menu" :model="menuItems" :popup="true" class="team-card-dropdown-menu">
-            <template #item="{ item }">
-              <a class="p-menuitem-link" @click="item.command?.({ originalEvent: $event, item })">
-                <svg
-                  v-if="item.id === 'edit'"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="team-menu-icon"
-                >
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-                <svg
-                  v-else-if="item.id === 'delete'"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="team-menu-icon"
-                >
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  <line x1="10" y1="11" x2="10" y2="17" />
-                  <line x1="14" y1="11" x2="14" y2="17" />
-                </svg>
-                <span class="p-menuitem-text">{{ item.label }}</span>
-              </a>
-            </template>
-          </Menu>
+          <Button
+            type="button"
+            class="team-card-icon-btn delete-btn"
+            title="删除"
+            aria-label="删除配队"
+            text
+            rounded
+            @click="emit('delete')"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <line x1="10" y1="11" x2="10" y2="17" />
+              <line x1="14" y1="11" x2="14" y2="17" />
+            </svg>
+          </Button>
         </div>
       </div>
       <p v-if="team.note" class="team-card-note">

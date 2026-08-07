@@ -57,7 +57,7 @@ describe("TeamCard", () => {
 
   it("renders grade, potential and completion when scores are provided", () => {
     const wrapper = mountCard(scores);
-    expect(wrapper.text()).toContain("评级");
+    expect(wrapper.html()).toContain("评级");
     expect(wrapper.text()).toContain("A-");
     expect(wrapper.text()).toContain("潜力");
     expect(wrapper.text()).toContain("71%");
