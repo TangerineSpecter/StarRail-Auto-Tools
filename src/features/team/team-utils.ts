@@ -86,11 +86,19 @@ export function memberInitial(member: Pick<TeamMember, "name"> | null | undefine
 export function gradeClass(grade?: string): string {
   if (!grade) return "grade-default";
   const upper = grade.toUpperCase();
-  if (upper === "SS") return "grade-ss";
+  // 顶级档（含 SS+/SSS/WTF/AEON）走金色，避免 SSS 被误归到 S
+  if (
+    upper === "AEON" ||
+    upper.startsWith("WTF") ||
+    upper.startsWith("SSS") ||
+    upper.startsWith("SS")
+  ) {
+    return "grade-ss";
+  }
   if (upper.startsWith("S")) return "grade-s";
   if (upper.startsWith("A")) return "grade-a";
   if (upper.startsWith("B")) return "grade-b";
-  if (upper.startsWith("C") || upper.startsWith("D")) return "grade-c";
+  if (upper.startsWith("C") || upper.startsWith("D") || upper.startsWith("F")) return "grade-c";
   return "grade-default";
 }
 

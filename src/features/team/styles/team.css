@@ -133,6 +133,38 @@
   flex-shrink: 0;
 }
 
+/* 与评分徽章共用柔和评级色阶 */
+.team-top-badge.grade-ss {
+  background: linear-gradient(135deg, #fff7d6, #fde68a);
+  color: #a16207;
+  border: 1px solid rgba(202, 138, 4, 0.35);
+}
+
+.team-top-badge.grade-s {
+  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+  color: #7e22ce;
+  border: 1px solid rgba(147, 51, 234, 0.28);
+}
+
+.team-top-badge.grade-a {
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  color: #0369a1;
+  border: 1px solid rgba(14, 165, 233, 0.28);
+}
+
+.team-top-badge.grade-b {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.team-top-badge.grade-c,
+.team-top-badge.grade-default {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
 .team-card-count {
   display: inline-flex;
   align-items: center;
@@ -300,24 +332,33 @@
   height: 48px;
   flex-shrink: 0;
   overflow: hidden;
+  border-radius: 6px;
+  /* 边框与阴影放在容器上，角标与头像共享同一外框 */
+  border: 1px solid rgba(36, 86, 166, 0.18);
+  box-shadow: 0 2px 8px rgba(28, 48, 82, 0.12);
+  /* 不透底板：角色立绘下半 alpha 渐隐时也不会透出槽位背景 */
+  background: #dfe8f4;
 }
 
 .team-slot-avatar,
 .team-picker-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 0; /* 直角，无圆角 */
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 2px 8px rgba(28, 48, 82, 0.15);
-  background: #ffffff; /* 纯白背景，取消渐变透明 */
+  /* 取上部头像区域，避开立绘底部透明渐隐 */
+  object-position: center 12%;
+  border: 0;
+  box-shadow: none;
+  background: #dfe8f4;
 }
 
 .team-slot-avatar-fallback,
 .team-picker-avatar-fallback {
-  width: 48px;
-  height: 48px;
-  border-radius: 0; /* 直角 */
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
   display: grid;
   place-items: center;
   color: #fff;
@@ -329,25 +370,35 @@
 
 .team-picker-path-icon {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 18px;
-  height: 18px;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
   padding: 2px;
-  border-radius: 50%;
-  background: rgba(18, 28, 48, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 3px 0 5px 0;
+  background: rgba(18, 28, 48, 0.88);
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
 
+/* 评级角标：贴合头像右下角，与圆角头像一体 */
 .avatar-corner-badge {
   position: absolute;
-  bottom: 2px !important;
-  right: 2px !important;
+  bottom: 0 !important;
+  right: 0 !important;
   z-index: 2;
-  border-radius: 4px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  min-width: 16px;
+  height: 11px !important;
+  padding: 0 3px !important;
+  /* 左上小圆角，右下贴合头像框圆角 */
+  border-radius: 3px 0 5px 0 !important;
+  box-shadow: none !important;
+  font-size: 8px !important;
+  line-height: 1 !important;
+  letter-spacing: 0.02em;
 }
 
 .toolbar-spacer {
@@ -431,35 +482,36 @@
   text-align: center;
 }
 
+/* 柔和色阶：浅底深字，避免高饱和实色撞脸 */
 .team-score-badge.grade-ss {
-  background: #d97706 !important;
-  color: #ffffff !important;
-  border: 0 !important;
+  background: linear-gradient(135deg, #fff7d6, #fde68a) !important;
+  color: #a16207 !important;
+  border: 1px solid rgba(202, 138, 4, 0.35) !important;
 }
 
 .team-score-badge.grade-s {
-  background: #ea580c !important;
-  color: #ffffff !important;
-  border: 0 !important;
+  background: linear-gradient(135deg, #f3e8ff, #e9d5ff) !important;
+  color: #7e22ce !important;
+  border: 1px solid rgba(147, 51, 234, 0.28) !important;
 }
 
 .team-score-badge.grade-a {
-  background: #7c3aed !important;
-  color: #ffffff !important;
-  border: 0 !important;
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd) !important;
+  color: #0369a1 !important;
+  border: 1px solid rgba(14, 165, 233, 0.28) !important;
 }
 
 .team-score-badge.grade-b {
-  background: #2563eb !important;
-  color: #ffffff !important;
-  border: 0 !important;
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid rgba(34, 197, 94, 0.28) !important;
 }
 
 .team-score-badge.grade-c,
 .team-score-badge.grade-default {
-  background: #64748b !important;
-  color: #ffffff !important;
-  border: 0 !important;
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 .team-slot-bars {
@@ -1152,8 +1204,7 @@
   box-shadow: 0 4px 14px rgba(36, 86, 166, 0.12);
 }
 
-.team-picker-avatar,
-.team-picker-avatar-fallback {
+.team-picker-avatar-wrap {
   width: 42px;
   height: 42px;
 }
