@@ -72,6 +72,18 @@ export type InventoryKind = "relic" | "lightCone" | "character";
 /** Data-management sidebar mode: inventory kinds plus local team compositions. */
 export type ArchiveView = InventoryKind | "team";
 
+/** Cached build-quality summary (derived client-side, stored in SQLite). */
+export interface CharacterBuildScore {
+  characterId: number;
+  letterGrade: string;
+  potentialPct: number;
+  completionPct: number;
+  relicCount: number;
+  /** True when scored with a saved build plan. */
+  hasPlan: boolean;
+  computedAt: number;
+}
+
 export interface TeamMember {
   characterId: number;
   name: string;
@@ -79,6 +91,8 @@ export interface TeamMember {
   level: number;
   /** False when the character row is missing from inventory. */
   owned: boolean;
+  /** Persisted score when available. */
+  score?: CharacterBuildScore | null;
 }
 
 export interface Team {

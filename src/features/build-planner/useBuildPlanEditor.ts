@@ -2,6 +2,7 @@ import { nextTick, onBeforeUnmount, reactive, ref, watch, type Ref } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { relicCatalogue } from "@/shared/catalogue";
 import { relicSlots } from "@/shared/catalogue/relic-options";
+import { recomputeAndPersistCharacterScore } from "@/shared/utils/relic-score/persist-character-score";
 import type { BuildRecommendation, CharacterBuildPlan } from "@/types";
 
 interface BuildEditorOptions {
@@ -81,7 +82,8 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
       // templates. SubstatWeightEditor resolves empty → display-only until the user edits.
       if (typeof plan.minPotentialPct !== "number" || !Number.isFinite(plan.minPotentialPct))
         plan.minPotentialPct = 40;
-      if (typeof plan.spdTarget !== "number" || !Number.isFinite(plan.spdTarget)) plan.spdTarget = 0;
+      if (typeof plan.spdTarget !== "number" || !Number.isFinite(plan.spdTarget))
+        plan.spdTarget = 0;
     } catch (cause) {
       options.setError(String(cause));
     } finally {
@@ -182,7 +184,12 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
       plan.note = typeof plan.note === "string" ? plan.note.trim() : "";
       options.setNotice("正在保存培养方案…");
       await yieldForCalculationFeedback();
-      await buildPlanApi.save(JSON.parse(JSON.stringify(plan)));
+      const savedPlan = JSON.parse(JSON.stringify(plan)) as CharacterBuildPlan;
+      await buildPlanApi.save(savedPlan);
+      // Backend invalidates cache on save; recompute with the just-saved plan.
+      void recomputeAndPersistCharacterScore(savedPlan.characterId, {
+        plan: savedPlan,
+      }).catch(() => undefined);
       options.setNotice("培养方案已保存");
       // Close immediately after a successful save; recommendation can be recomputed later.
       options.onSaved?.();
@@ -214,6 +221,10 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     }
     try {
       await buildPlanApi.delete(plan.characterId);
+      // Score cache cleared with the plan; recompute using default weights if gear remains.
+      void recomputeAndPersistCharacterScore(plan.characterId, { plan: null }).catch(
+        () => undefined,
+      );
       options.setNotice("培养方案已删除");
       options.onDeleted();
     } catch (cause) {

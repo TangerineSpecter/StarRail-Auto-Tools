@@ -1,11 +1,19 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import Button from "primevue/button";
 import { characterDisplayName, pathIconSrc, resolveCharacterCatalogue } from "@/shared/catalogue";
 import { pathLabel } from "@/shared/catalogue/relic-options";
 import type { Team, TeamMember } from "@/types";
+import type { CharacterBuildScore } from "@/types";
+import { formatScorePct } from "./team-member-score";
 import { filledSlotCount, memberInitial } from "./team-utils";
 
-defineProps<{ team: Team }>();
+const props = defineProps<{
+  team: Team;
+  memberScores?: Map<number, CharacterBuildScore>;
+  /** When false, owned members without a score show a loading hint instead of「未装备遗器」. */
+  scoresReady?: boolean;
+}>();
 const emit = defineEmits<{
   edit: [];
   delete: [];
@@ -38,6 +46,22 @@ function memberLabel(member: TeamMember) {
     path: member.path,
   });
 }
+
+const slots = computed(() =>
+  props.team.members.map((member, index) => {
+    const score =
+      member && member.owned
+        ? (props.memberScores?.get(member.characterId) ?? member.score ?? null)
+        : null;
+    return {
+      index,
+      member,
+      score,
+      label: member ? memberLabel(member) : "",
+      avatar: member ? memberAvatar(member) : undefined,
+    };
+  }),
+);
 </script>
 
 <template>
@@ -52,36 +76,51 @@ function memberLabel(member: TeamMember) {
     </header>
     <div class="team-slot-row" aria-label="配队成员">
       <div
-        v-for="(member, index) in team.members"
-        :key="`${team.teamId}-${index}`"
-        :class="['team-slot', { empty: !member, orphan: member && !member.owned }]"
+        v-for="slot in slots"
+        :key="`${team.teamId}-${slot.index}`"
+        :class="['team-slot', { empty: !slot.member, orphan: slot.member && !slot.member.owned }]"
       >
-        <template v-if="member">
-          <img
-            v-if="memberAvatar(member)"
-            class="team-slot-avatar"
-            :src="memberAvatar(member)"
-            :alt="memberLabel(member)"
-          />
+        <template v-if="slot.member">
+          <img v-if="slot.avatar" class="team-slot-avatar" :src="slot.avatar" :alt="slot.label" />
           <div
             v-else
             class="team-slot-avatar-fallback"
-            :style="{ background: avatarColor(member.name) }"
+            :style="{ background: avatarColor(slot.member.name) }"
           >
-            {{ memberInitial(member) }}
+            {{ memberInitial(slot.member) }}
           </div>
           <div class="team-slot-meta">
-            <strong>{{ memberLabel(member) }}</strong>
-            <small v-if="member.owned">
+            <strong>{{ slot.label }}</strong>
+            <small v-if="slot.member.owned">
               <img
-                v-if="member.path"
+                v-if="slot.member.path"
                 class="team-slot-path"
-                :src="pathIconSrc(member.path)"
-                :alt="pathLabel(member.path)"
+                :src="pathIconSrc(slot.member.path)"
+                :alt="pathLabel(slot.member.path)"
               />
-              Lv.{{ member.level }}
+              Lv.{{ slot.member.level }}
             </small>
             <small v-else class="team-slot-orphan">已不在档案</small>
+            <div v-if="slot.score" class="team-slot-scores">
+              <span class="team-score-grade" :title="`评级 ${slot.score.letterGrade}`">
+                <em>评级</em>{{ slot.score.letterGrade }}
+              </span>
+              <span
+                class="team-score-potential"
+                :title="`潜力 ${formatScorePct(slot.score.potentialPct)}`"
+              >
+                <em>潜力</em>{{ formatScorePct(slot.score.potentialPct) }}
+              </span>
+              <span
+                class="team-score-completion"
+                :title="`综合完成 ${formatScorePct(slot.score.completionPct)}`"
+              >
+                <em>完成</em>{{ formatScorePct(slot.score.completionPct) }}
+              </span>
+            </div>
+            <small v-else-if="slot.member.owned" class="team-slot-score-empty">
+              {{ scoresReady === false ? "评分加载中…" : "未装备遗器" }}
+            </small>
           </div>
         </template>
         <template v-else>

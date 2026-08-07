@@ -169,6 +169,16 @@ impl InventoryStore {
                 updated_at INTEGER NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS character_build_scores (
+                character_id INTEGER PRIMARY KEY,
+                letter_grade TEXT NOT NULL,
+                potential_pct REAL NOT NULL,
+                completion_pct REAL NOT NULL,
+                relic_count INTEGER NOT NULL DEFAULT 0,
+                has_plan INTEGER NOT NULL DEFAULT 0,
+                computed_at INTEGER NOT NULL
+            );
+
             CREATE INDEX IF NOT EXISTS idx_relics_set_slot ON relics(set_id, slot);
             CREATE INDEX IF NOT EXISTS idx_relics_rarity_level ON relics(rarity, level);
             CREATE INDEX IF NOT EXISTS idx_relics_main_stat ON relics(main_stat);
@@ -505,13 +515,101 @@ impl InventoryStore {
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
         save_build_plan_in_transaction(&transaction, plan)?;
+        // Plan weights changed; drop cached score so the next open/team view recomputes.
+        transaction.execute(
+            "DELETE FROM character_build_scores WHERE character_id = ?1",
+            [plan.character_id],
+        )?;
         transaction.commit()?;
         Ok(())
     }
 
     pub fn delete_build_plan(&self, character_id: u32) -> Result<(), AppError> {
-        self.connect()?.execute(
+        let mut connection = self.connect()?;
+        let transaction = connection.transaction()?;
+        transaction.execute(
             "DELETE FROM character_build_plans WHERE character_id = ?1",
+            [character_id],
+        )?;
+        transaction.execute(
+            "DELETE FROM character_build_scores WHERE character_id = ?1",
+            [character_id],
+        )?;
+        transaction.commit()?;
+        Ok(())
+    }
+
+    pub fn upsert_character_build_score(&self, score: &CharacterBuildScore) -> Result<(), AppError> {
+        let connection = self.connect()?;
+        connection.execute(
+            "INSERT INTO character_build_scores(
+                character_id, letter_grade, potential_pct, completion_pct,
+                relic_count, has_plan, computed_at
+             ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7)
+             ON CONFLICT(character_id) DO UPDATE SET
+                letter_grade = excluded.letter_grade,
+                potential_pct = excluded.potential_pct,
+                completion_pct = excluded.completion_pct,
+                relic_count = excluded.relic_count,
+                has_plan = excluded.has_plan,
+                computed_at = excluded.computed_at",
+            params![
+                score.character_id,
+                score.letter_grade.trim(),
+                score.potential_pct,
+                score.completion_pct,
+                score.relic_count,
+                score.has_plan,
+                if score.computed_at > 0 {
+                    score.computed_at
+                } else {
+                    now_millis()
+                },
+            ],
+        )?;
+        Ok(())
+    }
+
+    pub fn list_character_build_scores(
+        &self,
+        character_ids: &[u32],
+    ) -> Result<Vec<CharacterBuildScore>, AppError> {
+        if character_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let connection = self.connect()?;
+        let placeholders = std::iter::repeat_n("?", character_ids.len())
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT character_id, letter_grade, potential_pct, completion_pct,
+                    relic_count, has_plan, computed_at
+             FROM character_build_scores
+             WHERE character_id IN ({placeholders})"
+        );
+        let values = character_ids
+            .iter()
+            .map(|id| SqlValue::Integer(*id as i64))
+            .collect::<Vec<_>>();
+        let mut statement = connection.prepare(&sql)?;
+        let rows = statement.query_map(params_from_iter(values.iter()), |row| {
+            Ok(CharacterBuildScore {
+                character_id: row.get(0)?,
+                letter_grade: row.get(1)?,
+                potential_pct: row.get(2)?,
+                completion_pct: row.get(3)?,
+                relic_count: row.get(4)?,
+                has_plan: row.get(5)?,
+                computed_at: row.get(6)?,
+            })
+        })?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(AppError::from)
+    }
+
+    pub fn delete_character_build_score(&self, character_id: u32) -> Result<(), AppError> {
+        self.connect()?.execute(
+            "DELETE FROM character_build_scores WHERE character_id = ?1",
             [character_id],
         )?;
         Ok(())
@@ -760,6 +858,8 @@ impl InventoryStore {
 
         if clear_first {
             clear_all(&transaction)?;
+            // Equipment may change; cached scores are always invalidated on inventory replace.
+            clear_character_build_scores(&transaction)?;
             if reset_sync_state {
                 transaction.execute("DELETE FROM character_build_plans", [])?;
                 // WebDAV full restore wipes local planning data, then reimports from snapshot.
@@ -769,6 +869,9 @@ impl InventoryStore {
                     [],
                 )?;
             }
+        } else {
+            // Incremental full snapshot still rewrites gear; drop all derived scores.
+            clear_character_build_scores(&transaction)?;
         }
 
         let run_id = transaction.query_row(
@@ -1255,6 +1358,8 @@ impl InventoryStore {
             .map(|id| SqlValue::Integer(*id as i64))
             .collect::<Vec<_>>();
         let deleted = transaction.execute(&sql, params_from_iter(values.iter()))?;
+        // Relic/character/light-cone deletes change equipped gear; drop derived scores.
+        clear_character_build_scores(&transaction)?;
         transaction.commit()?;
         Ok(deleted as u64)
     }
@@ -1264,8 +1369,11 @@ impl InventoryStore {
         let transaction = connection.transaction()?;
         if let Some(kind) = kind {
             transaction.execute(&format!("DELETE FROM {}", table_for_kind(kind)), [])?;
+            // Any inventory-table clear can desync equipped gear vs cached scores.
+            clear_character_build_scores(&transaction)?;
         } else {
             clear_all(&transaction)?;
+            clear_character_build_scores(&transaction)?;
             transaction.execute("DELETE FROM app_state", [])?;
         }
         transaction.commit()?;
@@ -2566,12 +2674,44 @@ fn normalize_team_slots(
     Ok(slots)
 }
 
+fn clear_character_build_scores(transaction: &Transaction<'_>) -> Result<(), AppError> {
+    transaction.execute("DELETE FROM character_build_scores", [])?;
+    Ok(())
+}
+
+fn load_character_build_score(
+    connection: &Connection,
+    character_id: u32,
+) -> Result<Option<CharacterBuildScore>, AppError> {
+    connection
+        .query_row(
+            "SELECT character_id, letter_grade, potential_pct, completion_pct,
+                    relic_count, has_plan, computed_at
+             FROM character_build_scores WHERE character_id = ?1",
+            [character_id],
+            |row| {
+                Ok(CharacterBuildScore {
+                    character_id: row.get(0)?,
+                    letter_grade: row.get(1)?,
+                    potential_pct: row.get(2)?,
+                    completion_pct: row.get(3)?,
+                    relic_count: row.get(4)?,
+                    has_plan: row.get(5)?,
+                    computed_at: row.get(6)?,
+                })
+            },
+        )
+        .optional()
+        .map_err(AppError::from)
+}
+
 fn hydrate_team(connection: &Connection, row: TeamRow) -> Result<Team, AppError> {
     let mut members = Vec::with_capacity(TEAM_SLOT_COUNT);
     for slot in row.slots {
         members.push(match slot {
             None => None,
             Some(character_id) => {
+                let score = load_character_build_score(connection, character_id)?;
                 let owned = connection
                     .query_row(
                         "SELECT name, path, level FROM characters WHERE character_id = ?1",
@@ -2583,6 +2723,7 @@ fn hydrate_team(connection: &Connection, row: TeamRow) -> Result<Team, AppError>
                                 path: character_row.get(1)?,
                                 level: character_row.get(2)?,
                                 owned: true,
+                                score: score.clone(),
                             })
                         },
                     )
@@ -2593,6 +2734,7 @@ fn hydrate_team(connection: &Connection, row: TeamRow) -> Result<Team, AppError>
                     path: String::new(),
                     level: 0,
                     owned: false,
+                    score: None,
                 }))
             }
         });
@@ -4533,6 +4675,82 @@ mod tests {
             character_ids: vec![Some(1001)],
         });
         assert!(wrong_len.is_err());
+    }
+
+    #[test]
+    fn character_build_score_persists_and_appears_on_team_members() {
+        let store = InventoryStore::test_store();
+        seed_characters(&store, &[(1001, "三月七", "Preservation")]);
+        store
+            .upsert_character_build_score(&CharacterBuildScore {
+                character_id: 1001,
+                letter_grade: "A-".to_owned(),
+                potential_pct: 71.0,
+                completion_pct: 65.0,
+                relic_count: 6,
+                has_plan: false,
+                computed_at: 1,
+            })
+            .unwrap();
+        let listed = store.list_character_build_scores(&[1001, 9999]).unwrap();
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].letter_grade, "A-");
+
+        let team = store
+            .save_team(&TeamInput {
+                team_id: None,
+                name: "有分队".to_owned(),
+                note: String::new(),
+                character_ids: vec![Some(1001), None, None, None],
+            })
+            .unwrap();
+        let score = team.members[0].as_ref().unwrap().score.as_ref().unwrap();
+        assert_eq!(score.letter_grade, "A-");
+        assert!((score.potential_pct - 71.0).abs() < f64::EPSILON);
+
+        store.delete_build_plan(1001).unwrap();
+        // delete_build_plan clears score even if no plan existed.
+        assert!(store.list_character_build_scores(&[1001]).unwrap().is_empty());
+    }
+
+    #[test]
+    fn clear_and_delete_items_invalidate_character_build_scores() {
+        let store = InventoryStore::test_store();
+        seed_characters(&store, &[(1001, "三月七", "Preservation")]);
+        store
+            .upsert_character_build_score(&CharacterBuildScore {
+                character_id: 1001,
+                letter_grade: "B".to_owned(),
+                potential_pct: 50.0,
+                completion_pct: 40.0,
+                relic_count: 2,
+                has_plan: false,
+                computed_at: 1,
+            })
+            .unwrap();
+        assert_eq!(store.list_character_build_scores(&[1001]).unwrap().len(), 1);
+
+        store.clear(Some(InventoryKind::Relic)).unwrap();
+        assert!(store.list_character_build_scores(&[1001]).unwrap().is_empty());
+
+        store
+            .upsert_character_build_score(&CharacterBuildScore {
+                character_id: 1001,
+                letter_grade: "B".to_owned(),
+                potential_pct: 50.0,
+                completion_pct: 40.0,
+                relic_count: 2,
+                has_plan: false,
+                computed_at: 2,
+            })
+            .unwrap();
+        store
+            .delete_items(&DeleteItemsRequest {
+                kind: InventoryKind::Character,
+                ids: vec![1001],
+            })
+            .unwrap();
+        assert!(store.list_character_build_scores(&[1001]).unwrap().is_empty());
     }
 
     #[test]

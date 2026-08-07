@@ -4,6 +4,7 @@ import InputNumber from "primevue/inputnumber";
 import { inventoryApi } from "@/shared/api/inventory";
 import { relicCatalogue } from "@/shared/catalogue";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
+import { useRuntimeStore } from "@/app/stores/runtime";
 import {
   averageCharacterPotential,
   characterFarmInvestment,
@@ -13,11 +14,13 @@ import {
   planTargetSetIdsForSlot,
   rankSlotReplacements,
   resolvePlanWeights,
+  scoreEquippedRelics,
   scoreRelic,
   spdBreakpointHelper,
   type RelicScoreResult,
   type ScoreRelicInput,
 } from "@/shared/utils/relic-score";
+import { persistCharacterScoreSummary } from "@/shared/utils/relic-score/persist-character-score";
 import type { CharacterBuildPlan, RelicListItem } from "@/types";
 import type { CharacterDetailData, RelicDetailData } from "./detail-types";
 import EquippedRelicPeekCard from "./EquippedRelicPeekCard.vue";
@@ -186,6 +189,45 @@ const completion = computed(() =>
   }),
 );
 
+const runtime = useRuntimeStore();
+let persistRequestId = 0;
+
+// Persist derived scores so team list / other views can read without recomputing.
+// Guarded by local request id + inventoryRevision so stale panel writes cannot
+// repopulate the cache after sync/clear.
+watch(
+  () =>
+    [
+      props.detail.characterId,
+      props.plan?.characterId ?? null,
+      props.plan?.minPotentialPct ?? 40,
+      JSON.stringify(props.plan?.substatWeights ?? {}),
+      JSON.stringify(props.plan?.effectiveSubstats ?? []),
+      JSON.stringify(props.plan?.mainStats ?? {}),
+      props.detail.equippedRelics?.length ?? 0,
+      props.detail.equippedRelics
+        ?.map((relic) => `${relic.itemId}:${relic.level}:${relic.mainStat}`)
+        .join("|") ?? "",
+      runtime.inventoryRevision,
+    ] as const,
+  async () => {
+    const requestId = ++persistRequestId;
+    const characterId = props.detail.characterId;
+    const startRevision = runtime.inventoryRevision;
+    const isCurrent = () =>
+      requestId === persistRequestId &&
+      runtime.inventoryRevision === startRevision &&
+      props.detail.characterId === characterId;
+    try {
+      const summary = scoreEquippedRelics(props.detail.equippedRelics, props.plan);
+      await persistCharacterScoreSummary(characterId, summary, { isCurrent });
+    } catch {
+      // Persistence is best-effort; UI scoring still works offline of the cache.
+    }
+  },
+  { immediate: true },
+);
+
 const equippedBySlot = computed(() => {
   const map = new Map<string, RelicDetailData>();
   for (const relic of props.detail.equippedRelics ?? []) {
@@ -238,7 +280,6 @@ function closeAllOverlays() {
   closePeek();
   closeReplaceCompare();
 }
-
 
 async function openPeek(
   event: MouseEvent,
@@ -565,9 +606,8 @@ async function computeFarmPriority() {
       </div>
 
       <p class="score-hint">
-        下方六格为各部位字母评级、潜力%与加权 Rolls；点击可查看当前装备遗器。仅<strong
-          >潜力最低的短板部位</strong
-        >会标「短板」（与等级字母无关）。
+        下方六格为各部位字母评级、潜力%与加权
+        Rolls；点击可查看当前装备遗器。仅<strong>潜力最低的短板部位</strong>会标「短板」（与等级字母无关）。
       </p>
       <div class="score-piece-grid">
         <button
@@ -700,7 +740,13 @@ async function computeFarmPriority() {
           <div class="score-spd-input-group">
             <div class="score-spd-field">
               <label>目标速度阈值 (SPD)</label>
-              <InputNumber v-model="localSpdTarget" :min="0" :max="300" :step="1" placeholder="例如 134" />
+              <InputNumber
+                v-model="localSpdTarget"
+                :min="0"
+                :max="300"
+                :step="1"
+                placeholder="例如 134"
+              />
             </div>
 
             <div class="score-spd-presets">
@@ -724,15 +770,23 @@ async function computeFarmPriority() {
               <div class="spd-result-main">
                 <template v-if="spdHelp.mode === 'total'">
                   <div class="spd-result-stats">
-                    <span>当前站街 <b>{{ currentSpdForHelper.toFixed(1) }}</b></span>
+                    <span
+                      >当前站街 <b>{{ currentSpdForHelper.toFixed(1) }}</b></span
+                    >
                     <span class="spd-divider">/</span>
-                    <span>目标 <b>{{ spdHelp.targetSpd }}</b></span>
-                    <small v-if="relicSpdBonus > 0">（遗器约 +{{ relicSpdBonus.toFixed(1) }}）</small>
+                    <span
+                      >目标 <b>{{ spdHelp.targetSpd }}</b></span
+                    >
+                    <small v-if="relicSpdBonus > 0"
+                      >（遗器约 +{{ relicSpdBonus.toFixed(1) }}）</small
+                    >
                   </div>
                 </template>
                 <template v-else>
                   <div class="spd-result-stats">
-                    <span>目标缺口 <b>{{ spdHelp.targetSpd }}</b> 速（gap-only）</span>
+                    <span
+                      >目标缺口 <b>{{ spdHelp.targetSpd }}</b> 速（gap-only）</span
+                    >
                   </div>
                 </template>
               </div>
@@ -746,7 +800,8 @@ async function computeFarmPriority() {
           <details class="score-spd-explanation">
             <summary>什么是速度断点？</summary>
             <p>
-              「断点」= 你想达到的<strong>总速度门槛</strong>（如 134 / 143 / 160），用来估算还差多少速度副词条，<strong>不是</strong>「速度永远越高越好」。低速反击角色（克拉拉/云璃等）通常不必用此工具，权重模板请选「低速反击输出」。
+              「断点」= 你想达到的<strong>总速度门槛</strong>（如 134 / 143 /
+              160），用来估算还差多少速度副词条，<strong>不是</strong>「速度永远越高越好」。低速反击角色（克拉拉/云璃等）通常不必用此工具，权重模板请选「低速反击输出」。
             </p>
           </details>
         </div>
@@ -758,9 +813,7 @@ async function computeFarmPriority() {
           <div class="score-subhead-title">
             <div>
               <h4>短板部位替换</h4>
-              <p class="score-subhead-desc">
-                检索同部位、同主属性且加权分更高的候选遗器
-              </p>
+              <p class="score-subhead-desc">检索同部位、同主属性且加权分更高的候选遗器</p>
             </div>
           </div>
           <button
@@ -779,9 +832,7 @@ async function computeFarmPriority() {
         </div>
 
         <div v-if="replacementSetNames.length" class="score-filter-badge-bar">
-          <span class="filter-tag">
-            已限制目标套装：{{ replacementSetNames.join("、") }}
-          </span>
+          <span class="filter-tag"> 已限制目标套装：{{ replacementSetNames.join("、") }} </span>
         </div>
 
         <ul v-if="replacements.length" class="score-replace-list">

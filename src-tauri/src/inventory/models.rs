@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 11;
+pub(crate) const SCHEMA_VERSION: i64 = 12;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]
@@ -344,6 +344,20 @@ pub fn normalize_team_note(note: &str) -> String {
     }
 }
 
+/// Cached build-quality summary for a character (derived; recomputed by the client).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CharacterBuildScore {
+    pub character_id: u32,
+    pub letter_grade: String,
+    pub potential_pct: f64,
+    pub completion_pct: f64,
+    pub relic_count: u32,
+    /// True when scored with a saved build plan (false = default weights).
+    pub has_plan: bool,
+    pub computed_at: i64,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TeamMember {
@@ -353,6 +367,9 @@ pub struct TeamMember {
     pub level: u32,
     /// False when the character row is missing from inventory.
     pub owned: bool,
+    /// Cached score when available; null if never computed or invalidated.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub score: Option<CharacterBuildScore>,
 }
 
 #[derive(Debug, Clone, Serialize)]

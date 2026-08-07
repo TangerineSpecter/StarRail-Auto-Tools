@@ -80,6 +80,8 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
         v-for="team in archive.result.value.items"
         :key="team.teamId"
         :team="team"
+        :member-scores="archive.memberScores.value"
+        :scores-ready="archive.scoresReady.value"
         @edit="openEdit(team)"
         @delete="onDelete(team)"
       />

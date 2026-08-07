@@ -9,7 +9,8 @@ use crate::{
         CharacterBuildPlan, CharacterFilter, ClearInventoryRequest, DeleteItemsRequest,
         InventoryDetail, InventoryImportResult, InventoryKind, InventoryStore, InventorySummary,
         LightConeFilter, LightConeListItem, PageQuery, PagedResult, RelicFilter, RelicListItem,
-        RelicMainStatScanResult, RelicSetRecommendedCharacter, Team, TeamFilter, TeamInput,
+        CharacterBuildScore, RelicMainStatScanResult, RelicSetRecommendedCharacter, Team,
+        TeamFilter, TeamInput,
     },
     scanner::ScannerState,
     screenshot,
@@ -331,6 +332,30 @@ pub fn list_teams(
     store: State<'_, InventoryStore>,
 ) -> Result<PagedResult<Team>, AppError> {
     store.list_teams(&filter)
+}
+
+#[tauri::command]
+pub fn upsert_character_build_score(
+    score: CharacterBuildScore,
+    store: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
+    store.upsert_character_build_score(&score)
+}
+
+#[tauri::command]
+pub fn list_character_build_scores(
+    character_ids: Vec<u32>,
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<CharacterBuildScore>, AppError> {
+    store.list_character_build_scores(&character_ids)
+}
+
+#[tauri::command]
+pub fn delete_character_build_score(
+    character_id: u32,
+    store: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
+    store.delete_character_build_score(character_id)
 }
 
 #[tauri::command]
