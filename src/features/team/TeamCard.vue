@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import Button from "primevue/button";
+import Menu from "primevue/menu";
 import { characterDisplayName, pathIconSrc, resolveCharacterCatalogue } from "@/shared/catalogue";
 import { pathLabel } from "@/shared/catalogue/relic-options";
 import type { Team, TeamMember } from "@/types";
@@ -18,6 +19,25 @@ const emit = defineEmits<{
   edit: [];
   delete: [];
 }>();
+
+const menu = ref();
+const menuItems = [
+  {
+    id: "edit",
+    label: "编辑",
+    command: () => emit("edit"),
+  },
+  {
+    id: "delete",
+    label: "删除",
+    class: "team-menu-delete-item",
+    command: () => emit("delete"),
+  },
+];
+
+function toggleMenu(event: Event) {
+  menu.value?.toggle(event);
+}
 
 const avatarColors = ["#1ea2e8", "#e84a4a", "#8740e5", "#33b061", "#f0a21d", "#e0427f"];
 
@@ -49,11 +69,12 @@ function memberLabel(member: TeamMember) {
 
 function gradeClass(grade?: string): string {
   if (!grade) return "grade-default";
-  const first = grade.charAt(0).toUpperCase();
-  if (first === "S") return "grade-s";
-  if (first === "A") return "grade-a";
-  if (first === "B") return "grade-b";
-  if (first === "C" || first === "D") return "grade-c";
+  const upper = grade.toUpperCase();
+  if (upper === "SS") return "grade-ss";
+  if (upper.startsWith("S")) return "grade-s";
+  if (upper.startsWith("A")) return "grade-a";
+  if (upper.startsWith("B")) return "grade-b";
+  if (upper.startsWith("C") || upper.startsWith("D")) return "grade-c";
   return "grade-default";
 }
 
@@ -72,6 +93,21 @@ const slots = computed(() =>
     };
   }),
 );
+
+const filledCount = computed(() => filledSlotCount(props.team));
+const isFull = computed(() => filledCount.value === 4);
+
+/** Calculate team top grade if available */
+const teamTopGrade = computed(() => {
+  const validScores = slots.value
+    .map((s) => s.score?.letterGrade)
+    .filter((g): g is string => !!g);
+  if (!validScores.length) return null;
+  if (validScores.includes("SS")) return "SS";
+  if (validScores.some((g) => g.startsWith("S"))) return "S";
+  if (validScores.some((g) => g.startsWith("A"))) return "A";
+  return null;
+});
 </script>
 
 <template>
@@ -80,24 +116,84 @@ const slots = computed(() =>
       <div class="team-card-header-main">
         <div class="team-card-title-group">
           <span class="team-card-accent-pill" />
-          <h3>{{ team.name }}</h3>
+          <h3 :title="team.name">{{ team.name }}</h3>
+          <span v-if="teamTopGrade" :class="['team-top-badge', gradeClass(teamTopGrade)]">
+            {{ teamTopGrade }}级配置
+          </span>
         </div>
-        <span class="team-card-count" title="已配置角色数">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
+        <div class="team-card-header-right">
+          <span :class="['team-card-count', { 'is-full': isFull }]" title="已配置角色数">
+            <span class="count-dot" />
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            {{ filledCount }}/4
+          </span>
+          <Button
+            type="button"
+            class="team-card-more-btn"
+            aria-haspopup="true"
+            title="更多操作"
+            text
+            rounded
+            @click="toggleMenu"
           >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          {{ filledSlotCount(team) }}/4
-        </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2.2" />
+              <circle cx="12" cy="12" r="2.2" />
+              <circle cx="19" cy="12" r="2.2" />
+            </svg>
+          </Button>
+          <Menu ref="menu" :model="menuItems" :popup="true" class="team-card-dropdown-menu">
+            <template #item="{ item }">
+              <a class="p-menuitem-link" @click="item.command?.({ originalEvent: $event, item })">
+                <svg
+                  v-if="item.id === 'edit'"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="team-menu-icon"
+                >
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                <svg
+                  v-else-if="item.id === 'delete'"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="team-menu-icon"
+                >
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+                <span class="p-menuitem-text">{{ item.label }}</span>
+              </a>
+            </template>
+          </Menu>
+        </div>
       </div>
       <p v-if="team.note" class="team-card-note">
         <svg
@@ -155,29 +251,44 @@ const slots = computed(() =>
           </div>
           <div class="team-slot-meta">
             <div class="team-slot-name-row">
-              <strong>{{ slot.label }}</strong>
+              <strong :title="slot.label">{{ slot.label }}</strong>
               <span v-if="slot.member.owned" class="team-slot-level">Lv.{{ slot.member.level }}</span>
             </div>
             <small v-if="!slot.member.owned" class="team-slot-orphan">已不在档案</small>
-            <div v-if="slot.score" class="team-slot-scores">
+
+            <div v-if="slot.score" class="team-slot-score-section">
               <span
                 :class="['team-score-badge', gradeClass(slot.score.letterGrade)]"
                 :title="`评级 ${slot.score.letterGrade}`"
               >
-                <em>评级</em><strong>{{ slot.score.letterGrade }}</strong>
+                {{ slot.score.letterGrade }}
               </span>
-              <span
-                class="team-score-metric"
-                :title="`潜力 ${formatScorePct(slot.score.potentialPct)}`"
-              >
-                <em>潜力</em><strong>{{ formatScorePct(slot.score.potentialPct) }}</strong>
-              </span>
-              <span
-                class="team-score-metric"
-                :title="`综合完成 ${formatScorePct(slot.score.completionPct)}`"
-              >
-                <em>完成</em><strong>{{ formatScorePct(slot.score.completionPct) }}</strong>
-              </span>
+              <div class="team-slot-bars">
+                <div class="team-progress-item" :title="`潜力 ${formatScorePct(slot.score.potentialPct)}`">
+                  <div class="team-progress-label">
+                    <span>潜力</span>
+                    <strong>{{ formatScorePct(slot.score.potentialPct) }}</strong>
+                  </div>
+                  <div class="team-progress-track">
+                    <div
+                      class="team-progress-fill potential"
+                      :style="{ width: `${Math.min(100, Math.max(0, (slot.score.potentialPct || 0) * 100))}%` }"
+                    />
+                  </div>
+                </div>
+                <div class="team-progress-item" :title="`完成度 ${formatScorePct(slot.score.completionPct)}`">
+                  <div class="team-progress-label">
+                    <span>完成</span>
+                    <strong>{{ formatScorePct(slot.score.completionPct) }}</strong>
+                  </div>
+                  <div class="team-progress-track">
+                    <div
+                      class="team-progress-fill completion"
+                      :style="{ width: `${Math.min(100, Math.max(0, (slot.score.completionPct || 0) * 100))}%` }"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <small v-else-if="slot.member.owned" class="team-slot-score-empty">
               {{ scoresReady === false ? "评分加载中…" : "未装备遗器" }}
@@ -191,42 +302,8 @@ const slots = computed(() =>
         </div>
       </template>
     </div>
-
-    <footer class="team-card-actions">
-      <Button class="row-action team-edit-btn" type="button" text @click="emit('edit')">
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-        </svg>
-        编辑
-      </Button>
-      <Button class="row-action team-delete-btn" type="button" text @click="emit('delete')">
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          <line x1="10" y1="11" x2="10" y2="17" />
-          <line x1="14" y1="11" x2="14" y2="17" />
-        </svg>
-        删除
-      </Button>
-    </footer>
   </article>
 </template>
+
+
+
