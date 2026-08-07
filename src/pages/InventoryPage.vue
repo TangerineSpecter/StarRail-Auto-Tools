@@ -7,10 +7,11 @@ import InventoryList from "@/features/inventory/InventoryList.vue";
 import InventoryDetailDrawer from "@/features/inventory/InventoryDetailDrawer.vue";
 import RelicQualityToolbar from "@/features/inventory/RelicQualityToolbar.vue";
 import BuildPlanDrawer from "@/features/build-planner/BuildPlanDrawer.vue";
+import TeamWorkspace from "@/features/team/TeamWorkspace.vue";
 import { useInventoryArchive } from "@/features/inventory/useInventoryArchive";
 import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
-import type { InventoryListItem, RelicListItem } from "@/types";
+import type { ArchiveView, InventoryKind, InventoryListItem, RelicListItem } from "@/types";
 
 defineOptions({ name: "InventoryPage" });
 const { direct, summary, busy, error, notice, inventoryRevision } = useRuntimeContext();
@@ -24,12 +25,21 @@ const feedback = {
 };
 const archive = useInventoryArchive(feedback);
 const detail = useInventoryDetail(feedback.setError);
+const archiveView = ref<ArchiveView>("relic");
 const buildCharacterId = ref<number | null>(null);
 const scoredRelicItems = ref<RelicListItem[] | null>(null);
+const isTeamView = computed(() => archiveView.value === "team");
 const listItems = computed<InventoryListItem[]>(() => {
   if (archive.kind.value === "relic" && scoredRelicItems.value) return scoredRelicItems.value;
   return archive.result.value.items;
 });
+
+function switchArchiveView(view: ArchiveView) {
+  archiveView.value = view;
+  if (view !== "team") {
+    archive.switchKind(view);
+  }
+}
 
 // Drop client-side score ordering when leaving the relic tab so stale pages never leak.
 watch(
@@ -53,17 +63,18 @@ onBeforeUnmount(removeEscapeListener);
 <template>
   <section class="archive-workspace">
     <InventorySidebar
-      :kind="archive.kind.value"
+      :kind="archiveView"
       :summary="summary"
       :busy="busy"
-      @update:kind="archive.switchKind"
+      @update:kind="switchArchiveView"
       @export="archive.exportData"
       @import="archive.importData"
     />
-    <article class="panel archive-main">
+    <TeamWorkspace v-if="isTeamView" />
+    <article v-else class="panel archive-main">
       <InventoryToolbar
         v-model:filters="archive.filters.value"
-        :kind="archive.kind.value"
+        :kind="archive.kind.value as InventoryKind"
         :total="archive.result.value.total"
         :active-filter-count="archive.activeFilterCount.value"
         :has-filters="archive.hasActiveSearchOrFilters.value"
@@ -74,7 +85,7 @@ onBeforeUnmount(removeEscapeListener);
       <InventoryFilterDrawer
         v-model="archive.filterOpen.value"
         v-model:filters="archive.filters.value"
-        :kind="archive.kind.value"
+        :kind="archive.kind.value as InventoryKind"
         :busy="busy"
         @apply="archive.applyFilters"
         @reset="archive.resetFilters"
@@ -87,7 +98,7 @@ onBeforeUnmount(removeEscapeListener);
         @error="error = $event"
       />
       <InventoryList
-        :kind="archive.kind.value"
+        :kind="archive.kind.value as InventoryKind"
         :items="listItems"
         :selected-ids="archive.selectedIds.value"
         :all-selected="archive.allSelected.value"

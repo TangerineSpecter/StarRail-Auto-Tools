@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { relicImage } from "@/shared/catalogue";
+import { equippedCharacterLabel, relicImage } from "@/shared/catalogue";
 import { formatTime } from "@/shared/utils/display";
 import {
   enhancementHitsOnLine,
@@ -99,7 +99,12 @@ const substatRows = computed(() =>
     <RelicQualityCard :detail="detail" :plan="plan" :plan-label="planLabel" />
     <footer class="relic-detail-footer">
       <div>
-        <span>装备归属</span><b>{{ detail.location || "未装备" }}</b>
+        <span>装备归属</span
+        ><b>{{
+          detail.location
+            ? equippedCharacterLabel(detail.location, detail.equippedCharacterId)
+            : "未装备"
+        }}</b>
       </div>
       <div>
         <span>状态</span

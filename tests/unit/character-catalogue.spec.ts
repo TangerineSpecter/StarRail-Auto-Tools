@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   catalogueCharacterId,
   characterById,
+  characterDisplayName,
+  equippedCharacterLabel,
   pathIconSrc,
   resolveCharacterCatalogue,
 } from "@/shared/catalogue";
@@ -65,5 +67,29 @@ describe("path icons and labels", () => {
     expect(pathIconSrc("Destruction")).toBe("/character-icons/paths/毁灭.webp");
     expect(pathIconSrc("Elation")).toBe("/character-icons/paths/欢愉.webp");
     expect(pathIconSrc("记忆")).toBe("/character-icons/paths/记忆.webp");
+  });
+});
+
+describe("characterDisplayName", () => {
+  it("appends path only for multi-path protagonists", () => {
+    expect(characterDisplayName({ name: "卡芙卡", characterId: 1005 })).toBe("卡芙卡");
+    expect(characterDisplayName({ name: "开拓者", characterId: 8006, path: "Harmony" })).toBe(
+      "开拓者·同谐",
+    );
+    expect(characterDisplayName({ name: "三月七", path: "Hunt" })).toBe("三月七·巡猎");
+    expect(characterDisplayName({ name: "三月七", characterId: 1001 })).toBe("三月七·存护");
+    expect(characterDisplayName({ name: "开拓者" })).toBe("开拓者");
+    expect(characterDisplayName({ name: "" })).toBe("");
+  });
+});
+
+describe("equippedCharacterLabel", () => {
+  it("appends path only for multi-path protagonists", () => {
+    expect(equippedCharacterLabel("卡芙卡", 1005)).toBe("卡芙卡");
+    expect(equippedCharacterLabel("开拓者", 8006)).toBe("开拓者·同谐");
+    expect(equippedCharacterLabel("三月七", 1224)).toBe("三月七·巡猎");
+    expect(equippedCharacterLabel("三月七", 1001)).toBe("三月七·存护");
+    expect(equippedCharacterLabel("开拓者", null)).toBe("开拓者");
+    expect(equippedCharacterLabel("", 8006)).toBe("");
   });
 });

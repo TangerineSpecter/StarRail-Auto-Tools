@@ -7,4 +7,5 @@
    them with async pages caused the shell to restyle itself after navigation. */
 @import "./features/capture/styles/index.css";
 @import "./features/inventory/styles/index.css";
+@import "./features/team/styles/team.css";
 @import "./features/catalogue/catalogue.css";

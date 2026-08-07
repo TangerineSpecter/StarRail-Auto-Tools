@@ -7,13 +7,14 @@ use crate::{
     error::AppError,
     inventory::{
         supports_sync_format_version, SyncBuildPlansFile, SyncInventoryFile, SyncManifest,
-        SyncSnapshot, SYNC_FORMAT_VERSION,
+        SyncSnapshot, SyncTeamsFile, SYNC_FORMAT_VERSION,
     },
 };
 
 const MANIFEST_FILE: &str = "manifest.json";
 const INVENTORY_FILE_PREFIX: &str = "inventory-";
 const BUILD_PLANS_FILE_PREFIX: &str = "build-plans-";
+const TEAMS_FILE_PREFIX: &str = "teams-";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -170,6 +171,7 @@ pub async fn upload_snapshot(
 ) -> Result<(), AppError> {
     let inventory_file = versioned_file(INVENTORY_FILE_PREFIX, snapshot.generated_at);
     let build_plans_file = versioned_file(BUILD_PLANS_FILE_PREFIX, snapshot.generated_at);
+    let teams_file = versioned_file(TEAMS_FILE_PREFIX, snapshot.generated_at);
     let inventory = SyncInventoryFile {
         format_version: SYNC_FORMAT_VERSION,
         inventory: snapshot.inventory,
@@ -179,16 +181,25 @@ pub async fn upload_snapshot(
         build_plans: snapshot.build_plans,
         build_layouts: snapshot.build_layouts,
     };
+    let teams = SyncTeamsFile {
+        format_version: SYNC_FORMAT_VERSION,
+        teams: snapshot.teams,
+    };
     let manifest = SyncManifest {
         format_version: SYNC_FORMAT_VERSION,
         generated_at: snapshot.generated_at,
         source: snapshot.source,
-        files: vec![inventory_file.clone(), build_plans_file.clone()],
+        files: vec![
+            inventory_file.clone(),
+            build_plans_file.clone(),
+            teams_file.clone(),
+        ],
     };
     // Files are immutable per upload. Publishing the manifest last leaves the preceding
     // complete snapshot readable even if this upload only reaches one data file.
     upload_file(settings, &inventory_file, encode(&inventory)?).await?;
     upload_file(settings, &build_plans_file, encode(&build_plans)?).await?;
+    upload_file(settings, &teams_file, encode(&teams)?).await?;
     upload_file(settings, MANIFEST_FILE, encode(&manifest)?).await
 }
 
@@ -218,6 +229,20 @@ pub async fn download_snapshot(settings: &WebDavSettings) -> Result<SyncSnapshot
     {
         return Err(AppError::WebDav("同步文件版本与清单不一致".to_owned()));
     }
+
+    // v1/v2 backups have no teams file; treat as empty personal settings.
+    let teams = if manifest.format_version >= SYNC_FORMAT_VERSION {
+        let teams_file = find_snapshot_file(&manifest, TEAMS_FILE_PREFIX)?;
+        let teams_payload: SyncTeamsFile =
+            decode(&download_file(settings, &teams_file).await?, &teams_file)?;
+        if teams_payload.format_version != manifest.format_version {
+            return Err(AppError::WebDav("同步文件版本与清单不一致".to_owned()));
+        }
+        teams_payload.teams
+    } else {
+        Vec::new()
+    };
+
     Ok(SyncSnapshot {
         format_version: manifest.format_version,
         generated_at: manifest.generated_at,
@@ -225,6 +250,7 @@ pub async fn download_snapshot(settings: &WebDavSettings) -> Result<SyncSnapshot
         inventory: inventory.inventory,
         build_plans: build_plans.build_plans,
         build_layouts: build_plans.build_layouts,
+        teams,
     })
 }
 
@@ -279,6 +305,7 @@ mod tests {
             files: vec![
                 "../inventory-1.json".to_owned(),
                 "build-plans-1.json".to_owned(),
+                "teams-1.json".to_owned(),
             ],
         };
         assert!(find_snapshot_file(&manifest, INVENTORY_FILE_PREFIX).is_err());

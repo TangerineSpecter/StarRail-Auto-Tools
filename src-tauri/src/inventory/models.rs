@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 10;
+pub(crate) const SCHEMA_VERSION: i64 = 11;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 #[derive(Debug, Clone)]
@@ -60,6 +60,9 @@ pub struct InventorySummary {
     pub relics: u64,
     pub light_cones: u64,
     pub characters: u64,
+    /// User-authored team compositions (not game inventory).
+    #[serde(default)]
+    pub teams: u64,
     pub last_sync_at: Option<i64>,
     pub protocol_version: String,
 }
@@ -302,6 +305,15 @@ fn default_min_potential_pct() -> f64 {
 /// Maximum character length for a build-plan note (Unicode scalar values).
 pub const MAX_BUILD_PLAN_NOTE_LEN: usize = 500;
 
+/// Maximum character length for a team name (Unicode scalar values).
+pub const MAX_TEAM_NAME_LEN: usize = 64;
+
+/// Maximum character length for a team note (Unicode scalar values).
+pub const MAX_TEAM_NOTE_LEN: usize = 500;
+
+/// Fixed party size for team compositions.
+pub const TEAM_SLOT_COUNT: usize = 4;
+
 /// Trim and clamp a build-plan note to the shared frontend/backend limit.
 pub fn normalize_build_plan_note(note: &str) -> String {
     let trimmed = note.trim();
@@ -310,6 +322,68 @@ pub fn normalize_build_plan_note(note: &str) -> String {
     } else {
         trimmed.chars().take(MAX_BUILD_PLAN_NOTE_LEN).collect()
     }
+}
+
+/// Trim and clamp a team name; empty after trim is invalid (caller must check).
+pub fn normalize_team_name(name: &str) -> String {
+    let trimmed = name.trim();
+    if trimmed.chars().count() <= MAX_TEAM_NAME_LEN {
+        trimmed.to_owned()
+    } else {
+        trimmed.chars().take(MAX_TEAM_NAME_LEN).collect()
+    }
+}
+
+/// Trim and clamp a team note.
+pub fn normalize_team_note(note: &str) -> String {
+    let trimmed = note.trim();
+    if trimmed.chars().count() <= MAX_TEAM_NOTE_LEN {
+        trimmed.to_owned()
+    } else {
+        trimmed.chars().take(MAX_TEAM_NOTE_LEN).collect()
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamMember {
+    pub character_id: u32,
+    pub name: String,
+    pub path: String,
+    pub level: u32,
+    /// False when the character row is missing from inventory.
+    pub owned: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Team {
+    pub team_id: u32,
+    pub name: String,
+    pub note: String,
+    /// Always length 4; empty slots are null.
+    pub members: Vec<Option<TeamMember>>,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamInput {
+    pub team_id: Option<u32>,
+    pub name: String,
+    #[serde(default)]
+    pub note: String,
+    /// Must be length 4; null slots are empty.
+    pub character_ids: Vec<Option<u32>>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamFilter {
+    #[serde(flatten)]
+    pub page: PageQuery,
+    pub search: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -423,11 +497,31 @@ pub struct ImportCharacter {
     pub ability_version: u32,
 }
 
-pub const SYNC_FORMAT_VERSION: u32 = 2;
+pub const SYNC_FORMAT_VERSION: u32 = 3;
+/// Original inventory + build-plans snapshot without dashboard layouts.
 pub const LEGACY_SYNC_FORMAT_VERSION: u32 = 1;
+/// Snapshot that added build dashboard layouts but no local teams.
+pub const SYNC_FORMAT_VERSION_V2: u32 = 2;
 
 pub fn supports_sync_format_version(version: u32) -> bool {
-    matches!(version, LEGACY_SYNC_FORMAT_VERSION | SYNC_FORMAT_VERSION)
+    matches!(
+        version,
+        LEGACY_SYNC_FORMAT_VERSION | SYNC_FORMAT_VERSION_V2 | SYNC_FORMAT_VERSION
+    )
+}
+
+/// Local team composition for WebDAV upload/download (personal settings, not game data).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamSyncRecord {
+    pub team_id: u32,
+    pub name: String,
+    #[serde(default)]
+    pub note: String,
+    /// Always length 4 when saved by this client.
+    pub character_ids: Vec<Option<u32>>,
+    pub created_at: i64,
+    pub updated_at: i64,
 }
 
 /// Internal aggregate used by the repository when restoring a complete WebDAV backup.
@@ -442,6 +536,9 @@ pub struct SyncSnapshot {
     pub build_plans: Vec<CharacterBuildPlan>,
     #[serde(default)]
     pub build_layouts: Vec<BuildDashboardLayout>,
+    /// Present from format version 3; empty when restoring older backups.
+    #[serde(default)]
+    pub teams: Vec<TeamSyncRecord>,
 }
 
 /// Code-owned index of the files in one WebDAV sync directory.
@@ -468,6 +565,14 @@ pub struct SyncBuildPlansFile {
     pub build_plans: Vec<CharacterBuildPlan>,
     #[serde(default)]
     pub build_layouts: Vec<BuildDashboardLayout>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncTeamsFile {
+    pub format_version: u32,
+    #[serde(default)]
+    pub teams: Vec<TeamSyncRecord>,
 }
 
 pub(crate) fn deserialize_u32_any<'de, D>(deserializer: D) -> Result<u32, D::Error>

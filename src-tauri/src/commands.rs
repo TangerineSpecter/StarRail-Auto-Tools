@@ -9,7 +9,7 @@ use crate::{
         CharacterBuildPlan, CharacterFilter, ClearInventoryRequest, DeleteItemsRequest,
         InventoryDetail, InventoryImportResult, InventoryKind, InventoryStore, InventorySummary,
         LightConeFilter, LightConeListItem, PageQuery, PagedResult, RelicFilter, RelicListItem,
-        RelicMainStatScanResult, RelicSetRecommendedCharacter,
+        RelicMainStatScanResult, RelicSetRecommendedCharacter, Team, TeamFilter, TeamInput,
     },
     scanner::ScannerState,
     screenshot,
@@ -323,6 +323,45 @@ pub fn recommend_character_build(
     store: State<'_, InventoryStore>,
 ) -> Result<BuildRecommendation, AppError> {
     store.recommend_build(&request)
+}
+
+#[tauri::command]
+pub fn list_teams(
+    filter: TeamFilter,
+    store: State<'_, InventoryStore>,
+) -> Result<PagedResult<Team>, AppError> {
+    store.list_teams(&filter)
+}
+
+#[tauri::command]
+pub fn get_team(team_id: u32, store: State<'_, InventoryStore>) -> Result<Team, AppError> {
+    store.get_team(team_id)
+}
+
+#[tauri::command]
+pub fn save_team(
+    team: TeamInput,
+    app: AppHandle,
+    store: State<'_, InventoryStore>,
+) -> Result<Team, AppError> {
+    let saved = store.save_team(&team)?;
+    let summary = store.summary()?;
+    direct_read::inventory_changed(&app, &summary, false)?;
+    let _ = app.emit("inventory://changed", &summary);
+    Ok(saved)
+}
+
+#[tauri::command]
+pub fn delete_team(
+    team_id: u32,
+    app: AppHandle,
+    store: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
+    store.delete_team(team_id)?;
+    let summary = store.summary()?;
+    direct_read::inventory_changed(&app, &summary, false)?;
+    let _ = app.emit("inventory://changed", &summary);
+    Ok(())
 }
 
 #[tauri::command]

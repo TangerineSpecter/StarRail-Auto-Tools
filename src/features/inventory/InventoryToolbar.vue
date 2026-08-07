@@ -14,6 +14,12 @@ const filters = defineModel<InventoryFilterForm>("filters", { required: true });
 const emit = defineEmits<{ search: []; filter: []; reset: [] }>();
 const title = () =>
   props.kind === "relic" ? "遗器档案" : props.kind === "lightCone" ? "光锥档案" : "角色档案";
+const searchPlaceholder = () =>
+  props.kind === "relic"
+    ? "搜索名称、套装或装备角色"
+    : props.kind === "lightCone"
+      ? "搜索名称或装备角色"
+      : "搜索角色名称";
 </script>
 
 <template>
@@ -32,7 +38,7 @@ const title = () =>
           /></svg
         ><InputText
           v-model="filters.search"
-          placeholder="搜索名称或套装"
+          :placeholder="searchPlaceholder()"
           @keyup.enter="emit('search')"
       /></label>
       <Button class="filter-toggle" type="button" outlined @click="emit('filter')">

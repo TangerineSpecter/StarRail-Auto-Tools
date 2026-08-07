@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { lightConeById } from "@/shared/catalogue";
+import { equippedCharacterLabel, lightConeById } from "@/shared/catalogue";
 import { formatBaseStat, formatTime } from "@/shared/utils/display";
 import { lightConeSkillEffect, staticSetStats } from "@/shared/utils/standing-stats";
 import { pathLabel } from "./options";
@@ -110,7 +110,12 @@ const formatStandingBonus = (key: string, value: number) => {
     </section>
     <footer class="relic-detail-footer">
       <div>
-        <span>装备归属</span><b>{{ detail.location || "未装备" }}</b>
+        <span>装备归属</span
+        ><b>{{
+          detail.location
+            ? equippedCharacterLabel(detail.location, detail.equippedCharacterId)
+            : "未装备"
+        }}</b>
       </div>
       <div>
         <span>更新于</span><b>{{ formatTime(detail.updatedAt) }}</b>

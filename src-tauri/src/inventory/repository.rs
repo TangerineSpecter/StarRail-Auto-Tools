@@ -157,6 +157,18 @@ impl InventoryStore {
                 PRIMARY KEY (character_id, stat_key)
             );
 
+            CREATE TABLE IF NOT EXISTS teams (
+                team_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                note TEXT NOT NULL DEFAULT '',
+                slot0 INTEGER,
+                slot1 INTEGER,
+                slot2 INTEGER,
+                slot3 INTEGER,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            );
+
             CREATE INDEX IF NOT EXISTS idx_relics_set_slot ON relics(set_id, slot);
             CREATE INDEX IF NOT EXISTS idx_relics_rarity_level ON relics(rarity, level);
             CREATE INDEX IF NOT EXISTS idx_relics_main_stat ON relics(main_stat);
@@ -165,6 +177,7 @@ impl InventoryStore {
             CREATE INDEX IF NOT EXISTS idx_light_cones_level ON light_cones(level, ascension);
             CREATE INDEX IF NOT EXISTS idx_light_cones_location ON light_cones(location);
             CREATE INDEX IF NOT EXISTS idx_characters_path_level ON characters(path, level);
+            CREATE INDEX IF NOT EXISTS idx_teams_updated_at ON teams(updated_at DESC);
             "#,
         )?;
         // Older databases predate the derived main-stat value. SQLite does not support
@@ -504,6 +517,158 @@ impl InventoryStore {
         Ok(())
     }
 
+    pub fn list_teams(&self, filter: &TeamFilter) -> Result<PagedResult<Team>, AppError> {
+        validate_page(&filter.page)?;
+        let connection = self.connect()?;
+        let mut clauses = Vec::new();
+        let mut values = Vec::new();
+        if let Some(search) = clean_filter(&filter.search) {
+            clauses.push("(name LIKE ? OR note LIKE ?)".to_owned());
+            let pattern = format!("%{search}%");
+            values.push(SqlValue::Text(pattern.clone()));
+            values.push(SqlValue::Text(pattern));
+        }
+        let where_sql = if clauses.is_empty() {
+            String::new()
+        } else {
+            format!("WHERE {}", clauses.join(" AND "))
+        };
+        let total: u64 = connection.query_row(
+            &format!("SELECT COUNT(*) FROM teams {where_sql}"),
+            params_from_iter(values.iter()),
+            |row| row.get(0),
+        )?;
+        let offset = ((filter.page.page - 1) * filter.page.page_size) as i64;
+        let limit = filter.page.page_size as i64;
+        let list_sql = format!(
+            "SELECT team_id, name, note, slot0, slot1, slot2, slot3, created_at, updated_at
+             FROM teams
+             {where_sql}
+             ORDER BY updated_at DESC, team_id DESC
+             LIMIT {limit} OFFSET {offset}"
+        );
+        let mut statement = connection.prepare(&list_sql)?;
+        let rows = statement.query_map(params_from_iter(values.iter()), team_row_from_sqlite)?;
+        let mut items = Vec::new();
+        for row in rows {
+            items.push(hydrate_team(&connection, row?)?);
+        }
+        Ok(PagedResult {
+            items,
+            total,
+            page: filter.page.page,
+            page_size: filter.page.page_size,
+        })
+    }
+
+    pub fn get_team(&self, team_id: u32) -> Result<Team, AppError> {
+        let connection = self.connect()?;
+        let mut statement = connection.prepare(
+            "SELECT team_id, name, note, slot0, slot1, slot2, slot3, created_at, updated_at
+             FROM teams WHERE team_id = ?1",
+        )?;
+        let raw = statement
+            .query_row([team_id], team_row_from_sqlite)
+            .optional()?
+            .ok_or_else(|| AppError::Database("配队不存在".to_owned()))?;
+        hydrate_team(&connection, raw)
+    }
+
+    pub fn save_team(&self, input: &TeamInput) -> Result<Team, AppError> {
+        let name = normalize_team_name(&input.name);
+        if name.is_empty() {
+            return Err(AppError::Database("配队名称不能为空".to_owned()));
+        }
+        let note = normalize_team_note(&input.note);
+        if input.character_ids.len() != TEAM_SLOT_COUNT {
+            return Err(AppError::Database("配队必须包含 4 个角色槽位".to_owned()));
+        }
+        let slots = normalize_team_slots(&input.character_ids)?;
+        let connection = self.connect()?;
+        // Existing orphan slots may be kept on update; only newly assigned members must exist.
+        let previous_slots: HashSet<u32> = if let Some(existing_id) = input.team_id {
+            connection
+                .query_row(
+                    "SELECT slot0, slot1, slot2, slot3 FROM teams WHERE team_id = ?1",
+                    [existing_id],
+                    |row| {
+                        Ok([
+                            row.get::<_, Option<u32>>(0)?,
+                            row.get::<_, Option<u32>>(1)?,
+                            row.get::<_, Option<u32>>(2)?,
+                            row.get::<_, Option<u32>>(3)?,
+                        ])
+                    },
+                )
+                .optional()?
+                .into_iter()
+                .flatten()
+                .flatten()
+                .collect()
+        } else {
+            HashSet::new()
+        };
+        for slot in slots.iter().flatten() {
+            if previous_slots.contains(slot) {
+                continue;
+            }
+            let exists: bool = connection
+                .query_row(
+                    "SELECT 1 FROM characters WHERE character_id = ?1",
+                    [*slot],
+                    |_| Ok(true),
+                )
+                .optional()?
+                .unwrap_or(false);
+            if !exists {
+                return Err(AppError::Database(format!(
+                    "角色 {slot} 不在背包档案中，无法加入配队"
+                )));
+            }
+        }
+        let now = now_millis();
+        let team_id = if let Some(existing_id) = input.team_id {
+            let updated = connection.execute(
+                "UPDATE teams
+                 SET name = ?1, note = ?2, slot0 = ?3, slot1 = ?4, slot2 = ?5, slot3 = ?6,
+                     updated_at = ?7
+                 WHERE team_id = ?8",
+                params![
+                    name,
+                    note,
+                    slots[0],
+                    slots[1],
+                    slots[2],
+                    slots[3],
+                    now,
+                    existing_id
+                ],
+            )?;
+            if updated == 0 {
+                return Err(AppError::Database("配队不存在".to_owned()));
+            }
+            existing_id
+        } else {
+            connection.execute(
+                "INSERT INTO teams(name, note, slot0, slot1, slot2, slot3, created_at, updated_at)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                params![name, note, slots[0], slots[1], slots[2], slots[3], now, now],
+            )?;
+            connection.last_insert_rowid() as u32
+        };
+        self.get_team(team_id)
+    }
+
+    pub fn delete_team(&self, team_id: u32) -> Result<(), AppError> {
+        let deleted = self
+            .connect()?
+            .execute("DELETE FROM teams WHERE team_id = ?1", [team_id])?;
+        if deleted == 0 {
+            return Err(AppError::Database("配队不存在".to_owned()));
+        }
+        Ok(())
+    }
+
     pub fn recommend_build(
         &self,
         request: &BuildRecommendationRequest,
@@ -568,14 +733,16 @@ impl InventoryStore {
             }
         }
 
-        self.apply_snapshot(import, false, false, &[], &[]).map(Ok)
+        self.apply_snapshot(import, false, false, &[], &[], &[])
+            .map(Ok)
     }
 
     pub fn replace_account_and_apply(
         &self,
         import: &InventoryImport,
     ) -> Result<InventorySummary, AppError> {
-        self.apply_snapshot(import, true, false, &[], &[])
+        // Game-driven account replace refreshes inventory only; local teams are kept.
+        self.apply_snapshot(import, true, false, &[], &[], &[])
     }
 
     fn apply_snapshot(
@@ -585,6 +752,7 @@ impl InventoryStore {
         reset_sync_state: bool,
         build_plans: &[CharacterBuildPlan],
         build_layouts: &[BuildDashboardLayout],
+        teams: &[TeamSyncRecord],
     ) -> Result<InventorySummary, AppError> {
         let now = now_millis();
         let mut connection = self.connect()?;
@@ -594,6 +762,8 @@ impl InventoryStore {
             clear_all(&transaction)?;
             if reset_sync_state {
                 transaction.execute("DELETE FROM character_build_plans", [])?;
+                // WebDAV full restore wipes local planning data, then reimports from snapshot.
+                transaction.execute("DELETE FROM teams", [])?;
                 transaction.execute(
                     "DELETE FROM app_state WHERE key IN ('current_uid', 'trailblazer')",
                     [],
@@ -743,6 +913,10 @@ impl InventoryStore {
             save_build_plan_in_transaction(&transaction, plan)?;
         }
         apply_build_layouts(&transaction, build_layouts)?;
+        if reset_sync_state {
+            // Empty slice intentionally clears all teams after wipe.
+            replace_teams_in_transaction(&transaction, teams)?;
+        }
         transaction.commit()?;
         self.summary()
     }
@@ -757,10 +931,14 @@ impl InventoryStore {
         let mut values = Vec::new();
 
         if let Some(search) = clean_filter(&filter.search) {
-            clauses.push("(name LIKE ? OR set_name LIKE ?)".to_owned());
-            let value = SqlValue::Text(format!("%{search}%"));
-            values.push(value.clone());
-            values.push(value);
+            push_equipped_owner_search(
+                &connection,
+                &mut clauses,
+                &mut values,
+                &search,
+                "(name LIKE ? OR set_name LIKE ? OR location LIKE ?)",
+                3,
+            )?;
         }
         push_text_filters(&mut clauses, &mut values, "slot", &filter.slots);
         push_number_filters(&mut clauses, &mut values, "rarity", &filter.rarities);
@@ -934,8 +1112,14 @@ impl InventoryStore {
         let mut clauses = Vec::new();
         let mut values = Vec::new();
         if let Some(search) = clean_filter(&filter.search) {
-            clauses.push("name LIKE ?".to_owned());
-            values.push(SqlValue::Text(format!("%{search}%")));
+            push_equipped_owner_search(
+                &connection,
+                &mut clauses,
+                &mut values,
+                &search,
+                "(name LIKE ? OR location LIKE ?)",
+                2,
+            )?;
         }
         push_number_filter(&mut clauses, &mut values, "level", ">=", filter.min_level);
         push_number_filter(&mut clauses, &mut values, "level", "<=", filter.max_level);
@@ -1158,6 +1342,7 @@ impl InventoryStore {
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
+        let teams = list_team_sync_records(&connection)?;
         Ok(SyncSnapshot {
             format_version: SYNC_FORMAT_VERSION,
             generated_at: now_millis(),
@@ -1165,6 +1350,7 @@ impl InventoryStore {
             inventory,
             build_plans,
             build_layouts,
+            teams,
         })
     }
 
@@ -1185,6 +1371,7 @@ impl InventoryStore {
             true,
             &snapshot.build_plans,
             &snapshot.build_layouts,
+            &snapshot.teams,
         )
     }
 
@@ -1406,9 +1593,8 @@ fn load_build_relics(
     where_clause: &str,
     params: &[&dyn rusqlite::ToSql],
 ) -> Result<Vec<BuildCandidate>, AppError> {
-    let mut statement = connection.prepare(
-        &format!(
-            "SELECT relics.item_id, relics.name, relics.slot, relics.set_id, relics.main_stat, \
+    let mut statement = connection.prepare(&format!(
+        "SELECT relics.item_id, relics.name, relics.slot, relics.set_id, relics.main_stat, \
              relics.main_stat_value, relics.location, relics.equipped_character_id, \
              relic_substats.stat_key, relic_substats.value \
              FROM relics \
@@ -1416,8 +1602,7 @@ fn load_build_relics(
                  AND relic_substats.kind = 'normal' \
              WHERE {where_clause} \
              ORDER BY relics.item_id, relic_substats.position"
-        ),
-    )?;
+    ))?;
     let mut rows = statement.query(params)?;
     let mut items = Vec::new();
     while let Some(row) = rows.next()? {
@@ -1827,6 +2012,7 @@ fn summary_from_connection(connection: &Connection) -> Result<InventorySummary, 
         connection.query_row("SELECT COUNT(*) FROM light_cones", [], |row| row.get(0))?;
     let characters =
         connection.query_row("SELECT COUNT(*) FROM characters", [], |row| row.get(0))?;
+    let teams = connection.query_row("SELECT COUNT(*) FROM teams", [], |row| row.get(0))?;
     let last_sync_at = connection
         .query_row(
             "SELECT MAX(finished_at) FROM import_runs WHERE status = 'complete'",
@@ -1839,6 +2025,7 @@ fn summary_from_connection(connection: &Connection) -> Result<InventorySummary, 
         relics,
         light_cones,
         characters,
+        teams,
         last_sync_at,
         protocol_version: PROTOCOL_VERSION.to_owned(),
     })
@@ -1879,6 +2066,90 @@ fn clean_filters(value: &Option<Vec<String>>) -> Option<Vec<String>> {
                 .collect::<Vec<_>>()
         })
         .filter(|values| !values.is_empty())
+}
+
+/// Inventory path codes (English) → Chinese labels used in the UI.
+fn inventory_path_label(path: &str) -> &str {
+    match path {
+        "Destruction" => "毁灭",
+        "Hunt" => "巡猎",
+        "Erudition" => "智识",
+        "Harmony" => "同谐",
+        "Nihility" => "虚无",
+        "Preservation" => "存护",
+        "Abundance" => "丰饶",
+        "Remembrance" => "记忆",
+        "Elation" => "欢愉",
+        other => other,
+    }
+}
+
+fn character_matches_equipment_search(name: &str, path: &str, search: &str) -> bool {
+    if name.contains(search) || path.contains(search) {
+        return true;
+    }
+    let path_zh = inventory_path_label(path);
+    if path_zh.contains(search) {
+        return true;
+    }
+    // Multi-path display forms: 开拓者·同谐 / 三月七 巡猎
+    let dotted = format!("{name}·{path_zh}");
+    let spaced = format!("{name} {path_zh}");
+    let compact = format!("{name}{path_zh}");
+    dotted.contains(search) || spaced.contains(search) || compact.contains(search)
+}
+
+fn matching_equipped_character_ids(
+    connection: &Connection,
+    search: &str,
+) -> Result<Vec<u32>, AppError> {
+    let mut statement = connection.prepare("SELECT character_id, name, path FROM characters")?;
+    let rows = statement.query_map([], |row| {
+        Ok((
+            row.get::<_, u32>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?,
+        ))
+    })?;
+    let mut ids = Vec::new();
+    for row in rows {
+        let (id, name, path) = row?;
+        if character_matches_equipment_search(&name, &path, search) {
+            ids.push(id);
+        }
+    }
+    Ok(ids)
+}
+
+/// Search item name fields plus equipped-owner name/path (including multi-path labels).
+fn push_equipped_owner_search(
+    connection: &Connection,
+    clauses: &mut Vec<String>,
+    values: &mut Vec<SqlValue>,
+    search: &str,
+    base_clause: &str,
+    base_like_count: usize,
+) -> Result<(), AppError> {
+    let pattern = SqlValue::Text(format!("%{search}%"));
+    let owner_ids = matching_equipped_character_ids(connection, search)?;
+    if owner_ids.is_empty() {
+        clauses.push(base_clause.to_owned());
+        for _ in 0..base_like_count {
+            values.push(pattern.clone());
+        }
+        return Ok(());
+    }
+    let placeholders = std::iter::repeat_n("?", owner_ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    clauses.push(format!(
+        "({base_clause} OR equipped_character_id IN ({placeholders}))"
+    ));
+    for _ in 0..base_like_count {
+        values.push(pattern.clone());
+    }
+    values.extend(owner_ids.into_iter().map(|id| SqlValue::Integer(id as i64)));
+    Ok(())
 }
 
 fn push_text_filters(
@@ -2124,10 +2395,22 @@ fn character_detail(connection: &Connection, id: u32) -> Result<Option<Value>, A
     Ok(Some(detail))
 }
 
+/// Export location uses the equipped character id when known.
+///
+/// Multi-path protagonists (开拓者 / 三月七) share one display name across several ids.
+/// Re-importing a Chinese display name cannot recover which path owned the gear, so the
+/// exchange format must carry the authoritative numeric id (same as the game exporter).
+fn export_equipped_location(location: &str, equipped_character_id: Option<u32>) -> String {
+    match equipped_character_id {
+        Some(id) => id.to_string(),
+        None => location.to_owned(),
+    }
+}
+
 fn export_relics(connection: &Connection) -> Result<Vec<Value>, AppError> {
     let mut statement = connection.prepare(
         "SELECT item_id, set_id, name, slot, rarity, level, main_stat,
-                location, locked, discard FROM relics ORDER BY item_id",
+                location, equipped_character_id, locked, discard FROM relics ORDER BY item_id",
     )?;
     let rows = statement.query_map([], |row| {
         Ok((
@@ -2139,13 +2422,15 @@ fn export_relics(connection: &Connection) -> Result<Vec<Value>, AppError> {
             row.get::<_, u32>(5)?,
             row.get::<_, String>(6)?,
             row.get::<_, String>(7)?,
-            row.get::<_, bool>(8)?,
+            row.get::<_, Option<u32>>(8)?,
             row.get::<_, bool>(9)?,
+            row.get::<_, bool>(10)?,
         ))
     })?;
     let mut result = Vec::new();
     for row in rows {
-        let (id, set_id, name, slot, rarity, level, mainstat, location, lock, discard) = row?;
+        let (id, set_id, name, slot, rarity, level, mainstat, location, equipped_id, lock, discard) =
+            row?;
         let substats = export_substats(connection, id, "normal")?;
         let reroll_substats = export_substats(connection, id, "reroll")?;
         let preview_substats = export_substats(connection, id, "preview")?;
@@ -2159,7 +2444,7 @@ fn export_relics(connection: &Connection) -> Result<Vec<Value>, AppError> {
             "substats": substats,
             "reroll_substats": reroll_substats,
             "preview_substats": preview_substats,
-            "location": location,
+            "location": export_equipped_location(&location, equipped_id),
             "lock": lock,
             "discard": discard,
             "_uid": id.to_string(),
@@ -2193,10 +2478,12 @@ fn export_substats(
 fn export_light_cones(connection: &Connection) -> Result<Vec<Value>, AppError> {
     let mut statement = connection.prepare(
         "SELECT item_id, template_id, name, level, ascension, superimposition,
-                location, locked FROM light_cones ORDER BY item_id",
+                location, equipped_character_id, locked FROM light_cones ORDER BY item_id",
     )?;
     let values = statement
         .query_map([], |row| {
+            let location: String = row.get(6)?;
+            let equipped_id: Option<u32> = row.get(7)?;
             Ok(json!({
                 "_uid": row.get::<_, u32>(0)?.to_string(),
                 "id": row.get::<_, u32>(1)?.to_string(),
@@ -2204,8 +2491,8 @@ fn export_light_cones(connection: &Connection) -> Result<Vec<Value>, AppError> {
                 "level": row.get::<_, u32>(3)?,
                 "ascension": row.get::<_, u32>(4)?,
                 "superimposition": row.get::<_, u32>(5)?,
-                "location": row.get::<_, String>(6)?,
-                "lock": row.get::<_, bool>(7)?,
+                "location": export_equipped_location(&location, equipped_id),
+                "lock": row.get::<_, bool>(8)?,
             }))
         })?
         .collect::<Result<Vec<_>, _>>()?;
@@ -2239,6 +2526,145 @@ fn export_characters(connection: &Connection) -> Result<Vec<Value>, AppError> {
         })?
         .collect::<Result<Vec<_>, _>>()?;
     Ok(values)
+}
+
+struct TeamRow {
+    team_id: u32,
+    name: String,
+    note: String,
+    slots: [Option<u32>; TEAM_SLOT_COUNT],
+    created_at: i64,
+    updated_at: i64,
+}
+
+fn team_row_from_sqlite(row: &Row<'_>) -> rusqlite::Result<TeamRow> {
+    Ok(TeamRow {
+        team_id: row.get(0)?,
+        name: row.get(1)?,
+        note: row.get(2)?,
+        slots: [row.get(3)?, row.get(4)?, row.get(5)?, row.get(6)?],
+        created_at: row.get(7)?,
+        updated_at: row.get(8)?,
+    })
+}
+
+fn normalize_team_slots(
+    character_ids: &[Option<u32>],
+) -> Result<[Option<u32>; TEAM_SLOT_COUNT], AppError> {
+    let mut slots = [None; TEAM_SLOT_COUNT];
+    let mut seen = HashSet::new();
+    for (index, id) in character_ids.iter().enumerate().take(TEAM_SLOT_COUNT) {
+        if let Some(character_id) = id {
+            if !seen.insert(*character_id) {
+                return Err(AppError::Database(
+                    "同一配队内不能重复选择同一角色".to_owned(),
+                ));
+            }
+            slots[index] = Some(*character_id);
+        }
+    }
+    Ok(slots)
+}
+
+fn hydrate_team(connection: &Connection, row: TeamRow) -> Result<Team, AppError> {
+    let mut members = Vec::with_capacity(TEAM_SLOT_COUNT);
+    for slot in row.slots {
+        members.push(match slot {
+            None => None,
+            Some(character_id) => {
+                let owned = connection
+                    .query_row(
+                        "SELECT name, path, level FROM characters WHERE character_id = ?1",
+                        [character_id],
+                        |character_row| {
+                            Ok(TeamMember {
+                                character_id,
+                                name: character_row.get(0)?,
+                                path: character_row.get(1)?,
+                                level: character_row.get(2)?,
+                                owned: true,
+                            })
+                        },
+                    )
+                    .optional()?;
+                Some(owned.unwrap_or(TeamMember {
+                    character_id,
+                    name: format!("未知角色 #{character_id}"),
+                    path: String::new(),
+                    level: 0,
+                    owned: false,
+                }))
+            }
+        });
+    }
+    Ok(Team {
+        team_id: row.team_id,
+        name: row.name,
+        note: row.note,
+        members,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+    })
+}
+
+fn list_team_sync_records(connection: &Connection) -> Result<Vec<TeamSyncRecord>, AppError> {
+    let mut statement = connection.prepare(
+        "SELECT team_id, name, note, slot0, slot1, slot2, slot3, created_at, updated_at
+         FROM teams
+         ORDER BY team_id ASC",
+    )?;
+    let rows = statement.query_map([], team_row_from_sqlite)?;
+    let mut teams = Vec::new();
+    for row in rows {
+        let raw = row?;
+        teams.push(TeamSyncRecord {
+            team_id: raw.team_id,
+            name: raw.name,
+            note: raw.note,
+            character_ids: raw.slots.into_iter().collect(),
+            created_at: raw.created_at,
+            updated_at: raw.updated_at,
+        });
+    }
+    Ok(teams)
+}
+
+/// Replace all teams from a WebDAV snapshot. Empty input leaves the table empty after wipe.
+fn replace_teams_in_transaction(
+    transaction: &Transaction<'_>,
+    teams: &[TeamSyncRecord],
+) -> Result<(), AppError> {
+    for team in teams {
+        let name = normalize_team_name(&team.name);
+        if name.is_empty() {
+            return Err(AppError::Database("同步配队名称不能为空".to_owned()));
+        }
+        if team.character_ids.len() != TEAM_SLOT_COUNT {
+            return Err(AppError::Database(
+                "同步配队必须包含 4 个角色槽位".to_owned(),
+            ));
+        }
+        // Sync restores planning data as-is; missing characters surface as orphan slots in UI.
+        let slots = normalize_team_slots(&team.character_ids)?;
+        let note = normalize_team_note(&team.note);
+        transaction.execute(
+            "INSERT INTO teams(
+                team_id, name, note, slot0, slot1, slot2, slot3, created_at, updated_at
+             ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            params![
+                team.team_id,
+                name,
+                note,
+                slots[0],
+                slots[1],
+                slots[2],
+                slots[3],
+                team.created_at,
+                team.updated_at
+            ],
+        )?;
+    }
+    Ok(())
 }
 
 fn table_for_kind(kind: InventoryKind) -> &'static str {
@@ -2535,6 +2961,291 @@ mod tests {
     }
 
     #[test]
+    fn relic_and_light_cone_search_matches_equipped_character_and_path() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[]);
+        snapshot.relics = vec![
+            ImportRelic {
+                set_id: 101,
+                name: "测试头A".to_owned(),
+                slot: "Head".to_owned(),
+                rarity: 5,
+                level: 15,
+                mainstat: "HP".to_owned(),
+                substats: Vec::new(),
+                reroll_substats: None,
+                preview_substats: None,
+                location: "8006".to_owned(),
+                equipped_character_id: None,
+                lock: true,
+                discard: false,
+                _uid: 1,
+            },
+            ImportRelic {
+                set_id: 102,
+                name: "测试头B".to_owned(),
+                slot: "Head".to_owned(),
+                rarity: 5,
+                level: 15,
+                mainstat: "HP".to_owned(),
+                substats: Vec::new(),
+                reroll_substats: None,
+                preview_substats: None,
+                location: "1224".to_owned(),
+                equipped_character_id: None,
+                lock: true,
+                discard: false,
+                _uid: 2,
+            },
+            ImportRelic {
+                set_id: 103,
+                name: "无关遗器".to_owned(),
+                slot: "Head".to_owned(),
+                rarity: 5,
+                level: 15,
+                mainstat: "HP".to_owned(),
+                substats: Vec::new(),
+                reroll_substats: None,
+                preview_substats: None,
+                location: "1220".to_owned(),
+                equipped_character_id: None,
+                lock: true,
+                discard: false,
+                _uid: 3,
+            },
+        ];
+        snapshot.light_cones = vec![
+            ImportLightCone {
+                id: 20000,
+                name: "测试光锥A".to_owned(),
+                level: 80,
+                ascension: 6,
+                superimposition: 1,
+                location: "8006".to_owned(),
+                equipped_character_id: None,
+                lock: true,
+                _uid: 11,
+            },
+            ImportLightCone {
+                id: 20001,
+                name: "测试光锥B".to_owned(),
+                level: 80,
+                ascension: 6,
+                superimposition: 1,
+                location: "1220".to_owned(),
+                equipped_character_id: None,
+                lock: true,
+                _uid: 12,
+            },
+        ];
+        snapshot.characters = vec![
+            ImportCharacter {
+                id: 8006,
+                name: "开拓者".to_owned(),
+                path: "Harmony".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 6,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+            ImportCharacter {
+                id: 1224,
+                name: "三月七".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 6,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+            ImportCharacter {
+                id: 1220,
+                name: "飞霄".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 0,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+        ];
+        normalize_import(&mut snapshot);
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let by_name = store
+            .list_relics(&RelicFilter {
+                search: Some("开拓".to_owned()),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(by_name.total, 1);
+        assert_eq!(by_name.items[0].item_id, 1);
+
+        let by_path = store
+            .list_relics(&RelicFilter {
+                search: Some("同谐".to_owned()),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(by_path.total, 1);
+        assert_eq!(by_path.items[0].item_id, 1);
+
+        let by_dotted = store
+            .list_relics(&RelicFilter {
+                search: Some("三月七·巡猎".to_owned()),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(by_dotted.total, 1);
+        assert_eq!(by_dotted.items[0].item_id, 2);
+
+        let cones = store
+            .list_light_cones(&LightConeFilter {
+                search: Some("开拓者·同谐".to_owned()),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(cones.total, 1);
+        assert_eq!(cones.items[0].item_id, 11);
+
+        let feixiao = store
+            .list_light_cones(&LightConeFilter {
+                search: Some("飞霄".to_owned()),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(feixiao.total, 1);
+        assert_eq!(feixiao.items[0].item_id, 12);
+    }
+
+    #[test]
+    fn multi_path_equipment_survives_export_and_sync_round_trip() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[]);
+        snapshot.relics = vec![
+            ImportRelic {
+                set_id: 101,
+                name: "毁灭头".to_owned(),
+                slot: "Head".to_owned(),
+                rarity: 5,
+                level: 15,
+                mainstat: "HP".to_owned(),
+                substats: Vec::new(),
+                reroll_substats: None,
+                preview_substats: None,
+                location: "8006".to_owned(),
+                equipped_character_id: None,
+                lock: true,
+                discard: false,
+                _uid: 1,
+            },
+            ImportRelic {
+                set_id: 102,
+                name: "巡猎头".to_owned(),
+                slot: "Head".to_owned(),
+                rarity: 5,
+                level: 15,
+                mainstat: "HP".to_owned(),
+                substats: Vec::new(),
+                reroll_substats: None,
+                preview_substats: None,
+                location: "1224".to_owned(),
+                equipped_character_id: None,
+                lock: true,
+                discard: false,
+                _uid: 2,
+            },
+        ];
+        snapshot.light_cones = vec![ImportLightCone {
+            id: 20000,
+            name: "光锥".to_owned(),
+            level: 80,
+            ascension: 6,
+            superimposition: 1,
+            location: "8006".to_owned(),
+            equipped_character_id: None,
+            lock: true,
+            _uid: 11,
+        }];
+        snapshot.characters = vec![
+            ImportCharacter {
+                id: 8006,
+                name: "开拓者".to_owned(),
+                path: "Harmony".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 6,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+            ImportCharacter {
+                id: 1224,
+                name: "三月七".to_owned(),
+                path: "Hunt".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 6,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+        ];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let export_path = store.path.with_extension("multipath-export.json");
+        store.export_to_path(&export_path).unwrap();
+        let export: Value = serde_json::from_reader(File::open(&export_path).unwrap()).unwrap();
+        // Exchange format must carry numeric owner ids for multi-path gear.
+        let locations: Vec<String> = export["relics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| item["location"].as_str().unwrap().to_owned())
+            .collect();
+        assert!(locations.contains(&"8006".to_owned()));
+        assert!(locations.contains(&"1224".to_owned()));
+        assert_eq!(export["light_cones"][0]["location"], "8006");
+
+        let mut reimport: InventoryImport =
+            serde_json::from_value(export).expect("export must match import contract");
+        normalize_import(&mut reimport);
+        store.clear(None).unwrap();
+        store.apply_full_snapshot(&reimport).unwrap().unwrap();
+
+        let trailblazer = store.detail(InventoryKind::Character, 8006).unwrap();
+        let march = store.detail(InventoryKind::Character, 1224).unwrap();
+        assert_eq!(
+            trailblazer.data["equippedRelics"].as_array().unwrap().len(),
+            1
+        );
+        assert_eq!(trailblazer.data["equippedRelics"][0]["itemId"], 1);
+        assert_eq!(trailblazer.data["equippedLightCone"]["itemId"], 11);
+        assert_eq!(march.data["equippedRelics"].as_array().unwrap().len(), 1);
+        assert_eq!(march.data["equippedRelics"][0]["itemId"], 2);
+
+        // WebDAV sync uses the same export builders.
+        let synced = store.sync_snapshot().unwrap();
+        store.clear(None).unwrap();
+        store.replace_with_sync_snapshot(synced).unwrap();
+        let trailblazer = store.detail(InventoryKind::Character, 8006).unwrap();
+        assert_eq!(
+            trailblazer.data["equippedRelics"].as_array().unwrap().len(),
+            1
+        );
+        assert_eq!(trailblazer.data["equippedLightCone"]["itemId"], 11);
+    }
+
+    #[test]
     fn build_dashboard_returns_saved_plan_with_character_equipment() {
         let store = InventoryStore::test_store();
         let mut snapshot = import(10001, &[1]);
@@ -2718,9 +3429,9 @@ mod tests {
                 }],
                 effective_substats: vec![],
                 note: String::new(),
-            substat_weights: HashMap::new(),
-            min_potential_pct: 40.0,
-            spd_target: 0.0,
+                substat_weights: HashMap::new(),
+                min_potential_pct: 40.0,
+                spd_target: 0.0,
             })
             .unwrap();
 
@@ -3530,6 +4241,74 @@ mod tests {
     }
 
     #[test]
+    fn sync_snapshot_round_trips_local_teams() {
+        let store = InventoryStore::test_store();
+        seed_characters(
+            &store,
+            &[
+                (1001, "三月七", "Preservation"),
+                (1002, "丹恒", "Hunt"),
+            ],
+        );
+        let created = store
+            .save_team(&TeamInput {
+                team_id: None,
+                name: "同步配队".to_owned(),
+                note: "WebDAV".to_owned(),
+                character_ids: vec![Some(1001), Some(1002), None, None],
+            })
+            .unwrap();
+
+        let snapshot = store.sync_snapshot().unwrap();
+        assert_eq!(snapshot.teams.len(), 1);
+        assert_eq!(snapshot.teams[0].team_id, created.team_id);
+        assert_eq!(snapshot.teams[0].name, "同步配队");
+        assert_eq!(
+            snapshot.teams[0].character_ids,
+            vec![Some(1001), Some(1002), None, None]
+        );
+
+        // Local-only clear keeps teams (inventory wipe); WebDAV restore must replace them.
+        store.clear(None).unwrap();
+        assert_eq!(store.summary().unwrap().teams, 1);
+
+        let mut empty = snapshot.clone();
+        empty.teams.clear();
+        store.replace_with_sync_snapshot(empty).unwrap();
+        assert_eq!(store.summary().unwrap().teams, 0);
+
+        store.replace_with_sync_snapshot(snapshot).unwrap();
+        let restored = store.get_team(created.team_id).unwrap();
+        assert_eq!(restored.name, "同步配队");
+        assert_eq!(restored.note, "WebDAV");
+        assert_eq!(
+            restored.members[0].as_ref().map(|member| member.character_id),
+            Some(1001)
+        );
+        assert_eq!(store.summary().unwrap().teams, 1);
+    }
+
+    #[test]
+    fn legacy_sync_snapshot_without_teams_clears_local_teams_on_restore() {
+        let store = InventoryStore::test_store();
+        seed_characters(&store, &[(1001, "三月七", "Preservation")]);
+        store
+            .save_team(&TeamInput {
+                team_id: None,
+                name: "仅本机".to_owned(),
+                note: String::new(),
+                character_ids: vec![Some(1001), None, None, None],
+            })
+            .unwrap();
+        let mut snapshot = store.sync_snapshot().unwrap();
+        snapshot.format_version = SYNC_FORMAT_VERSION_V2;
+        snapshot.teams.clear();
+
+        store.replace_with_sync_snapshot(snapshot).unwrap();
+        assert_eq!(store.summary().unwrap().teams, 0);
+    }
+
+    #[test]
     fn sync_snapshot_rejects_unknown_version_without_replacing_data() {
         let store = InventoryStore::test_store();
         store
@@ -3582,9 +4361,9 @@ mod tests {
                 }],
                 effective_substats: vec![],
                 note: String::new(),
-            substat_weights: HashMap::new(),
-            min_potential_pct: 40.0,
-            spd_target: 0.0,
+                substat_weights: HashMap::new(),
+                min_potential_pct: 40.0,
+                spd_target: 0.0,
             })
             .unwrap();
         let mut snapshot = store.sync_snapshot().unwrap();
@@ -3609,5 +4388,174 @@ mod tests {
             .optional()
             .unwrap();
         assert_eq!(trailblazer, None);
+    }
+
+    fn seed_characters(store: &InventoryStore, characters: &[(u32, &str, &str)]) {
+        let import = InventoryImport {
+            metadata: ImportMetadata {
+                uid: Some(10001),
+                trailblazer: Some("Stelle".to_owned()),
+            },
+            relics: Vec::new(),
+            light_cones: Vec::new(),
+            characters: characters
+                .iter()
+                .map(|(id, name, path)| ImportCharacter {
+                    id: *id,
+                    name: (*name).to_owned(),
+                    path: (*path).to_owned(),
+                    level: 80,
+                    ascension: 6,
+                    eidolon: 0,
+                    skills: json!({}),
+                    traces: json!({}),
+                    memosprite: None,
+                    ability_version: 1,
+                })
+                .collect(),
+        };
+        store.apply_full_snapshot(&import).unwrap().unwrap();
+    }
+
+    #[test]
+    fn team_crud_search_and_summary_count() {
+        let store = InventoryStore::test_store();
+        seed_characters(
+            &store,
+            &[
+                (1001, "三月七", "Preservation"),
+                (1002, "丹恒", "Hunt"),
+                (1003, "姬子", "Erudition"),
+                (1004, "瓦尔特", "Nihility"),
+            ],
+        );
+
+        let created = store
+            .save_team(&TeamInput {
+                team_id: None,
+                name: "  虚数队  ".to_owned(),
+                note: "  二队主C  ".to_owned(),
+                character_ids: vec![Some(1001), Some(1002), None, Some(1003)],
+            })
+            .unwrap();
+        assert_eq!(created.name, "虚数队");
+        assert_eq!(created.note, "二队主C");
+        assert_eq!(created.members.len(), 4);
+        assert_eq!(
+            created.members[0]
+                .as_ref()
+                .map(|member| member.character_id),
+            Some(1001)
+        );
+        assert!(created.members[2].is_none());
+        assert_eq!(store.summary().unwrap().teams, 1);
+
+        let listed = store
+            .list_teams(&TeamFilter {
+                page: PageQuery {
+                    page: 1,
+                    page_size: 50,
+                },
+                search: Some("虚数".to_owned()),
+            })
+            .unwrap();
+        assert_eq!(listed.total, 1);
+        assert_eq!(listed.items[0].team_id, created.team_id);
+
+        let by_note = store
+            .list_teams(&TeamFilter {
+                page: PageQuery {
+                    page: 1,
+                    page_size: 50,
+                },
+                search: Some("主C".to_owned()),
+            })
+            .unwrap();
+        assert_eq!(by_note.total, 1);
+
+        let updated = store
+            .save_team(&TeamInput {
+                team_id: Some(created.team_id),
+                name: "虚数队改".to_owned(),
+                note: String::new(),
+                character_ids: vec![Some(1004), Some(1002), Some(1001), None],
+            })
+            .unwrap();
+        assert_eq!(updated.name, "虚数队改");
+        assert_eq!(
+            updated.members[0]
+                .as_ref()
+                .map(|member| member.name.as_str()),
+            Some("瓦尔特")
+        );
+
+        store.delete_team(created.team_id).unwrap();
+        assert_eq!(store.summary().unwrap().teams, 0);
+        assert!(store.get_team(created.team_id).is_err());
+    }
+
+    #[test]
+    fn team_rejects_empty_name_duplicates_and_missing_characters() {
+        let store = InventoryStore::test_store();
+        seed_characters(
+            &store,
+            &[(1001, "三月七", "Preservation"), (1002, "丹恒", "Hunt")],
+        );
+
+        let empty = store.save_team(&TeamInput {
+            team_id: None,
+            name: "   ".to_owned(),
+            note: String::new(),
+            character_ids: vec![None, None, None, None],
+        });
+        assert!(empty.is_err());
+
+        let duplicate = store.save_team(&TeamInput {
+            team_id: None,
+            name: "重复队".to_owned(),
+            note: String::new(),
+            character_ids: vec![Some(1001), Some(1001), None, None],
+        });
+        assert!(duplicate.is_err());
+
+        let missing = store.save_team(&TeamInput {
+            team_id: None,
+            name: "幽灵队".to_owned(),
+            note: String::new(),
+            character_ids: vec![Some(9999), None, None, None],
+        });
+        assert!(missing.is_err());
+
+        let wrong_len = store.save_team(&TeamInput {
+            team_id: None,
+            name: "槽位错误".to_owned(),
+            note: String::new(),
+            character_ids: vec![Some(1001)],
+        });
+        assert!(wrong_len.is_err());
+    }
+
+    #[test]
+    fn team_shows_orphan_member_when_character_removed() {
+        let store = InventoryStore::test_store();
+        seed_characters(
+            &store,
+            &[(1001, "三月七", "Preservation"), (1002, "丹恒", "Hunt")],
+        );
+        let team = store
+            .save_team(&TeamInput {
+                team_id: None,
+                name: "孤儿测试".to_owned(),
+                note: String::new(),
+                character_ids: vec![Some(1001), Some(1002), None, None],
+            })
+            .unwrap();
+
+        store.clear(Some(InventoryKind::Character)).unwrap();
+        let orphaned = store.get_team(team.team_id).unwrap();
+        assert!(!orphaned.members[0].as_ref().unwrap().owned);
+        assert!(orphaned.members[0].as_ref().unwrap().name.contains("1001"));
+        // clear(kind) keeps teams, matching build-plan retention on partial clear.
+        assert_eq!(store.summary().unwrap().teams, 1);
     }
 }

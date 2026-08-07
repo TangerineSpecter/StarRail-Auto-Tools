@@ -49,6 +49,8 @@ export interface InventorySummary {
   relics: number;
   lightCones: number;
   characters: number;
+  /** User-authored team compositions stored locally. */
+  teams: number;
   lastSyncAt: number | null;
   protocolVersion: string;
 }
@@ -66,6 +68,40 @@ export interface WebDavSettings {
 }
 
 export type InventoryKind = "relic" | "lightCone" | "character";
+
+/** Data-management sidebar mode: inventory kinds plus local team compositions. */
+export type ArchiveView = InventoryKind | "team";
+
+export interface TeamMember {
+  characterId: number;
+  name: string;
+  path: string;
+  level: number;
+  /** False when the character row is missing from inventory. */
+  owned: boolean;
+}
+
+export interface Team {
+  teamId: number;
+  name: string;
+  note: string;
+  /** Always length 4; empty slots are null. */
+  members: Array<TeamMember | null>;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface TeamInput {
+  teamId?: number | null;
+  name: string;
+  note: string;
+  /** Must be length 4. */
+  characterIds: Array<number | null>;
+}
+
+export interface TeamFilter extends PageQuery {
+  search?: string;
+}
 
 export interface PageQuery {
   page: number;

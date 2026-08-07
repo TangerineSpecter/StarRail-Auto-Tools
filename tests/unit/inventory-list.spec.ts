@@ -13,10 +13,13 @@ const relic: RelicListItem = {
   level: 15,
   mainStat: "HPDelta",
   mainStatValue: 705.6,
-  subStats: [],
+  substats: [],
   locked: false,
   discard: false,
   location: "",
+  equippedCharacterId: null,
+  source: "network",
+  updatedAt: 0,
 };
 
 const character: CharacterListItem = {
@@ -75,6 +78,41 @@ describe("InventoryList", () => {
     expect(wrapper.get(".character-stars").text()).toBe("★★★★");
   });
 
+  it("shows multipath equipped owner with path suffix", () => {
+    const wrapper = mount(InventoryList, {
+      props: {
+        kind: "relic",
+        items: [
+          {
+            ...relic,
+            location: "开拓者",
+            equippedCharacterId: 8006,
+          },
+          {
+            ...relic,
+            itemId: 8,
+            location: "三月七",
+            equippedCharacterId: 1224,
+          },
+        ],
+        selectedIds: new Set<number>(),
+        allSelected: false,
+        appending: false,
+        busy: false,
+      },
+      global: {
+        stubs: {
+          Checkbox: { template: '<input type="checkbox" />' },
+          Button: { template: "<button><slot /></button>" },
+        },
+      },
+    });
+
+    const tags = wrapper.findAll(".relic-equip-tag");
+    expect(tags[0]!.text()).toBe("开拓者·同谐");
+    expect(tags[1]!.text()).toBe("三月七·巡猎");
+  });
+
   it("uses path icon assets and resolves multi-path Trailblazer avatars", () => {
     const trailblazers: CharacterListItem[] = [
       {
@@ -105,14 +143,12 @@ describe("InventoryList", () => {
 
     const cards = wrapper.findAll(".character-card");
     expect(cards).toHaveLength(2);
-    expect(cards[0]!.get(".path-icon").attributes("src")).toBe(
-      "/character-icons/paths/毁灭.webp",
-    );
+    expect(cards[0]!.get(".character-name").text()).toBe("开拓者·毁灭");
+    expect(cards[1]!.get(".character-name").text()).toBe("开拓者·存护");
+    expect(cards[0]!.get(".path-icon").attributes("src")).toBe("/character-icons/paths/毁灭.webp");
     expect(cards[0]!.get(".path-text").text()).toBe("毁灭");
     expect(cards[0]!.get(".character-card-avatar").attributes("src")).toContain("playerboy");
-    expect(cards[1]!.get(".path-icon").attributes("src")).toBe(
-      "/character-icons/paths/存护.webp",
-    );
+    expect(cards[1]!.get(".path-icon").attributes("src")).toBe("/character-icons/paths/存护.webp");
     expect(cards[1]!.get(".character-card-avatar").attributes("src")).toContain("playerboy2");
   });
 });

@@ -25,6 +25,7 @@ export interface LightConeDetailData {
   ascension: number;
   superimposition: number;
   location: string;
+  equippedCharacterId?: number | null;
   locked: boolean;
   source: string;
   updatedAt: number;

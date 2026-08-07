@@ -22,6 +22,7 @@ export const emptyInventorySummary: InventorySummary = {
   relics: 0,
   lightCones: 0,
   characters: 0,
+  teams: 0,
   lastSyncAt: null,
   protocolVersion,
 };

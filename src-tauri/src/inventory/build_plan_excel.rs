@@ -349,9 +349,7 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
                 .map_err(io_error)?;
         }
         if !plan.note.is_empty() {
-            sheet
-                .write_string(row, 32, &plan.note)
-                .map_err(io_error)?;
+            sheet.write_string(row, 32, &plan.note).map_err(io_error)?;
         }
         // 33 = character id (also written below for rows without plans)
         if !plan.substat_weights.is_empty() {
@@ -391,15 +389,9 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
     // Hide machine columns: character id + weights JSON.
     sheet.set_column_hidden(33).map_err(io_error)?;
     sheet.set_column_hidden(34).map_err(io_error)?;
-    sheet
-        .set_column_width(32, 28.0)
-        .map_err(io_error)?;
-    sheet
-        .set_column_width(35, 12.0)
-        .map_err(io_error)?;
-    sheet
-        .set_column_width(36, 12.0)
-        .map_err(io_error)?;
+    sheet.set_column_width(32, 28.0).map_err(io_error)?;
+    sheet.set_column_width(35, 12.0).map_err(io_error)?;
+    sheet.set_column_width(36, 12.0).map_err(io_error)?;
     for (index, row_data) in rows.iter().enumerate() {
         sheet
             .write_number(index as u32 + 1, 33, row_data.character_id)

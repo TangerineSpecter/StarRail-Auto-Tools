@@ -493,7 +493,10 @@ mod tests {
             Some(1224)
         );
         assert_eq!(resolve_equipped_character_id("开拓者", None), None);
-        assert_eq!(resolve_equipped_character_id("8001", Some(9999)), Some(8001));
+        assert_eq!(
+            resolve_equipped_character_id("8001", Some(9999)),
+            Some(8001)
+        );
     }
 
     #[test]

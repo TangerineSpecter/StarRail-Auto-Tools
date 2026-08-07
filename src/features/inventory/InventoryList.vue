@@ -2,6 +2,8 @@
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import {
+  characterDisplayName,
+  equippedCharacterLabel,
   lightConeById,
   pathIconSrc,
   relicImage,
@@ -61,11 +63,18 @@ const characterCatalogueEntry = (item: Pick<CharacterListItem, "characterId" | "
     name: item.name,
     path: item.path,
   });
-const characterAvatar = (item: CharacterListItem) => characterCatalogueEntry(item)?.image ?? undefined;
+const characterAvatar = (item: CharacterListItem) =>
+  characterCatalogueEntry(item)?.image ?? undefined;
 const characterBackground = (item: CharacterListItem) =>
   characterCatalogueEntry(item)?.backgroundImage;
 const characterStars = (item: CharacterListItem) =>
   "★".repeat(characterCatalogueEntry(item)?.rarity ?? 5);
+const characterLabel = (item: Pick<CharacterListItem, "characterId" | "name" | "path">) =>
+  characterDisplayName({
+    characterId: item.characterId,
+    name: item.name,
+    path: item.path,
+  });
 const characterElement = (name: string, characterId?: number | null) =>
   resolveCharacterCatalogue({ characterId, name })?.element ?? null;
 const lightConeImage = (item: LightConeListItem) =>
@@ -161,9 +170,7 @@ function avatarColor(name: string): string {
                   :class="['relic-substat-item', `hit-${row.hits}`]"
                 >
                   <span class="substat-name">{{ statLabel(row.key) }}</span
-                  ><strong class="substat-value">{{
-                    formatStatValue(row.key, row.value)
-                  }}</strong
+                  ><strong class="substat-value">{{ formatStatValue(row.key, row.value) }}</strong
                   ><i v-if="row.badge" class="hit-count-badge">{{ row.badge }}</i>
                 </span>
               </div>
@@ -175,7 +182,7 @@ function avatarColor(name: string): string {
                   'relic-equip-tag',
                   `element-${characterElement(item.location, item.equippedCharacterId)}`,
                 ]"
-                >{{ item.location }}</span
+                >{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
               ><span v-else class="relic-equip-tag unequipped">未装备</span>
             </td>
             <td class="detail-cell">
@@ -235,7 +242,7 @@ function avatarColor(name: string): string {
                   'relic-equip-tag',
                   `element-${characterElement(item.location, item.equippedCharacterId)}`,
                 ]"
-                >{{ item.location }}</span
+                >{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
               ><span v-else class="relic-equip-tag unequipped">未装备</span>
             </td>
             <td class="detail-cell">
@@ -277,7 +284,7 @@ function avatarColor(name: string): string {
             v-if="characterAvatar(item)"
             class="character-card-avatar"
             :src="characterAvatar(item)"
-            :alt="`${item.name} 头像`"
+            :alt="`${characterLabel(item)} 头像`"
           />
           <div
             v-else
@@ -287,13 +294,12 @@ function avatarColor(name: string): string {
             {{ item.name.charAt(0) }}
           </div>
           <div class="character-path">
-            <img
-              class="path-icon"
-              :src="pathIconSrc(item.path)"
-              :alt="pathLabel(item.path)"
-            /><span class="path-text">{{ pathLabel(item.path) }}</span>
+            <img class="path-icon" :src="pathIconSrc(item.path)" :alt="pathLabel(item.path)" /><span
+              class="path-text"
+              >{{ pathLabel(item.path) }}</span
+            >
           </div>
-          <div class="character-name">{{ item.name }}</div>
+          <div class="character-name">{{ characterLabel(item) }}</div>
           <div
             class="character-stars"
             :aria-label="`${characterCatalogueEntry(item)?.rarity ?? 5} 星`"

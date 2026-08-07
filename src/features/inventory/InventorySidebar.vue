@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import { formatTime } from "@/shared/utils/display";
-import type { InventoryKind, InventorySummary } from "@/types";
+import type { ArchiveView, InventorySummary } from "@/types";
 
-defineProps<{ kind: InventoryKind; summary: InventorySummary; busy: boolean }>();
+defineProps<{ kind: ArchiveView; summary: InventorySummary; busy: boolean }>();
 const emit = defineEmits<{
-  "update:kind": [kind: InventoryKind];
+  "update:kind": [kind: ArchiveView];
   export: [];
   import: [];
 }>();
@@ -27,6 +27,12 @@ const entries = [
     label: "角色",
     code: "AVATAR",
     count: (summary: InventorySummary) => summary.characters,
+  },
+  {
+    kind: "team" as const,
+    label: "配队",
+    code: "TEAM",
+    count: (summary: InventorySummary) => summary.teams ?? 0,
   },
 ];
 </script>

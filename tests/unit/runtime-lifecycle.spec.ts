@@ -34,7 +34,14 @@ const direct = {
   incomingUid: null,
   requiresAccountSwitch: false,
 };
-const summary = { relics: 0, lightCones: 0, characters: 0, lastSyncAt: null, protocolVersion: "v" };
+const summary = {
+  relics: 0,
+  lightCones: 0,
+  characters: 0,
+  teams: 0,
+  lastSyncAt: null,
+  protocolVersion: "v",
+};
 
 describe("useRuntimeLifecycle", () => {
   beforeEach(() => {
