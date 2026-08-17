@@ -28,11 +28,15 @@ rfd = "0.17.2"
 rust_xlsxwriter = "0.84"
 rusqlite = { version = "0.37", features = ["bundled"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+russh = "0.54"
+russh-sftp = "2.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+suppaftp = { version = "8", default-features = false, features = ["rustls-ring"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 thiserror = "2"
+tokio = { version = "1.44.2", features = ["rt", "sync", "time", "net", "io-util", "macros"] }
 
 [target.'cfg(windows)'.dependencies]
 futures = "0.3.31"
@@ -40,7 +44,6 @@ pktmon = { version = "0.6.2", features = ["tokio"] }
 protobuf = "=3.7.1"
 reliquary = { git = "https://github.com/IceDynamix/reliquary", tag = "v22.0.0", features = ["proto-rqa"] }
 reliquary-archiver = { git = "https://github.com/IceDynamix/reliquary-archiver", tag = "v0.17.1", default-features = false }
-tokio = { version = "1.44.2", features = ["sync", "time"] }
 windows = { version = "0.62", features = [
   "Graphics_Capture",
   "Graphics_DirectX",

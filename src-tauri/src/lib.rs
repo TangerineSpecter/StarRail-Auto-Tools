@@ -7,7 +7,7 @@ mod inventory;
 mod ocr;
 mod scanner;
 mod screenshot;
-mod webdav;
+mod sync;
 
 use direct_read::DirectReadState;
 use inventory::InventoryStore;
@@ -25,9 +25,7 @@ pub fn run() {
             let store = InventoryStore::initialize(data_dir.join("inventory.sqlite3"))
                 .map_err(|error| std::io::Error::other(error.to_string()))?;
             app.manage(store);
-            app.manage(webdav::WebDavStore::new(
-                data_dir.join("webdav-settings.json"),
-            ));
+            app.manage(sync::SyncStore::new(data_dir.clone()));
             app.manage(DirectReadState::default());
             direct_read::auto_start(app.handle().clone());
             Ok(())
@@ -79,6 +77,11 @@ pub fn run() {
             commands::test_webdav_connection,
             commands::upload_webdav_snapshot,
             commands::download_webdav_snapshot,
+            commands::get_sync_settings,
+            commands::save_sync_settings,
+            commands::test_sync_connection,
+            commands::upload_sync_snapshot,
+            commands::download_sync_snapshot,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run StarRail-Auto-Tools");

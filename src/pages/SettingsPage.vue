@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import WebDavSettingsPanel from "@/features/settings/WebDavSettingsPanel.vue";
+import DataSyncSettingsPanel from "@/features/settings/DataSyncSettingsPanel.vue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 
 const { busy, error, notice } = useRuntimeContext();
 </script>
 
 <template>
-  <WebDavSettingsPanel
+  <DataSyncSettingsPanel
     :busy="busy"
     @busy="busy = $event"
     @error="error = $event"

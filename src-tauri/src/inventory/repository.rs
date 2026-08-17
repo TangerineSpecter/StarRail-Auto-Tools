@@ -539,7 +539,10 @@ impl InventoryStore {
         Ok(())
     }
 
-    pub fn upsert_character_build_score(&self, score: &CharacterBuildScore) -> Result<(), AppError> {
+    pub fn upsert_character_build_score(
+        &self,
+        score: &CharacterBuildScore,
+    ) -> Result<(), AppError> {
         let connection = self.connect()?;
         connection.execute(
             "INSERT INTO character_build_scores(
@@ -603,8 +606,7 @@ impl InventoryStore {
                 computed_at: row.get(6)?,
             })
         })?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(AppError::from)
+        rows.collect::<Result<Vec<_>, _>>().map_err(AppError::from)
     }
 
     pub fn delete_character_build_score(&self, character_id: u32) -> Result<(), AppError> {
@@ -1215,9 +1217,7 @@ impl InventoryStore {
 
     /// Returns relic main-stat scan results grouped by set → slot → main stat.
     /// No pagination needed — the GROUP BY query produces a compact summary.
-    pub fn scan_relics_by_main_stat_grouped(
-        &self,
-    ) -> Result<RelicMainStatGroupedResult, AppError> {
+    pub fn scan_relics_by_main_stat_grouped(&self) -> Result<RelicMainStatGroupedResult, AppError> {
         let connection = self.connect()?;
         let plans = connection
             .prepare("SELECT main_stats_json FROM character_build_plans")?
@@ -1322,9 +1322,9 @@ impl InventoryStore {
 
         // Sort parts within each set by slot order.
         for set_group in &mut groups {
-            set_group.parts.sort_by_key(|p| {
-                *slot_order.get(p.slot.as_str()).unwrap_or(&99)
-            });
+            set_group
+                .parts
+                .sort_by_key(|p| *slot_order.get(p.slot.as_str()).unwrap_or(&99));
         }
 
         Ok(RelicMainStatGroupedResult {
@@ -1596,7 +1596,7 @@ impl InventoryStore {
         mut snapshot: SyncSnapshot,
     ) -> Result<InventorySummary, AppError> {
         if !supports_sync_format_version(snapshot.format_version) {
-            return Err(AppError::WebDav(format!(
+            return Err(AppError::Sync(format!(
                 "不支持的同步数据版本：{}",
                 snapshot.format_version
             )));
@@ -3892,10 +3892,7 @@ mod tests {
         // Two Head HP (fixed allowed) + one Body DEF% (unconfigured Body → mismatch).
         snapshot.relics[2].slot = "Body".to_owned();
         snapshot.relics[2].mainstat = "DEF%".to_owned();
-        store
-            .apply_full_snapshot(&snapshot)
-            .unwrap()
-            .unwrap();
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
         let plan = CharacterBuildPlan {
             character_id: 1001,
             cavern_mode: "fourPiece".to_owned(),
@@ -3931,8 +3928,7 @@ mod tests {
         // Plans with only selectable slots configured: Head/Hands fixed still suppress matches.
         let mut body_plan = plan;
         body_plan.character_id = 1002;
-        body_plan.main_stats =
-            HashMap::from([("Body".to_owned(), vec!["CRIT Rate".to_owned()])]);
+        body_plan.main_stats = HashMap::from([("Body".to_owned(), vec!["CRIT Rate".to_owned()])]);
         store.save_build_plan(&body_plan).unwrap();
         let scan2 = store
             .scan_relics_by_main_stat(&PageQuery {
@@ -4538,10 +4534,7 @@ mod tests {
         let store = InventoryStore::test_store();
         seed_characters(
             &store,
-            &[
-                (1001, "三月七", "Preservation"),
-                (1002, "丹恒", "Hunt"),
-            ],
+            &[(1001, "三月七", "Preservation"), (1002, "丹恒", "Hunt")],
         );
         let created = store
             .save_team(&TeamInput {
@@ -4575,7 +4568,9 @@ mod tests {
         assert_eq!(restored.name, "同步配队");
         assert_eq!(restored.note, "WebDAV");
         assert_eq!(
-            restored.members[0].as_ref().map(|member| member.character_id),
+            restored.members[0]
+                .as_ref()
+                .map(|member| member.character_id),
             Some(1001)
         );
         assert_eq!(store.summary().unwrap().teams, 1);
@@ -4861,7 +4856,10 @@ mod tests {
 
         store.delete_build_plan(1001).unwrap();
         // delete_build_plan clears score even if no plan existed.
-        assert!(store.list_character_build_scores(&[1001]).unwrap().is_empty());
+        assert!(store
+            .list_character_build_scores(&[1001])
+            .unwrap()
+            .is_empty());
     }
 
     #[test]
@@ -4882,7 +4880,10 @@ mod tests {
         assert_eq!(store.list_character_build_scores(&[1001]).unwrap().len(), 1);
 
         store.clear(Some(InventoryKind::Relic)).unwrap();
-        assert!(store.list_character_build_scores(&[1001]).unwrap().is_empty());
+        assert!(store
+            .list_character_build_scores(&[1001])
+            .unwrap()
+            .is_empty());
 
         store
             .upsert_character_build_score(&CharacterBuildScore {
@@ -4901,7 +4902,10 @@ mod tests {
                 ids: vec![1001],
             })
             .unwrap();
-        assert!(store.list_character_build_scores(&[1001]).unwrap().is_empty());
+        assert!(store
+            .list_character_build_scores(&[1001])
+            .unwrap()
+            .is_empty());
     }
 
     #[test]

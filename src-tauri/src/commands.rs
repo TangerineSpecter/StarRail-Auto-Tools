@@ -6,16 +6,15 @@ use crate::{
     error::AppError,
     inventory::{
         BuildPlanExcelImportResult, BuildRecommendation, BuildRecommendationRequest,
-        CharacterBuildPlan, CharacterFilter, ClearInventoryRequest, DeleteItemsRequest,
-        InventoryDetail, InventoryImportResult, InventoryKind, InventoryStore, InventorySummary,
-        LightConeFilter, LightConeListItem, PageQuery, PagedResult, RelicFilter, RelicListItem,
-        CharacterBuildScore, RelicMainStatGroupedResult, RelicMainStatScanResult,
-        RelicSetRecommendedCharacter, Team,
-        TeamFilter, TeamInput,
+        CharacterBuildPlan, CharacterBuildScore, CharacterFilter, ClearInventoryRequest,
+        DeleteItemsRequest, InventoryDetail, InventoryImportResult, InventoryKind, InventoryStore,
+        InventorySummary, LightConeFilter, LightConeListItem, PageQuery, PagedResult, RelicFilter,
+        RelicListItem, RelicMainStatGroupedResult, RelicMainStatScanResult,
+        RelicSetRecommendedCharacter, Team, TeamFilter, TeamInput,
     },
     scanner::ScannerState,
     screenshot,
-    webdav::{self, WebDavSettings, WebDavStore},
+    sync::{self, SyncSettings, SyncStore, WebDavSettings},
 };
 
 #[cfg(feature = "ocr")]
@@ -36,21 +35,21 @@ pub fn get_system_capabilities() -> SystemCapabilities {
 }
 
 #[tauri::command]
-pub fn get_webdav_settings(store: State<'_, WebDavStore>) -> Result<WebDavSettings, AppError> {
-    store.load()
+pub fn get_webdav_settings(store: State<'_, SyncStore>) -> Result<WebDavSettings, AppError> {
+    Ok(store.load()?.webdav)
 }
 
 #[tauri::command]
 pub fn save_webdav_settings(
     settings: WebDavSettings,
-    store: State<'_, WebDavStore>,
+    store: State<'_, SyncStore>,
 ) -> Result<(), AppError> {
-    store.save(&settings)
+    store.save_webdav(&settings)
 }
 
 #[tauri::command]
 pub async fn test_webdav_connection(settings: WebDavSettings) -> Result<(), AppError> {
-    webdav::test(&settings).await
+    sync::test_webdav(&settings).await
 }
 
 #[tauri::command]
@@ -58,7 +57,7 @@ pub async fn upload_webdav_snapshot(
     settings: WebDavSettings,
     inventory: State<'_, InventoryStore>,
 ) -> Result<(), AppError> {
-    webdav::upload_snapshot(&settings, inventory.sync_snapshot()?).await
+    sync::upload_webdav_snapshot(&settings, inventory.sync_snapshot()?).await
 }
 
 #[tauri::command]
@@ -67,9 +66,61 @@ pub async fn download_webdav_snapshot(
     app: AppHandle,
     inventory: State<'_, InventoryStore>,
 ) -> Result<InventorySummary, AppError> {
-    let snapshot = webdav::download_snapshot(&settings).await?;
+    let snapshot = sync::download_webdav_snapshot(&settings).await?;
+    publish_restored_snapshot(&app, &inventory, snapshot)
+}
+
+#[tauri::command]
+pub fn get_sync_settings(store: State<'_, SyncStore>) -> Result<SyncSettings, AppError> {
+    store.load()
+}
+
+#[tauri::command]
+pub fn save_sync_settings(
+    settings: SyncSettings,
+    store: State<'_, SyncStore>,
+) -> Result<(), AppError> {
+    store.save(&settings)
+}
+
+#[tauri::command]
+pub async fn test_sync_connection(
+    settings: SyncSettings,
+    store: State<'_, SyncStore>,
+) -> Result<(), AppError> {
+    let known_hosts = store.known_hosts_path().to_path_buf();
+    sync::test(&settings, &known_hosts).await
+}
+
+#[tauri::command]
+pub async fn upload_sync_snapshot(
+    settings: SyncSettings,
+    store: State<'_, SyncStore>,
+    inventory: State<'_, InventoryStore>,
+) -> Result<(), AppError> {
+    let known_hosts = store.known_hosts_path().to_path_buf();
+    sync::upload_snapshot(&settings, &known_hosts, inventory.sync_snapshot()?).await
+}
+
+#[tauri::command]
+pub async fn download_sync_snapshot(
+    settings: SyncSettings,
+    store: State<'_, SyncStore>,
+    app: AppHandle,
+    inventory: State<'_, InventoryStore>,
+) -> Result<InventorySummary, AppError> {
+    let known_hosts = store.known_hosts_path().to_path_buf();
+    let snapshot = sync::download_snapshot(&settings, &known_hosts).await?;
+    publish_restored_snapshot(&app, &inventory, snapshot)
+}
+
+fn publish_restored_snapshot(
+    app: &AppHandle,
+    inventory: &InventoryStore,
+    snapshot: crate::inventory::SyncSnapshot,
+) -> Result<InventorySummary, AppError> {
     let summary = inventory.replace_with_sync_snapshot(snapshot)?;
-    direct_read::inventory_changed(&app, &summary, false)?;
+    direct_read::inventory_changed(app, &summary, false)?;
     let _ = app.emit("inventory://changed", &summary);
     Ok(summary)
 }

@@ -25,8 +25,8 @@ pub enum AppError {
     Database(String),
     #[error("数据导出失败：{0}")]
     Export(String),
-    #[error("WebDAV 同步失败：{0}")]
-    WebDav(String),
+    #[error("同步失败：{0}")]
+    Sync(String),
     #[error("游戏数据直读失败：{0}")]
     DirectRead(String),
     #[error("分页参数无效")]

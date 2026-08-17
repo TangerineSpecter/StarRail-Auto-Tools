@@ -67,6 +67,33 @@ export interface WebDavSettings {
   password: string;
 }
 
+export type SyncProtocol = "webdav" | "ftp" | "sftp";
+
+export interface FtpSettings {
+  host: string;
+  port: number;
+  remotePath: string;
+  username: string;
+  password: string;
+  secure: boolean;
+}
+
+export interface SftpSettings {
+  host: string;
+  port: number;
+  remotePath: string;
+  username: string;
+  password: string;
+  privateKeyPath: string;
+}
+
+export interface SyncSettings {
+  protocol: SyncProtocol;
+  webdav: WebDavSettings;
+  ftp: FtpSettings;
+  sftp: SftpSettings;
+}
+
 export type InventoryKind = "relic" | "lightCone" | "character";
 
 /** Data-management sidebar mode: inventory kinds plus local team compositions. */
