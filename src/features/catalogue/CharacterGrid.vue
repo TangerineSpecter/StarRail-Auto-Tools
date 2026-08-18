@@ -184,7 +184,7 @@ const filteredCharacters = computed(() => {
             <span v-else class="character-portrait-placeholder">◇</span>
           </div>
 
-          <!-- 12度科技斜切高光金属轨线 -->
+          <!-- 15度科技斜切高光金属轨线 -->
           <div class="character-slice-rail" />
 
           <!-- 底部稀有度流光品质晶条 -->
@@ -200,7 +200,7 @@ const filteredCharacters = computed(() => {
           </div>
         </div>
 
-        <!-- 右侧：两行紧凑信息 -->
+        <!-- 右侧：两行高张力信息 -->
         <div class="character-catalogue-body">
           <div class="character-card-top-row">
             <h4 :title="character.name">{{ character.name }}</h4>
