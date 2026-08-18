@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { onActivated, onMounted, ref, watch } from "vue";
 import type { RelicSetCatalogueEntry } from "@/types";
 import { ownedCountOf } from "./owned-counts";
+
+defineOptions({ name: "RelicSetGrid" });
 
 const props = defineProps<{
   sets: RelicSetCatalogueEntry[];
@@ -8,16 +11,25 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry] }>();
 
+const animKey = ref(0);
+const triggerAnimation = () => {
+  animKey.value++;
+};
+onMounted(triggerAnimation);
+onActivated(triggerAnimation);
+watch(() => props.sets, triggerAnimation);
+
 const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
 </script>
 <template>
   <div class="relic-catalogue-section">
     <!-- 现代星铁质感遗器网格 -->
-    <div class="catalogue-grid">
+    <div :key="animKey" class="catalogue-grid">
       <button
-        v-for="set in sets"
+        v-for="(set, index) in sets"
         :key="set.id"
         :class="['catalogue-card', `catalogue-card-${set.kind}`]"
+        :style="{ '--row-i': Math.floor(index / 3) }"
         type="button"
         aria-haspopup="dialog"
         :aria-label="`查看推荐使用${set.name}的角色`"

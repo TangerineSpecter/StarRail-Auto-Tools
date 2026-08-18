@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onActivated, onMounted, ref, watch } from "vue";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { CharacterCatalogueEntry } from "@/types";
+
+defineOptions({ name: "CharacterGrid" });
 
 const props = defineProps<{ characters: CharacterCatalogueEntry[] }>();
 const emit = defineEmits<{ select: [character: CharacterCatalogueEntry] }>();
@@ -12,6 +14,14 @@ const ELEMENT_ORDER = ["物理", "火", "冰", "雷", "风", "量子", "虚数"]
 const selectedPath = ref<string>("all");
 const selectedElement = ref<string>("all");
 const selectedRarity = ref<number | "all">("all");
+
+const animKey = ref(0);
+const triggerAnimation = () => {
+  animKey.value++;
+};
+onMounted(triggerAnimation);
+onActivated(triggerAnimation);
+watch([selectedPath, selectedElement, selectedRarity], triggerAnimation);
 
 const availablePaths = computed(() => {
   const present = new Set(props.characters.map((item) => item.path).filter(Boolean));
@@ -138,33 +148,56 @@ const filteredCharacters = computed(() => {
     </div>
 
     <!-- 超紧凑左右布局角色网格 -->
-    <div v-if="filteredCharacters.length > 0" class="character-catalogue-grid">
+    <div v-if="filteredCharacters.length > 0" :key="animKey" class="character-catalogue-grid">
       <button
-        v-for="character in filteredCharacters"
+        v-for="(character, index) in filteredCharacters"
         :key="character.slug"
-        :class="['character-catalogue-card', `rarity-${character.rarity}`]"
+        :class="[
+          'character-catalogue-card',
+          `rarity-${character.rarity}`,
+          `elem-theme-${character.element}`,
+        ]"
+        :style="{ '--row-i': Math.floor(index / 4) }"
         type="button"
         aria-haspopup="dialog"
         :aria-label="`查看${character.name}的 80 级基础属性`"
         @click="emit('select', character)"
       >
-        <!-- 左侧：方形头像区域 -->
-        <div class="character-catalogue-thumb">
-          <img
-            v-if="character.image"
-            class="character-catalogue-avatar"
-            :src="character.image"
-            :alt="character.name"
-          />
-          <span v-else class="character-catalogue-placeholder">◇</span>
+        <!-- 背景命途水印装饰 -->
+        <img
+          v-if="character.pathIcon || pathIconSrc(character.path)"
+          class="character-card-watermark"
+          :src="character.pathIcon || pathIconSrc(character.path)"
+          alt=""
+          aria-hidden="true"
+        />
 
-          <!-- 属性角标 -->
-          <img
-            v-if="character.elementIcon"
-            class="character-element-badge"
-            :src="character.elementIcon"
-            :alt="character.element"
-          />
+        <!-- 左侧：贯穿式宽幅立绘切片舱 -->
+        <div class="character-portrait-slice">
+          <div class="character-portrait-viewport">
+            <img
+              v-if="character.image"
+              class="character-portrait-img"
+              :src="character.image"
+              :alt="character.name"
+            />
+            <span v-else class="character-portrait-placeholder">◇</span>
+          </div>
+
+          <!-- 12度科技斜切高光金属轨线 -->
+          <div class="character-slice-rail" />
+
+          <!-- 底部稀有度流光品质晶条 -->
+          <div class="character-slice-rarity-bar" />
+
+          <!-- 嵌合式属性能量晶章 -->
+          <div v-if="character.elementIcon" class="character-element-crest">
+            <img
+              class="character-element-crest-icon"
+              :src="character.elementIcon"
+              :alt="character.element"
+            />
+          </div>
         </div>
 
         <!-- 右侧：两行紧凑信息 -->

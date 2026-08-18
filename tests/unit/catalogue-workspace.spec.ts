@@ -28,6 +28,12 @@ function mountWorkspace() {
   });
 }
 
+function tabButton(wrapper: ReturnType<typeof mountWorkspace>, label: string) {
+  const button = wrapper.findAll(".catalogue-tab-btn").find((item) => item.text().includes(label));
+  if (!button) throw new Error(`missing catalogue tab: ${label}`);
+  return button;
+}
+
 describe("CatalogueWorkspace", () => {
   beforeEach(() => {
     equipmentCounts.mockReset();
@@ -48,13 +54,40 @@ describe("CatalogueWorkspace", () => {
     expect(wrapper.text()).toContain("持有 6 件");
     expect(wrapper.text()).not.toMatch(/#\d+/);
 
-    const lightConeTab = wrapper
-      .findAll(".catalogue-tab-btn")
-      .find((button) => button.text().includes("光锥"));
-    expect(lightConeTab).toBeTruthy();
-    await lightConeTab!.trigger("click");
+    await tabButton(wrapper, "光锥").trigger("click");
     expect(wrapper.text()).toContain("持有 2 把");
     expect(wrapper.text()).not.toMatch(/#\d+/);
+  });
+
+  it("mounts only the active tab and restores visited tab state", async () => {
+    equipmentCounts.mockResolvedValue({ relics: [], lightCones: [] });
+    const wrapper = mountWorkspace();
+    await flushPromises();
+
+    expect(wrapper.find(".relic-catalogue-section").exists()).toBe(true);
+    expect(wrapper.find(".lightcone-catalogue-section").exists()).toBe(false);
+    expect(wrapper.find(".character-catalogue-section").exists()).toBe(false);
+    expect(wrapper.text()).toContain("云无留迹的过客");
+    expect(wrapper.text()).not.toContain("太空封印站");
+
+    await tabButton(wrapper, "位面饰品").trigger("click");
+    expect(wrapper.text()).toContain("太空封印站");
+    expect(wrapper.text()).not.toContain("云无留迹的过客");
+    expect(wrapper.find(".lightcone-catalogue-section").exists()).toBe(false);
+
+    await tabButton(wrapper, "光锥").trigger("click");
+    expect(wrapper.find(".lightcone-catalogue-section").exists()).toBe(true);
+    expect(wrapper.find(".relic-catalogue-section").exists()).toBe(false);
+    await wrapper.get(".catalogue-search-input").setValue("快枪");
+
+    await tabButton(wrapper, "角色").trigger("click");
+    expect(wrapper.find(".character-catalogue-section").exists()).toBe(true);
+    expect(wrapper.find(".lightcone-catalogue-section").exists()).toBe(false);
+
+    await tabButton(wrapper, "光锥").trigger("click");
+    expect(wrapper.find(".lightcone-catalogue-section").exists()).toBe(true);
+    expect((wrapper.get(".catalogue-search-input").element as HTMLInputElement).value).toBe("快枪");
+    wrapper.unmount();
   });
 
   it("keeps the latest inventory counts when an earlier request resolves late", async () => {

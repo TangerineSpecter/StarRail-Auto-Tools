@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onActivated, onMounted, ref, watch } from "vue";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { LightConeCatalogueEntry } from "@/types";
 import { ownedCountOf } from "./owned-counts";
+
+defineOptions({ name: "LightConeGrid" });
 
 const props = defineProps<{
   lightCones: LightConeCatalogueEntry[];
@@ -16,6 +18,14 @@ const selectedPath = ref<string>("all");
 const selectedRarity = ref<number | "all">("all");
 const selectedOwned = ref<"all" | "owned" | "unowned">("all");
 const searchQuery = ref("");
+
+const animKey = ref(0);
+const triggerAnimation = () => {
+  animKey.value++;
+};
+onMounted(triggerAnimation);
+onActivated(triggerAnimation);
+watch([selectedPath, selectedRarity, selectedOwned], triggerAnimation);
 
 const availablePaths = computed(() => {
   const present = new Set(props.lightCones.map((item) => item.path).filter(Boolean));
@@ -156,25 +166,40 @@ const filteredLightCones = computed(() => {
     </div>
 
     <!-- 超紧凑左右布局光锥网格 -->
-    <div v-if="filteredLightCones.length > 0" class="lightcone-catalogue-grid">
+    <div v-if="filteredLightCones.length > 0" :key="animKey" class="lightcone-catalogue-grid">
       <button
-        v-for="item in filteredLightCones"
+        v-for="(item, index) in filteredLightCones"
         :key="item.id"
         :class="['lightcone-catalogue-card', `rarity-${item.rarity}`]"
+        :style="{ '--row-i': Math.floor(index / 4) }"
         type="button"
         aria-haspopup="dialog"
         :aria-label="`查看${item.name}的图鉴信息`"
         @click="emit('select', item)"
       >
-        <!-- 左侧：紧凑方形缩略图 -->
-        <div class="lightcone-catalogue-thumb">
-          <img
-            v-if="item.image"
-            class="lightcone-catalogue-art"
-            :src="item.image"
-            :alt="item.name"
-          />
-          <span v-else class="lightcone-catalogue-art catalogue-placeholder">◇</span>
+        <!-- 背景命途水印装饰 -->
+        <img
+          v-if="item.path && pathIconSrc(item.path)"
+          class="lightcone-card-watermark"
+          :src="pathIconSrc(item.path)"
+          alt=""
+          aria-hidden="true"
+        />
+
+        <!-- 左侧：全息光锥卡舱 -->
+        <div class="lightcone-catalogue-frame">
+          <div class="lightcone-frame-inner">
+            <img
+              v-if="item.image"
+              class="lightcone-catalogue-art"
+              :src="item.image"
+              :alt="item.name"
+            />
+            <span v-else class="lightcone-catalogue-art catalogue-placeholder">◇</span>
+          </div>
+
+          <!-- 底部稀有度流光品质晶条 -->
+          <div class="lightcone-frame-rarity-bar" />
         </div>
 
         <!-- 右侧：紧凑两行信息 -->

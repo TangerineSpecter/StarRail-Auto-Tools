@@ -76,6 +76,42 @@
   display: grid;
   gap: 30px;
 }
+.catalogue-panel-enter-active {
+  transition: opacity 160ms ease;
+}
+.catalogue-panel-leave-active {
+  display: none;
+}
+
+/* 逐行渐显线性过度动效：行间平稳 45ms 递增，14px 匀速微上浮，无急冲急停顿挫 */
+.catalogue-grid > .catalogue-card,
+.lightcone-catalogue-grid > .lightcone-catalogue-card,
+.character-catalogue-grid > .character-catalogue-card {
+  animation: catalogue-card-spread 320ms cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+  animation-delay: calc(min(var(--row-i, 0), 6) * 45ms);
+  will-change: opacity, transform;
+}
+
+@keyframes catalogue-card-spread {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalogue-panel-enter-active,
+  .catalogue-grid > .catalogue-card,
+  .lightcone-catalogue-grid > .lightcone-catalogue-card,
+  .character-catalogue-grid > .character-catalogue-card {
+    animation: none;
+    transition: none;
+  }
+}
 .catalogue-group > h3 {
   margin: 0 0 12px;
   font-size: 17px;
@@ -109,9 +145,13 @@
 }
 .catalogue-card-cavern {
   min-height: 104px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 104px;
 }
 .catalogue-card-planar {
   min-height: 72px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 72px;
 }
 button.catalogue-card {
   width: 100%;
@@ -152,7 +192,6 @@ button.catalogue-card:focus-visible {
   width: 34px;
   height: 34px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.14));
   transition: transform 180ms ease;
 }
 button.catalogue-card:hover .catalogue-card-media img {
@@ -310,202 +349,379 @@ button.catalogue-card:hover .relic-effect-row {
   background: #e8eef6;
   border-radius: 2px;
 }
-/* 角色高密度紧凑网格 */
+/* 角色卡片网格与电影级高冲击力排版 */
 .character-catalogue-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 7px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 14px;
 }
 .character-catalogue-card {
+  position: relative;
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-columns: 106px minmax(0, 1fr);
   align-items: center;
-  gap: 9px;
-  min-height: 56px;
-  padding: 5px 8px 5px 5px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.74);
+  gap: 14px;
+  min-height: 92px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 92px;
+  padding: 0 16px 0 0;
+  border: 1px solid rgba(46, 80, 123, 0.18);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 94% 15%, var(--elem-glow, rgba(36, 86, 166, 0.08)) 0%, transparent 68%),
+    rgba(255, 255, 255, 0.88);
   color: inherit;
   text-align: left;
   cursor: pointer;
   font: inherit;
   box-sizing: border-box;
+  overflow: hidden;
+  box-shadow:
+    0 3px 12px rgba(18, 38, 63, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+    transform 200ms cubic-bezier(0.2, 0, 0.2, 1),
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.character-catalogue-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.75) 50%,
+    transparent 55%
+  );
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: transform 650ms cubic-bezier(0.2, 0, 0.2, 1), opacity 300ms ease;
+  pointer-events: none;
+  z-index: 5;
+}
+.character-catalogue-card:hover::after {
+  opacity: 1;
+  transform: translateX(100%);
 }
 .character-catalogue-card:hover,
 .character-catalogue-card:focus-visible {
-  border-color: rgba(58, 108, 181, 0.75);
-  box-shadow: 0 6px 16px rgba(35, 75, 128, 0.12);
+  border-color: rgba(58, 108, 181, 0.85);
+  box-shadow:
+    0 14px 32px -4px rgba(35, 75, 128, 0.22),
+    0 0 0 1.5px rgba(58, 108, 181, 0.35);
   outline: none;
-  transform: translateY(-2px);
+  transform: translateY(-3.5px);
+}
+.character-catalogue-card.rarity-5 {
+  border-color: rgba(212, 175, 55, 0.45);
 }
 .character-catalogue-card.rarity-5:hover {
-  border-color: rgba(199, 165, 90, 0.85);
-  box-shadow: 0 6px 16px rgba(185, 140, 50, 0.16);
+  border-color: rgba(255, 215, 106, 0.95);
+  box-shadow:
+    0 16px 36px -4px rgba(185, 140, 50, 0.32),
+    0 0 0 1.5px rgba(255, 215, 106, 0.7);
+}
+.character-catalogue-card.rarity-4 {
+  border-color: rgba(166, 122, 216, 0.45);
 }
 .character-catalogue-card.rarity-4:hover {
-  border-color: rgba(158, 125, 201, 0.85);
-  box-shadow: 0 6px 16px rgba(130, 90, 180, 0.14);
+  border-color: rgba(199, 158, 255, 0.95);
+  box-shadow:
+    0 16px 36px -4px rgba(130, 90, 180, 0.28),
+    0 0 0 1.5px rgba(199, 158, 255, 0.7);
 }
 
-/* 左侧方形头像 */
-.character-catalogue-thumb {
+/* 属性专属右侧高张力能量辐射场 */
+.character-catalogue-card.elem-theme-物理 {
+  --elem-glow: rgba(140, 155, 175, 0.18);
+}
+.character-catalogue-card.elem-theme-火 {
+  --elem-glow: rgba(240, 75, 50, 0.2);
+}
+.character-catalogue-card.elem-theme-冰 {
+  --elem-glow: rgba(45, 155, 230, 0.2);
+}
+.character-catalogue-card.elem-theme-雷 {
+  --elem-glow: rgba(160, 95, 220, 0.2);
+}
+.character-catalogue-card.elem-theme-风 {
+  --elem-glow: rgba(45, 185, 125, 0.2);
+}
+.character-catalogue-card.elem-theme-量子 {
+  --elem-glow: rgba(95, 110, 225, 0.2);
+}
+.character-catalogue-card.elem-theme-虚数 {
+  --elem-glow: rgba(220, 170, 35, 0.22);
+}
+
+/* 背景命途超大暗纹水印装饰 */
+.character-card-watermark,
+.lightcone-card-watermark {
+  position: absolute;
+  right: -8px;
+  bottom: -10px;
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  opacity: 0.055;
+  filter: brightness(0);
+  pointer-events: none;
+  transform: rotate(-10deg);
+  transition: opacity 220ms ease, transform 220ms ease;
+  user-select: none;
+}
+.character-catalogue-card:hover .character-card-watermark,
+.lightcone-catalogue-card:hover .lightcone-card-watermark {
+  opacity: 0.11;
+  transform: rotate(-4deg) scale(1.08);
+}
+
+/* 左侧：贯穿式电影级英雄立绘舱 */
+.character-portrait-slice {
   position: relative;
-  width: 46px;
-  height: 46px;
-  border-radius: 4px;
+  width: 106px;
+  height: 100%;
+  min-height: 92px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  /* 15度锐利科技斜切右边缘 */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+  background: #090e18;
   overflow: hidden;
+}
+
+.character-portrait-viewport {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 28%, var(--frame-core-glow, rgba(255, 255, 255, 0.15)) 0%, transparent 75%),
+    linear-gradient(180deg, #182335 0%, #060a12 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, #e7edf5, #c8d4e6);
-  flex-shrink: 0;
 }
-.character-catalogue-card.rarity-5 .character-catalogue-thumb {
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
-    linear-gradient(145deg, #faf3e5 0%, #ecd4a7 55%, #cfa864 100%);
+
+/* 稀有度专属星爆背光 */
+.character-catalogue-card.rarity-5 .character-portrait-viewport {
+  --frame-core-glow: rgba(245, 195, 75, 0.55);
 }
-.character-catalogue-card.rarity-4 .character-catalogue-thumb {
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
-    linear-gradient(145deg, #f4edfa 0%, #dbcbef 55%, #a27ec9 100%);
+.character-catalogue-card.rarity-4 .character-portrait-viewport {
+  --frame-core-glow: rgba(195, 140, 255, 0.55);
 }
-.character-catalogue-avatar {
+
+.character-portrait-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 200ms cubic-bezier(0.2, 0, 0.2, 1);
+  object-position: center 12%;
+  transform: scale(1.03);
+  transition: transform 300ms cubic-bezier(0.2, 0, 0.2, 1);
 }
-.character-catalogue-card:hover .character-catalogue-avatar {
-  transform: scale(1.1);
+.character-catalogue-card:hover .character-portrait-img {
+  transform: scale(1.15) translateX(3px);
 }
-.character-catalogue-placeholder {
+.character-portrait-placeholder {
   display: grid;
   place-items: center;
-  border: 1px dashed var(--line);
-  border-radius: 4px;
   color: var(--muted);
-  font-size: 18px;
-}
-.character-element-badge {
-  position: absolute;
-  bottom: 2px;
-  left: 2px;
-  width: 15px;
-  height: 15px;
-  object-fit: contain;
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
-  z-index: 2;
+  font-size: 26px;
 }
 
-/* 右侧两行信息 */
+/* 15度科技斜切贯穿发光金属导轨 */
+.character-slice-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 3px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.15) 100%);
+  z-index: 2;
+  transform: skewX(-11deg);
+  transform-origin: top right;
+}
+.character-catalogue-card.rarity-5 .character-slice-rail {
+  background: linear-gradient(180deg, #ffe082 0%, #ffd76a 40%, rgba(212, 167, 67, 0.4) 100%);
+  box-shadow: 0 0 10px rgba(255, 215, 106, 0.85);
+}
+.character-catalogue-card.rarity-4 .character-slice-rail {
+  background: linear-gradient(180deg, #e1c4ff 0%, #c79eff 40%, rgba(158, 125, 201, 0.4) 100%);
+  box-shadow: 0 0 10px rgba(199, 158, 255, 0.85);
+}
+
+/* 底部稀有度流光品质晶条 */
+.character-slice-rarity-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+  z-index: 3;
+}
+.character-catalogue-card.rarity-5 .character-slice-rarity-bar {
+  background: linear-gradient(90deg, #ffd978 0%, rgba(212, 167, 67, 0.9) 65%, transparent 100%);
+  box-shadow: 0 0 10px rgba(255, 217, 120, 1);
+}
+.character-catalogue-card.rarity-4 .character-slice-rarity-bar {
+  background: linear-gradient(90deg, #d5abff 0%, rgba(158, 125, 201, 0.9) 65%, transparent 100%);
+  box-shadow: 0 0 10px rgba(213, 171, 255, 1);
+}
+
+/* 装甲级嵌合式属性能量晶章 */
+.character-element-crest {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+  background: rgba(6, 12, 22, 0.92);
+  backdrop-filter: blur(6px);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-right: 1.5px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+.character-element-crest-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
+}
+
+/* 右侧两行高张力信息排版 */
 .character-catalogue-body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
   width: 100%;
+  padding: 12px 0 12px 2px;
+  z-index: 1;
 }
 .character-card-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
 }
 .character-catalogue-card h4 {
   margin: 0;
   color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 16.5px;
+  font-weight: 800;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1 1 auto;
   min-width: 0;
+  letter-spacing: -0.02em;
+  transition: color 140ms ease;
+}
+.character-catalogue-card:hover h4 {
+  color: var(--blue);
 }
 .character-catalogue-stars {
   margin: 0;
-  color: #c7a55a;
-  font-size: 10px;
-  letter-spacing: 0.02em;
+  color: #e5b338;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
   line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
+  text-shadow:
+    0 0 8px rgba(255, 205, 75, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.character-catalogue-card.rarity-4 .character-catalogue-stars {
+  color: #b07eed;
+  text-shadow:
+    0 0 8px rgba(176, 126, 237, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .character-card-bottom-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
 }
 .character-catalogue-meta {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
   min-width: 0;
   margin: 0;
   color: var(--ink-soft);
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
 }
 .character-path-icon {
-  flex: 0 0 13px;
-  width: 13px;
-  height: 13px;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
-  filter: brightness(0) opacity(0.65);
+  filter: brightness(0) opacity(0.7);
 }
 .character-element-tag {
   display: inline-flex;
   align-items: center;
-  padding: 1px 4.5px;
-  border-radius: 3px;
-  font-size: 9.5px;
-  font-weight: 700;
+  padding: 2.5px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 800;
   line-height: 1.2;
   white-space: nowrap;
   flex-shrink: 0;
-  color: var(--ink-soft);
-  background: rgba(82, 98, 123, 0.1);
+  border: 1px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .character-element-tag.elem-tag-物理 {
-  color: #6e7682;
-  background: #eef0f3;
+  color: #4b5563;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  border-color: rgba(107, 114, 128, 0.28);
 }
 .character-element-tag.elem-tag-火 {
-  color: #d04d3e;
-  background: #fdeee9;
+  color: #c5301e;
+  background: linear-gradient(135deg, #fff1ec, #fed7cc);
+  border-color: rgba(220, 50, 30, 0.32);
 }
 .character-element-tag.elem-tag-冰 {
-  color: #3688c2;
-  background: #e8f4fc;
+  color: #1d72ab;
+  background: linear-gradient(135deg, #ecf6fd, #d1ebfc);
+  border-color: rgba(29, 114, 171, 0.32);
 }
 .character-element-tag.elem-tag-雷 {
-  color: #8c57b7;
-  background: #f3ecf9;
+  color: #7b3eb2;
+  background: linear-gradient(135deg, #f8f1fe, #eed7fc);
+  border-color: rgba(123, 62, 178, 0.32);
 }
 .character-element-tag.elem-tag-风 {
-  color: #3ba477;
-  background: #eaf6f0;
+  color: #218c5e;
+  background: linear-gradient(135deg, #ebf9f2, #d1f4e3);
+  border-color: rgba(33, 140, 94, 0.32);
 }
 .character-element-tag.elem-tag-量子 {
-  color: #5865bb;
-  background: #eef0fa;
+  color: #3e4cae;
+  background: linear-gradient(135deg, #f0f2fd, #d9ddfb);
+  border-color: rgba(62, 76, 174, 0.32);
 }
 .character-element-tag.elem-tag-虚数 {
-  color: #b38b29;
-  background: #faf4e3;
+  color: #967018;
+  background: linear-gradient(135deg, #fcf6e4, #f8eac2);
+  border-color: rgba(175, 130, 25, 0.35);
 }
 .catalogue-source-note {
   margin: 0;
@@ -522,10 +738,9 @@ button.catalogue-card:hover .relic-effect-row {
   gap: 8px 12px;
   margin-bottom: 12px;
   padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.86);
   border: 1px solid var(--line);
   border-radius: 6px;
-  backdrop-filter: blur(6px);
 }
 .catalogue-filter-group {
   display: flex;
@@ -613,85 +828,189 @@ button.catalogue-card:hover .relic-effect-row {
   box-shadow: 0 0 0 2px rgba(36, 86, 166, 0.15);
 }
 
-/* 超紧凑左右布局光锥网格 */
+/* 光锥卡片网格与高级设计排版 */
 .lightcone-catalogue-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
-  gap: 7px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
 }
 .lightcone-catalogue-card {
+  position: relative;
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-columns: 62px minmax(0, 1fr);
   align-items: center;
-  gap: 9px;
-  min-height: 56px;
-  padding: 5px 8px 5px 5px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.72);
+  gap: 12px;
+  min-height: 74px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 74px;
+  padding: 6px 12px 6px 6px;
+  border: 1px solid rgba(46, 80, 123, 0.16);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 92% 18%, rgba(36, 86, 166, 0.05) 0%, transparent 68%),
+    rgba(255, 255, 255, 0.82);
   color: inherit;
   text-align: left;
   cursor: pointer;
   font: inherit;
   box-sizing: border-box;
+  overflow: hidden;
+  box-shadow:
+    0 2px 8px rgba(18, 38, 63, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
   transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+    transform 180ms cubic-bezier(0.2, 0, 0.2, 1),
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.lightcone-catalogue-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 45%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 55%
+  );
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: transform 600ms cubic-bezier(0.2, 0, 0.2, 1), opacity 300ms ease;
+  pointer-events: none;
+}
+.lightcone-catalogue-card:hover::after {
+  opacity: 1;
+  transform: translateX(100%);
 }
 .lightcone-catalogue-card:hover,
 .lightcone-catalogue-card:focus-visible {
   border-color: rgba(58, 108, 181, 0.75);
-  box-shadow: 0 6px 16px rgba(35, 75, 128, 0.12);
+  box-shadow:
+    0 10px 24px -4px rgba(35, 75, 128, 0.16),
+    0 0 0 1px rgba(58, 108, 181, 0.25);
   outline: none;
-  transform: translateY(-2px);
+  transform: translateY(-2.5px);
+}
+.lightcone-catalogue-card.rarity-5 {
+  border-color: rgba(199, 165, 90, 0.35);
 }
 .lightcone-catalogue-card.rarity-5:hover {
-  border-color: rgba(199, 165, 90, 0.85);
-  box-shadow: 0 6px 16px rgba(185, 140, 50, 0.16);
+  border-color: rgba(212, 175, 55, 0.85);
+  box-shadow:
+    0 10px 24px -4px rgba(185, 140, 50, 0.22),
+    0 0 0 1px rgba(212, 175, 55, 0.35);
+}
+.lightcone-catalogue-card.rarity-4 {
+  border-color: rgba(158, 125, 201, 0.35);
 }
 .lightcone-catalogue-card.rarity-4:hover {
   border-color: rgba(158, 125, 201, 0.85);
-  box-shadow: 0 6px 16px rgba(130, 90, 180, 0.14);
+  box-shadow:
+    0 10px 24px -4px rgba(130, 90, 180, 0.18),
+    0 0 0 1px rgba(158, 125, 201, 0.35);
+}
+.lightcone-catalogue-card.rarity-3 {
+  border-color: rgba(94, 153, 214, 0.3);
+}
+.lightcone-catalogue-card.rarity-3:hover {
+  border-color: rgba(94, 153, 214, 0.8);
+  box-shadow:
+    0 10px 24px -4px rgba(60, 120, 190, 0.14),
+    0 0 0 1px rgba(94, 153, 214, 0.25);
 }
 
-/* 左侧缩略图 */
-.lightcone-catalogue-thumb {
+/* 左侧：星铁全息光锥卡舱 */
+.lightcone-catalogue-frame {
   position: relative;
-  width: 46px;
-  height: 46px;
-  border-radius: 4px;
-  overflow: hidden;
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  /* 右上和左下 8px 科技斜切倒角 */
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  background: #111a2e;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.32);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+/* 内部视窗容器 */
+.lightcone-frame-inner {
+  position: absolute;
+  inset: 1.5px;
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  background:
+    radial-gradient(circle at 50% 30%, var(--frame-core-glow, rgba(255, 255, 255, 0.15)) 0%, transparent 75%),
+    linear-gradient(180deg, #1f2c42 0%, #0d1522 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, #e7edf5, #c8d4e6);
-  flex-shrink: 0;
+  overflow: hidden;
 }
-.lightcone-catalogue-card.rarity-5 .lightcone-catalogue-thumb {
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
-    linear-gradient(145deg, #faf3e5 0%, #ecd4a7 55%, #cfa864 100%);
+
+/* 稀有度专属金属外框与聚光 */
+.lightcone-catalogue-card.rarity-5 .lightcone-catalogue-frame {
+  background: linear-gradient(135deg, #d4a743 0%, #755919 45%, #1f180d 100%);
+  --frame-core-glow: rgba(230, 185, 80, 0.45);
 }
-.lightcone-catalogue-card.rarity-4 .lightcone-catalogue-thumb {
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
-    linear-gradient(145deg, #f4edfa 0%, #dbcbef 55%, #a27ec9 100%);
+.lightcone-catalogue-card.rarity-5:hover .lightcone-catalogue-frame {
+  background: linear-gradient(135deg, #ffd76a 0%, #c4942d 50%, #3a2b0e 100%);
+  box-shadow: 0 4px 16px rgba(212, 167, 67, 0.45);
 }
-.lightcone-catalogue-card.rarity-3 .lightcone-catalogue-thumb {
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
-    linear-gradient(145deg, #eaf2fb 0%, #c2dcf2 55%, #70a2cc 100%);
+
+.lightcone-catalogue-card.rarity-4 .lightcone-catalogue-frame {
+  background: linear-gradient(135deg, #a67ad8 0%, #5d3b87 45%, #180e26 100%);
+  --frame-core-glow: rgba(180, 130, 235, 0.45);
 }
+.lightcone-catalogue-card.rarity-4:hover .lightcone-catalogue-frame {
+  background: linear-gradient(135deg, #c79eff 0%, #905dcf 50%, #2b1745 100%);
+  box-shadow: 0 4px 16px rgba(166, 122, 216, 0.4);
+}
+
+.lightcone-catalogue-card.rarity-3 .lightcone-catalogue-frame {
+  background: linear-gradient(135deg, #62a3e0 0%, #2f5d88 45%, #0d1e2e 100%);
+  --frame-core-glow: rgba(100, 175, 240, 0.4);
+}
+.lightcone-catalogue-card.rarity-3:hover .lightcone-catalogue-frame {
+  background: linear-gradient(135deg, #8dc3f7 0%, #4681ba 50%, #132a40 100%);
+  box-shadow: 0 4px 16px rgba(98, 163, 224, 0.35);
+}
+
 .lightcone-catalogue-art {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.14));
-  transition: transform 180ms ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
+  transform: rotate(-3deg) scale(0.96);
+  transition: transform 260ms cubic-bezier(0.2, 0, 0.2, 1), filter 260ms ease;
 }
 .lightcone-catalogue-card:hover .lightcone-catalogue-art {
-  transform: scale(1.08);
+  transform: rotate(0deg) scale(1.08) translateY(-2px);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55));
+}
+
+/* 底部稀有度流光品质晶条 */
+.lightcone-frame-rarity-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  z-index: 2;
+}
+.lightcone-catalogue-card.rarity-5 .lightcone-frame-rarity-bar {
+  background: linear-gradient(90deg, transparent 0%, #ffd978 50%, transparent 100%);
+  box-shadow: 0 0 6px rgba(255, 217, 120, 0.85);
+}
+.lightcone-catalogue-card.rarity-4 .lightcone-frame-rarity-bar {
+  background: linear-gradient(90deg, transparent 0%, #d5abff 50%, transparent 100%);
+  box-shadow: 0 0 6px rgba(213, 171, 255, 0.85);
+}
+.lightcone-catalogue-card.rarity-3 .lightcone-frame-rarity-bar {
+  background: linear-gradient(90deg, transparent 0%, #9dd0ff 50%, transparent 100%);
+  box-shadow: 0 0 6px rgba(157, 208, 255, 0.8);
 }
 
 /* 右侧两行工整排版 */
@@ -699,9 +1018,10 @@ button.catalogue-card:hover .relic-effect-row {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
   width: 100%;
+  z-index: 1;
 }
 .lightcone-card-top-row {
   display: flex;
@@ -713,7 +1033,7 @@ button.catalogue-card:hover .relic-effect-row {
 .lightcone-catalogue-card h4 {
   margin: 0;
   color: var(--ink);
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
@@ -721,30 +1041,39 @@ button.catalogue-card:hover .relic-effect-row {
   text-overflow: ellipsis;
   flex: 1 1 auto;
   min-width: 0;
+  letter-spacing: -0.01em;
+  transition: color 140ms ease;
+}
+.lightcone-catalogue-card:hover h4 {
+  color: var(--blue);
 }
 .lightcone-catalogue-card .catalogue-owned {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 1.5px 5px;
-  border-radius: 3px;
-  color: var(--blue-deep);
-  background: var(--blue-soft);
-  font: 700 10px/1.2 var(--font-ui);
+  gap: 2.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #173d7a;
+  background: #e4edf8;
+  border: 1px solid rgba(36, 86, 166, 0.18);
+  font: 700 10.5px/1.2 var(--font-ui);
   white-space: nowrap;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(36, 86, 166, 0.06);
 }
 .lightcone-catalogue-card .catalogue-owned b {
-  color: var(--blue);
-  font-size: 11px;
+  color: #1a56b8;
+  font-size: 11.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .lightcone-catalogue-card .catalogue-owned.empty {
-  color: var(--ink-soft);
-  background: rgba(82, 98, 123, 0.12);
-  font-weight: 600;
+  color: var(--muted);
+  background: rgba(100, 116, 139, 0.08);
+  border-color: rgba(100, 116, 139, 0.12);
+  box-shadow: none;
+  font-weight: 500;
 }
 
 .lightcone-card-bottom-row {
@@ -757,29 +1086,39 @@ button.catalogue-card:hover .relic-effect-row {
 .lightcone-catalogue-meta {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4.5px;
   min-width: 0;
   margin: 0;
   color: var(--ink-soft);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1;
   white-space: nowrap;
 }
 .lightcone-catalogue-path-icon {
-  flex: 0 0 13px;
-  width: 13px;
-  height: 13px;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
   object-fit: contain;
   filter: brightness(0) opacity(0.65);
 }
 .lightcone-catalogue-stars {
   margin: 0;
-  color: #c7a55a;
-  font-size: 10px;
-  letter-spacing: 0.02em;
+  color: #cda240;
+  font-size: 11px;
+  letter-spacing: 0.05em;
   line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
+  text-shadow: 0 1px 2px rgba(205, 162, 64, 0.35);
+}
+.lightcone-catalogue-card.rarity-4 .lightcone-catalogue-stars {
+  color: #9d71ce;
+  text-shadow: 0 1px 2px rgba(157, 113, 206, 0.35);
+}
+.lightcone-catalogue-card.rarity-3 .lightcone-catalogue-stars {
+  color: #5591cd;
+  text-shadow: 0 1px 2px rgba(85, 145, 205, 0.35);
 }
 .catalogue-character-modal-backdrop {
   position: fixed;

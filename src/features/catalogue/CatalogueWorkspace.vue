@@ -100,30 +100,37 @@ onBeforeUnmount(removeEscapeListener);
       </div>
     </header>
     <div class="catalogue-groups">
-      <section v-show="tab === 'cavern'" class="catalogue-group">
-        <RelicSetGrid
-          :sets="cavernSets"
-          :owned-counts="relicCounts"
-          @select="selectedSet = $event"
-        />
-      </section>
-      <section v-show="tab === 'planar'" class="catalogue-group">
-        <RelicSetGrid
-          :sets="planarSets"
-          :owned-counts="relicCounts"
-          @select="selectedSet = $event"
-        />
-      </section>
-      <section v-show="tab === 'lightCone'" class="catalogue-group">
-        <LightConeGrid
-          :light-cones="catalogueLightCones"
-          :owned-counts="lightConeCounts"
-          @select="selectedLightCone = $event"
-        />
-      </section>
-      <section v-show="tab === 'character'" class="catalogue-group character-catalogue-group">
-        <CharacterGrid :characters="catalogueCharacters" @select="selectedCharacter = $event" />
-      </section>
+      <Transition name="catalogue-panel" appear>
+        <KeepAlive>
+          <RelicSetGrid
+            v-if="tab === 'cavern'"
+            key="cavern"
+            :sets="cavernSets"
+            :owned-counts="relicCounts"
+            @select="selectedSet = $event"
+          />
+          <RelicSetGrid
+            v-else-if="tab === 'planar'"
+            key="planar"
+            :sets="planarSets"
+            :owned-counts="relicCounts"
+            @select="selectedSet = $event"
+          />
+          <LightConeGrid
+            v-else-if="tab === 'lightCone'"
+            key="lightCone"
+            :light-cones="catalogueLightCones"
+            :owned-counts="lightConeCounts"
+            @select="selectedLightCone = $event"
+          />
+          <CharacterGrid
+            v-else-if="tab === 'character'"
+            key="character"
+            :characters="catalogueCharacters"
+            @select="selectedCharacter = $event"
+          />
+        </KeepAlive>
+      </Transition>
     </div>
   </section>
   <CharacterStatsModal
