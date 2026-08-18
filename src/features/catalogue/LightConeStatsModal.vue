@@ -38,25 +38,50 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
         </div>
       </header>
       <div class="lightcone-catalogue-modal-body">
-        <p class="lightcone-catalogue-owned">{{ formatOwnedCount(ownedCount, "把") }}</p>
-        <div v-if="lightCone.baseStats" class="lightcone-base-stat-grid">
-          <div>
-            <span>生命值</span><b>{{ formatBaseStat(lightCone.baseStats.hp) }}</b>
-          </div>
-          <div>
-            <span>攻击力</span><b>{{ formatBaseStat(lightCone.baseStats.attack) }}</b>
-          </div>
-          <div>
-            <span>防御力</span><b>{{ formatBaseStat(lightCone.baseStats.defense) }}</b>
-          </div>
-        </div>
-        <section v-if="skillName" class="lightcone-catalogue-skill">
-          <header>
-            <p class="eyebrow">LIGHT CONE SKILL</p>
-            <h3>{{ skillName }}</h3>
+        <!-- 基础属性模块 -->
+        <section class="lightcone-catalogue-section">
+          <header class="lightcone-section-header">
+            <div>
+              <p class="eyebrow">LEVEL 80 · MAX ASCENSION</p>
+              <h3>基础属性</h3>
+            </div>
+            <span class="lightcone-catalogue-owned-badge">
+              {{ formatOwnedCount(ownedCount, "把") }}
+            </span>
           </header>
-          <p v-if="firstEffect"><b>叠影 1</b>{{ firstEffect }}</p>
-          <p v-if="maxEffect && maxEffect !== firstEffect"><b>叠影 5</b>{{ maxEffect }}</p>
+
+          <div v-if="lightCone.baseStats" class="lightcone-base-stat-grid">
+            <div class="lightcone-stat-item">
+              <span class="stat-label">生命值</span>
+              <b class="stat-value">{{ formatBaseStat(lightCone.baseStats.hp) }}</b>
+              <small class="stat-abbr">HP</small>
+            </div>
+            <div class="lightcone-stat-item">
+              <span class="stat-label">攻击力</span>
+              <b class="stat-value">{{ formatBaseStat(lightCone.baseStats.attack) }}</b>
+              <small class="stat-abbr">ATK</small>
+            </div>
+            <div class="lightcone-stat-item">
+              <span class="stat-label">防御力</span>
+              <b class="stat-value">{{ formatBaseStat(lightCone.baseStats.defense) }}</b>
+              <small class="stat-abbr">DEF</small>
+            </div>
+          </div>
+          <p v-else class="lightcone-stat-empty">该光锥的基础属性尚未同步。</p>
+        </section>
+
+        <!-- 光锥技能模块 -->
+        <section v-if="skillName" class="lightcone-catalogue-skill">
+          <header class="lightcone-section-header">
+            <div>
+              <p class="eyebrow">LIGHT CONE SKILL</p>
+              <h3>{{ skillName }}</h3>
+            </div>
+          </header>
+          <div class="lightcone-skill-effects">
+            <p v-if="firstEffect"><b>叠影 1</b>{{ firstEffect }}</p>
+            <p v-if="maxEffect && maxEffect !== firstEffect"><b>叠影 5</b>{{ maxEffect }}</p>
+          </div>
         </section>
       </div>
     </section>
@@ -118,72 +143,123 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
 .lightcone-catalogue-modal-body {
   max-height: min(520px, calc(100vh - 190px));
   overflow-y: auto;
-  padding: 20px 28px 24px;
+  padding: 20px 24px 24px;
 }
-.lightcone-catalogue-owned {
-  margin: 0 0 14px;
-  color: var(--blue);
-  font-size: 13px;
-  font-weight: 700;
+
+/* 模块头部通用样式 */
+.lightcone-catalogue-section {
+  margin-bottom: 16px;
 }
-.lightcone-base-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 1px solid rgba(46, 80, 123, 0.18);
-  border-left: 1px solid rgba(46, 80, 123, 0.18);
-}
-.lightcone-base-stat-grid > div {
-  display: grid;
-  min-height: 72px;
-  align-content: center;
-  gap: 4px;
-  padding: 10px;
-  border-right: 1px solid rgba(46, 80, 123, 0.18);
-  border-bottom: 1px solid rgba(46, 80, 123, 0.18);
-}
-.lightcone-base-stat-grid span {
-  color: var(--ink-soft);
-  font-size: 11px;
-}
-.lightcone-base-stat-grid b {
-  color: var(--blue);
-  font-size: 20px;
-  font-variant-numeric: tabular-nums;
-}
-.lightcone-catalogue-skill {
-  margin-top: 16px;
-  padding: 14px;
-  border: 1px solid rgba(46, 80, 123, 0.16);
-  border-radius: 9px;
-  background: #fff;
-}
-.lightcone-catalogue-skill header {
+.lightcone-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   margin-bottom: 10px;
 }
-.lightcone-catalogue-skill .eyebrow,
-.lightcone-catalogue-skill h3 {
+.lightcone-section-header .eyebrow {
   margin: 0;
-}
-.lightcone-catalogue-skill .eyebrow {
   color: #9a7839;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.13em;
 }
-.lightcone-catalogue-skill h3 {
-  margin-top: 4px;
+.lightcone-section-header h3 {
+  margin: 3px 0 0;
   color: var(--ink);
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 600;
 }
-.lightcone-catalogue-skill p {
+.lightcone-catalogue-owned-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--blue-deep);
+  background: var(--blue-soft);
+  font: 700 11px/1.3 var(--font-ui);
+  border: 1px solid rgba(36, 86, 166, 0.15);
+}
+
+/* 基础属性精致卡片网格 */
+.lightcone-base-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.lightcone-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 12px 8px 10px;
+  border: 1px solid rgba(46, 80, 123, 0.14);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(35, 75, 128, 0.04);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+.lightcone-stat-item:hover {
+  border-color: rgba(36, 86, 166, 0.35);
+  transform: translateY(-1px);
+}
+.stat-label {
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+  user-select: none;
+}
+.stat-value {
+  color: var(--blue);
+  font-size: 21px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  text-decoration: none !important;
+}
+.stat-abbr {
+  color: #9aa7b8;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-decoration: none !important;
+}
+.lightcone-stat-empty {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed rgba(46, 80, 123, 0.2);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* 光锥技能模块 */
+.lightcone-catalogue-skill {
+  padding: 14px 16px;
+  border: 1px solid rgba(46, 80, 123, 0.14);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(35, 75, 128, 0.04);
+}
+.lightcone-skill-effects p {
   margin: 8px 0 0;
   color: var(--ink-soft);
   font-size: 12px;
   line-height: 1.55;
 }
-.lightcone-catalogue-skill p b {
+.lightcone-skill-effects p:first-child {
+  margin-top: 6px;
+}
+.lightcone-skill-effects p b {
   display: inline-block;
   width: 48px;
   color: var(--blue);
+  font-weight: 700;
 }
 </style>
