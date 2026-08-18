@@ -14,11 +14,13 @@
 }
 .catalogue-tabs {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
 .catalogue-tab-btn {
   display: flex;
-  min-width: 150px;
+  min-width: 128px;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -116,12 +118,17 @@ button.catalogue-card:focus-visible {
   outline: none;
   transform: translateY(-2px);
 }
-.catalogue-card img,
-.catalogue-placeholder {
+.catalogue-card-media {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+}
+.catalogue-card-media img,
+.catalogue-card-media .catalogue-placeholder {
   width: 70px;
   height: 70px;
   object-fit: contain;
-  align-self: start;
 }
 .catalogue-placeholder {
   display: grid;
@@ -134,8 +141,38 @@ button.catalogue-card:focus-visible {
   color: var(--muted);
   font: 600 10px/1 monospace;
 }
+.catalogue-card .catalogue-owned,
+.lightcone-catalogue-card .catalogue-owned {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: fit-content;
+  padding: 3px 7px;
+  border-radius: 4px;
+  color: var(--blue-deep);
+  background: var(--blue-soft);
+  font: 700 11px/1 var(--font-ui);
+}
+.catalogue-card-media .catalogue-owned {
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.catalogue-card .catalogue-owned b,
+.lightcone-catalogue-card .catalogue-owned b {
+  color: var(--blue);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.catalogue-card .catalogue-owned.empty,
+.lightcone-catalogue-card .catalogue-owned.empty {
+  color: var(--ink-soft);
+  background: rgba(82, 98, 123, 0.12);
+  font-weight: 700;
+}
 .catalogue-card h4 {
-  margin: 4px 0 7px;
+  margin: 0 0 7px;
   color: var(--ink);
   font-size: 14px;
 }
@@ -293,6 +330,89 @@ button.catalogue-card:focus-visible {
   margin: 0;
   color: var(--muted);
   font-size: 10px;
+}
+.lightcone-catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 11px;
+}
+.lightcone-catalogue-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 104px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.66);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.lightcone-catalogue-card:hover,
+.lightcone-catalogue-card:focus-visible {
+  border-color: rgba(58, 108, 181, 0.78);
+  box-shadow: 0 10px 25px rgba(35, 75, 128, 0.12);
+  outline: none;
+  transform: translateY(-2px);
+}
+.lightcone-catalogue-art {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+.lightcone-catalogue-body {
+  display: grid;
+  grid-template-rows: auto minmax(34px, auto) 16px auto;
+  align-items: start;
+  justify-items: start;
+  gap: 5px;
+  min-width: 0;
+}
+.lightcone-catalogue-card h4 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.lightcone-catalogue-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1;
+}
+.lightcone-catalogue-path-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.lightcone-catalogue-meta > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lightcone-catalogue-stars {
+  margin: 0;
+  color: #c69e4c;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-align: left;
 }
 .catalogue-character-modal-backdrop {
   position: fixed;

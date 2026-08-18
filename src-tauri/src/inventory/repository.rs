@@ -278,6 +278,35 @@ impl InventoryStore {
         Ok(sets)
     }
 
+    pub fn equipment_counts(&self) -> Result<InventoryEquipmentCounts, AppError> {
+        let connection = self.connect()?;
+        let mut relic_statement = connection
+            .prepare("SELECT set_id, COUNT(*) FROM relics GROUP BY set_id ORDER BY set_id")?;
+        let relics = relic_statement
+            .query_map([], |row| {
+                Ok(RelicSetOwnedCount {
+                    set_id: row.get(0)?,
+                    count: row.get(1)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut light_cone_statement = connection.prepare(
+            "SELECT template_id, COUNT(*) FROM light_cones GROUP BY template_id ORDER BY template_id",
+        )?;
+        let light_cones = light_cone_statement
+            .query_map([], |row| {
+                Ok(LightConeOwnedCount {
+                    template_id: row.get(0)?,
+                    count: row.get(1)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(InventoryEquipmentCounts {
+            relics,
+            light_cones,
+        })
+    }
+
     pub fn build_plan(&self, character_id: u32) -> Result<Option<CharacterBuildPlan>, AppError> {
         let connection = self.connect()?;
         let row = connection.query_row(
@@ -3018,6 +3047,71 @@ mod tests {
         assert_eq!(summary.relics, 2);
         assert!(store.detail(InventoryKind::Relic, 1).is_err());
         assert!(store.detail(InventoryKind::Relic, 3).is_ok());
+    }
+
+    #[test]
+    fn equipment_counts_groups_relics_and_light_cones() {
+        let store = InventoryStore::test_store();
+        assert_eq!(store.equipment_counts().unwrap().relics.len(), 0);
+        assert_eq!(store.equipment_counts().unwrap().light_cones.len(), 0);
+
+        let mut snapshot = import(10001, &[1, 2, 3]);
+        snapshot.relics[2].set_id = 301;
+        snapshot.relics[2].name = "位面饰品".to_owned();
+        snapshot.light_cones = vec![
+            ImportLightCone {
+                id: 20000,
+                name: "测试光锥A".to_owned(),
+                level: 80,
+                ascension: 6,
+                superimposition: 1,
+                location: String::new(),
+                equipped_character_id: None,
+                lock: true,
+                _uid: 11,
+            },
+            ImportLightCone {
+                id: 20000,
+                name: "测试光锥A".to_owned(),
+                level: 70,
+                ascension: 5,
+                superimposition: 2,
+                location: String::new(),
+                equipped_character_id: None,
+                lock: false,
+                _uid: 12,
+            },
+            ImportLightCone {
+                id: 20001,
+                name: "测试光锥B".to_owned(),
+                level: 40,
+                ascension: 2,
+                superimposition: 1,
+                location: String::new(),
+                equipped_character_id: None,
+                lock: false,
+                _uid: 13,
+            },
+        ];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let counts = store.equipment_counts().unwrap();
+        assert_eq!(
+            counts
+                .relics
+                .iter()
+                .map(|item| (item.set_id, item.count))
+                .collect::<Vec<_>>(),
+            vec![(101, 2), (301, 1)]
+        );
+        assert_eq!(
+            counts
+                .light_cones
+                .iter()
+                .map(|item| (item.template_id, item.count))
+                .collect::<Vec<_>>(),
+            vec![(20000, 2), (20001, 1)]
+        );
     }
 
     #[test]

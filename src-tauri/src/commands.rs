@@ -7,10 +7,10 @@ use crate::{
     inventory::{
         BuildPlanExcelImportResult, BuildRecommendation, BuildRecommendationRequest,
         CharacterBuildPlan, CharacterBuildScore, CharacterFilter, ClearInventoryRequest,
-        DeleteItemsRequest, InventoryDetail, InventoryImportResult, InventoryKind, InventoryStore,
-        InventorySummary, LightConeFilter, LightConeListItem, PageQuery, PagedResult, RelicFilter,
-        RelicListItem, RelicMainStatGroupedResult, RelicMainStatScanResult,
-        RelicSetRecommendedCharacter, Team, TeamFilter, TeamInput,
+        DeleteItemsRequest, InventoryDetail, InventoryEquipmentCounts, InventoryImportResult,
+        InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
+        PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatGroupedResult,
+        RelicMainStatScanResult, RelicSetRecommendedCharacter, Team, TeamFilter, TeamInput,
     },
     scanner::ScannerState,
     screenshot,
@@ -231,6 +231,13 @@ pub fn list_relics(
     store: State<'_, InventoryStore>,
 ) -> Result<PagedResult<RelicListItem>, AppError> {
     store.list_relics(&filter)
+}
+
+#[tauri::command]
+pub fn get_inventory_equipment_counts(
+    store: State<'_, InventoryStore>,
+) -> Result<InventoryEquipmentCounts, AppError> {
+    store.equipment_counts()
 }
 
 #[tauri::command]

@@ -60,6 +60,22 @@ export interface InventoryImportResult {
   warnings: string[];
 }
 
+export interface RelicSetOwnedCount {
+  setId: number;
+  count: number;
+}
+
+export interface LightConeOwnedCount {
+  templateId: number;
+  count: number;
+}
+
+/** Per-set relic counts and per-template light-cone counts for catalogue cards. */
+export interface InventoryEquipmentCounts {
+  relics: RelicSetOwnedCount[];
+  lightCones: LightConeOwnedCount[];
+}
+
 export interface WebDavSettings {
   serverUrl: string;
   remotePath: string;

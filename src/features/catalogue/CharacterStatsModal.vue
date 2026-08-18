@@ -6,9 +6,11 @@ import { formatStatValue, pathLabel, slotLabel, statLabel } from "@/shared/catal
 import { formatBaseStat } from "@/shared/utils/display";
 import type { CharacterCatalogueEntry } from "@/types";
 import type { CatalogueCharacterEquipment, CatalogueEquippedRelic } from "./equipped-items";
+import { useCloseOnEscape } from "./close-on-escape";
 
 const props = defineProps<{ character: CharacterCatalogueEntry }>();
 const emit = defineEmits<{ close: [] }>();
+useCloseOnEscape(() => emit("close"));
 
 const equipment = ref<CatalogueCharacterEquipment | null>(null);
 const equipmentLoading = ref(true);

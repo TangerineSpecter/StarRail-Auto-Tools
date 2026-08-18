@@ -4,6 +4,7 @@ import type {
   CharacterFilter,
   CharacterListItem,
   InventoryDetail,
+  InventoryEquipmentCounts,
   InventoryImportResult,
   InventoryKind,
   InventorySummary,
@@ -19,6 +20,7 @@ import type {
 
 export const inventoryApi = {
   summary: () => invoke<InventorySummary>("get_inventory_summary"),
+  equipmentCounts: () => invoke<InventoryEquipmentCounts>("get_inventory_equipment_counts"),
   listRelics: (filter: RelicFilter) =>
     invoke<PagedResult<RelicListItem>>("list_relics", { filter }),
   relicMainStatScanPlanCount: () => invoke<number>("get_relic_main_stat_scan_plan_count"),

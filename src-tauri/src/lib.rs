@@ -43,6 +43,7 @@ pub fn run() {
             commands::stop_direct_read,
             commands::confirm_account_switch,
             commands::get_inventory_summary,
+            commands::get_inventory_equipment_counts,
             commands::list_relics,
             commands::get_relic_main_stat_scan_plan_count,
             commands::scan_relics_by_main_stat,

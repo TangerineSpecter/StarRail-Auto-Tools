@@ -64,6 +64,17 @@ describe("SetRecommendationModal", () => {
     expect(wrapper.text()).not.toContain("角色 A");
   });
 
+  it("closes on Escape", async () => {
+    recommendedCharactersForSet.mockResolvedValueOnce([]);
+    const wrapper = mount(SetRecommendationModal, {
+      props: { set: sets.cavern, characters },
+    });
+    await flushPromises();
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(wrapper.emitted("close")).toHaveLength(1);
+    wrapper.unmount();
+  });
+
   it("renders an empty state for a set without saved targets", async () => {
     recommendedCharactersForSet.mockResolvedValueOnce([]);
     const wrapper = mount(SetRecommendationModal, {

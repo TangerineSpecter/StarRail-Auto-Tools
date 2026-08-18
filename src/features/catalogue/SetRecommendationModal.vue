@@ -3,6 +3,7 @@ import { computed, onUnmounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { resolveCharacterCatalogue } from "@/shared/catalogue";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
+import { useCloseOnEscape } from "./close-on-escape";
 import { summarizeSetTargets } from "./set-target-summary";
 import type {
   CharacterCatalogueEntry,
@@ -18,6 +19,7 @@ const emit = defineEmits<{
   close: [];
   openCharacter: [character: CharacterCatalogueEntry];
 }>();
+useCloseOnEscape(() => emit("close"));
 
 const recommendedCharacters = ref<RelicSetRecommendedCharacter[]>([]);
 const loading = ref(false);

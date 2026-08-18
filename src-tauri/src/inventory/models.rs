@@ -84,6 +84,28 @@ pub struct InventoryImportResult {
     pub warnings: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicSetOwnedCount {
+    pub set_id: u32,
+    pub count: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LightConeOwnedCount {
+    pub template_id: u32,
+    pub count: u64,
+}
+
+/// Per-set relic counts and per-template light-cone counts for catalogue cards.
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct InventoryEquipmentCounts {
+    pub relics: Vec<RelicSetOwnedCount>,
+    pub light_cones: Vec<LightConeOwnedCount>,
+}
+
 #[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RelicFilter {

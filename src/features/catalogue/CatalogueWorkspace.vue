@@ -1,21 +1,40 @@
 <script setup lang="ts">
-import { onActivated, onBeforeUnmount, onDeactivated, ref } from "vue";
-import { characterCatalogue, relicCatalogue } from "@/shared/catalogue";
+import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
+import { characterCatalogue, lightConeCatalogue, relicCatalogue } from "@/shared/catalogue";
+import { useRuntimeContext } from "@/shared/contracts/runtime";
 import RelicSetGrid from "./RelicSetGrid.vue";
+import LightConeGrid from "./LightConeGrid.vue";
 import CharacterGrid from "./CharacterGrid.vue";
 import CharacterStatsModal from "./CharacterStatsModal.vue";
+import LightConeStatsModal from "./LightConeStatsModal.vue";
 import SetRecommendationModal from "./SetRecommendationModal.vue";
-import type { CharacterCatalogueEntry, RelicSetCatalogueEntry } from "@/types";
+import { ownedCountOf } from "./owned-counts";
+import { useCatalogueOwnedCounts } from "./useCatalogueOwnedCounts";
+import type {
+  CharacterCatalogueEntry,
+  LightConeCatalogueEntry,
+  RelicSetCatalogueEntry,
+} from "@/types";
 
 defineOptions({ name: "CatalogueWorkspace" });
-const tab = ref<"cavern" | "planar" | "character">("cavern");
+const { inventoryRevision } = useRuntimeContext();
+const { relicCounts, lightConeCounts } = useCatalogueOwnedCounts(inventoryRevision);
+const tab = ref<"cavern" | "planar" | "lightCone" | "character">("cavern");
 const selectedCharacter = ref<CharacterCatalogueEntry | null>(null);
 const selectedSet = ref<RelicSetCatalogueEntry | null>(null);
+const selectedLightCone = ref<LightConeCatalogueEntry | null>(null);
 const cavernSets = relicCatalogue.sets.filter((set) => set.kind === "cavern");
 const planarSets = relicCatalogue.sets.filter((set) => set.kind === "planar");
+const catalogueLightCones = [...lightConeCatalogue.lightCones].sort(
+  (left, right) =>
+    (right.rarity ?? 5) - (left.rarity ?? 5) || left.name.localeCompare(right.name, "zh-CN"),
+);
 const catalogueCharacters = [...characterCatalogue.characters].sort(
   (left, right) =>
     (right.rarity ?? 5) - (left.rarity ?? 5) || left.name.localeCompare(right.name, "zh-CN"),
+);
+const selectedLightConeOwned = computed(() =>
+  selectedLightCone.value ? ownedCountOf(lightConeCounts.value, selectedLightCone.value.id) : 0,
 );
 const tabs = [
   { key: "cavern" as const, label: "遗器", code: "CAVERN", count: cavernSets.length, unit: "套" },
@@ -25,6 +44,13 @@ const tabs = [
     code: "PLANAR",
     count: planarSets.length,
     unit: "套",
+  },
+  {
+    key: "lightCone" as const,
+    label: "光锥",
+    code: "CONE",
+    count: lightConeCatalogue.lightCones.length,
+    unit: "把",
   },
   {
     key: "character" as const,
@@ -42,8 +68,10 @@ function onEscape(event: KeyboardEvent) {
   if (event.key !== "Escape" || event.isComposing) return;
   if (selectedCharacter.value) selectedCharacter.value = null;
   else if (selectedSet.value) selectedSet.value = null;
+  else if (selectedLightCone.value) selectedLightCone.value = null;
 }
 const removeEscapeListener = () => window.removeEventListener("keydown", onEscape);
+onMounted(() => window.addEventListener("keydown", onEscape));
 onActivated(() => window.addEventListener("keydown", onEscape));
 onDeactivated(removeEscapeListener);
 onBeforeUnmount(removeEscapeListener);
@@ -53,7 +81,7 @@ onBeforeUnmount(removeEscapeListener);
     <header class="catalogue-heading">
       <div>
         <p class="eyebrow">LOCAL REFERENCE DATA</p>
-        <h2>遗器与位面饰品图鉴</h2>
+        <h2>遗器、饰品与光锥图鉴</h2>
       </div>
       <div class="catalogue-tabs">
         <button
@@ -73,10 +101,25 @@ onBeforeUnmount(removeEscapeListener);
     </header>
     <div class="catalogue-groups">
       <section v-show="tab === 'cavern'" class="catalogue-group">
-        <RelicSetGrid :sets="cavernSets" @select="selectedSet = $event" />
+        <RelicSetGrid
+          :sets="cavernSets"
+          :owned-counts="relicCounts"
+          @select="selectedSet = $event"
+        />
       </section>
       <section v-show="tab === 'planar'" class="catalogue-group">
-        <RelicSetGrid :sets="planarSets" @select="selectedSet = $event" />
+        <RelicSetGrid
+          :sets="planarSets"
+          :owned-counts="relicCounts"
+          @select="selectedSet = $event"
+        />
+      </section>
+      <section v-show="tab === 'lightCone'" class="catalogue-group">
+        <LightConeGrid
+          :light-cones="catalogueLightCones"
+          :owned-counts="lightConeCounts"
+          @select="selectedLightCone = $event"
+        />
       </section>
       <section v-show="tab === 'character'" class="catalogue-group character-catalogue-group">
         <CharacterGrid :characters="catalogueCharacters" @select="selectedCharacter = $event" />
@@ -94,5 +137,11 @@ onBeforeUnmount(removeEscapeListener);
     :characters="characterCatalogue.characters"
     @close="selectedSet = null"
     @open-character="openRecommendedCharacter"
+  />
+  <LightConeStatsModal
+    v-if="selectedLightCone"
+    :light-cone="selectedLightCone"
+    :owned-count="selectedLightConeOwned"
+    @close="selectedLightCone = null"
   />
 </template>
