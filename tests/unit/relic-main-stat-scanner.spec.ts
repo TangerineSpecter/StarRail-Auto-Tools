@@ -202,7 +202,10 @@ describe("RelicMainStatScanner", () => {
           discard: false,
           source: "test",
           updatedAt: 0,
-          substats: [{ key: "CRIT Rate", stat: "CRIT Rate", value: 2.9, count: 1, step: 0 }],
+          substats: [
+            { key: "CRIT Rate", stat: "CRIT Rate", value: 2.9, count: 1, step: 0 },
+            { key: "Effect RES", stat: "Effect RES", value: 4.3, count: 0, step: 0 },
+          ],
         },
       ],
       total: 1,
@@ -227,6 +230,8 @@ describe("RelicMainStatScanner", () => {
     expect(wrapper.text()).toContain("头部");
     expect(wrapper.text()).toContain("测试套装");
     expect(wrapper.text()).toContain("生命值");
+    expect(wrapper.text()).toContain("效果抵抗");
+    expect(wrapper.text()).not.toContain("Effect RES");
     expect(wrapper.text()).toContain("三月七");
     expect(wrapper.text()).toContain("rolls");
   });

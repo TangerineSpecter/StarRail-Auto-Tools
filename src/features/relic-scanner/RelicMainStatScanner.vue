@@ -5,7 +5,7 @@ import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
 import { scanUpgradeRecommendations } from "@/shared/utils/relic-score";
 import { characterDisplayName, relicImage, resolveCharacterCatalogue } from "@/shared/catalogue";
-import { formatStatValue } from "@/shared/catalogue/relic-options";
+import { formatStatValue, slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import type { BuildDashboardEntry, RelicListItem, RelicMainStatGroupedResult } from "@/types";
 
 const props = defineProps<{ imageFor: (relic: RelicListItem) => string | undefined }>();
@@ -39,41 +39,9 @@ const usefulnessDone = ref(false);
 const USEFULNESS_PAGE_SIZE = 200;
 let usefulnessRequestId = 0;
 
-const slotLabels: Record<string, string> = {
-  Head: "头部",
-  Hands: "手部",
-  Body: "躯干",
-  Feet: "脚部",
-  PlanarSphere: "位面球",
-  LinkRope: "连结绳",
-};
-const statLabels: Record<string, string> = {
-  HP: "生命值",
-  "HP%": "生命百分比",
-  ATK: "攻击力",
-  "ATK%": "攻击百分比",
-  DEF: "防御力",
-  "DEF%": "防御百分比",
-  SPD: "速度",
-  "CRIT Rate": "暴击率",
-  "CRIT DMG": "暴击伤害",
-  "Effect Hit Rate": "效果命中",
-  "Outgoing Healing Boost": "治疗量加成",
-  "Energy Regeneration Rate": "能量恢复效率",
-  "Break Effect": "击破特攻",
-  "Physical DMG Boost": "物理伤害提高",
-  "Fire DMG Boost": "火属性伤害提高",
-  "Ice DMG Boost": "冰属性伤害提高",
-  "Lightning DMG Boost": "雷属性伤害提高",
-  "Wind DMG Boost": "风属性伤害提高",
-  "Quantum DMG Boost": "量子属性伤害提高",
-  "Imaginary DMG Boost": "虚数伤害提高",
-};
 const canAnalyze = computed(
   () => planCount.value !== null && planCount.value > 0 && !loading.value,
 );
-const slotLabel = (slot: string) => slotLabels[slot] ?? slot;
-const statLabel = (stat: string) => statLabels[stat] ?? stat;
 
 const gradeClass = (grade: string | null) => {
   if (!grade) return "grade-none";
@@ -492,7 +460,7 @@ onMounted(async () => {
               </span>
             </div>
             <div class="character-target-info">
-              <span class="target-caption">推荐替换件适配</span>
+              <span class="target-caption">适配角色</span>
               <span :class="['target-character-name', `element-${row.characterElement}`]">
                 {{ row.characterDisplayLabel }}
               </span>
@@ -505,9 +473,10 @@ onMounted(async () => {
               v-for="(sub, idx) in row.item.substats.slice(0, 4)"
               :key="idx"
               class="substat-chip"
+              :title="`${statLabel(sub.key)} +${formatStatValue(sub.key, sub.value)}`"
             >
-              {{ statLabel(sub.key ?? (sub as any).stat) }}
-              <em>+{{ formatStatValue(sub.key ?? (sub as any).stat, sub.value) }}</em>
+              <span class="substat-label">{{ statLabel(sub.key) }}</span>
+              <em>+{{ formatStatValue(sub.key, sub.value) }}</em>
             </span>
           </div>
 
@@ -939,7 +908,7 @@ onMounted(async () => {
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-  grid-auto-rows: max-content;
+  grid-auto-rows: 252px;
   align-content: start;
   align-items: stretch;
   gap: 14px;
@@ -948,9 +917,9 @@ onMounted(async () => {
 }
 
 .upgrade-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-rows: 22px 52px 44px 48px minmax(0, 1fr);
+  gap: 8px;
   padding: 14px 16px;
   border: 1px solid rgba(45, 75, 116, 0.18);
   border-radius: 6px;
@@ -962,11 +931,7 @@ onMounted(async () => {
   user-select: none;
   position: relative;
   overflow: hidden;
-  height: max-content;
-  min-height: min-content;
-}
-.upgrade-card > div {
-  flex-shrink: 0;
+  height: 252px;
 }
 
 .upgrade-card:hover {
@@ -1035,13 +1000,15 @@ onMounted(async () => {
   letter-spacing: 0.05em;
 }
 
-.grade-pill.grade-sss {
+.grade-pill.grade-sss,
+.grade-pill.grade-sss-plus {
   background: linear-gradient(135deg, #eab308, #ca8a04);
   color: #fff;
   box-shadow: 0 2px 6px rgba(234, 179, 8, 0.35);
 }
 
-.grade-pill.grade-ss {
+.grade-pill.grade-ss,
+.grade-pill.grade-ss-plus {
   background: linear-gradient(135deg, #a855f7, #7e22ce);
   color: #fff;
   box-shadow: 0 2px 6px rgba(168, 85, 247, 0.3);
@@ -1059,14 +1026,58 @@ onMounted(async () => {
   box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
 }
 
+.grade-pill.grade-wtf,
+.grade-pill.grade-wtf-plus {
+  background: linear-gradient(135deg, #f97316, #dc2626);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.28);
+}
+
+.grade-pill.grade-a-plus {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
 .grade-pill.grade-a {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(37, 99, 235, 0.13);
+  border: 1px solid rgba(37, 99, 235, 0.26);
   color: #1d4ed8;
 }
 
-.grade-pill.grade-b,
+.grade-pill.grade-b-plus,
+.grade-pill.grade-b {
+  background: rgba(13, 148, 136, 0.12);
+  border: 1px solid rgba(13, 148, 136, 0.24);
+  color: #0f766e;
+}
+
+.grade-pill.grade-c-plus,
+.grade-pill.grade-c {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #2563eb;
+}
+
+.grade-pill.grade-d-plus,
+.grade-pill.grade-d,
+.grade-pill.grade-e-plus,
+.grade-pill.grade-e {
+  background: rgba(217, 119, 6, 0.11);
+  border: 1px solid rgba(217, 119, 6, 0.22);
+  color: #a16207;
+}
+
+.grade-pill.grade-f-plus,
+.grade-pill.grade-f {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.22);
+  color: #b91c1c;
+}
+
 .grade-pill.grade-none {
   background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(100, 116, 139, 0.16);
   color: #475569;
 }
 
@@ -1167,6 +1178,7 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .main-stat-badge em {
@@ -1180,7 +1192,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 10px;
+  padding: 5px 10px;
   border-radius: 6px;
   background: rgba(236, 242, 251, 0.65);
   border: 1px solid rgba(46, 79, 126, 0.08);
@@ -1259,12 +1271,18 @@ onMounted(async () => {
 }
 
 .substat-chips-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 22px);
+  gap: 4px 6px;
 }
 
 .substat-chip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(74px, 0.7fr);
+  align-items: center;
+  min-width: 0;
+  column-gap: 6px;
   padding: 2px 6px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.85);
@@ -1273,7 +1291,14 @@ onMounted(async () => {
   color: var(--ink-soft);
 }
 
+.substat-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .substat-chip em {
+  justify-self: stretch;
   font-style: normal;
   color: #2563eb;
   font-weight: 700;
@@ -1283,7 +1308,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 6px;
+  min-width: 0;
+  padding-top: 4px;
   border-top: 1px dashed rgba(46, 79, 126, 0.12);
 }
 
@@ -1326,6 +1352,12 @@ onMounted(async () => {
   color: var(--blue);
   font-size: 11px;
   font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .scanner-upgrade-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Compact Cleaning Header & Station Control Terminal */
@@ -2198,4 +2230,3 @@ onMounted(async () => {
   color: var(--ink);
 }
 </style>
-
