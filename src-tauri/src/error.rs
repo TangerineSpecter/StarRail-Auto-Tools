@@ -23,6 +23,8 @@ pub enum AppError {
     StateUnavailable,
     #[error("本地数据库错误：{0}")]
     Database(String),
+    #[error("最低标准不能高于目标值")]
+    MinExceedsTarget,
     #[error("数据导出失败：{0}")]
     Export(String),
     #[error("同步失败：{0}")]

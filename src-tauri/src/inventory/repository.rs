@@ -1697,7 +1697,7 @@ fn save_build_plan_in_transaction(
     )?;
     for target in &plan.targets {
         if target.minimum > target.target {
-            return Err(AppError::Database("最低标准不能高于目标值".to_owned()));
+            return Err(AppError::MinExceedsTarget);
         }
         transaction.execute("INSERT INTO character_build_targets(character_id,stat_key,target,priority,max_gap,minimum) VALUES(?1,?2,?3,?4,?5,?6)", params![plan.character_id, target.stat_key, target.target, target.priority, target.target - target.minimum, target.minimum])?;
     }
