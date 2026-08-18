@@ -24,7 +24,9 @@ import {
   lowestTargetPercent,
   relicPieceCounts,
 } from "./progress";
+import BuildHoverTip from "./BuildHoverTip.vue";
 import RelicPotentialRadar from "./RelicPotentialRadar.vue";
+import { qualityMainStatTip, qualityPassCountTip } from "./quality-tips";
 import { useDashboardDrag } from "./useDashboardDrag";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
@@ -645,38 +647,44 @@ defineExpose({ reload: loadDashboard });
             <div class="build-card-section quality-section">
               <h4 class="section-title">部位合格状况</h4>
               <div class="quality-visuals">
-                <div class="quality-row">
-                  <span class="quality-label">主属性</span>
-                  <div
-                    class="quality-segments"
-                    :aria-label="`主属性正确 ${card.quality.mainStatCorrectCount} / ${card.quality.mainStatTotal}`"
-                  >
-                    <i
-                      v-for="n in card.quality.mainStatTotal"
-                      :key="'main' + n"
-                      :class="{ active: n <= card.quality.mainStatCorrectCount }"
-                    ></i>
+                <BuildHoverTip title="主属性" :text="qualityMainStatTip()">
+                  <div class="quality-row">
+                    <span class="quality-label has-tip">主属性</span>
+                    <div
+                      class="quality-segments"
+                      :aria-label="`主属性正确 ${card.quality.mainStatCorrectCount} / ${card.quality.mainStatTotal}`"
+                    >
+                      <i
+                        v-for="n in card.quality.mainStatTotal"
+                        :key="'main' + n"
+                        :class="{ active: n <= card.quality.mainStatCorrectCount }"
+                      ></i>
+                    </div>
+                    <span class="quality-count"
+                      >{{ card.quality.mainStatCorrectCount }}/{{
+                        card.quality.mainStatTotal
+                      }}</span
+                    >
                   </div>
-                  <span class="quality-count"
-                    >{{ card.quality.mainStatCorrectCount }}/{{ card.quality.mainStatTotal }}</span
-                  >
-                </div>
-                <div class="quality-row">
-                  <span class="quality-label">及格件数</span>
-                  <div
-                    class="quality-segments"
-                    :aria-label="`质量达标 ${card.quality.qualityPassCount} / ${card.quality.qualityTotal}`"
-                  >
-                    <i
-                      v-for="n in card.quality.qualityTotal"
-                      :key="'qual' + n"
-                      :class="{ active: n <= card.quality.qualityPassCount }"
-                    ></i>
+                </BuildHoverTip>
+                <BuildHoverTip title="及格件数" :text="qualityPassCountTip(card.minPotentialPct)">
+                  <div class="quality-row">
+                    <span class="quality-label has-tip">及格件数</span>
+                    <div
+                      class="quality-segments"
+                      :aria-label="`质量达标 ${card.quality.qualityPassCount} / ${card.quality.qualityTotal}`"
+                    >
+                      <i
+                        v-for="n in card.quality.qualityTotal"
+                        :key="'qual' + n"
+                        :class="{ active: n <= card.quality.qualityPassCount }"
+                      ></i>
+                    </div>
+                    <span class="quality-count"
+                      >{{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
+                    >
                   </div>
-                  <span class="quality-count"
-                    >{{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
-                  >
-                </div>
+                </BuildHoverTip>
               </div>
             </div>
 
@@ -1420,6 +1428,9 @@ defineExpose({ reload: loadDashboard });
   color: #55769b;
   font-size: 11px;
   flex: 0 0 auto;
+}
+.quality-label.has-tip {
+  border-bottom: 1px dashed rgba(85, 118, 155, 0.55);
 }
 .quality-segments {
   display: flex;

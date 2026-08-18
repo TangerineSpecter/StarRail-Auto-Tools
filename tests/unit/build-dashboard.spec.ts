@@ -80,6 +80,42 @@ describe("BuildDashboard", () => {
     expect(wrapper.emitted("editBuild")).toEqual([[1005]]);
   });
 
+  it("shows hover tips for main-stat and quality-pass metrics", async () => {
+    dashboard.mockResolvedValue([entry]);
+    const wrapper = mount(BuildDashboard, {
+      attachTo: document.body,
+      global: {
+        provide: {
+          [runtimeContextKey as symbol]: {
+            notice: ref(""),
+          },
+        },
+        stubs: { InputText: true, Select: true },
+      },
+    });
+
+    await flushPromises();
+
+    const hosts = wrapper.findAll(".quality-section .build-hover-tip-host");
+    expect(hosts).toHaveLength(2);
+
+    await hosts[0]!.trigger("mouseenter");
+    const mainTip = document.querySelector(".build-hover-tip");
+    expect(mainTip?.textContent).toContain("主属性");
+    expect(mainTip?.textContent).toContain("各部位允许主词条");
+
+    await hosts[0]!.trigger("mouseleave");
+    expect(document.querySelector(".build-hover-tip")).toBeNull();
+
+    await hosts[1]!.trigger("mouseenter");
+    const passTip = document.querySelector(".build-hover-tip");
+    expect(passTip?.textContent).toContain("及格件数");
+    expect(passTip?.textContent).toContain("质量门槛");
+    expect(passTip?.textContent).toContain("40%");
+
+    wrapper.unmount();
+  });
+
   it("marks every target set as matched when its required pieces are equipped", async () => {
     dashboard.mockResolvedValue([
       {
