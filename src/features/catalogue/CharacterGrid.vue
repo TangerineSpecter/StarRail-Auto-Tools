@@ -195,7 +195,6 @@ const filteredCharacters = computed(() => {
         <div class="character-catalogue-body">
           <div class="character-card-top-row">
             <h4 :title="character.name">{{ character.name }}</h4>
-            <span class="character-catalogue-stars">{{ "★".repeat(character.rarity ?? 4) }}</span>
           </div>
 
           <div class="character-card-bottom-row">

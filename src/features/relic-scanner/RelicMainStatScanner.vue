@@ -109,14 +109,20 @@ async function analyzeUsefulness() {
           slot: relic.slot!,
           mainStat: relic.mainStat,
           setId: relic.setId,
-          substats: (relic.substats ?? []).map((s) => ({ ...s, key: s.key ?? (s as any).stat })),
+          substats: (relic.substats ?? []).map((s) => ({
+            ...s,
+            key: s.key ?? (s as { stat?: string }).stat,
+          })),
         })),
     }));
     const recommendations = scanUpgradeRecommendations(
       page.items.map((item) => ({
         slot: item.slot,
         mainStat: item.mainStat,
-        substats: (item.substats ?? []).map((s) => ({ ...s, key: s.key ?? (s as any).stat })),
+        substats: (item.substats ?? []).map((s) => ({
+          ...s,
+          key: s.key ?? (s as { stat?: string }).stat,
+        })),
         rarity: item.rarity,
         level: item.level,
         setId: item.setId,
@@ -528,9 +534,12 @@ onMounted(async () => {
         <div class="compact-left">
           <small>SCAN RESULT // UNASSIGNED RELIC MATRIX</small>
           <div class="compact-title-row">
-            <span class="compact-total"><b>{{ result.total }}</b> 件待复核</span>
+            <span class="compact-total"
+              ><b>{{ result.total }}</b> 件待复核</span
+            >
             <span v-if="summaryStats" class="compact-sub-info">
-              (隧洞 <b>{{ summaryStats.cavernCount }}</b> 件 / 位面 <b>{{ summaryStats.planarCount }}</b> 件)
+              (隧洞 <b>{{ summaryStats.cavernCount }}</b> 件 / 位面
+              <b>{{ summaryStats.planarCount }}</b> 件)
             </span>
           </div>
 
@@ -575,7 +584,15 @@ onMounted(async () => {
 
           <!-- Quick Search -->
           <div class="search-input-wrapper">
-            <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              class="search-icon"
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -591,9 +608,7 @@ onMounted(async () => {
       </div>
 
       <!-- Filter Empty State -->
-      <div v-if="!filteredGroups.length" class="scanner-state">
-        没有匹配当前条件的待复核遗器。
-      </div>
+      <div v-if="!filteredGroups.length" class="scanner-state">没有匹配当前条件的待复核遗器。</div>
 
       <!-- MATRIX BOARD (二维矩阵热力看板) -->
       <div v-else class="matrix-board-container">
@@ -603,38 +618,108 @@ onMounted(async () => {
               <tr>
                 <th class="col-set-info">套装名称 / 类型</th>
                 <th
-                  v-for="s in allSlots.filter(s => slotFilter === 'all' || slotFilter === s.key)"
+                  v-for="s in allSlots.filter((s) => slotFilter === 'all' || slotFilter === s.key)"
                   :key="s.key"
                   class="col-slot-header"
                 >
                   <span class="slot-header-icon">
-                    <svg v-if="s.key === 'Body'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      v-if="s.key === 'Body'"
+                      class="slot-svg-icon"
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <path d="M6 3h12l3 6-3 12H6L3 9z" />
                       <path d="M12 3v18" />
                       <path d="M8 9h8" />
                     </svg>
-                    <svg v-else-if="s.key === 'Feet'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      v-else-if="s.key === 'Feet'"
+                      class="slot-svg-icon"
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <path d="M4 16v-6a3 3 0 0 1 3-3h3l3 4h7a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4z" />
                       <circle cx="8" cy="16" r="1" />
                     </svg>
-                    <svg v-else-if="s.key === 'PlanarSphere'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      v-else-if="s.key === 'PlanarSphere'"
+                      class="slot-svg-icon"
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <circle cx="12" cy="12" r="7" />
                       <path d="M4.5 14.5c4.5 3 10.5 3 15 0" />
                       <path d="M4.5 9.5c4.5-3 10.5-3 15 0" />
                     </svg>
-                    <svg v-else-if="s.key === 'LinkRope'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      v-else-if="s.key === 'LinkRope'"
+                      class="slot-svg-icon"
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <path d="M10 14l-2 2a3 3 0 1 1-4.24-4.24l2-2a3 3 0 0 1 4.24 0" />
                       <path d="M14 10l2-2a3 3 0 1 1 4.24 4.24l-2 2a3 3 0 0 1-4.24 0" />
                       <line x1="8" y1="16" x2="16" y2="8" />
                     </svg>
-                    <svg v-else-if="s.key === 'Head'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 4a8 8 0 0 0-8 8v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3a8 8 0 0 0-8-8z" />
+                    <svg
+                      v-else-if="s.key === 'Head'"
+                      class="slot-svg-icon"
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M12 4a8 8 0 0 0-8 8v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3a8 8 0 0 0-8-8z"
+                      />
                       <path d="M4 14h16" />
                     </svg>
-                    <svg v-else-if="s.key === 'Hands'" class="slot-svg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      v-else-if="s.key === 'Hands'"
+                      class="slot-svg-icon"
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5" />
                       <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6" />
-                      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-3.5" />
+                      <path
+                        d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-3.5"
+                      />
                     </svg>
                   </span>
                   <span class="slot-header-name">{{ s.label }}</span>
@@ -647,11 +732,15 @@ onMounted(async () => {
                 <!-- 套装列 -->
                 <td class="cell-set-info">
                   <div class="matrix-set-cell">
-                    <img :src="getSetHeaderIcon(setGroup)" :alt="setGroup.setName" class="matrix-set-icon" />
+                    <img
+                      :src="getSetHeaderIcon(setGroup)"
+                      :alt="setGroup.setName"
+                      class="matrix-set-icon"
+                    />
                     <div class="matrix-set-meta">
                       <span class="matrix-set-name">{{ setGroup.setName }}</span>
                       <span :class="['set-type-tag', setGroup.isPlanar ? 'planar' : 'cavern']">
-                        {{ setGroup.isPlanar ? '2件套' : '4件套' }}
+                        {{ setGroup.isPlanar ? "2件套" : "4件套" }}
                       </span>
                     </div>
                   </div>
@@ -659,16 +748,20 @@ onMounted(async () => {
 
                 <!-- 部位交叉单元格 -->
                 <td
-                  v-for="s in allSlots.filter(s => slotFilter === 'all' || slotFilter === s.key)"
+                  v-for="s in allSlots.filter((s) => slotFilter === 'all' || slotFilter === s.key)"
                   :key="s.key"
                   class="cell-slot-data"
                 >
-                  <template v-if="setGroup.parts.find(p => p.slot === s.key)">
+                  <template v-if="setGroup.parts.find((p) => p.slot === s.key)">
                     <div class="matrix-chip-list">
                       <div
-                        v-for="stat in setGroup.parts.find(p => p.slot === s.key)!.stats"
+                        v-for="stat in setGroup.parts.find((p) => p.slot === s.key)!.stats"
                         :key="stat.mainStat"
-                        :class="['modern-stat-chip', 'matrix-chip', getStatThemeClass(stat.mainStat)]"
+                        :class="[
+                          'modern-stat-chip',
+                          'matrix-chip',
+                          getStatThemeClass(stat.mainStat),
+                        ]"
                       >
                         <span class="chip-stat-label">{{ statLabel(stat.mainStat) }}</span>
                         <span class="chip-count-pill">{{ stat.count }} 件</span>
@@ -692,7 +785,6 @@ onMounted(async () => {
     </template>
   </section>
 </template>
-
 
 <style scoped>
 .relic-scanner {
@@ -1615,7 +1707,9 @@ onMounted(async () => {
 
 .modern-set-card:hover {
   border-color: rgba(43, 108, 176, 0.45);
-  box-shadow: 0 8px 24px rgba(37, 75, 122, 0.11), 0 0 0 1px rgba(66, 153, 225, 0.15);
+  box-shadow:
+    0 8px 24px rgba(37, 75, 122, 0.11),
+    0 0 0 1px rgba(66, 153, 225, 0.15);
   transform: translateY(-2px);
 }
 

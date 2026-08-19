@@ -67,9 +67,7 @@ const isFull = computed(() => filledCount.value === 4);
 
 /** Calculate team top grade if available */
 const teamTopGrade = computed(() => {
-  const validScores = slots.value
-    .map((s) => s.score?.letterGrade)
-    .filter((g): g is string => !!g);
+  const validScores = slots.value.map((s) => s.score?.letterGrade).filter((g): g is string => !!g);
   if (!validScores.length) return null;
   if (validScores.includes("SS")) return "SS";
   if (validScores.some((g) => g.startsWith("S"))) return "S";
@@ -150,7 +148,9 @@ const teamTopGrade = computed(() => {
               stroke-linejoin="round"
             >
               <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <path
+                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              />
               <line x1="10" y1="11" x2="10" y2="17" />
               <line x1="14" y1="11" x2="14" y2="17" />
             </svg>
@@ -190,10 +190,7 @@ const teamTopGrade = computed(() => {
 
     <div class="team-slot-row" aria-label="配队成员">
       <template v-for="slot in slots" :key="`${team.teamId}-${slot.index}`">
-        <div
-          v-if="slot.member"
-          :class="['team-slot', { orphan: !slot.member.owned }]"
-        >
+        <div v-if="slot.member" :class="['team-slot', { orphan: !slot.member.owned }]">
           <div class="team-slot-avatar-wrap">
             <img v-if="slot.avatar" class="team-slot-avatar" :src="slot.avatar" :alt="slot.label" />
             <div
@@ -205,7 +202,11 @@ const teamTopGrade = computed(() => {
             </div>
             <span
               v-if="slot.score"
-              :class="['team-score-badge', 'avatar-corner-badge', gradeClass(slot.score.letterGrade)]"
+              :class="[
+                'team-score-badge',
+                'avatar-corner-badge',
+                gradeClass(slot.score.letterGrade),
+              ]"
               :title="`评级 ${slot.score.letterGrade}`"
             >
               {{ slot.score.letterGrade }}
@@ -214,13 +215,18 @@ const teamTopGrade = computed(() => {
           <div class="team-slot-meta">
             <div class="team-slot-name-row">
               <strong :title="slot.label">{{ slot.label }}</strong>
-              <span v-if="slot.member.owned" class="team-slot-level">Lv.{{ slot.member.level }}</span>
+              <span v-if="slot.member.owned" class="team-slot-level"
+                >Lv.{{ slot.member.level }}</span
+              >
             </div>
             <small v-if="!slot.member.owned" class="team-slot-orphan">已不在档案</small>
 
             <div v-if="slot.score" class="team-slot-score-section">
               <div class="team-slot-bars">
-                <div class="team-progress-item" :title="`潜力 ${formatScorePct(slot.score.potentialPct)}`">
+                <div
+                  class="team-progress-item"
+                  :title="`潜力 ${formatScorePct(slot.score.potentialPct)}`"
+                >
                   <div class="team-progress-label">
                     <span>潜力</span>
                     <strong>{{ formatScorePct(slot.score.potentialPct) }}</strong>
@@ -228,11 +234,16 @@ const teamTopGrade = computed(() => {
                   <div class="team-progress-track">
                     <div
                       class="team-progress-fill potential"
-                      :style="{ width: `${Math.min(100, Math.max(0, slot.score.potentialPct || 0))}%` }"
+                      :style="{
+                        width: `${Math.min(100, Math.max(0, slot.score.potentialPct || 0))}%`,
+                      }"
                     />
                   </div>
                 </div>
-                <div class="team-progress-item" :title="`完成度 ${formatScorePct(slot.score.completionPct)}`">
+                <div
+                  class="team-progress-item"
+                  :title="`完成度 ${formatScorePct(slot.score.completionPct)}`"
+                >
                   <div class="team-progress-label">
                     <span>完成</span>
                     <strong>{{ formatScorePct(slot.score.completionPct) }}</strong>
@@ -240,7 +251,9 @@ const teamTopGrade = computed(() => {
                   <div class="team-progress-track">
                     <div
                       class="team-progress-fill completion"
-                      :style="{ width: `${Math.min(100, Math.max(0, slot.score.completionPct || 0))}%` }"
+                      :style="{
+                        width: `${Math.min(100, Math.max(0, slot.score.completionPct || 0))}%`,
+                      }"
                     />
                   </div>
                 </div>
@@ -260,6 +273,3 @@ const teamTopGrade = computed(() => {
     </div>
   </article>
 </template>
-
-
-

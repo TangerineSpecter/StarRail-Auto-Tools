@@ -51,8 +51,7 @@ export const relicMainStats: Record<string, string[]> = {
 };
 
 /** Head and Hands have a single game-fixed main stat; not user plan goals. */
-export const isFixedMainStatSlot = (slot: string): boolean =>
-  slot === "Head" || slot === "Hands";
+export const isFixedMainStatSlot = (slot: string): boolean => slot === "Head" || slot === "Hands";
 
 /** Fixed main stats when a plan context exists (set or unset on the plan is equivalent). */
 export const fixedMainStatsForSlot = (slot: string): readonly string[] | null => {

@@ -3,10 +3,7 @@
  * No Tauri dependency — unit-testable from vitest.
  */
 
-import {
-  fixedMainStatsForSlot,
-  isFixedMainStatSlot,
-} from "@/shared/catalogue/relic-options";
+import { fixedMainStatsForSlot, isFixedMainStatSlot } from "@/shared/catalogue/relic-options";
 import {
   FLAT_SUBSTATS,
   GRADE5_SUBSTAT_ROLLS,

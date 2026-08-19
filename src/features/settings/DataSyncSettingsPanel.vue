@@ -140,10 +140,10 @@ onMounted(async () => {
 .settings-workspace {
   position: relative;
   display: grid;
-  align-content: center;
+  align-content: start;
   gap: 26px;
   min-height: 0;
-  padding: 38px clamp(32px, 5vw, 86px) 48px;
+  padding: 24px clamp(32px, 5vw, 86px) 48px;
   overflow: auto;
   isolation: isolate;
   background:
@@ -315,7 +315,7 @@ onMounted(async () => {
 }
 @media (max-width: 680px) {
   .settings-workspace {
-    padding: 27px 20px;
+    padding: 20px;
   }
   .settings-hero {
     align-items: start;

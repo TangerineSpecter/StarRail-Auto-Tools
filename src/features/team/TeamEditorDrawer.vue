@@ -191,7 +191,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <label class="team-field">
           <div class="team-field-header">
             <span>配队名称</span>
-            <small class="team-field-counter">{{ draft.name.length }}/{{ MAX_TEAM_NAME_LEN }}</small>
+            <small class="team-field-counter"
+              >{{ draft.name.length }}/{{ MAX_TEAM_NAME_LEN }}</small
+            >
           </div>
           <InputText
             v-model="draft.name"
@@ -203,7 +205,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <label class="team-field">
           <div class="team-field-header">
             <span>备注</span>
-            <small class="team-field-counter">{{ draft.note.length }}/{{ MAX_TEAM_NOTE_LEN }}</small>
+            <small class="team-field-counter"
+              >{{ draft.note.length }}/{{ MAX_TEAM_NOTE_LEN }}</small
+            >
           </div>
           <Textarea
             v-model="draft.note"
@@ -243,7 +247,11 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     </div>
                     <span
                       v-if="slotScore(index - 1)"
-                      :class="['team-score-badge', 'avatar-corner-badge', gradeClass(slotScore(index - 1)!.letterGrade)]"
+                      :class="[
+                        'team-score-badge',
+                        'avatar-corner-badge',
+                        gradeClass(slotScore(index - 1)!.letterGrade),
+                      ]"
                       :title="`评级 ${slotScore(index - 1)!.letterGrade}`"
                     >
                       {{ slotScore(index - 1)!.letterGrade }}

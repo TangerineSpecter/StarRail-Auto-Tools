@@ -179,7 +179,13 @@ describe("RelicMainStatScanner", () => {
           minPotentialPct: 40,
           spdTarget: 0,
         },
-        character: { characterId: 1001, name: "三月七", level: 80, ascension: 6, equippedRelics: [] },
+        character: {
+          characterId: 1001,
+          name: "三月七",
+          level: 80,
+          ascension: 6,
+          equippedRelics: [],
+        },
         displayOrder: 0,
         pinned: false,
       },
@@ -236,4 +242,3 @@ describe("RelicMainStatScanner", () => {
     expect(wrapper.text()).toContain("rolls");
   });
 });
-

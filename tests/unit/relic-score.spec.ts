@@ -273,11 +273,9 @@ describe("relic-score core", () => {
     // No plan context at all → null for every slot.
     expect(isMainStatAllowed("Head", "HP", undefined)).toBeNull();
 
-    const headOk = scoreRelic(
-      { slot: "Head", mainStat: "HP", substats: [] },
-      critWeights,
-      { allowedMainStats: { Body: ["CRIT Rate"] } },
-    );
+    const headOk = scoreRelic({ slot: "Head", mainStat: "HP", substats: [] }, critWeights, {
+      allowedMainStats: { Body: ["CRIT Rate"] },
+    });
     expect(headOk.mainStatCorrect).toBe(true);
     expect(headOk.letterGrade).not.toBeNull();
   });
