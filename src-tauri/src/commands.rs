@@ -4,6 +4,7 @@ use crate::{
     direct_read::{self, DirectReadSnapshot, DirectReadState},
     domain::{OcrImageResult, OcrModelConfig, ScanSnapshot, StartScanRequest, SystemCapabilities},
     error::AppError,
+    game_launch::{GameLaunchDetection, GameLaunchRuntime, GameLaunchSettings},
     inventory::{
         BuildPlanExcelImportResult, BuildRecommendation, BuildRecommendationRequest,
         CharacterBuildPlan, CharacterBuildScore, CharacterFilter, ClearInventoryRequest,
@@ -202,6 +203,36 @@ pub fn get_direct_read_snapshot(
     state: State<'_, DirectReadState>,
 ) -> Result<DirectReadSnapshot, AppError> {
     state.snapshot()
+}
+
+#[tauri::command]
+pub fn get_game_launch_settings(
+    runtime: State<'_, GameLaunchRuntime>,
+) -> Result<GameLaunchSettings, AppError> {
+    runtime.settings()
+}
+
+#[tauri::command]
+pub fn save_game_launch_settings(
+    settings: GameLaunchSettings,
+    runtime: State<'_, GameLaunchRuntime>,
+) -> Result<GameLaunchSettings, AppError> {
+    runtime.save_settings(settings)
+}
+
+#[tauri::command]
+pub fn detect_game_launcher(runtime: State<'_, GameLaunchRuntime>) -> GameLaunchDetection {
+    runtime.detect_launcher()
+}
+
+#[tauri::command]
+pub async fn pick_game_launcher() -> Result<Option<String>, AppError> {
+    Ok(rfd::AsyncFileDialog::new()
+        .set_title("选择米哈游启动器")
+        .add_filter("Windows 可执行文件", &["exe"])
+        .pick_file()
+        .await
+        .map(|file| file.path().to_string_lossy().to_string()))
 }
 
 #[tauri::command]

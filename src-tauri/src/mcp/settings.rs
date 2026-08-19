@@ -96,6 +96,18 @@ pub fn catalog_tools() -> Vec<McpToolInfo> {
                     .to_owned(),
             destructive: true,
         },
+        McpToolInfo {
+            name: "start_game_data_capture".to_owned(),
+            title: "启动游戏并采集数据".to_owned(),
+            description: "启动或复用已配置的米哈游启动器，进入游戏并开始监听数据。立即返回任务 ID，请继续调用 get_game_data_capture_status 查看进度。仅支持 Windows。".to_owned(),
+            destructive: false,
+        },
+        McpToolInfo {
+            name: "get_game_data_capture_status".to_owned(),
+            title: "查询游戏采集进度".to_owned(),
+            description: "查询 start_game_data_capture 返回的任务状态、当前提示及已采集的数据数量。建议每 2 到 3 秒调用一次直到 terminal=true。".to_owned(),
+            destructive: false,
+        },
     ]
 }
 

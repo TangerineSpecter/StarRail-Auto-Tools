@@ -211,7 +211,7 @@ onMounted(async () => {
           <span>02</span>
         </div>
         <h3>工具与接入</h3>
-        <p>这两个工具复用「数据同步站」里已保存的连接，不会改同步格式。</p>
+        <p>同步工具复用「数据同步站」配置；游戏采集工具复用「游戏启动与采集」中的启动器位置。</p>
         <ul class="tool-list">
           <li v-for="tool in status.tools" :key="tool.name">
             <b>{{ tool.title }}</b>

@@ -7,11 +7,12 @@ use rmcp::{
     schemars, tool, tool_handler, tool_router, ErrorData as McpError, ServerHandler,
 };
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::{
     direct_read,
     error::AppError,
+    game_launch::GameLaunchRuntime,
     inventory::{InventoryStore, InventorySummary},
     sync::{self, SyncProtocol, SyncStore},
 };
@@ -35,6 +36,12 @@ pub struct DownloadToolResult {
 pub struct DownloadLocalDataParams {
     /// 必须为 true。下载会用远端快照完整覆盖本地录入、培养方案与配队，不会合并两端数据。
     pub confirm: bool,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct GameCaptureStatusParams {
+    /// start_game_data_capture 返回的 taskId。
+    pub task_id: String,
 }
 
 #[derive(Clone)]
@@ -94,6 +101,45 @@ impl StarRailMcp {
                 publish_inventory_change(&self.app, &result.summary);
                 tool_json_result(&result)
             }
+            Err(error) => Ok(tool_error(error)),
+        }
+    }
+
+    #[tool(
+        name = "start_game_data_capture",
+        description = "在 Windows 上启动或复用软件设置中已保存的米哈游启动器，自动点击启动器的“开始游戏”，等待游戏窗口后点击窗体中心进入游戏并监听数据。立即返回 taskId；请每 2 到 3 秒调用 get_game_data_capture_status 直到 terminal=true。调用前须在软件设置 → 游戏启动与采集配置启动器 .exe。",
+        annotations(
+            read_only_hint = false,
+            destructive_hint = false,
+            idempotent_hint = false,
+            open_world_hint = false
+        )
+    )]
+    async fn start_game_data_capture(&self) -> Result<CallToolResult, McpError> {
+        let runtime = self.app.state::<GameLaunchRuntime>();
+        match runtime.start() {
+            Ok(task) => tool_json_result(&task),
+            Err(error) => Ok(tool_error(error)),
+        }
+    }
+
+    #[tool(
+        name = "get_game_data_capture_status",
+        description = "查询游戏启动与数据采集任务的最新状态。传入 start_game_data_capture 返回的 taskId；terminal=true 表示任务已成功、失败或取消。",
+        annotations(
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
+    )]
+    async fn get_game_data_capture_status(
+        &self,
+        Parameters(params): Parameters<GameCaptureStatusParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let runtime = self.app.state::<GameLaunchRuntime>();
+        match runtime.status(&params.task_id) {
+            Ok(task) => tool_json_result(&task),
             Err(error) => Ok(tool_error(error)),
         }
     }

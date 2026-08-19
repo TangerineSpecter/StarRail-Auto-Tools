@@ -133,6 +133,15 @@ export interface McpStatus {
   tools: McpToolInfo[];
 }
 
+export interface GameLaunchSettings {
+  launcherPath: string;
+}
+
+export interface GameLaunchDetection {
+  launcherPath: string | null;
+  source: string | null;
+}
+
 export type InventoryKind = "relic" | "lightCone" | "character";
 
 /** Data-management sidebar mode: inventory kinds plus local team compositions. */

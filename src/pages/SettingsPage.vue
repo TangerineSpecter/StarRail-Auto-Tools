@@ -2,10 +2,11 @@
 import { ref } from "vue";
 import DataSyncSettingsPanel from "@/features/settings/DataSyncSettingsPanel.vue";
 import McpSettingsPanel from "@/features/mcp/McpSettingsPanel.vue";
+import GameLaunchSettingsPanel from "@/features/settings/GameLaunchSettingsPanel.vue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 
 const { busy, error, notice } = useRuntimeContext();
-const section = ref<"sync" | "mcp">("sync");
+const section = ref<"sync" | "game" | "mcp">("sync");
 </script>
 
 <template>
@@ -31,9 +32,26 @@ const section = ref<"sync" | "mcp">("sync");
       >
         MCP 管理
       </button>
+      <button
+        type="button"
+        class="settings-section"
+        :class="{ active: section === 'game' }"
+        :disabled="busy"
+        :aria-pressed="section === 'game'"
+        @click="section = 'game'"
+      >
+        游戏启动与采集
+      </button>
     </nav>
     <DataSyncSettingsPanel
       v-if="section === 'sync'"
+      :busy="busy"
+      @busy="busy = $event"
+      @error="error = $event"
+      @notice="notice = $event"
+    />
+    <GameLaunchSettingsPanel
+      v-else-if="section === 'game'"
       :busy="busy"
       @busy="busy = $event"
       @error="error = $event"

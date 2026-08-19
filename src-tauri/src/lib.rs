@@ -2,6 +2,7 @@ mod commands;
 mod direct_read;
 mod domain;
 mod error;
+mod game_launch;
 mod inventory;
 mod mcp;
 #[cfg(feature = "ocr")]
@@ -32,9 +33,14 @@ pub fn run() {
                 sync_store.clone(),
                 app.handle().clone(),
             );
+            let game_launch_runtime = game_launch::GameLaunchRuntime::new(
+                game_launch::GameLaunchStore::new(data_dir.clone()),
+                app.handle().clone(),
+            );
             app.manage(store);
             app.manage(sync_store);
             app.manage(mcp_runtime.clone());
+            app.manage(game_launch_runtime);
             app.manage(DirectReadState::default());
             direct_read::auto_start(app.handle().clone());
             tauri::async_runtime::spawn(async move {
@@ -99,6 +105,10 @@ pub fn run() {
             commands::save_mcp_settings,
             commands::get_mcp_status,
             commands::regenerate_mcp_token,
+            commands::get_game_launch_settings,
+            commands::save_game_launch_settings,
+            commands::detect_game_launcher,
+            commands::pick_game_launcher,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run StarRail-Auto-Tools");

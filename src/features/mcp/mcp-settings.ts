@@ -52,6 +52,18 @@ export function catalogTools(): McpToolInfo[] {
         "从同步站下载远端快照并完整覆盖本地同步范围内的数据。调用时必须传入 confirm=true。",
       destructive: true,
     },
+    {
+      name: "start_game_data_capture",
+      title: "启动游戏并采集数据",
+      description: "启动已配置的米哈游启动器，进入游戏并开始监听数据；会立即返回任务 ID。",
+      destructive: false,
+    },
+    {
+      name: "get_game_data_capture_status",
+      title: "查询游戏采集进度",
+      description: "按任务 ID 查询启动、进入游戏和数据采集的实时状态。",
+      destructive: false,
+    },
   ];
 }
 

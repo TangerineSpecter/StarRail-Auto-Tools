@@ -6,6 +6,20 @@ import { emptyMcpSettings, emptyMcpStatus } from "@/features/mcp/mcp-settings";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import { ref } from "vue";
 
+const direct = ref({
+  phase: "stopped" as const,
+  message: "",
+  startedAt: null,
+  lastSyncAt: null,
+  relics: 0,
+  lightCones: 0,
+  characters: 0,
+  protocolVersion: "v",
+  currentUid: null,
+  incomingUid: null,
+  requiresAccountSwitch: false,
+});
+
 vi.mock("@/shared/api/sync", () => ({
   syncApi: {
     getSettings: vi.fn(async () => emptySyncSettings()),
@@ -31,6 +45,7 @@ describe("SettingsPage", () => {
       global: {
         provide: {
           [runtimeContextKey]: {
+            direct,
             busy: ref(false),
             error: ref(""),
             notice: ref(""),
@@ -63,6 +78,7 @@ describe("SettingsPage", () => {
       global: {
         provide: {
           [runtimeContextKey]: {
+            direct,
             busy: ref(true),
             error: ref(""),
             notice: ref(""),
