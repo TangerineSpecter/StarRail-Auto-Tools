@@ -175,9 +175,9 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
 }
 
 pub fn click_game_enter(game: GameWindow) -> Result<(), String> {
-    if !is_current_game_window(game) {
-        return Err("游戏窗口已关闭或不再属于本次启动的客户端。".to_owned());
-    }
+    // The caller has just verified that this exact process still owns a visible game window.
+    // Do not repeat the check here: foreground activation can be denied transiently between
+    // two consecutive checks, which would suppress an otherwise valid input attempt.
     click_game_enter_at_window(game.hwnd())
 }
 

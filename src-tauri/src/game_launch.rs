@@ -232,6 +232,7 @@ impl GameLaunchRuntime {
         );
         let deadline = tokio::time::Instant::now() + DATA_TIMEOUT;
         let mut next_enter_click = tokio::time::Instant::now();
+        let mut enter_clicks = 0_u32;
         loop {
             if !windows::game_window_is_open(game) {
                 self.finish_and_close_game(
@@ -244,12 +245,22 @@ impl GameLaunchRuntime {
                 return;
             }
             if tokio::time::Instant::now() >= next_enter_click {
-                if let Err(error) = windows::click_game_enter(game) {
-                    self.update(
+                enter_clicks += 1;
+                match windows::click_game_enter(game) {
+                    Ok(()) => self.update(
                         task_id,
                         GameCapturePhase::WaitingForData,
-                        format!("无法点击“点击进入”：{error}；将在 5 秒后重试。"),
-                    );
+                        format!(
+                            "已第 {enter_clicks} 次尝试点击“点击进入”，正在等待登录与背包数据…"
+                        ),
+                    ),
+                    Err(error) => self.update(
+                        task_id,
+                        GameCapturePhase::WaitingForData,
+                        format!(
+                            "第 {enter_clicks} 次点击“点击进入”失败：{error}；将在 5 秒后重试。"
+                        ),
+                    ),
                 }
                 next_enter_click += GAME_ENTER_CLICK_INTERVAL;
             }
