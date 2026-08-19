@@ -46,8 +46,14 @@ const MAX_ENTER_CLICKS: u8 = 3;
 
 #[derive(Clone, Copy)]
 pub struct GameWindow {
-    hwnd: HWND,
+    hwnd: isize,
     process_id: u32,
+}
+
+impl GameWindow {
+    fn hwnd(self) -> HWND {
+        HWND(self.hwnd as *mut _)
+    }
 }
 
 pub fn start_or_reuse_launcher(path: &Path) -> Result<u32, String> {
@@ -88,7 +94,10 @@ pub async fn wait_for_game_window(timeout: Duration) -> Result<GameWindow, Strin
     loop {
         if let Some(hwnd) = find_game_window() {
             if let Some(process_id) = window_process_id(hwnd) {
-                return Ok(GameWindow { hwnd, process_id });
+                return Ok(GameWindow {
+                    hwnd: hwnd.0 as isize,
+                    process_id,
+                });
             }
         }
         if tokio::time::Instant::now() >= deadline {
@@ -103,17 +112,16 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
     tokio::time::sleep(Duration::from_secs(8)).await;
     let deadline = tokio::time::Instant::now() + ENTER_READY_TIMEOUT;
     let mut clicks = 0;
-    let mut last_capture_error = None;
     loop {
         if !is_current_game_window(game) {
             return Err("游戏窗口已关闭或不再属于本次启动的客户端。".to_owned());
         }
-        match enter_screen_visible(game.hwnd) {
+        match enter_screen_visible(game.hwnd()) {
             Ok(true) => {
-                click_game_enter(game.hwnd)?;
+                click_game_enter(game.hwnd())?;
                 clicks += 1;
                 tokio::time::sleep(ENTER_RETRY_DELAY).await;
-                match enter_screen_visible(game.hwnd) {
+                match enter_screen_visible(game.hwnd()) {
                     Ok(false) => return Ok(()),
                     Ok(true) => {}
                     Err(error) => {
@@ -131,12 +139,8 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
                 tokio::time::sleep(Duration::from_secs(2)).await;
             }
             Err(error) => {
-                last_capture_error = Some(error);
                 if tokio::time::Instant::now() >= deadline {
-                    return Err(format!(
-                        "无法识别“点击进入”界面：{}",
-                        last_capture_error.unwrap_or_default()
-                    ));
+                    return Err(format!("无法识别“点击进入”界面：{error}"));
                 }
                 tokio::time::sleep(Duration::from_secs(2)).await;
             }
@@ -278,7 +282,7 @@ pub async fn close_game_window(game: GameWindow) -> Result<(), String> {
     if is_current_game_window(game) {
         unsafe {
             PostMessageW(
-                Some(game.hwnd),
+                Some(game.hwnd()),
                 WM_CLOSE,
                 Default::default(),
                 Default::default(),
@@ -306,7 +310,8 @@ pub async fn close_game_window(game: GameWindow) -> Result<(), String> {
 }
 
 fn is_current_game_window(game: GameWindow) -> bool {
-    window_process_id(game.hwnd) == Some(game.process_id) && is_game_window(game.hwnd)
+    let hwnd = game.hwnd();
+    window_process_id(hwnd) == Some(game.process_id) && is_game_window(hwnd)
 }
 
 fn is_game_window(hwnd: HWND) -> bool {
