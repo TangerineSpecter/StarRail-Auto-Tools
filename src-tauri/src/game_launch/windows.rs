@@ -135,7 +135,7 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
         }
         match enter_screen_visible(game.hwnd()) {
             Ok(true) => {
-                click_game_enter(game.hwnd())?;
+                click_game_enter_at_window(game.hwnd())?;
                 clicks += 1;
                 tokio::time::sleep(ENTER_RETRY_DELAY).await;
                 match enter_screen_visible(game.hwnd()) {
@@ -156,7 +156,7 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
                     // helper. This is a single fallback for remote-desktop scaling or animation
                     // changes that make the visual template unavailable; it is never retried
                     // blindly on later game screens.
-                    click_game_enter(game.hwnd())?;
+                    click_game_enter_at_window(game.hwnd())?;
                     return Ok(());
                 }
                 if tokio::time::Instant::now() >= deadline {
@@ -174,7 +174,14 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
     }
 }
 
-pub fn click_game_enter(hwnd: HWND) -> Result<(), String> {
+pub fn click_game_enter(game: GameWindow) -> Result<(), String> {
+    if !is_current_game_window(game) {
+        return Err("游戏窗口已关闭或不再属于本次启动的客户端。".to_owned());
+    }
+    click_game_enter_at_window(game.hwnd())
+}
+
+fn click_game_enter_at_window(hwnd: HWND) -> Result<(), String> {
     unsafe {
         if !SetForegroundWindow(hwnd).as_bool() || GetForegroundWindow() != hwnd {
             return Err("无法将游戏窗口切换到前台，已取消点击以避免误操作其他应用。".to_owned());

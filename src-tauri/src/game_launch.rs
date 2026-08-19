@@ -23,9 +23,11 @@ pub use settings::{GameLaunchDetection, GameLaunchSettings, GameLaunchStore};
 #[cfg(windows)]
 const GAME_WINDOW_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(90);
 #[cfg(windows)]
-const DATA_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(180);
+const DATA_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
 #[cfg(windows)]
 const POLL_INTERVAL: std::time::Duration = std::time::Duration::from_secs(2);
+#[cfg(windows)]
+const GAME_ENTER_CLICK_INTERVAL: std::time::Duration = std::time::Duration::from_secs(5);
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -216,15 +218,8 @@ impl GameLaunchRuntime {
         self.update(
             task_id,
             GameCapturePhase::EnteringGame,
-            "游戏客户端已就绪，正在识别“点击进入”界面…",
+            "游戏客户端已就绪，正在等待加载；将每 5 秒尝试点击一次“点击进入”…",
         );
-        if let Err(error) = windows::wait_for_enter_screen_and_click(game).await {
-            let close_suffix = match windows::close_game_window(game).await {
-                Ok(()) => " 已关闭本次启动的游戏客户端。".to_owned(),
-                Err(close_error) => format!(" 游戏客户端关闭失败：{close_error}"),
-            };
-            return Err(format!("{error}{close_suffix}"));
-        }
         Ok(game)
     }
 
@@ -233,9 +228,10 @@ impl GameLaunchRuntime {
         self.update(
             task_id,
             GameCapturePhase::WaitingForData,
-            "已向游戏发送“点击进入”指令，正在等待登录与背包数据…",
+            "正在等待登录与背包数据；加载期间将每 5 秒尝试点击一次“点击进入”…",
         );
         let deadline = tokio::time::Instant::now() + DATA_TIMEOUT;
+        let mut next_enter_click = tokio::time::Instant::now();
         loop {
             if !windows::game_window_is_open(game) {
                 self.finish_and_close_game(
@@ -246,6 +242,16 @@ impl GameLaunchRuntime {
                 )
                 .await;
                 return;
+            }
+            if tokio::time::Instant::now() >= next_enter_click {
+                if let Err(error) = windows::click_game_enter(game) {
+                    self.update(
+                        task_id,
+                        GameCapturePhase::WaitingForData,
+                        format!("无法点击“点击进入”：{error}；将在 5 秒后重试。"),
+                    );
+                }
+                next_enter_click += GAME_ENTER_CLICK_INTERVAL;
             }
             let current = match snapshot(&self.app) {
                 Ok(value) => value,
@@ -297,12 +303,14 @@ impl GameLaunchRuntime {
                     task_id,
                     game,
                     GameCapturePhase::Failed,
-                    "180 秒内未收到新的登录或背包数据；请确认账号已登录、已进入游戏且网络正常。",
+                    "60 秒内未收到新的登录或背包数据；请确认账号已登录、已进入游戏且网络正常。",
                 )
                 .await;
                 return;
             }
-            tokio::time::sleep(POLL_INTERVAL).await;
+            let until_next_click =
+                next_enter_click.saturating_duration_since(tokio::time::Instant::now());
+            tokio::time::sleep(POLL_INTERVAL.min(until_next_click)).await;
         }
     }
 
