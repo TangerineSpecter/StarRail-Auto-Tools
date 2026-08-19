@@ -258,26 +258,35 @@ fn capture_window_png(hwnd: HWND) -> Result<Vec<u8>, String> {
             .unwrap_or_default()
             .as_nanos()
     ));
-    let script = r#"
+    // `powershell -Command <script> <arguments>` does not reliably provide the trailing values
+    // as `$args`: PowerShell may parse them as part of the command text. The rectangle values are
+    // integers from Win32 and the path is generated locally, so embed quoted literals instead.
+    let escaped_path = path.to_string_lossy().replace('\'', "''");
+    let script = format!(
+        r#"
+$ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
-$bitmap = New-Object System.Drawing.Bitmap $args[2], $args[3]
+$bitmap = New-Object System.Drawing.Bitmap {width}, {height}
 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-$graphics.CopyFromScreen($args[0], $args[1], 0, 0, $bitmap.Size)
-$bitmap.Save($args[4], [System.Drawing.Imaging.ImageFormat]::Png)
+$graphics.CopyFromScreen({left}, {top}, 0, 0, $bitmap.Size)
+$bitmap.Save('{escaped_path}', [System.Drawing.Imaging.ImageFormat]::Png)
 $graphics.Dispose()
 $bitmap.Dispose()
-"#;
-    let status = Command::new("powershell")
-        .args(["-NoProfile", "-NonInteractive", "-Command", script])
-        .arg(rect.left.to_string())
-        .arg(rect.top.to_string())
-        .arg(width.to_string())
-        .arg(height.to_string())
-        .arg(&path)
-        .status()
+"#,
+        left = rect.left,
+        top = rect.top,
+    );
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+        .output()
         .map_err(|error| format!("无法截取游戏窗口：{error}"))?;
-    if !status.success() {
-        return Err("截取游戏窗口失败。".to_owned());
+    if !output.status.success() {
+        let detail = String::from_utf8_lossy(&output.stderr).trim().to_owned();
+        return Err(if detail.is_empty() {
+            "截取游戏窗口失败。".to_owned()
+        } else {
+            format!("截取游戏窗口失败：{detail}")
+        });
     }
     let bytes = fs::read(&path).map_err(|error| format!("无法读取游戏窗口截图：{error}"));
     let _ = fs::remove_file(path);
