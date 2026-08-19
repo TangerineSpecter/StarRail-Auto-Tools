@@ -110,6 +110,29 @@ export interface SyncSettings {
   sftp: SftpSettings;
 }
 
+export interface McpSettings {
+  enabled: boolean;
+  port: number;
+  token: string;
+}
+
+export interface McpToolInfo {
+  name: string;
+  title: string;
+  description: string;
+  destructive: boolean;
+}
+
+export interface McpStatus {
+  enabled: boolean;
+  running: boolean;
+  bindAddress: string;
+  port: number;
+  endpoint: string;
+  lastError: string | null;
+  tools: McpToolInfo[];
+}
+
 export type InventoryKind = "relic" | "lightCone" | "character";
 
 /** Data-management sidebar mode: inventory kinds plus local team compositions. */

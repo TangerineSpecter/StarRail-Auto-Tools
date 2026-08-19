@@ -3,6 +3,7 @@ mod direct_read;
 mod domain;
 mod error;
 mod inventory;
+mod mcp;
 #[cfg(feature = "ocr")]
 mod ocr;
 mod scanner;
@@ -24,10 +25,21 @@ pub fn run() {
             std::fs::create_dir_all(&data_dir)?;
             let store = InventoryStore::initialize(data_dir.join("inventory.sqlite3"))
                 .map_err(|error| std::io::Error::other(error.to_string()))?;
+            let sync_store = sync::SyncStore::new(data_dir.clone());
+            let mcp_runtime = mcp::McpRuntime::new(
+                mcp::McpStore::new(data_dir.clone()),
+                store.clone(),
+                sync_store.clone(),
+                app.handle().clone(),
+            );
             app.manage(store);
-            app.manage(sync::SyncStore::new(data_dir.clone()));
+            app.manage(sync_store);
+            app.manage(mcp_runtime.clone());
             app.manage(DirectReadState::default());
             direct_read::auto_start(app.handle().clone());
+            tauri::async_runtime::spawn(async move {
+                let _ = mcp_runtime.apply_saved().await;
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -83,6 +95,10 @@ pub fn run() {
             commands::test_sync_connection,
             commands::upload_sync_snapshot,
             commands::download_sync_snapshot,
+            commands::get_mcp_settings,
+            commands::save_mcp_settings,
+            commands::get_mcp_status,
+            commands::regenerate_mcp_token,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run StarRail-Auto-Tools");

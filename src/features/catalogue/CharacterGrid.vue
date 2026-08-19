@@ -189,15 +189,6 @@ const filteredCharacters = computed(() => {
 
           <!-- 底部稀有度流光品质晶条 -->
           <div class="character-slice-rarity-bar" />
-
-          <!-- 嵌合式属性能量晶章 -->
-          <div v-if="character.elementIcon" class="character-element-crest">
-            <img
-              class="character-element-crest-icon"
-              :src="character.elementIcon"
-              :alt="character.element"
-            />
-          </div>
         </div>
 
         <!-- 右侧：两行高张力信息 -->
@@ -218,7 +209,13 @@ const filteredCharacters = computed(() => {
               <span>{{ character.path }}</span>
             </p>
             <span :class="['character-element-tag', `elem-tag-${character.element}`]">
-              {{ character.element }}
+              <img
+                v-if="character.elementIcon"
+                class="character-element-tag-icon"
+                :src="character.elementIcon"
+                :alt="character.element"
+              />
+              <span class="character-element-tag-text">{{ character.element }}</span>
             </span>
           </div>
         </div>

@@ -435,27 +435,41 @@ button.catalogue-card:hover .relic-effect-row {
     0 0 0 1.5px rgba(199, 158, 255, 0.7);
 }
 
-/* 属性专属右侧高张力能量辐射场 */
+/* 属性专属右侧高张力能量辐射场 & 属性能量光环 */
 .character-catalogue-card.elem-theme-物理 {
   --elem-glow: rgba(140, 155, 175, 0.18);
+  --elem-crest-border: rgba(180, 195, 215, 0.45);
+  --elem-crest-glow: rgba(160, 175, 195, 0.4);
 }
 .character-catalogue-card.elem-theme-火 {
   --elem-glow: rgba(240, 75, 50, 0.2);
+  --elem-crest-border: rgba(245, 95, 75, 0.5);
+  --elem-crest-glow: rgba(240, 75, 50, 0.45);
 }
 .character-catalogue-card.elem-theme-冰 {
   --elem-glow: rgba(45, 155, 230, 0.2);
+  --elem-crest-border: rgba(75, 185, 255, 0.5);
+  --elem-crest-glow: rgba(45, 155, 230, 0.45);
 }
 .character-catalogue-card.elem-theme-雷 {
   --elem-glow: rgba(160, 95, 220, 0.2);
+  --elem-crest-border: rgba(185, 120, 245, 0.5);
+  --elem-crest-glow: rgba(160, 95, 220, 0.45);
 }
 .character-catalogue-card.elem-theme-风 {
   --elem-glow: rgba(45, 185, 125, 0.2);
+  --elem-crest-border: rgba(65, 215, 150, 0.5);
+  --elem-crest-glow: rgba(45, 185, 125, 0.45);
 }
 .character-catalogue-card.elem-theme-量子 {
   --elem-glow: rgba(95, 110, 225, 0.2);
+  --elem-crest-border: rgba(120, 135, 250, 0.5);
+  --elem-crest-glow: rgba(95, 110, 225, 0.45);
 }
 .character-catalogue-card.elem-theme-虚数 {
   --elem-glow: rgba(220, 170, 35, 0.22);
+  --elem-crest-border: rgba(250, 195, 55, 0.5);
+  --elem-crest-glow: rgba(220, 170, 35, 0.45);
 }
 
 /* 背景命途超大暗纹水印装饰 */
@@ -570,30 +584,7 @@ button.catalogue-card:hover .relic-effect-row {
   box-shadow: 0 0 10px rgba(213, 171, 255, 1);
 }
 
-/* 装甲级嵌合式属性能量晶章 */
-.character-element-crest {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  width: 22px;
-  height: 22px;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
-  background: rgba(6, 12, 22, 0.92);
-  backdrop-filter: blur(6px);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.5);
-  border-right: 1.5px solid rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 4;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-}
-.character-element-crest-icon {
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
-}
+
 
 /* 右侧两行高张力信息排版 */
 .character-catalogue-body {
@@ -678,18 +669,40 @@ button.catalogue-card:hover .relic-effect-row {
 .character-element-tag {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  padding: 2px 7.5px;
-  border-radius: 4px;
+  justify-content: flex-start;
+  gap: 3.5px;
+  width: 50px;
+  height: 18px;
+  box-sizing: border-box;
+  padding: 0 6px;
+  border-radius: 999px;
   color: #fff;
   font-size: 11px;
   font-weight: 700;
-  line-height: 1.2;
   white-space: nowrap;
   flex-shrink: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+.character-catalogue-card:hover .character-element-tag {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.26);
+}
+.character-element-tag-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  filter: brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  flex-shrink: 0;
+  display: block;
+}
+.character-element-tag-text {
+  line-height: 1;
+  transform: translateY(0.75px);
+  display: inline-block;
 }
 .character-element-tag.elem-tag-物理 {
   background: linear-gradient(135deg, #7c8899, #566373);

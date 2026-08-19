@@ -12,6 +12,7 @@ use crate::{
         PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatGroupedResult,
         RelicMainStatScanResult, RelicSetRecommendedCharacter, Team, TeamFilter, TeamInput,
     },
+    mcp::{McpRuntime, McpSettings, McpStatus},
     scanner::ScannerState,
     screenshot,
     sync::{self, SyncSettings, SyncStore, WebDavSettings},
@@ -528,4 +529,29 @@ pub async fn import_inventory(
         summary,
         warnings: report.warnings(),
     }))
+}
+
+#[tauri::command]
+pub fn get_mcp_settings(runtime: State<'_, McpRuntime>) -> Result<McpSettings, AppError> {
+    runtime.load_settings()
+}
+
+#[tauri::command]
+pub fn get_mcp_status(runtime: State<'_, McpRuntime>) -> McpStatus {
+    runtime.status()
+}
+
+#[tauri::command]
+pub async fn save_mcp_settings(
+    settings: McpSettings,
+    runtime: State<'_, McpRuntime>,
+) -> Result<McpSettings, AppError> {
+    let saved = runtime.save_settings(settings)?;
+    let _ = runtime.apply(&saved).await;
+    Ok(saved)
+}
+
+#[tauri::command]
+pub fn regenerate_mcp_token(runtime: State<'_, McpRuntime>) -> Result<McpSettings, AppError> {
+    runtime.regenerate_token()
 }

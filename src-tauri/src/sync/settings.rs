@@ -184,6 +184,7 @@ impl SyncSettings {
     }
 }
 
+#[derive(Clone)]
 pub struct SyncStore {
     path: PathBuf,
     legacy_path: PathBuf,

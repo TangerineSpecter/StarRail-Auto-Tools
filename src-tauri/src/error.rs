@@ -37,6 +37,8 @@ pub enum AppError {
     EmptyDeleteRequest,
     #[error("检测到不同游戏账号，需确认清空当前数据后再切换")]
     AccountMismatch,
+    #[error("MCP 服务失败：{0}")]
+    Mcp(String),
 }
 
 impl Serialize for AppError {
