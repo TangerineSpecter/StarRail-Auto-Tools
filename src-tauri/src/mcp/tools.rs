@@ -41,10 +41,10 @@ pub struct RestoreRemoteBackupParams {
 }
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct GameCaptureStatusParams {
-    /// start_game_data_capture 返回的 taskId。不传时返回最近一次任务，便于客户端恢复查询。
-    #[serde(default)]
-    pub task_id: Option<String>,
+    /// 必填：start_game_data_capture 返回的 taskId。未拿到 taskId 时不得调用本工具。
+    pub task_id: String,
 }
 
 #[derive(Clone)]
@@ -144,7 +144,7 @@ impl StarRailMcp {
         Parameters(params): Parameters<GameCaptureStatusParams>,
     ) -> Result<CallToolResult, McpError> {
         let runtime = self.app.state::<GameLaunchRuntime>();
-        match runtime.status(params.task_id.as_deref()) {
+        match runtime.status(&params.task_id) {
             Ok(task) => game_capture_task_result(&task, false),
             Err(error) => Ok(tool_error(error)),
         }
@@ -162,7 +162,7 @@ impl ServerHandler for StarRailMcp {
         .with_server_info(Implementation::new("starrail-auto-tools", env!("CARGO_PKG_VERSION")))
         .with_protocol_version(ProtocolVersion::default())
         .with_instructions(
-            "此服务有两条严格隔离的工作流。第一条是游戏数据采集：当用户说“更新数据”“更新星铁数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须调用 start_game_data_capture，而不是任何远端备份工具。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId，之后每 2 到 3 秒调用 get_game_data_capture_status（传 taskId；遗漏 taskId 时返回最近任务）直到 terminal=true。第二条是远端备份同步：upload_local_data 仅用于上传备份；restore_remote_backup 仅在用户明确说要从 SFTP、FTP、WebDAV 或同步站恢复远端备份时使用。restore_remote_backup 会覆盖本地数据，必须传 confirm=true 和 operation=restore_remote_backup。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
+            "此服务有两条严格隔离的工作流。第一条是游戏数据采集：当用户说“更新数据”“更新星铁数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须先调用 start_game_data_capture，而不是任何远端备份工具。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId。只有拿到 taskId 后，才每 2 到 3 秒调用 get_game_data_capture_status 并传入该 taskId，直到 terminal=true；没有 taskId 时不得调用状态查询。第二条是远端备份同步：upload_local_data 仅用于上传备份；restore_remote_backup 仅在用户明确说要从 SFTP、FTP、WebDAV 或同步站恢复远端备份时使用。restore_remote_backup 会覆盖本地数据，必须传 confirm=true 和 operation=restore_remote_backup。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
                 .to_owned(),
         )
     }
@@ -249,7 +249,7 @@ fn game_capture_task_result(
     task: &crate::game_launch::GameCaptureTask,
     created: bool,
 ) -> Result<CallToolResult, McpError> {
-    let structured = serde_json::to_value(task)
+    let json = serde_json::to_string(task)
         .map_err(|error| McpError::internal_error(error.to_string(), None))?;
     let action = if created {
         "请保存 taskId，并每 2 到 3 秒调用 get_game_data_capture_status。"
@@ -258,12 +258,10 @@ fn game_capture_task_result(
     } else {
         "任务仍在进行，请每 2 到 3 秒继续查询。"
     };
-    let mut result = CallToolResult::structured(structured);
-    result.content = vec![ContentBlock::text(format!(
-        "游戏启动采集任务：taskId={}；阶段={:?}；状态：{}。{action}",
+    Ok(CallToolResult::success(vec![ContentBlock::text(format!(
+        "游戏启动采集任务：taskId={}；阶段={:?}；状态：{}。{action}\nJSON: {json}",
         task.task_id, task.phase, task.message
-    ))];
-    Ok(result)
+    ))]))
 }
 
 fn tool_error(error: AppError) -> CallToolResult {
@@ -349,6 +347,14 @@ mod tests {
     }
 
     #[test]
+    fn game_capture_status_requires_task_id() {
+        assert!(serde_json::from_str::<GameCaptureStatusParams>(r#"{}"#).is_err());
+        assert!(
+            serde_json::from_str::<GameCaptureStatusParams>(r#"{"taskId":"capture-123"}"#).is_ok()
+        );
+    }
+
+    #[test]
     fn game_capture_result_contains_a_visible_task_id() {
         let task = crate::game_launch::GameCaptureTask {
             task_id: "capture-123".to_owned(),
@@ -358,7 +364,7 @@ mod tests {
             direct_read: crate::direct_read::DirectReadSnapshot::default(),
         };
         let result = game_capture_task_result(&task, true).unwrap();
-        assert_eq!(result.structured_content.unwrap()["taskId"], "capture-123");
+        assert!(result.structured_content.is_none());
         assert!(result.content[0]
             .as_text()
             .unwrap()

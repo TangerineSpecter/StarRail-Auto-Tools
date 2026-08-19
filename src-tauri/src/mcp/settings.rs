@@ -105,7 +105,7 @@ pub fn catalog_tools() -> Vec<McpToolInfo> {
         McpToolInfo {
             name: "get_game_data_capture_status".to_owned(),
             title: "查询游戏采集进度".to_owned(),
-            description: "查询 start_game_data_capture 返回的任务状态、当前提示及已采集的数据数量。建议每 2 到 3 秒调用一次直到 terminal=true。".to_owned(),
+            description: "必须传入 start_game_data_capture 返回的任务 ID，查询当前提示及已采集的数据数量。未拿到任务 ID 时不得调用。建议每 2 到 3 秒调用一次直到 terminal=true。".to_owned(),
             destructive: false,
         },
     ]
