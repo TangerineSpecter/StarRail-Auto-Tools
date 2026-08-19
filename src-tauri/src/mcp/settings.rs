@@ -99,13 +99,13 @@ pub fn catalog_tools() -> Vec<McpToolInfo> {
         McpToolInfo {
             name: "start_game_data_capture".to_owned(),
             title: "启动游戏并采集数据".to_owned(),
-            description: "用于更新或获取游戏数据：启动或复用已配置的米哈游启动器，识别“点击进入”界面并限次点击，确认进入后开始监听数据。立即返回任务 ID，请继续调用 get_game_data_capture_status 查看进度。仅支持 Windows。".to_owned(),
+            description: "用于更新或获取游戏数据：启动或复用已配置的米哈游启动器；游戏加载期间每 5 秒尝试点击一次固定的“点击进入”位置，并监听新数据。completed 时数据已归档到本地，应立即告知用户并停止，不要自动调用任何上传、下载或恢复工具。".to_owned(),
             destructive: false,
         },
         McpToolInfo {
             name: "get_game_data_capture_status".to_owned(),
             title: "查询游戏采集进度".to_owned(),
-            description: "必须传入 start_game_data_capture 返回的任务 ID，查询当前提示及已采集的数据数量。未拿到任务 ID 时不得调用。建议每 2 到 3 秒调用一次直到 terminal=true。".to_owned(),
+            description: "必须传入 start_game_data_capture 返回的任务 ID，查询当前提示及已采集的数据数量。未拿到任务 ID 时不得调用。建议每 2 到 3 秒调用一次直到 terminal=true；completed 时立即报告结果并停止轮询，不要自动同步远端数据。".to_owned(),
             destructive: false,
         },
     ]

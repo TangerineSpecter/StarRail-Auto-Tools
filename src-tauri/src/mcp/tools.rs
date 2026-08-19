@@ -113,7 +113,7 @@ impl StarRailMcp {
 
     #[tool(
         name = "start_game_data_capture",
-        description = "用于“更新数据”“获取游戏数据”“启动星铁后采集”等请求：在 Windows 上启动或复用已配置的米哈游启动器。会先识别游戏窗口中的“点击进入”界面，限次点击并确认该界面消失后才开始监听数据。立即返回 taskId；请每 2 到 3 秒调用 get_game_data_capture_status 直到 terminal=true。调用前须在软件设置 → 游戏启动与采集配置启动器 .exe。",
+        description = "用于“更新数据”“获取游戏数据”“启动星铁后采集”等请求：在 Windows 上启动或复用已配置的米哈游启动器。游戏窗口出现后，加载期间每 5 秒尝试点击一次固定的“点击进入”位置，并等待新数据；60 秒内未采集到数据则结束。立即返回 taskId；请每 2 到 3 秒调用 get_game_data_capture_status 直到 terminal=true。completed 表示数据已归档到本地：应立即告知用户并停止，绝不能自动调用上传、下载、恢复或任何远端同步工具。调用前须在软件设置 → 游戏启动与采集配置启动器 .exe。",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -131,7 +131,7 @@ impl StarRailMcp {
 
     #[tool(
         name = "get_game_data_capture_status",
-        description = "查询游戏启动与数据采集任务的最新状态。传入 start_game_data_capture 返回的 taskId；terminal=true 表示任务已成功、失败或取消。",
+        description = "查询游戏启动与数据采集任务的最新状态。传入 start_game_data_capture 返回的 taskId；terminal=true 表示任务已成功、失败或取消。completed 表示游戏数据已归档到本地，必须立即报告并停止，不得自动调用远端同步工具。",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -162,7 +162,7 @@ impl ServerHandler for StarRailMcp {
         .with_server_info(Implementation::new("starrail-auto-tools", env!("CARGO_PKG_VERSION")))
         .with_protocol_version(ProtocolVersion::default())
         .with_instructions(
-            "此服务有两条严格隔离的工作流。第一条是游戏数据采集：当用户说“更新数据”“更新星铁数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须先调用 start_game_data_capture，而不是任何远端备份工具。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId。只有拿到 taskId 后，才每 2 到 3 秒调用 get_game_data_capture_status 并传入该 taskId，直到 terminal=true；没有 taskId 时不得调用状态查询。第二条是远端备份同步：upload_local_data 仅用于上传备份；restore_remote_backup 仅在用户明确说要从 SFTP、FTP、WebDAV 或同步站恢复远端备份时使用。restore_remote_backup 会覆盖本地数据，必须传 confirm=true 和 operation=restore_remote_backup。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
+            "此服务有两条严格隔离的工作流。第一条是游戏数据采集：当用户说“更新数据”“更新星铁数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须先调用 start_game_data_capture，而不是任何远端备份工具。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId。只有拿到 taskId 后，才每 2 到 3 秒调用 get_game_data_capture_status 并传入该 taskId，直到 terminal=true；没有 taskId 时不得调用状态查询。completed 表示游戏数据已经归档到本地：必须立即向用户报告并停止本工作流，绝不能自动上传、下载、恢复、同步远端数据，也不得重试不存在的 download_local_data 工具。第二条是远端备份同步：upload_local_data 仅用于上传备份；restore_remote_backup 仅在用户明确说要从 SFTP、FTP、WebDAV 或同步站恢复远端备份时使用。restore_remote_backup 会覆盖本地数据，必须传 confirm=true 和 operation=restore_remote_backup。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
                 .to_owned(),
         )
     }

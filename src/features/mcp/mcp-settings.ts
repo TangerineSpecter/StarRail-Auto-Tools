@@ -55,7 +55,8 @@ export function catalogTools(): McpToolInfo[] {
     {
       name: "start_game_data_capture",
       title: "启动游戏并采集数据",
-      description: "启动已配置的米哈游启动器，识别“点击进入”界面并确认进入后开始监听数据；会立即返回任务 ID。",
+      description:
+        "启动已配置的米哈游启动器；加载期间每 5 秒尝试点击一次固定的“点击进入”位置并监听新数据；会立即返回任务 ID。",
       destructive: false,
     },
     {
