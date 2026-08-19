@@ -8,7 +8,7 @@ use axum::{
     Router,
 };
 use rmcp::transport::streamable_http_server::{
-    session::local::LocalSessionManager, StreamableHttpServerConfig, StreamableHttpService,
+    session::never::NeverSessionManager, StreamableHttpServerConfig, StreamableHttpService,
 };
 use tauri::AppHandle;
 use tokio_util::sync::CancellationToken;
@@ -180,8 +180,15 @@ impl McpRuntime {
                     app.clone(),
                 ))
             },
-            LocalSessionManager::default().into(),
-            StreamableHttpServerConfig::default().with_cancellation_token(cancel.child_token()),
+            // The desktop process can restart while an AI client keeps an old
+            // Mcp-Session-Id. This server stores capture tasks in application
+            // state rather than in HTTP sessions, so stateless requests avoid
+            // stale-session failures and work across client reconnects.
+            NeverSessionManager::default().into(),
+            StreamableHttpServerConfig::default()
+                .with_legacy_session_mode(false)
+                .with_json_response(true)
+                .with_cancellation_token(cancel.child_token()),
         );
         let router = Router::new()
             .nest_service("/mcp", service)
