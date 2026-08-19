@@ -40,6 +40,15 @@ const ENTER_REGION_X: f32 = 616.0 / 1362.0;
 const ENTER_REGION_Y: f32 = 735.0 / 800.0;
 const ENTER_REGION_WIDTH: f32 = 130.0 / 1362.0;
 const ENTER_REGION_HEIGHT: f32 = 42.0 / 800.0;
+// The bundled template was taken from a remote desktop image. Only compare the glyph area:
+// the surrounding login animation changes continuously and is not a stable signal.
+const ENTER_TEXT_LEFT: u32 = 34;
+const ENTER_TEXT_RIGHT: u32 = 100;
+const ENTER_TEXT_TOP: u32 = 8;
+const ENTER_TEXT_BOTTOM: u32 = 32;
+const TEMPLATE_TEXT_BRIGHTNESS: u8 = 215;
+const CANDIDATE_TEXT_BRIGHTNESS: u8 = 190;
+const ENTER_TEXT_SIMILARITY: f32 = 0.58;
 const ENTER_READY_TIMEOUT: Duration = Duration::from_secs(45);
 const ENTER_RETRY_DELAY: Duration = Duration::from_secs(5);
 const MAX_ENTER_CLICKS: u8 = 3;
@@ -209,7 +218,7 @@ fn enter_screen_visible(hwnd: HWND) -> Result<bool, String> {
                     image::imageops::FilterType::Triangle,
                 )
                 .to_luma8();
-            if text_template_similarity(&template, &candidate) >= 0.68 {
+            if text_template_similarity(&template, &candidate) >= ENTER_TEXT_SIMILARITY {
                 return Ok(true);
             }
         }
@@ -221,10 +230,12 @@ fn text_template_similarity(template: &image::GrayImage, candidate: &image::Gray
     let mut template_text_pixels = 0_u32;
     let mut candidate_text_pixels = 0_u32;
     let mut matching_text_pixels = 0_u32;
-    for y in 6..template.height().saturating_sub(6) {
-        for x in 22..template.width().saturating_sub(22) {
-            let template_is_text = template.get_pixel(x, y)[0] >= 190;
-            let candidate_is_text = candidate.get_pixel(x, y)[0] >= 175;
+    let right = ENTER_TEXT_RIGHT.min(template.width());
+    let bottom = ENTER_TEXT_BOTTOM.min(template.height());
+    for y in ENTER_TEXT_TOP.min(bottom)..bottom {
+        for x in ENTER_TEXT_LEFT.min(right)..right {
+            let template_is_text = template.get_pixel(x, y)[0] >= TEMPLATE_TEXT_BRIGHTNESS;
+            let candidate_is_text = candidate.get_pixel(x, y)[0] >= CANDIDATE_TEXT_BRIGHTNESS;
             if template_is_text {
                 template_text_pixels += 1;
             }
@@ -504,7 +515,7 @@ mod tests {
         let matching = template.clone();
         let bright_background = image::GrayImage::from_pixel(130, 42, image::Luma([255]));
 
-        assert!(text_template_similarity(&template, &matching) >= 0.68);
-        assert!(text_template_similarity(&template, &bright_background) < 0.68);
+        assert!(text_template_similarity(&template, &matching) >= ENTER_TEXT_SIMILARITY);
+        assert!(text_template_similarity(&template, &bright_background) < ENTER_TEXT_SIMILARITY);
     }
 }
