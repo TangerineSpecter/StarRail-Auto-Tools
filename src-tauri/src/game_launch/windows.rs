@@ -52,6 +52,7 @@ const ENTER_TEXT_SIMILARITY: f32 = 0.58;
 const ENTER_READY_TIMEOUT: Duration = Duration::from_secs(45);
 const ENTER_RETRY_DELAY: Duration = Duration::from_secs(5);
 const MAX_ENTER_CLICKS: u8 = 3;
+const UNRECOGNIZED_ENTER_FALLBACK_AFTER: u8 = 5;
 
 #[derive(Clone, Copy)]
 pub struct GameWindow {
@@ -127,6 +128,7 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
     tokio::time::sleep(Duration::from_secs(8)).await;
     let deadline = tokio::time::Instant::now() + ENTER_READY_TIMEOUT;
     let mut clicks = 0;
+    let mut unmatched_checks = 0;
     loop {
         if !is_current_game_window(game) {
             return Err("游戏窗口已关闭或不再属于本次启动的客户端。".to_owned());
@@ -148,6 +150,15 @@ pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), Str
                 }
             }
             Ok(false) => {
+                unmatched_checks += 1;
+                if unmatched_checks >= UNRECOGNIZED_ENTER_FALLBACK_AFTER {
+                    // The window identity and foreground are verified again inside the click
+                    // helper. This is a single fallback for remote-desktop scaling or animation
+                    // changes that make the visual template unavailable; it is never retried
+                    // blindly on later game screens.
+                    click_game_enter(game.hwnd())?;
+                    return Ok(());
+                }
                 if tokio::time::Instant::now() >= deadline {
                     return Err("等待“点击进入”界面超时。请确认游戏已正常加载到登录页。".to_owned());
                 }
