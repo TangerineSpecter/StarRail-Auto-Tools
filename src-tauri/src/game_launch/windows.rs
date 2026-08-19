@@ -14,6 +14,7 @@ use windows::{
             CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER,
             COINIT_APARTMENTTHREADED,
         },
+        System::Threading::{AttachThreadInput, GetCurrentThreadId},
         UI::{
             Accessibility::{
                 CUIAutomation, IUIAutomation, IUIAutomationInvokePattern, TreeScope_Subtree,
@@ -24,9 +25,10 @@ use windows::{
                 MOUSEINPUT,
             },
             WindowsAndMessaging::{
-                EnumWindows, GetForegroundWindow, GetWindowRect, GetWindowTextLengthW,
-                GetWindowTextW, GetWindowThreadProcessId, IsIconic, IsWindowVisible, PostMessageW,
-                SetCursorPos, SetForegroundWindow, WM_CLOSE,
+                BringWindowToTop, EnumWindows, GetForegroundWindow, GetWindowRect,
+                GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId, IsIconic,
+                IsWindowVisible, PostMessageW, SetCursorPos, SetForegroundWindow, ShowWindow,
+                SW_RESTORE, WM_CLOSE,
             },
         },
     },
@@ -183,8 +185,8 @@ pub fn click_game_enter(game: GameWindow) -> Result<(), String> {
 
 fn click_game_enter_at_window(hwnd: HWND) -> Result<(), String> {
     unsafe {
-        if !SetForegroundWindow(hwnd).as_bool() || GetForegroundWindow() != hwnd {
-            return Err("无法将游戏窗口切换到前台，已取消点击以避免误操作其他应用。".to_owned());
+        if !activate_game_window(hwnd) {
+            return Err("Windows 拒绝将游戏窗口切换到前台（任务栏闪烁通常表示该情况），已取消点击以避免误操作其他应用。".to_owned());
         }
         let mut rect = RECT::default();
         GetWindowRect(hwnd, &mut rect).map_err(|error| error.to_string())?;
@@ -204,6 +206,40 @@ fn click_game_enter_at_window(hwnd: HWND) -> Result<(), String> {
             return Err("Windows 未接受游戏进入点击；可能是游戏以管理员身份运行或远程控制软件拦截了输入。请让本工具与游戏使用相同权限后重试。".to_owned());
         }
         Ok(())
+    }
+}
+
+fn activate_game_window(hwnd: HWND) -> bool {
+    unsafe {
+        let _ = ShowWindow(hwnd, SW_RESTORE);
+        let _ = BringWindowToTop(hwnd);
+        if SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd {
+            return true;
+        }
+
+        // Windows foreground-lock rules can reject a background Tauri worker even though the
+        // game window is visible. Temporarily join the input queues involved in the activation,
+        // then immediately detach them again. System-modal windows still remain protected.
+        let caller_thread = GetCurrentThreadId();
+        let foreground = GetForegroundWindow();
+        let foreground_thread = GetWindowThreadProcessId(foreground, None);
+        let game_thread = GetWindowThreadProcessId(hwnd, None);
+        let attached_foreground = foreground_thread != 0
+            && foreground_thread != caller_thread
+            && AttachThreadInput(caller_thread, foreground_thread, true).as_bool();
+        let attached_game = game_thread != 0
+            && game_thread != caller_thread
+            && game_thread != foreground_thread
+            && AttachThreadInput(caller_thread, game_thread, true).as_bool();
+        let _ = BringWindowToTop(hwnd);
+        let activated = SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd;
+        if attached_game {
+            let _ = AttachThreadInput(caller_thread, game_thread, false);
+        }
+        if attached_foreground {
+            let _ = AttachThreadInput(caller_thread, foreground_thread, false);
+        }
+        activated
     }
 }
 
