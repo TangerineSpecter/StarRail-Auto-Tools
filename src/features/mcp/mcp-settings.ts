@@ -46,16 +46,16 @@ export function catalogTools(): McpToolInfo[] {
       destructive: false,
     },
     {
-      name: "download_local_data",
-      title: "下载本地数据",
+      name: "restore_remote_backup",
+      title: "从同步站恢复远端备份",
       description:
-        "从同步站下载远端快照并完整覆盖本地同步范围内的数据。调用时必须传入 confirm=true。",
+        "仅用于恢复远端备份：从同步站下载快照并覆盖本地数据。必须传入 confirm=true 和 operation=restore_remote_backup。",
       destructive: true,
     },
     {
       name: "start_game_data_capture",
       title: "启动游戏并采集数据",
-      description: "启动已配置的米哈游启动器，进入游戏并开始监听数据；会立即返回任务 ID。",
+      description: "启动已配置的米哈游启动器，识别“点击进入”界面并确认进入后开始监听数据；会立即返回任务 ID。",
       destructive: false,
     },
     {

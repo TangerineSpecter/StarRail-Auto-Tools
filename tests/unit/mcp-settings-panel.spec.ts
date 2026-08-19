@@ -30,7 +30,7 @@ describe("McpSettingsPanel", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("upload_local_data");
     });
-    expect(wrapper.text()).toContain("download_local_data");
+    expect(wrapper.text()).toContain("restore_remote_backup");
     expect(wrapper.text()).toContain("[mcp_servers.starrail]");
 
     await wrapper.get('[aria-label="客户端配置"] button:nth-child(2)').trigger("click");

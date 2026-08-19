@@ -33,9 +33,11 @@ pub struct DownloadToolResult {
 }
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
-pub struct DownloadLocalDataParams {
-    /// 必须为 true。下载会用远端快照完整覆盖本地录入、培养方案与配队，不会合并两端数据。
+pub struct RestoreRemoteBackupParams {
+    /// 必须为 true。恢复会用远端快照完整覆盖本地录入、培养方案与配队，不会合并两端数据。
     pub confirm: bool,
+    /// 必须精确传入 restore_remote_backup；仅当用户明确要求从远端备份恢复时才可调用。
+    pub operation: String,
 }
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
@@ -84,8 +86,8 @@ impl StarRailMcp {
     }
 
     #[tool(
-        name = "download_local_data",
-        description = "仅用于从远端恢复备份：从软件设置里已保存的 WebDAV / FTP / SFTP 同步站下载快照，并完整覆盖本地数据。这不是从游戏获取数据；必须传入 confirm=true。",
+        name = "restore_remote_backup",
+        description = "仅用于用户明确要求“从远端备份恢复”的场景：从已配置的 WebDAV / FTP / SFTP 同步站下载快照并覆盖本地数据。绝不能用于“更新数据”“获取游戏数据”或“启动星铁”。必须传 confirm=true 和 operation=restore_remote_backup。",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -93,10 +95,13 @@ impl StarRailMcp {
             open_world_hint = true
         )
     )]
-    async fn download_local_data(
+    async fn restore_remote_backup(
         &self,
-        Parameters(params): Parameters<DownloadLocalDataParams>,
+        Parameters(params): Parameters<RestoreRemoteBackupParams>,
     ) -> Result<CallToolResult, McpError> {
+        if let Err(error) = validate_restore_operation(&params.operation) {
+            return Ok(tool_error(error));
+        }
         match download_local_snapshot(&self.inventory, &self.sync, params.confirm).await {
             Ok(result) => {
                 publish_inventory_change(&self.app, &result.summary);
@@ -108,7 +113,7 @@ impl StarRailMcp {
 
     #[tool(
         name = "start_game_data_capture",
-        description = "用于“更新数据”“获取游戏数据”“启动星铁后采集”等请求：在 Windows 上启动或复用已配置的米哈游启动器，进入游戏并监听数据。立即返回 taskId；请每 2 到 3 秒调用 get_game_data_capture_status 直到 terminal=true。调用前须在软件设置 → 游戏启动与采集配置启动器 .exe。",
+        description = "用于“更新数据”“获取游戏数据”“启动星铁后采集”等请求：在 Windows 上启动或复用已配置的米哈游启动器。会先识别游戏窗口中的“点击进入”界面，限次点击并确认该界面消失后才开始监听数据。立即返回 taskId；请每 2 到 3 秒调用 get_game_data_capture_status 直到 terminal=true。调用前须在软件设置 → 游戏启动与采集配置启动器 .exe。",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -157,7 +162,7 @@ impl ServerHandler for StarRailMcp {
         .with_server_info(Implementation::new("starrail-auto-tools", env!("CARGO_PKG_VERSION")))
         .with_protocol_version(ProtocolVersion::default())
         .with_instructions(
-            "此服务有两条严格隔离的工作流。第一条是游戏数据采集：当用户说“更新数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须调用 start_game_data_capture，而不是上传或下载工具。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId，之后每 2 到 3 秒调用 get_game_data_capture_status（传 taskId；遗漏 taskId 时返回最近任务）直到 terminal=true。第二条是远端备份同步：只有用户明确提到上传、下载、备份、恢复、SFTP、FTP、WebDAV、同步站或远端数据时，才使用 upload_local_data / download_local_data；download_local_data 会覆盖本地数据，必须传 confirm=true。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
+            "此服务有两条严格隔离的工作流。第一条是游戏数据采集：当用户说“更新数据”“更新星铁数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须调用 start_game_data_capture，而不是任何远端备份工具。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId，之后每 2 到 3 秒调用 get_game_data_capture_status（传 taskId；遗漏 taskId 时返回最近任务）直到 terminal=true。第二条是远端备份同步：upload_local_data 仅用于上传备份；restore_remote_backup 仅在用户明确说要从 SFTP、FTP、WebDAV 或同步站恢复远端备份时使用。restore_remote_backup 会覆盖本地数据，必须传 confirm=true 和 operation=restore_remote_backup。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
                 .to_owned(),
         )
     }
@@ -189,7 +194,7 @@ pub async fn download_local_snapshot(
 ) -> Result<DownloadToolResult, AppError> {
     if !confirm {
         return Err(AppError::Mcp(
-            "下载会覆盖本地录入、培养方案与配队。请再次调用 download_local_data 并传入 confirm=true。"
+            "恢复远端备份会覆盖本地录入、培养方案与配队。请再次调用 restore_remote_backup 并传入 confirm=true。"
                 .to_owned(),
         ));
     }
@@ -222,6 +227,16 @@ fn sync_config_error(error: AppError) -> AppError {
     AppError::Mcp(format!(
         "{error}。请先在软件设置 → 数据同步站填写并保存连接信息。"
     ))
+}
+
+fn validate_restore_operation(operation: &str) -> Result<(), AppError> {
+    if operation == "restore_remote_backup" {
+        Ok(())
+    } else {
+        Err(AppError::Mcp(
+            "此工具仅用于恢复远端备份。请在用户明确要求恢复时传入 operation=restore_remote_backup；更新游戏数据应调用 start_game_data_capture。".to_owned(),
+        ))
+    }
 }
 
 fn tool_json_result<T: Serialize>(value: &T) -> Result<CallToolResult, McpError> {
@@ -324,6 +339,13 @@ mod tests {
             ..SyncSettings::default()
         });
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn remote_restore_requires_explicit_operation_marker() {
+        assert!(validate_restore_operation("restore_remote_backup").is_ok());
+        assert!(validate_restore_operation("download_local_data").is_err());
+        assert!(validate_restore_operation("").is_err());
     }
 
     #[test]

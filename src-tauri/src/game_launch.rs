@@ -179,11 +179,14 @@ impl GameLaunchRuntime {
                 return;
             }
         };
-        if let Err(error) = self.open_game_from_launcher(task_id, launcher_pid).await {
-            self.update(task_id, GameCapturePhase::Failed, error);
-            return;
-        }
-        self.wait_for_new_capture(task_id, baseline).await;
+        let game = match self.open_game_from_launcher(task_id, launcher_pid).await {
+            Ok(game) => game,
+            Err(error) => {
+                self.update(task_id, GameCapturePhase::Failed, error);
+                return;
+            }
+        };
+        self.wait_for_new_capture(task_id, baseline, game).await;
     }
 
     #[cfg(windows)]
@@ -202,7 +205,7 @@ impl GameLaunchRuntime {
         &self,
         task_id: &str,
         launcher_pid: u32,
-    ) -> Result<(), String> {
+    ) -> Result<windows::GameWindow, String> {
         self.update(
             task_id,
             GameCapturePhase::StartingGame,
@@ -218,59 +221,106 @@ impl GameLaunchRuntime {
         self.update(
             task_id,
             GameCapturePhase::EnteringGame,
-            "游戏客户端已就绪，正在点击窗体进入游戏…",
+            "游戏客户端已就绪，正在识别“点击进入”界面…",
         );
-        windows::click_window_center(game)
+        if let Err(error) = windows::wait_for_enter_screen_and_click(game).await {
+            let close_suffix = match windows::close_game_window(game).await {
+                Ok(()) => " 已关闭本次启动的游戏客户端。".to_owned(),
+                Err(close_error) => format!(" 游戏客户端关闭失败：{close_error}"),
+            };
+            return Err(format!("{error}{close_suffix}"));
+        }
+        Ok(game)
     }
 
     #[cfg(windows)]
-    async fn wait_for_new_capture(&self, task_id: &str, baseline: i64) {
+    async fn wait_for_new_capture(&self, task_id: &str, baseline: i64, game: windows::GameWindow) {
         self.update(
             task_id,
             GameCapturePhase::WaitingForData,
-            "已进入游戏，正在监听背包与角色数据…",
+            "已向游戏发送“点击进入”指令，正在等待登录与背包数据…",
         );
         let deadline = tokio::time::Instant::now() + DATA_TIMEOUT;
         loop {
             let current = match snapshot(&self.app) {
                 Ok(value) => value,
                 Err(error) => {
-                    self.update(task_id, GameCapturePhase::Failed, error.to_string());
+                    self.finish_and_close_game(
+                        task_id,
+                        game,
+                        GameCapturePhase::Failed,
+                        error.to_string(),
+                    )
+                    .await;
                     return;
                 }
             };
             if current.requires_account_switch {
-                self.update(
+                self.finish_and_close_game(
                     task_id,
+                    game,
                     GameCapturePhase::Failed,
                     "检测到不同账号，需要在软件内确认账号切换后再重试。",
-                );
+                )
+                .await;
                 return;
             }
             if current.phase == DirectReadPhase::Error {
-                self.update(task_id, GameCapturePhase::Failed, current.message);
+                self.finish_and_close_game(
+                    task_id,
+                    game,
+                    GameCapturePhase::Failed,
+                    current.message,
+                )
+                .await;
                 return;
             }
             if current.phase == DirectReadPhase::Ready
                 && current.last_sync_at.unwrap_or(0) > baseline
             {
-                self.update(
+                self.finish_and_close_game(
                     task_id,
+                    game,
                     GameCapturePhase::Completed,
                     "已获取并归档本次游戏数据。",
-                );
+                )
+                .await;
                 return;
             }
             if tokio::time::Instant::now() >= deadline {
-                self.update(
+                self.finish_and_close_game(
                     task_id,
+                    game,
                     GameCapturePhase::Failed,
                     "180 秒内未收到新的登录或背包数据；请确认账号已登录、已进入游戏且网络正常。",
-                );
+                )
+                .await;
                 return;
             }
             tokio::time::sleep(POLL_INTERVAL).await;
         }
+    }
+
+    #[cfg(windows)]
+    async fn finish_and_close_game(
+        &self,
+        task_id: &str,
+        game: windows::GameWindow,
+        phase: GameCapturePhase,
+        message: impl Into<String>,
+    ) {
+        let message = message.into();
+        self.update(
+            task_id,
+            GameCapturePhase::WaitingForData,
+            format!("{message} 正在关闭本次启动的游戏客户端…"),
+        );
+        let close_result = windows::close_game_window(game).await;
+        let suffix = match close_result {
+            Ok(()) => " 游戏客户端已关闭。".to_owned(),
+            Err(error) => format!(" 游戏客户端关闭失败：{error}"),
+        };
+        self.update(task_id, phase, format!("{message}{suffix}"));
     }
 
     fn update(&self, task_id: &str, phase: GameCapturePhase, message: impl Into<String>) {

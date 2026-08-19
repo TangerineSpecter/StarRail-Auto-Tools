@@ -89,17 +89,17 @@ pub fn catalog_tools() -> Vec<McpToolInfo> {
             destructive: false,
         },
         McpToolInfo {
-            name: "download_local_data".to_owned(),
-            title: "从同步站下载本地数据".to_owned(),
+            name: "restore_remote_backup".to_owned(),
+            title: "从同步站恢复远端备份".to_owned(),
             description:
-                "仅用于远端恢复：从 WebDAV / FTP / SFTP 同步站下载快照并覆盖本地数据。调用时必须传入 confirm=true。"
+                "仅用于用户明确要求恢复远端备份：从 WebDAV / FTP / SFTP 同步站下载快照并覆盖本地数据。调用时必须传入 confirm=true 和 operation=restore_remote_backup。"
                     .to_owned(),
             destructive: true,
         },
         McpToolInfo {
             name: "start_game_data_capture".to_owned(),
             title: "启动游戏并采集数据".to_owned(),
-            description: "用于更新或获取游戏数据：启动或复用已配置的米哈游启动器，进入游戏并开始监听数据。立即返回任务 ID，请继续调用 get_game_data_capture_status 查看进度。仅支持 Windows。".to_owned(),
+            description: "用于更新或获取游戏数据：启动或复用已配置的米哈游启动器，识别“点击进入”界面并限次点击，确认进入后开始监听数据。立即返回任务 ID，请继续调用 get_game_data_capture_status 查看进度。仅支持 Windows。".to_owned(),
             destructive: false,
         },
         McpToolInfo {

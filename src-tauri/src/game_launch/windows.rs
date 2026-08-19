@@ -1,4 +1,10 @@
-use std::{path::Path, process::Command, time::Duration};
+use std::{
+    fs,
+    mem::size_of,
+    path::Path,
+    process::Command,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use windows::{
     core::{BOOL, HRESULT},
@@ -13,15 +19,36 @@ use windows::{
                 CUIAutomation, IUIAutomation, IUIAutomationInvokePattern, TreeScope_Subtree,
                 UIA_InvokePatternId,
             },
-            Input::KeyboardAndMouse::{mouse_event, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP},
+            Input::KeyboardAndMouse::{
+                SendInput, INPUT, INPUT_0, INPUT_MOUSE, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP,
+                MOUSEINPUT,
+            },
             WindowsAndMessaging::{
                 EnumWindows, GetForegroundWindow, GetWindowRect, GetWindowTextLengthW,
-                GetWindowTextW, GetWindowThreadProcessId, IsIconic, IsWindowVisible, SetCursorPos,
-                SetForegroundWindow,
+                GetWindowTextW, GetWindowThreadProcessId, IsIconic, IsWindowVisible, PostMessageW,
+                SetCursorPos, SetForegroundWindow, WM_CLOSE,
             },
         },
     },
 };
+
+const ENTER_TEMPLATE: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/game-enter-template.png"
+));
+const ENTER_REGION_X: f32 = 616.0 / 1362.0;
+const ENTER_REGION_Y: f32 = 735.0 / 800.0;
+const ENTER_REGION_WIDTH: f32 = 130.0 / 1362.0;
+const ENTER_REGION_HEIGHT: f32 = 42.0 / 800.0;
+const ENTER_READY_TIMEOUT: Duration = Duration::from_secs(45);
+const ENTER_RETRY_DELAY: Duration = Duration::from_secs(5);
+const MAX_ENTER_CLICKS: u8 = 3;
+
+#[derive(Clone, Copy)]
+pub struct GameWindow {
+    hwnd: HWND,
+    process_id: u32,
+}
 
 pub fn start_or_reuse_launcher(path: &Path) -> Result<u32, String> {
     if let Some(pid) = existing_process_id(
@@ -56,11 +83,13 @@ pub async fn invoke_launcher_start(pid: u32) -> Result<(), String> {
     }
 }
 
-pub async fn wait_for_game_window(timeout: Duration) -> Result<HWND, String> {
+pub async fn wait_for_game_window(timeout: Duration) -> Result<GameWindow, String> {
     let deadline = tokio::time::Instant::now() + timeout;
     loop {
         if let Some(hwnd) = find_game_window() {
-            return Ok(hwnd);
+            if let Some(process_id) = window_process_id(hwnd) {
+                return Ok(GameWindow { hwnd, process_id });
+            }
         }
         if tokio::time::Instant::now() >= deadline {
             return Err("等待游戏客户端窗口超时。请检查启动器是否完成启动游戏。".to_owned());
@@ -69,21 +98,261 @@ pub async fn wait_for_game_window(timeout: Duration) -> Result<HWND, String> {
     }
 }
 
-pub fn click_window_center(hwnd: HWND) -> Result<(), String> {
+pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), String> {
+    // 游戏窗口出现后仍需加载一段时间，先避免在黑屏或动画早期误点。
+    tokio::time::sleep(Duration::from_secs(8)).await;
+    let deadline = tokio::time::Instant::now() + ENTER_READY_TIMEOUT;
+    let mut clicks = 0;
+    let mut last_capture_error = None;
+    loop {
+        if !is_current_game_window(game) {
+            return Err("游戏窗口已关闭或不再属于本次启动的客户端。".to_owned());
+        }
+        match enter_screen_visible(game.hwnd) {
+            Ok(true) => {
+                click_game_enter(game.hwnd)?;
+                clicks += 1;
+                tokio::time::sleep(ENTER_RETRY_DELAY).await;
+                match enter_screen_visible(game.hwnd) {
+                    Ok(false) => return Ok(()),
+                    Ok(true) => {}
+                    Err(error) => {
+                        return Err(format!("点击后无法确认“点击进入”界面是否消失：{error}"));
+                    }
+                }
+                if clicks >= MAX_ENTER_CLICKS {
+                    return Err("已识别到“点击进入”界面，但连续 3 次点击后界面仍未消失。可能是游戏以管理员身份运行，或远程控制软件拦截了输入。".to_owned());
+                }
+            }
+            Ok(false) => {
+                if tokio::time::Instant::now() >= deadline {
+                    return Err("等待“点击进入”界面超时。请确认游戏已正常加载到登录页。".to_owned());
+                }
+                tokio::time::sleep(Duration::from_secs(2)).await;
+            }
+            Err(error) => {
+                last_capture_error = Some(error);
+                if tokio::time::Instant::now() >= deadline {
+                    return Err(format!(
+                        "无法识别“点击进入”界面：{}",
+                        last_capture_error.unwrap_or_default()
+                    ));
+                }
+                tokio::time::sleep(Duration::from_secs(2)).await;
+            }
+        }
+    }
+}
+
+pub fn click_game_enter(hwnd: HWND) -> Result<(), String> {
     unsafe {
         if !SetForegroundWindow(hwnd).as_bool() || GetForegroundWindow() != hwnd {
             return Err("无法将游戏窗口切换到前台，已取消点击以避免误操作其他应用。".to_owned());
         }
         let mut rect = RECT::default();
         GetWindowRect(hwnd, &mut rect).map_err(|error| error.to_string())?;
-        SetCursorPos((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2)
+        let width = rect.right - rect.left;
+        let height = rect.bottom - rect.top;
+        // 模板确认后，点击“点击进入”文字的窗口相对中心位置。
+        SetCursorPos(rect.left + width / 2, rect.top + height * 19 / 20)
             .map_err(|error| error.to_string())?;
         if GetForegroundWindow() != hwnd {
             return Err("游戏窗口失去前台焦点，已取消点击以避免误操作其他应用。".to_owned());
         }
-        mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-        mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+        let inputs = [
+            mouse_input(MOUSEEVENTF_LEFTDOWN),
+            mouse_input(MOUSEEVENTF_LEFTUP),
+        ];
+        if SendInput(&inputs, size_of::<INPUT>() as i32) != inputs.len() as u32 {
+            return Err("Windows 未接受游戏进入点击；可能是游戏以管理员身份运行或远程控制软件拦截了输入。请让本工具与游戏使用相同权限后重试。".to_owned());
+        }
         Ok(())
+    }
+}
+
+fn enter_screen_visible(hwnd: HWND) -> Result<bool, String> {
+    let image = image::load_from_memory(&capture_window_png(hwnd)?)
+        .map_err(|error| format!("无法解析游戏窗口截图：{error}"))?;
+    let template = image::load_from_memory(ENTER_TEMPLATE)
+        .map_err(|error| format!("无法加载“点击进入”模板：{error}"))?
+        .to_luma8();
+    let width = image.width();
+    let height = image.height();
+    let crop_width = (width as f32 * ENTER_REGION_WIDTH).round() as u32;
+    let crop_height = (height as f32 * ENTER_REGION_HEIGHT).round() as u32;
+    if crop_width < 20 || crop_height < 12 {
+        return Err("游戏窗口尺寸过小，无法识别“点击进入”界面。".to_owned());
+    }
+    let center_x = (width as f32 * ENTER_REGION_X).round() as i32;
+    let center_y = (height as f32 * ENTER_REGION_Y).round() as i32;
+    for offset_y in [-2, -1, 0, 1, 2] {
+        for offset_x in [-2, -1, 0, 1, 2] {
+            let x = (center_x + offset_x * (crop_width as i32 / 8))
+                .clamp(0, width as i32 - crop_width as i32) as u32;
+            let y = (center_y + offset_y * (crop_height as i32 / 5))
+                .clamp(0, height as i32 - crop_height as i32) as u32;
+            let candidate = image
+                .crop_imm(x, y, crop_width, crop_height)
+                .resize_exact(
+                    template.width(),
+                    template.height(),
+                    image::imageops::FilterType::Triangle,
+                )
+                .to_luma8();
+            if text_template_similarity(&template, &candidate) >= 0.68 {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}
+
+fn text_template_similarity(template: &image::GrayImage, candidate: &image::GrayImage) -> f32 {
+    let mut template_text_pixels = 0_u32;
+    let mut candidate_text_pixels = 0_u32;
+    let mut matching_text_pixels = 0_u32;
+    for y in 6..template.height().saturating_sub(6) {
+        for x in 22..template.width().saturating_sub(22) {
+            let template_is_text = template.get_pixel(x, y)[0] >= 190;
+            let candidate_is_text = candidate.get_pixel(x, y)[0] >= 175;
+            if template_is_text {
+                template_text_pixels += 1;
+            }
+            if candidate_is_text {
+                candidate_text_pixels += 1;
+            }
+            if template_is_text && candidate_is_text {
+                matching_text_pixels += 1;
+            }
+        }
+    }
+    2.0 * matching_text_pixels as f32 / (template_text_pixels + candidate_text_pixels).max(1) as f32
+}
+
+fn capture_window_png(hwnd: HWND) -> Result<Vec<u8>, String> {
+    if !is_game_window(hwnd) {
+        return Err("游戏窗口已关闭或无法切换到前台。".to_owned());
+    }
+    let mut rect = RECT::default();
+    unsafe { GetWindowRect(hwnd, &mut rect).map_err(|error| error.to_string())? };
+    let width = rect.right - rect.left;
+    let height = rect.bottom - rect.top;
+    if width <= 0 || height <= 0 {
+        return Err("游戏窗口尺寸无效。".to_owned());
+    }
+    let path = std::env::temp_dir().join(format!(
+        "starrail-enter-screen-{}-{}.png",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    ));
+    let script = r#"
+Add-Type -AssemblyName System.Drawing
+$bitmap = New-Object System.Drawing.Bitmap $args[2], $args[3]
+$graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+$graphics.CopyFromScreen($args[0], $args[1], 0, 0, $bitmap.Size)
+$bitmap.Save($args[4], [System.Drawing.Imaging.ImageFormat]::Png)
+$graphics.Dispose()
+$bitmap.Dispose()
+"#;
+    let status = Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-Command", script])
+        .arg(rect.left.to_string())
+        .arg(rect.top.to_string())
+        .arg(width.to_string())
+        .arg(height.to_string())
+        .arg(&path)
+        .status()
+        .map_err(|error| format!("无法截取游戏窗口：{error}"))?;
+    if !status.success() {
+        return Err("截取游戏窗口失败。".to_owned());
+    }
+    let bytes = fs::read(&path).map_err(|error| format!("无法读取游戏窗口截图：{error}"));
+    let _ = fs::remove_file(path);
+    bytes
+}
+
+pub async fn close_game_window(game: GameWindow) -> Result<(), String> {
+    if is_current_game_window(game) {
+        unsafe {
+            PostMessageW(
+                Some(game.hwnd),
+                WM_CLOSE,
+                Default::default(),
+                Default::default(),
+            )
+            .map_err(|error| format!("无法请求关闭游戏窗口：{error}"))?;
+        }
+    }
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(10);
+    while process_is_running(game.process_id) && tokio::time::Instant::now() < deadline {
+        tokio::time::sleep(Duration::from_secs(1)).await;
+    }
+    if process_is_running(game.process_id) {
+        let output = Command::new("taskkill")
+            .args(["/PID", &game.process_id.to_string(), "/T", "/F"])
+            .output()
+            .map_err(|error| format!("游戏窗口未响应且无法强制关闭：{error}"))?;
+        if !output.status.success() {
+            return Err(format!(
+                "游戏窗口未响应且强制关闭失败：{}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn is_current_game_window(game: GameWindow) -> bool {
+    window_process_id(game.hwnd) == Some(game.process_id) && is_game_window(game.hwnd)
+}
+
+fn is_game_window(hwnd: HWND) -> bool {
+    unsafe {
+        if !SetForegroundWindow(hwnd).as_bool() || GetForegroundWindow() != hwnd {
+            return false;
+        }
+    }
+    let title = window_title(hwnd);
+    title.contains("崩坏：星穹铁道") || title.contains("Honkai: Star Rail")
+}
+
+fn window_process_id(hwnd: HWND) -> Option<u32> {
+    let mut process_id = 0;
+    unsafe { GetWindowThreadProcessId(hwnd, Some(&mut process_id)) };
+    (process_id != 0).then_some(process_id)
+}
+
+fn process_is_running(process_id: u32) -> bool {
+    let Ok(output) = Command::new("tasklist")
+        .args(["/FI", &format!("PID eq {process_id}"), "/FO", "CSV", "/NH"])
+        .output()
+    else {
+        return false;
+    };
+    let output = String::from_utf8_lossy(&output.stdout);
+    output
+        .lines()
+        .next()
+        .map(|line| line.contains(&format!("\",\"{process_id}\",")))
+        .unwrap_or(false)
+}
+
+fn mouse_input(flags: ::windows::Win32::UI::Input::KeyboardAndMouse::MOUSE_EVENT_FLAGS) -> INPUT {
+    INPUT {
+        r#type: INPUT_MOUSE,
+        Anonymous: INPUT_0 {
+            mi: MOUSEINPUT {
+                dx: 0,
+                dy: 0,
+                mouseData: 0,
+                dwFlags: flags,
+                time: 0,
+                dwExtraInfo: 0,
+            },
+        },
     }
 }
 
@@ -199,5 +468,23 @@ fn window_title(hwnd: HWND) -> String {
         let mut text = vec![0u16; (length + 1) as usize];
         let _ = GetWindowTextW(hwnd, &mut text);
         String::from_utf16_lossy(&text[..length as usize])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn template_similarity_requires_the_text_shape_not_just_brightness() {
+        let mut template = image::GrayImage::new(130, 42);
+        for x in 40..90 {
+            template.put_pixel(x, 20, image::Luma([255]));
+        }
+        let matching = template.clone();
+        let bright_background = image::GrayImage::from_pixel(130, 42, image::Luma([255]));
+
+        assert!(text_template_similarity(&template, &matching) >= 0.68);
+        assert!(text_template_similarity(&template, &bright_background) < 0.68);
     }
 }
