@@ -2,7 +2,7 @@
 
 ## 用途
 
-软件设置里的「MCP 管理」把本应用作为本机 MCP Server 开放给 Grok、Claude、Cursor 等客户端。软件运行期间，在 `127.0.0.1` 提供 Streamable HTTP 端点。默认关闭，不会在未启用时占用端口。
+软件设置里的「MCP 管理」把本应用作为本机 MCP Server 开放给 Grok、Claude、TraeWork 等客户端。软件运行期间，在 `127.0.0.1` 提供 Streamable HTTP 端点。默认关闭，不会在未启用时占用端口。
 
 当前只提供两个工具，且复用「数据同步站」里已保存的 WebDAV / FTP / SFTP 连接：
 
@@ -51,7 +51,7 @@ enabled = true
 Authorization = "Bearer <token>"
 ```
 
-Claude / Cursor（`.mcp.json` 或对应 MCP 配置）：
+Claude / TraeWork（对应 MCP 配置）：
 
 ```json
 {

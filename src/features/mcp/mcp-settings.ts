@@ -6,7 +6,7 @@ export const MCP_BIND_HOST = "127.0.0.1";
 export const MCP_CLIENTS = [
   { id: "grok", label: "Grok" },
   { id: "claude", label: "Claude" },
-  { id: "cursor", label: "Cursor" },
+  { id: "traework", label: "TraeWork" },
 ] as const;
 
 export type McpClientId = (typeof MCP_CLIENTS)[number]["id"];

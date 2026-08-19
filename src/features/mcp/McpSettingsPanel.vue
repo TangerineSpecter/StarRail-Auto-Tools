@@ -107,7 +107,7 @@ onMounted(async () => {
       <div>
         <p class="eyebrow">SOFTWARE SETTINGS · 06</p>
         <h2 id="mcp-settings-title">MCP 管理</h2>
-        <p>在本机开放 Streamable HTTP 端点，让 Grok、Claude 或 Cursor 调用同步站的上传与下载。</p>
+        <p>在本机开放 Streamable HTTP 端点，让 Grok、Claude 或 TraeWork 调用同步站的上传与下载。</p>
       </div>
       <div class="hero-status" :data-state="headline" aria-label="MCP 服务状态">
         <span class="hero-status-orbit"

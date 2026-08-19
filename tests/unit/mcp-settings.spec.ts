@@ -56,5 +56,8 @@ describe("mcp-settings", () => {
     const claude = clientConfig("claude", "http://127.0.0.1:19001/mcp", "secret");
     expect(claude).toContain('"url": "http://127.0.0.1:19001/mcp"');
     expect(claude).toContain("Bearer secret");
+    const traeWork = clientConfig("traework", "http://127.0.0.1:19001/mcp", "secret");
+    expect(traeWork).toContain('"mcpServers"');
+    expect(traeWork).toContain('"url": "http://127.0.0.1:19001/mcp"');
   });
 });

@@ -36,6 +36,7 @@ describe("McpSettingsPanel", () => {
     await wrapper.get('[aria-label="客户端配置"] button:nth-child(2)').trigger("click");
     expect(wrapper.text()).toContain('"mcpServers"');
     expect(wrapper.text()).toContain("starrail");
+    expect(wrapper.get('[aria-label="客户端配置"]').text()).toContain("TraeWork");
   });
 
   it("blocks invalid ports before invoking save", async () => {
