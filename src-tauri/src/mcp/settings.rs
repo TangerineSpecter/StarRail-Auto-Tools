@@ -82,24 +82,24 @@ pub fn catalog_tools() -> Vec<McpToolInfo> {
     vec![
         McpToolInfo {
             name: "upload_local_data".to_owned(),
-            title: "上传本地数据".to_owned(),
+            title: "上传本地数据到同步站".to_owned(),
             description:
-                "把当前本地录入、培养方案与配队上传到已配置的 WebDAV / FTP / SFTP 同步站。"
+                "仅用于远端备份：把当前本地数据上传到已配置的 WebDAV / FTP / SFTP 同步站，不会从游戏采集数据。"
                     .to_owned(),
             destructive: false,
         },
         McpToolInfo {
             name: "download_local_data".to_owned(),
-            title: "下载本地数据".to_owned(),
+            title: "从同步站下载本地数据".to_owned(),
             description:
-                "从同步站下载远端快照并完整覆盖本地同步范围内的数据。调用时必须传入 confirm=true。"
+                "仅用于远端恢复：从 WebDAV / FTP / SFTP 同步站下载快照并覆盖本地数据。调用时必须传入 confirm=true。"
                     .to_owned(),
             destructive: true,
         },
         McpToolInfo {
             name: "start_game_data_capture".to_owned(),
             title: "启动游戏并采集数据".to_owned(),
-            description: "启动或复用已配置的米哈游启动器，进入游戏并开始监听数据。立即返回任务 ID，请继续调用 get_game_data_capture_status 查看进度。仅支持 Windows。".to_owned(),
+            description: "用于更新或获取游戏数据：启动或复用已配置的米哈游启动器，进入游戏并开始监听数据。立即返回任务 ID，请继续调用 get_game_data_capture_status 查看进度。仅支持 Windows。".to_owned(),
             destructive: false,
         },
         McpToolInfo {

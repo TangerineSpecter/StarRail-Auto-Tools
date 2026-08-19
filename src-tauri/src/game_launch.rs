@@ -113,15 +113,20 @@ impl GameLaunchRuntime {
         Ok(task)
     }
 
-    pub fn status(&self, task_id: &str) -> Result<GameCaptureTask, AppError> {
+    pub fn status(&self, task_id: Option<&str>) -> Result<GameCaptureTask, AppError> {
         let mut task = self
             .task
             .lock()
             .map_err(|_| AppError::StateUnavailable)?
             .as_ref()
-            .filter(|task| task.task_id == task_id)
+            .filter(|task| task_id.is_none_or(|task_id| task.task_id == task_id))
             .cloned()
-            .ok_or_else(|| AppError::Mcp(format!("找不到启动采集任务：{task_id}")))?;
+            .ok_or_else(|| match task_id {
+                Some(task_id) => AppError::Mcp(format!("找不到启动采集任务：{task_id}")),
+                None => AppError::Mcp(
+                    "当前没有游戏启动与采集任务。请先调用 start_game_data_capture。".to_owned(),
+                ),
+            })?;
         task.direct_read = snapshot(&self.app)?;
         Ok(task)
     }
