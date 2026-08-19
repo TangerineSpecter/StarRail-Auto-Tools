@@ -74,6 +74,12 @@ pub fn game_is_running() -> bool {
     find_game_window().is_some()
 }
 
+pub fn game_window_is_open(game: GameWindow) -> bool {
+    find_game_window()
+        .and_then(window_process_id)
+        .is_some_and(|process_id| process_id == game.process_id)
+}
+
 pub async fn invoke_launcher_start(pid: u32) -> Result<(), String> {
     let deadline = tokio::time::Instant::now() + Duration::from_secs(45);
     loop {

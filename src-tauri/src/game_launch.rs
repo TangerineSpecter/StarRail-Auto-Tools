@@ -242,6 +242,16 @@ impl GameLaunchRuntime {
         );
         let deadline = tokio::time::Instant::now() + DATA_TIMEOUT;
         loop {
+            if !windows::game_window_is_open(game) {
+                self.finish_and_close_game(
+                    task_id,
+                    game,
+                    GameCapturePhase::Failed,
+                    "游戏客户端已关闭，已终止本次数据监听。",
+                )
+                .await;
+                return;
+            }
             let current = match snapshot(&self.app) {
                 Ok(value) => value,
                 Err(error) => {
