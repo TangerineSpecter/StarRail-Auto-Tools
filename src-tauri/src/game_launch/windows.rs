@@ -1,20 +1,24 @@
 use std::{path::Path, process::Command, time::Duration};
 
-use windows::Win32::{
-    Foundation::{BOOL, HWND, LPARAM, RECT},
-    System::Com::{
-        CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER,
-        COINIT_APARTMENTTHREADED,
-    },
-    UI::{
-        Accessibility::{
-            CUIAutomation, IUIAutomation, IUIAutomationInvokePattern, TreeScope_Subtree,
-            UIA_InvokePatternId,
+use windows::{
+    core::{BOOL, HRESULT},
+    Win32::{
+        Foundation::{HWND, LPARAM, RECT},
+        System::Com::{
+            CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER,
+            COINIT_APARTMENTTHREADED,
         },
-        Input::KeyboardAndMouse::{mouse_event, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP},
-        WindowsAndMessaging::{
-            EnumWindows, GetForegroundWindow, GetWindowRect, GetWindowTextLengthW, GetWindowTextW,
-            GetWindowThreadProcessId, IsIconic, IsWindowVisible, SetCursorPos, SetForegroundWindow,
+        UI::{
+            Accessibility::{
+                CUIAutomation, IUIAutomation, IUIAutomationInvokePattern, TreeScope_Subtree,
+                UIA_InvokePatternId,
+            },
+            Input::KeyboardAndMouse::{mouse_event, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP},
+            WindowsAndMessaging::{
+                EnumWindows, GetForegroundWindow, GetWindowRect, GetWindowTextLengthW,
+                GetWindowTextW, GetWindowThreadProcessId, IsIconic, IsWindowVisible, SetCursorPos,
+                SetForegroundWindow,
+            },
         },
     },
 };
@@ -88,10 +92,8 @@ fn existing_process_id(name: &str) -> Option<u32> {
         .args(["/FI", &format!("IMAGENAME eq {name}"), "/FO", "CSV", "/NH"])
         .output()
         .ok()?;
-    let line = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .next()?
-        .trim_matches('"');
+    let output = String::from_utf8_lossy(&output.stdout);
+    let line = output.lines().next()?.trim_matches('"');
     let mut fields = line.split("\",\"");
     if fields.next()?.eq_ignore_ascii_case(name) {
         fields.next()?.parse().ok()
@@ -106,7 +108,8 @@ fn invoke_button(hwnd: HWND) -> windows::core::Result<()> {
         let automation: IUIAutomation =
             CoCreateInstance(&CUIAutomation, None, CLSCTX_INPROC_SERVER)?;
         let root = automation.ElementFromHandle(hwnd)?;
-        let elements = root.FindAll(TreeScope_Subtree, automation.CreateTrueCondition()?)?;
+        let condition = automation.CreateTrueCondition()?;
+        let elements = root.FindAll(TreeScope_Subtree, &condition)?;
         for index in 0..elements.Length()? {
             let element = elements.GetElement(index)?;
             let name = element.CurrentName()?.to_string();
@@ -117,7 +120,10 @@ fn invoke_button(hwnd: HWND) -> windows::core::Result<()> {
                 return Ok(());
             }
         }
-        Err(windows::core::Error::from_win32())
+        Err(windows::core::Error::new(
+            HRESULT(0x8000_4005_u32 as i32),
+            "开始游戏按钮不可用",
+        ))
     }
 }
 
