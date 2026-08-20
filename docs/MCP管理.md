@@ -13,7 +13,7 @@
 | `start_game_data_capture`      | 启动星铁并获取游戏数据（适用于“更新星铁数据”）     |
 | `get_game_data_capture_status` | 查询游戏启动与采集任务进度                         |
 
-工具不接收远端地址或密码，也不会回传同步凭据或完整库存 JSON。没有自动、定时或后台同步。
+工具不接收远端地址或密码，也不会回传同步凭据或完整库存 JSON。除游戏采集任务在已启用且完整配置 SFTP 时执行的前后同步外，没有自动、定时或后台同步。
 
 ## 配置
 
@@ -40,7 +40,7 @@
 
 ## 启动游戏更新数据
 
-当用户说「更新星铁数据」「获取游戏数据」「启动星铁同步数据」或表达相同意图时，指的是从正在运行的游戏中重新采集数据，不是从 WebDAV / FTP / SFTP 下载备份。应调用 `start_game_data_capture`，不要调用 `restore_remote_backup`。
+当用户说「更新星铁数据」「获取游戏数据」「启动星铁同步数据」或表达相同意图时，应调用 `start_game_data_capture`，不要调用 `restore_remote_backup`。若「数据同步站」当前协议为 SFTP，且 SFTP 信息完整，任务会在启动游戏前下载远端快照并覆盖本地同步范围内的库存、培养方案和配队，采集完成后上传最新快照；未配置或未启用 SFTP 时，这两个步骤会自动跳过。
 
 调用前需满足以下条件：
 
@@ -53,18 +53,20 @@
 
 1. 只调用一次 `start_game_data_capture`。它会立即返回 `taskId`、当前阶段和提示；不要先以空参数调用状态查询。
 2. 收到 `taskId` 后，每 2–3 秒调用 `get_game_data_capture_status`，并且必须传入 `taskId`。
-3. 轮询直到 `completed`、`failed` 或 `cancelled`。`completed` 时数据已经归档到本地：立即读取返回的直读快照及遗器、光锥、角色数量并告知用户，然后停止；不得自动调用上传、下载、恢复或任何远端同步工具。另两种状态则将返回的可读原因告知用户。
+3. 轮询直到 `completed`、`failed` 或 `cancelled`。`completed` 时数据已经归档到本地；若启用 SFTP，也已上传到同步站。立即读取返回的直读快照及遗器、光锥、角色数量并告知用户，然后停止。另两种状态则将返回的可读原因告知用户。
 
 任务阶段依次可能为：
 
 | 阶段                   | 含义                                         |
 | ---------------------- | -------------------------------------------- |
 | `preparingListener`    | 正在启动数据监听，并记录本次采集基线         |
+| `downloadingRemoteData` | 正在从已配置的 SFTP 同步站下载远端快照       |
 | `launchingLauncher`    | 正在启动或复用米哈游启动器                   |
 | `startingGame`         | 正在点击启动器中的开始游戏按钮               |
 | `waitingForGameWindow` | 正在等待星穹铁道窗口出现                     |
 | `enteringGame`         | 游戏窗口已出现，正在等待加载完成             |
 | `waitingForData`       | 已进入游戏，正在等待新的背包、角色或光锥数据 |
+| `uploadingRemoteData`  | 游戏数据已归档，正在上传到 SFTP 同步站       |
 | `completed`            | 已收到本次新数据，采集完成                   |
 | `failed` / `cancelled` | 已停止；返回值会说明失败或取消原因           |
 

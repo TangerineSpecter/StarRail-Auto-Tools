@@ -35,6 +35,8 @@ pub fn run() {
             );
             let game_launch_runtime = game_launch::GameLaunchRuntime::new(
                 game_launch::GameLaunchStore::new(data_dir.clone()),
+                store.clone(),
+                sync_store.clone(),
                 app.handle().clone(),
             );
             app.manage(store);

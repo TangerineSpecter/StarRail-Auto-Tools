@@ -10,10 +10,18 @@ use std::{
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
+#[cfg(windows)]
+use tauri::Emitter;
+
 use crate::{
     direct_read::{self, DirectReadSnapshot},
     error::AppError,
+    inventory::InventoryStore,
+    sync::{SyncProtocol, SyncSettings, SyncStore},
 };
+
+#[cfg(windows)]
+use crate::sync;
 
 #[cfg(windows)]
 use crate::direct_read::DirectReadPhase;
@@ -33,11 +41,13 @@ const GAME_ENTER_CLICK_INTERVAL: std::time::Duration = std::time::Duration::from
 #[serde(rename_all = "camelCase")]
 pub enum GameCapturePhase {
     PreparingListener,
+    DownloadingRemoteData,
     LaunchingLauncher,
     StartingGame,
     WaitingForGameWindow,
     EnteringGame,
     WaitingForData,
+    UploadingRemoteData,
     Completed,
     Failed,
     Cancelled,
@@ -62,14 +72,25 @@ pub struct GameCaptureTask {
 #[derive(Clone)]
 pub struct GameLaunchRuntime {
     store: GameLaunchStore,
+    #[cfg_attr(not(windows), allow(dead_code))]
+    inventory: InventoryStore,
+    #[cfg_attr(not(windows), allow(dead_code))]
+    sync: SyncStore,
     app: AppHandle,
     task: Arc<Mutex<Option<GameCaptureTask>>>,
 }
 
 impl GameLaunchRuntime {
-    pub fn new(store: GameLaunchStore, app: AppHandle) -> Self {
+    pub fn new(
+        store: GameLaunchStore,
+        inventory: InventoryStore,
+        sync: SyncStore,
+        app: AppHandle,
+    ) -> Self {
         Self {
             store,
+            inventory,
+            sync,
             app,
             task: Arc::new(Mutex::new(None)),
         }
@@ -149,6 +170,44 @@ impl GameLaunchRuntime {
             );
             return;
         }
+        let sftp_settings = match self.configured_sftp_sync() {
+            Ok(settings) => settings,
+            Err(error) => {
+                self.update(task_id, GameCapturePhase::Failed, error.to_string());
+                return;
+            }
+        };
+        if let Some(settings) = &sftp_settings {
+            self.update(
+                task_id,
+                GameCapturePhase::DownloadingRemoteData,
+                "正在从 SFTP 同步站下载远端数据…",
+            );
+            let snapshot =
+                match sync::download_snapshot(settings, self.sync.known_hosts_path()).await {
+                    Ok(snapshot) => snapshot,
+                    Err(error) => {
+                        self.update(
+                            task_id,
+                            GameCapturePhase::Failed,
+                            format!("SFTP 下载失败，未启动游戏采集：{error}"),
+                        );
+                        return;
+                    }
+                };
+            let summary = match self.inventory.replace_with_sync_snapshot(snapshot) {
+                Ok(summary) => summary,
+                Err(error) => {
+                    self.update(task_id, GameCapturePhase::Failed, error.to_string());
+                    return;
+                }
+            };
+            if let Err(error) = direct_read::inventory_changed(&self.app, &summary, false) {
+                self.update(task_id, GameCapturePhase::Failed, error.to_string());
+                return;
+            }
+            let _ = self.app.emit("inventory://changed", &summary);
+        }
         let baseline = snapshot(&self.app)
             .ok()
             .and_then(|value| value.last_sync_at)
@@ -183,7 +242,13 @@ impl GameLaunchRuntime {
                 return;
             }
         };
-        self.wait_for_new_capture(task_id, baseline, game).await;
+        self.wait_for_new_capture(task_id, baseline, game, sftp_settings)
+            .await;
+    }
+
+    #[cfg(windows)]
+    fn configured_sftp_sync(&self) -> Result<Option<SyncSettings>, AppError> {
+        Ok(sftp_sync_settings(self.sync.load()?))
     }
 
     #[cfg(windows)]
@@ -224,7 +289,13 @@ impl GameLaunchRuntime {
     }
 
     #[cfg(windows)]
-    async fn wait_for_new_capture(&self, task_id: &str, baseline: i64, game: windows::GameWindow) {
+    async fn wait_for_new_capture(
+        &self,
+        task_id: &str,
+        baseline: i64,
+        game: windows::GameWindow,
+        sftp_settings: Option<SyncSettings>,
+    ) {
         self.update(
             task_id,
             GameCapturePhase::WaitingForData,
@@ -300,11 +371,50 @@ impl GameLaunchRuntime {
             if current.phase == DirectReadPhase::Ready
                 && current.last_sync_at.unwrap_or(0) > baseline
             {
+                if let Some(settings) = sftp_settings.as_ref() {
+                    self.update(
+                        task_id,
+                        GameCapturePhase::UploadingRemoteData,
+                        "游戏数据已归档，正在上传到 SFTP 同步站…",
+                    );
+                    if let Err(error) = sync::upload_snapshot(
+                        settings,
+                        self.sync.known_hosts_path(),
+                        match self.inventory.sync_snapshot() {
+                            Ok(snapshot) => snapshot,
+                            Err(error) => {
+                                self.finish_and_close_game(
+                                    task_id,
+                                    game,
+                                    GameCapturePhase::Failed,
+                                    format!("游戏数据已归档，但无法准备 SFTP 上传：{error}"),
+                                )
+                                .await;
+                                return;
+                            }
+                        },
+                    )
+                    .await
+                    {
+                        self.finish_and_close_game(
+                            task_id,
+                            game,
+                            GameCapturePhase::Failed,
+                            format!("游戏数据已归档，但 SFTP 上传失败：{error}"),
+                        )
+                        .await;
+                        return;
+                    }
+                }
                 self.finish_and_close_game(
                     task_id,
                     game,
                     GameCapturePhase::Completed,
-                    "已获取并归档本次游戏数据。",
+                    if sftp_settings.is_some() {
+                        "已获取并归档本次游戏数据，且已上传到 SFTP 同步站。"
+                    } else {
+                        "已获取并归档本次游戏数据。"
+                    },
                 )
                 .await;
                 return;
@@ -374,6 +484,12 @@ fn new_task_id() -> String {
     )
 }
 
+#[cfg_attr(not(any(windows, test)), allow(dead_code))]
+fn sftp_sync_settings(settings: SyncSettings) -> Option<SyncSettings> {
+    (settings.protocol == SyncProtocol::Sftp && settings.sftp.validate().is_ok())
+        .then_some(settings)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -382,5 +498,24 @@ mod tests {
         assert!(GameCapturePhase::Completed.terminal());
         assert!(GameCapturePhase::Failed.terminal());
         assert!(!GameCapturePhase::WaitingForData.terminal());
+    }
+
+    #[test]
+    fn only_complete_active_sftp_settings_enable_game_capture_sync() {
+        let mut complete_sftp = SyncSettings {
+            protocol: SyncProtocol::Sftp,
+            ..SyncSettings::default()
+        };
+        complete_sftp.sftp.host = "sftp.example.com".to_owned();
+        complete_sftp.sftp.remote_path = "/StarRailTools".to_owned();
+        complete_sftp.sftp.username = "user".to_owned();
+        complete_sftp.sftp.password = "secret".to_owned();
+        assert!(sftp_sync_settings(complete_sftp).is_some());
+        assert!(sftp_sync_settings(SyncSettings::default()).is_none());
+        assert!(sftp_sync_settings(SyncSettings {
+            protocol: SyncProtocol::Sftp,
+            ..SyncSettings::default()
+        })
+        .is_none());
     }
 }
