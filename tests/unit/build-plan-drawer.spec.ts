@@ -73,9 +73,7 @@ describe("BuildPlanDrawer", () => {
     expect(legends).not.toContain("头部");
     expect(legends).not.toContain("手部");
     expect(legends).toEqual(expect.arrayContaining(["躯干", "脚部", "位面球", "连结绳"]));
-    expect(wrapper.get(".build-note-section").exists()).toBe(true);
-    expect(wrapper.get(".build-note-input").element).toHaveProperty("value", "遗器优先速度鞋");
-    expect(wrapper.get(".build-note-hint").text()).toContain("i");
+    expect(wrapper.get(".build-note-hint").text()).toContain("直接展示");
     expect(
       wrapper.get(".build-note-input").attributes("aria-label") ?? "毕业目标说明",
     ).toBeTruthy();

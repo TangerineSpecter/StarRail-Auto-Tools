@@ -267,7 +267,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
               aria-label="毕业目标说明"
             />
           </label>
-          <small class="build-note-hint">保存后会在毕业管理角色卡片中以 i 图标查看。</small>
+          <small class="build-note-hint">保存后会在毕业管理角色卡片中直接展示。</small>
         </section>
       </div>
       <footer class="build-actions" :aria-busy="editor.saving.value || editor.calculating.value">

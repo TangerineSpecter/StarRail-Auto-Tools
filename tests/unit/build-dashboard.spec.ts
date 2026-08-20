@@ -172,7 +172,7 @@ describe("BuildDashboard", () => {
     expect(wrapper.get(".build-pin-inline").attributes("aria-pressed")).toBe("true");
   });
 
-  it("hides the info icon without a note and opens a floating card on click", async () => {
+  it("hides the note container without a note and renders it inline when present", async () => {
     dashboard.mockResolvedValueOnce([entry]).mockResolvedValueOnce([
       {
         ...entry,
@@ -188,31 +188,15 @@ describe("BuildDashboard", () => {
     });
 
     await flushPromises();
-    expect(wrapper.find(".build-note-info").exists()).toBe(false);
-    expect(document.querySelector(".build-note-popover")).toBeNull();
+    expect(wrapper.find(".build-card-note").exists()).toBe(false);
 
     await (wrapper.vm as { reload: () => Promise<void> }).reload();
     await flushPromises();
 
-    const infoButton = wrapper.get(".build-note-info");
-    expect(infoButton.text()).toBe("i");
-    expect(infoButton.attributes("aria-expanded")).toBe("false");
-
-    await infoButton.trigger("click");
-    expect(infoButton.attributes("aria-expanded")).toBe("true");
-    const popover = document.querySelector(".build-note-popover");
-    expect(popover?.textContent).toContain("优先补速度，暴伤次之");
-    expect(popover?.textContent).toContain("卡芙卡");
-
-    wrapper.get(".build-dashboard").element.dispatchEvent(new Event("scroll"));
-    await flushPromises();
-    expect(document.querySelector(".build-note-popover")).toBeNull();
-    expect(infoButton.attributes("aria-expanded")).toBe("false");
-
-    await infoButton.trigger("click");
-    expect(document.querySelector(".build-note-popover")).not.toBeNull();
-    await infoButton.trigger("click");
-    expect(document.querySelector(".build-note-popover")).toBeNull();
+    const note = wrapper.get(".build-card-note");
+    expect(note.exists()).toBe(true);
+    expect(note.attributes("title")).toBe("优先补速度，暴伤次之");
+    expect(note.get(".build-card-note-text").text()).toBe("优先补速度，暴伤次之");
 
     wrapper.unmount();
   });
