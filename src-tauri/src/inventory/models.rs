@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 12;
+pub(crate) const SCHEMA_VERSION: i64 = 13;
 pub const PROTOCOL_VERSION: &str = "reliquary-v22.0.0 / HSR-4.4";
 
 /// Head / Hands have a single game-fixed main stat (not user plan goals).
@@ -14,6 +14,16 @@ pub(crate) fn fixed_main_stat_for_slot(slot: &str) -> Option<&'static str> {
         .iter()
         .find(|(name, _)| *name == slot)
         .map(|(_, main)| *main)
+}
+
+/// Standing-stat targets use the flat HP/ATK/DEF totals, not their percentage modifiers.
+pub(crate) fn normalize_build_target_stat_key(stat_key: &str) -> &str {
+    match stat_key {
+        "HP%" => "HP",
+        "ATK%" => "ATK",
+        "DEF%" => "DEF",
+        _ => stat_key,
+    }
 }
 
 #[derive(Debug, Clone)]

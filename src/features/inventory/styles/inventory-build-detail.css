@@ -2367,6 +2367,14 @@ button.score-piece.is-weak-slot.is-open {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.weight-row-disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+.weight-row-disabled :deep(.p-inputnumber),
+.weight-row-disabled :deep(.p-inputnumber *) {
+  cursor: not-allowed;
+}
 .weight-row :deep(.p-inputnumber) {
   min-height: 30px;
 }

@@ -252,6 +252,7 @@ impl InventoryStore {
             normalize_existing_records(connection)?;
             backfill_main_stat_values(connection)?;
             backfill_character_rarities(connection)?;
+            migrate_percentage_build_targets(connection)?;
         }
         connection.execute("UPDATE schema_meta SET version = ?1", [SCHEMA_VERSION])?;
         Ok(())
@@ -389,6 +390,11 @@ impl InventoryStore {
             let Some(plan) = self.build_plan(character_id)? else {
                 continue;
             };
+            // A weight-only record is used by Stat Score before the user configures a graduation
+            // target. It must not appear as an incomplete graduation card.
+            if plan.targets.is_empty() {
+                continue;
+            }
             let Some(character) = character_detail(&connection, character_id)? else {
                 continue;
             };
@@ -445,22 +451,47 @@ impl InventoryStore {
     pub fn export_build_plans_excel(&self, path: &Path) -> Result<(), AppError> {
         let connection = self.connect()?;
         let mut statement = connection.prepare(
-            "SELECT character_id, name FROM characters ORDER BY rarity DESC, level DESC, name",
+            "SELECT character_id, name, path, rarity FROM characters ORDER BY rarity DESC, level DESC, name",
         )?;
         let characters = statement
             .query_map([], |row| {
-                Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?))
+                Ok((
+                    row.get::<_, u32>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, u32>(3)?,
+                ))
             })?
             .collect::<Result<Vec<_>, _>>()?;
+        let duplicate_names = characters.iter().fold(
+            HashMap::<String, usize>::new(),
+            |mut counts, (_, name, _, _)| {
+                *counts.entry(name.clone()).or_default() += 1;
+                counts
+            },
+        );
         let rows = characters
             .into_iter()
-            .map(|(character_id, character_name)| {
-                Ok(ExportRow {
-                    character_id,
-                    character_name,
-                    plan: self.build_plan(character_id)?,
-                })
-            })
+            .map(
+                |(character_id, character_name, character_path, character_rarity)| {
+                    let catalogue_path = inventory_path_label(&character_path);
+                    let character_element =
+                        build_plan_excel::character_element(&character_name, catalogue_path);
+                    let display_name = if duplicate_names[character_name.as_str()] > 1 {
+                        format!("{character_name}·{catalogue_path}")
+                    } else {
+                        character_name
+                    };
+                    Ok(ExportRow {
+                        character_id,
+                        character_name: display_name,
+                        character_rarity,
+                        character_path: catalogue_path.to_owned(),
+                        character_element,
+                        plan: self.build_plan(character_id)?,
+                    })
+                },
+            )
             .collect::<Result<Vec<_>, AppError>>()?;
         build_plan_excel::export(path, &rows)
     }
@@ -471,22 +502,37 @@ impl InventoryStore {
         let character_ids = statement
             .query_map([], |row| row.get::<_, u32>(0))?
             .collect::<Result<HashSet<_>, _>>()?;
-        let mut name_statement = connection.prepare("SELECT character_id, name FROM characters")?;
+        let mut name_statement =
+            connection.prepare("SELECT character_id, name, path FROM characters")?;
         let mut legacy_character_ids = HashMap::new();
         let mut duplicate_names = HashSet::new();
+        let mut display_character_ids = HashMap::new();
         for row in name_statement.query_map([], |row| {
-            Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?))
+            Ok((
+                row.get::<_, u32>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
         })? {
-            let (character_id, name) = row?;
+            let (character_id, name, path) = row?;
             if legacy_character_ids
                 .insert(name.clone(), character_id)
                 .is_some()
             {
-                duplicate_names.insert(name);
+                duplicate_names.insert(name.clone());
             }
+            display_character_ids.insert(
+                format!("{name}·{}", inventory_path_label(&path)),
+                character_id,
+            );
         }
         legacy_character_ids.retain(|name, _| !duplicate_names.contains(name));
-        let plans = build_plan_excel::import(path, &character_ids, &legacy_character_ids)?;
+        let plans = build_plan_excel::import(
+            path,
+            &character_ids,
+            &display_character_ids,
+            &legacy_character_ids,
+        )?;
         if plans.is_empty() {
             return Ok(0);
         }
@@ -1658,10 +1704,15 @@ fn save_build_plan_in_transaction(
     transaction: &Transaction<'_>,
     plan: &CharacterBuildPlan,
 ) -> Result<(), AppError> {
+    let weight_only = plan.targets.is_empty()
+        && plan.cavern_set_a == 0
+        && plan.cavern_set_b.is_none()
+        && plan.planar_set_id == 0
+        && plan.main_stats.values().all(Vec::is_empty);
     if !matches!(plan.cavern_mode.as_str(), "fourPiece" | "twoPlusTwo")
-        || plan.targets.is_empty()
         || plan.targets.len() > 3
         || (plan.cavern_mode == "twoPlusTwo" && plan.cavern_set_b.is_none())
+        || (!weight_only && plan.targets.is_empty())
     {
         return Err(AppError::Database("毕业方案配置无效".to_owned()));
     }
@@ -1670,7 +1721,52 @@ fn save_build_plan_in_transaction(
             "2+2 件套不能选择相同的遗器套装".to_owned(),
         ));
     }
+    if plan
+        .substat_weights
+        .values()
+        .filter(|weight| **weight > 0.0)
+        .count()
+        > 5
+    {
+        return Err(AppError::Database(
+            "词条权重最多设置 5 个，请先将一个已设置的权重调为 0".to_owned(),
+        ));
+    }
     let note = normalize_build_plan_note(&plan.note);
+    let mut normalized_targets = Vec::new();
+    let mut target_keys = HashSet::new();
+    for target in &plan.targets {
+        let stat_key = normalize_build_target_stat_key(&target.stat_key).to_owned();
+        // A legacy percentage target can become the same flat-stat target as an existing row.
+        // Keep the higher-priority row and retain contiguous priorities for the saved plan.
+        if !target_keys.insert(stat_key.clone()) {
+            continue;
+        }
+        normalized_targets.push(BuildTarget {
+            stat_key,
+            target: target.target,
+            priority: normalized_targets.len() as u32 + 1,
+            minimum: target.minimum,
+        });
+    }
+    let existing_effective_substats = transaction
+        .query_row(
+            "SELECT effective_substats_json FROM character_build_plans WHERE character_id = ?1",
+            [plan.character_id],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?
+        .and_then(|value| serde_json::from_str::<Vec<String>>(&value).ok())
+        .unwrap_or_default();
+    // Preserve a pre-existing six-item legacy plan unless its effective-substat selection is
+    // changed. All new or edited selections are capped at five so they round-trip through Excel.
+    let effective_substats = if existing_effective_substats.len() == 6
+        && existing_effective_substats == plan.effective_substats
+    {
+        plan.effective_substats.clone()
+    } else {
+        plan.effective_substats.iter().take(5).cloned().collect()
+    };
     transaction.execute(
         "INSERT INTO character_build_plans(
             character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
@@ -1701,7 +1797,7 @@ fn save_build_plan_in_transaction(
             plan.planar_set_id,
             serde_json::to_string(&plan.main_stats)
                 .map_err(|error| AppError::Database(error.to_string()))?,
-            serde_json::to_string(&plan.effective_substats)
+            serde_json::to_string(&effective_substats)
                 .map_err(|error| AppError::Database(error.to_string()))?,
             note,
             now_millis(),
@@ -1724,12 +1820,43 @@ fn save_build_plan_in_transaction(
         "DELETE FROM character_build_targets WHERE character_id = ?1",
         [plan.character_id],
     )?;
-    for target in &plan.targets {
+    for target in &normalized_targets {
         if target.minimum > target.target {
             return Err(AppError::MinExceedsTarget);
         }
         transaction.execute("INSERT INTO character_build_targets(character_id,stat_key,target,priority,max_gap,minimum) VALUES(?1,?2,?3,?4,?5,?6)", params![plan.character_id, target.stat_key, target.target, target.priority, target.target - target.minimum, target.minimum])?;
     }
+    Ok(())
+}
+
+fn migrate_percentage_build_targets(connection: &Connection) -> Result<(), AppError> {
+    // Avoid primary-key collisions when an older plan contains both a flat target and its
+    // percentage variant; the existing flat target is already the meaningful standing stat.
+    connection.execute(
+        "DELETE FROM character_build_targets AS percentage
+         WHERE percentage.stat_key IN ('HP%', 'ATK%', 'DEF%')
+           AND EXISTS (
+             SELECT 1 FROM character_build_targets AS flat
+             WHERE flat.character_id = percentage.character_id
+               AND flat.stat_key = CASE percentage.stat_key
+                 WHEN 'HP%' THEN 'HP'
+                 WHEN 'ATK%' THEN 'ATK'
+                 WHEN 'DEF%' THEN 'DEF'
+               END
+           )",
+        [],
+    )?;
+    connection.execute(
+        "UPDATE character_build_targets
+         SET stat_key = CASE stat_key
+           WHEN 'HP%' THEN 'HP'
+           WHEN 'ATK%' THEN 'ATK'
+           WHEN 'DEF%' THEN 'DEF'
+           ELSE stat_key
+         END
+         WHERE stat_key IN ('HP%', 'ATK%', 'DEF%')",
+        [],
+    )?;
     Ok(())
 }
 
@@ -4292,6 +4419,155 @@ mod tests {
             vec!["SPD".to_owned(), "CRIT Rate".to_owned()]
         );
         assert_eq!(restored.note, "优先补速度");
+    }
+
+    #[test]
+    fn legacy_six_effective_substats_are_preserved_until_edited() {
+        let store = InventoryStore::test_store();
+        let mut plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 134.0,
+                priority: 1,
+                minimum: 120.0,
+            }],
+            effective_substats: vec![
+                "SPD".to_owned(),
+                "CRIT Rate".to_owned(),
+                "CRIT DMG".to_owned(),
+                "ATK%".to_owned(),
+                "Break Effect".to_owned(),
+                "HP".to_owned(),
+            ],
+            note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
+        };
+        store.save_build_plan(&plan).unwrap();
+        let connection = store.connect().unwrap();
+        connection
+            .execute(
+                "UPDATE character_build_plans SET effective_substats_json = ?1 WHERE character_id = 1001",
+                [serde_json::to_string(&plan.effective_substats).unwrap()],
+            )
+            .unwrap();
+
+        store.save_build_plan(&plan).unwrap();
+        assert_eq!(
+            store
+                .build_plan(1001)
+                .unwrap()
+                .unwrap()
+                .effective_substats
+                .len(),
+            6
+        );
+
+        plan.effective_substats.pop();
+        store.save_build_plan(&plan).unwrap();
+        assert_eq!(
+            store
+                .build_plan(1001)
+                .unwrap()
+                .unwrap()
+                .effective_substats
+                .len(),
+            5
+        );
+    }
+
+    #[test]
+    fn saves_weight_only_plan_before_graduation_targets_are_configured() {
+        let store = InventoryStore::test_store();
+        let plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 0,
+            cavern_set_b: None,
+            planar_set_id: 0,
+            main_stats: HashMap::new(),
+            targets: Vec::new(),
+            effective_substats: Vec::new(),
+            note: String::new(),
+            substat_weights: HashMap::from([("SPD".to_owned(), 0.75)]),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
+        };
+
+        store.save_build_plan(&plan).unwrap();
+
+        assert_eq!(
+            store
+                .build_plan(1001)
+                .unwrap()
+                .unwrap()
+                .substat_weights
+                .get("SPD"),
+            Some(&0.75)
+        );
+        assert!(store.build_dashboard().unwrap().is_empty());
+
+        let too_many_weights = CharacterBuildPlan {
+            substat_weights: HashMap::from([
+                ("HP".to_owned(), 0.25),
+                ("HP%".to_owned(), 0.25),
+                ("ATK%".to_owned(), 0.75),
+                ("SPD".to_owned(), 1.0),
+                ("CRIT Rate".to_owned(), 1.0),
+                ("CRIT DMG".to_owned(), 1.0),
+            ]),
+            ..plan
+        };
+        assert!(store.save_build_plan(&too_many_weights).is_err());
+    }
+
+    #[test]
+    fn migration_converts_percentage_build_targets_to_flat_stats() {
+        let store = InventoryStore::test_store();
+        let plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 201,
+            main_stats: HashMap::new(),
+            targets: vec![BuildTarget {
+                stat_key: "SPD".to_owned(),
+                target: 134.0,
+                priority: 1,
+                minimum: 120.0,
+            }],
+            effective_substats: Vec::new(),
+            note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
+        };
+        store.save_build_plan(&plan).unwrap();
+        let connection = store.connect().unwrap();
+        connection
+            .execute(
+                "UPDATE character_build_targets SET stat_key = 'HP%' WHERE character_id = 1001",
+                [],
+            )
+            .unwrap();
+        connection
+            .execute("UPDATE schema_meta SET version = 12", [])
+            .unwrap();
+
+        store.migrate(&connection).unwrap();
+
+        let restored = store.build_plan(1001).unwrap().unwrap();
+        assert_eq!(restored.targets[0].stat_key, "HP");
+        assert_eq!(restored.targets[0].target, 134.0);
+        assert_eq!(restored.targets[0].minimum, 120.0);
     }
 
     #[test]

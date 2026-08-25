@@ -14,6 +14,7 @@ import {
   selectableMainStatSlots,
   slotLabel,
   statLabel,
+  targetStats,
 } from "@/shared/catalogue/relic-options";
 import { formatBuildProgressValue } from "./progress";
 
@@ -36,8 +37,10 @@ const progressPercent = (progress: { current: number; target: number }) =>
     ? 100
     : Math.min(100, Math.max(0, (progress.current / progress.target) * 100));
 const targetStatOptions = computed(() =>
-  relicSubStats.map((stat) => ({ label: statLabel(stat), value: stat })),
+  targetStats.map((stat) => ({ label: statLabel(stat), value: stat })),
 );
+const effectiveSubstatsAtLimit = (stat: string) =>
+  !editor.plan.effectiveSubstats.includes(stat) && editor.plan.effectiveSubstats.length >= 5;
 
 function closeOnEscape(event: KeyboardEvent) {
   if (event.key === "Escape" && !event.isComposing) emit("close");
@@ -190,13 +193,14 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             >
           </div>
           <div class="effective-substats-config">
-            <h4>有效副词条 <small>用于毕业管理页统计当前装备的强化次数</small></h4>
+            <h4>有效副词条 <small>最多 5 个，用于毕业管理页统计当前装备的强化次数</small></h4>
             <div class="filter-chips">
               <label v-for="stat in relicSubStats" :key="stat" class="filter-chip"
                 ><input
                   v-model="editor.plan.effectiveSubstats"
                   type="checkbox"
                   :value="stat"
+                  :disabled="effectiveSubstatsAtLimit(stat)"
                 /><span>{{ statLabel(stat) }}</span></label
               >
             </div>
@@ -209,6 +213,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             v-model:min-potential-pct="editor.plan.minPotentialPct"
             v-model:spd-target="editor.plan.spdTarget"
             :effective-substats="editor.plan.effectiveSubstats"
+            @weight-limit="emit('notice', '词条权重最多设置 5 个，请先将一个已设置的权重调为 0。')"
           />
         </section>
         <section v-if="editor.recommendation.value" class="build-section build-results">

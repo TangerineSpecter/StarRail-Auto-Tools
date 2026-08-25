@@ -17,6 +17,7 @@ import {
 const weights = defineModel<Record<string, number>>({ required: true });
 const minPotentialPct = defineModel<number>("minPotentialPct", { required: true });
 const spdTarget = defineModel<number>("spdTarget", { required: true });
+const emit = defineEmits<{ weightLimit: [] }>();
 
 const props = withDefaults(
   defineProps<{
@@ -51,6 +52,19 @@ const displayWeights = computed(() => {
 });
 
 const showingInferred = computed(() => !hasStoredWeights.value);
+const configuredWeightCount = computed(() =>
+  SUBSTAT_KEYS.filter((stat) => (displayWeights.value[stat] ?? 0) > 0).length,
+);
+
+function weightAtLimit(stat: string) {
+  return (displayWeights.value[stat] ?? 0) <= 0 && configuredWeightCount.value >= 5;
+}
+
+function notifyWeightLimit(event: PointerEvent, stat: string) {
+  if (!weightAtLimit(stat)) return;
+  event.preventDefault();
+  emit("weightLimit");
+}
 
 function weightsMatchRole(role: WeightRole, current: Record<string, number>): boolean {
   const preset = DEFAULT_ROLE_WEIGHTS[role];
@@ -103,7 +117,7 @@ function applyRole(role: WeightRole | null) {
 }
 
 /**
- * Clamp to [0, 1]; allow free decimals (not locked to 0.25).
+ * Clamp to [0, 1] and snap to 0.25 steps.
  * Ignore null/non-finite emissions from InputNumber rebinds so materializing a
  * template into stored weights does not cascade into all-zero via null updates.
  *
@@ -122,8 +136,13 @@ function setWeight(stat: string, value: number | null) {
     return;
   }
   next = Math.min(1, Math.max(0, next));
-  next = Math.round(next * 1000) / 1000;
+  next = Math.round(next * 4) / 4;
   const base = hasStoredWeights.value ? { ...weights.value } : { ...displayWeights.value };
+  const previous = base[stat] ?? 0;
+  if (previous <= 0 && next > 0 && configuredWeightCount.value >= 5) {
+    emit("weightLimit");
+    return;
+  }
   weights.value = { ...base, [stat]: next };
 }
 
@@ -177,9 +196,9 @@ const roleHints = WEIGHT_ROLE_HINTS;
       </label>
     </div>
     <p class="weight-editor-hint">
-      权重用于词条质量、字母评级与预计刷本成本，<strong>不是</strong>战斗伤害。范围
+      权重用于词条质量、字母评级与预计刷本成本，最多设置 <strong>5</strong> 个非 0 词条，<strong>不是</strong>战斗伤害。范围
       <strong>0～1</strong
-      >，可直接输入。角色模板是按常见配队<strong>定位预设</strong>（非官方角色表）；「生命倍率输出」指技能公式吃生命面板。纯输出模板默认<strong>不计效果抵抗</strong>，避免死词条抬分。小攻/小生/小防按对应
+      >，步进 <strong>0.25</strong>。角色模板是按常见配队<strong>定位预设</strong>（非官方角色表）；「生命倍率输出」指技能公式吃生命面板。纯输出模板默认<strong>不计效果抵抗</strong>，避免死词条抬分。小攻/小生/小防按对应
       % 权重的 40% 计。手动改动后模板会变为「自定义权重」。改完后需保存。
     </p>
     <p v-if="showingInferred" class="weight-editor-hint weight-editor-role-hint">
@@ -189,16 +208,22 @@ const roleHints = WEIGHT_ROLE_HINTS;
       {{ roleHints[selectedRole] }}
     </p>
     <div class="weight-grid">
-      <label v-for="stat in SUBSTAT_KEYS" :key="stat" class="weight-row">
+      <label
+        v-for="stat in SUBSTAT_KEYS"
+        :key="stat"
+        :class="['weight-row', { 'weight-row-disabled': weightAtLimit(stat) }]"
+        @pointerdown="notifyWeightLimit($event, stat)"
+      >
         <span>{{ statLabel(stat) }}</span>
         <InputNumber
           class="weight-step-input"
           :model-value="displayWeights[stat] ?? 0"
           :min="0"
           :max="1"
-          :step="0.05"
+          :step="0.25"
+          :disabled="weightAtLimit(stat)"
           :min-fraction-digits="0"
-          :max-fraction-digits="3"
+          :max-fraction-digits="2"
           show-buttons
           :aria-label="`${statLabel(stat)} 权重`"
           @update:model-value="setWeight(stat, $event)"
