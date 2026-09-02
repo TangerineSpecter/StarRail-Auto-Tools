@@ -47,10 +47,18 @@ fi
 
 git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock \
   src-tauri/tauri.conf.json src/shared/app-info.ts README.md
-git commit -m "chore: release ${TAG}"
+if git diff --cached --quiet; then
+  echo "项目版本已是 ${VERSION}，无需创建版本提交。"
+else
+  git commit -m "chore: release ${TAG}"
+fi
 
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 git push -u origin "$BRANCH"
+if git show-ref --verify --quiet "refs/tags/${TAG}"; then
+  echo "本地 tag ${TAG} 已存在，停止以避免覆盖已有发布。" >&2
+  exit 1
+fi
 git tag "$TAG"
 git push origin "refs/tags/${TAG}"
 
