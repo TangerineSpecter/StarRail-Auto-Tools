@@ -49,11 +49,13 @@ jobs:
             throw "Tag version $version does not match package.json version $($package.version)."
           }
           $cargo = Get-Content -Raw src-tauri/Cargo.toml
-          if ($cargo -notmatch "(?m)^version = `"$([regex]::Escape($version))`"$") {
+          $cargoVersion = [regex]::Match($cargo, '(?m)^version = "([^"]+)"').Groups[1].Value
+          if ($cargoVersion -ne $version) {
             throw "Tag version $version does not match src-tauri/Cargo.toml."
           }
           $appInfo = Get-Content -Raw src/shared/app-info.ts
-          if ($appInfo -notmatch "APP_VERSION = `"$([regex]::Escape($version))`"") {
+          $appVersion = [regex]::Match($appInfo, 'APP_VERSION = "([^"]+)"').Groups[1].Value
+          if ($appVersion -ne $version) {
             throw "Tag version $version does not match the client version display."
           }
           $readme = Get-Content -Raw README.md
