@@ -108,4 +108,6 @@ models/
 
 默认生成 **NSIS 安装包 EXE**，输出目录为 `src-tauri\target\release\bundle\nsis`。这是推荐的发布形式：它会创建开始菜单/卸载入口，并按当前配置在用户缺少 WebView2 Runtime 时使用轻量下载引导程序安装该运行时。
 
+正式 Windows 版本由 GitHub Release 分发：推送 `vX.Y.Z` tag 后会自动构建并发布安装包。首次安装请下载 Release 中的 `.exe`；后续版本会在客户端启动时自动检测并提供“立即更新”，也始终可以下载新的安装包覆盖安装。发布密钥配置和发版命令见 [Windows 发布文档](./docs/Windows发布.md)。
+
 不建议直接分发 `target\release` 下的裸 EXE：用户仍可能缺少 WebView2，且后续应用资源、模型和升级管理会变得零散。当前 OCR 模型刻意未打入安装包（体积和模型许可待确定）；发布时应单独提供模型下载，或在确认许可和体积后把 `models/` 加入 Tauri bundle resources。

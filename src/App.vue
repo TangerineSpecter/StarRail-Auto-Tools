@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 import AppNavigation from "@/app/AppNavigation.vue";
+import { useAppUpdater } from "@/app/composables/useAppUpdater";
 import { useRuntimeLifecycle } from "@/app/composables/useRuntimeLifecycle";
 import type { AppView } from "@/app/navigation";
 import { useRuntimeStore } from "@/app/stores/runtime";
@@ -30,6 +31,7 @@ const { direct, summary, busy, error, notice, inventoryRevision } = storeToRefs(
 const toast = useToast();
 provide(runtimeContextKey, { direct, summary, busy, error, notice, inventoryRevision });
 const { capabilities } = useRuntimeLifecycle();
+const { update, isInstalling, installAvailableUpdate } = useAppUpdater();
 const currentPage = computed(() => pages[activeView.value]);
 const directRunning = computed(() =>
   ["starting", "waitingForLogin", "connected", "syncing", "ready"].includes(direct.value.phase),
@@ -74,6 +76,18 @@ watch(error, (message) => {
   if (!message) return;
   showFeedback(message, "error");
   error.value = "";
+});
+
+watch(update, (availableUpdate) => {
+  if (!availableUpdate) return;
+  toast.add({
+    group: "app-update",
+    severity: "info",
+    summary: `发现新版本 v${availableUpdate.version}`,
+    detail: availableUpdate.notes ?? "新版本已准备就绪，可直接下载安装。",
+    life: 0,
+    closable: true,
+  });
 });
 
 async function toggleMaximize() {
@@ -143,6 +157,17 @@ async function toggleMaximize() {
         <div :class="['app-feedback-content', `tone-${message.severity}`]">
           <strong>{{ message.summary }}</strong>
           <p v-if="message.detail !== message.summary">{{ message.detail }}</p>
+        </div>
+      </template>
+    </Toast>
+    <Toast group="app-update" position="top-right" class="app-update-toast">
+      <template #message="{ message }">
+        <div class="app-update-content">
+          <strong>{{ message.summary }}</strong>
+          <p>{{ message.detail }}</p>
+          <button type="button" :disabled="isInstalling" @click="installAvailableUpdate">
+            {{ isInstalling ? "正在下载并安装…" : "立即更新" }}
+          </button>
         </div>
       </template>
     </Toast>

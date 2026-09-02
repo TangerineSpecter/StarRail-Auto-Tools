@@ -1,0 +1,135 @@
+name: Build and Publish Windows Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-windows:
+    name: Build Windows installer and publish release
+    runs-on: windows-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          shared-key: starrail-auto-tools-windows
+
+      - name: Validate tag and resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}' -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$') {
+            throw "Tag ${{ github.ref_name }} is not a valid SemVer tag (expected vX.Y.Z)."
+          }
+          $tauri = Get-Content -Raw src-tauri/tauri.conf.json | ConvertFrom-Json
+          if ($tauri.version -ne $version) {
+            throw "Tag version $version does not match src-tauri/tauri.conf.json version $($tauri.version). Run release-desktop.sh first."
+          }
+          $package = Get-Content -Raw package.json | ConvertFrom-Json
+          if ($package.version -ne $version) {
+            throw "Tag version $version does not match package.json version $($package.version)."
+          }
+          $cargo = Get-Content -Raw src-tauri/Cargo.toml
+          if ($cargo -notmatch "(?m)^version = `"$([regex]::Escape($version))`"$") {
+            throw "Tag version $version does not match src-tauri/Cargo.toml."
+          }
+          $appInfo = Get-Content -Raw src/shared/app-info.ts
+          if ($appInfo -notmatch "APP_VERSION = `"$([regex]::Escape($version))`"") {
+            throw "Tag version $version does not match the client version display."
+          }
+          $readme = Get-Content -Raw README.md
+          if ($readme -notmatch "version-$([regex]::Escape($version))-4f7fc4") {
+            throw "Tag version $version does not match the README version badge."
+          }
+          "value=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Configure signed updater
+        shell: pwsh
+        env:
+          TAURI_UPDATER_PUBLIC_KEY: ${{ secrets.TAURI_UPDATER_PUBLIC_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:TAURI_UPDATER_PUBLIC_KEY)) {
+            throw 'Missing GitHub Actions secret TAURI_UPDATER_PUBLIC_KEY. See docs/Windows发布.md.'
+          }
+          $template = Get-Content -Raw src-tauri/tauri.release.conf.json
+          $template.Replace('__TAURI_UPDATER_PUBLIC_KEY__', $env:TAURI_UPDATER_PUBLIC_KEY) |
+            Set-Content -NoNewline src-tauri/tauri.updater.conf.json
+
+      - name: Bootstrap vendored Rust dependency
+        shell: pwsh
+        run: ./scripts/bootstrap-vendor.ps1
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build signed NSIS installer
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY)) {
+            throw 'Missing GitHub Actions secret TAURI_SIGNING_PRIVATE_KEY. See docs/Windows发布.md.'
+          }
+          npm run tauri -- build --bundles nsis --config src-tauri/tauri.updater.conf.json
+
+      - name: Prepare release files and updater manifest
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+          TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $installer = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter '*.exe' |
+            Select-Object -First 1
+          if ($null -eq $installer) { throw 'NSIS installer was not created.' }
+          $signaturePath = "$($installer.FullName).sig"
+          if (-not (Test-Path $signaturePath)) { throw "Updater signature missing: $signaturePath" }
+
+          New-Item -ItemType Directory -Force release | Out-Null
+          Copy-Item $installer.FullName release/
+          Copy-Item $signaturePath release/
+          $signature = (Get-Content -Raw $signaturePath).Trim()
+          $manifest = @{
+            version = $env:VERSION
+            notes = "查看 GitHub Release 中的更新说明。"
+            pub_date = (Get-Date).ToUniversalTime().ToString('o')
+            platforms = @{
+              'windows-x86_64' = @{
+                url = "https://github.com/$($env:REPOSITORY)/releases/download/$($env:TAG)/$($installer.Name)"
+                signature = $signature
+              }
+            }
+          }
+          $manifest | ConvertTo-Json -Depth 5 | Set-Content -NoNewline release/latest.json
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 星穹铁道工具箱 v${{ steps.version.outputs.value }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release/*.exe
+            release/*.exe.sig
+            release/latest.json
