@@ -60,6 +60,10 @@ if git show-ref --verify --quiet "refs/tags/${TAG}"; then
   exit 1
 fi
 git tag "$TAG"
-git push origin "refs/tags/${TAG}"
+git push origin "refs/tags/${TAG}:refs/tags/${TAG}"
+if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null; then
+  echo "远程未找到 ${TAG}；发布已中止，请检查 git push 输出和仓库权限。" >&2
+  exit 1
+fi
 
 echo "已推送 ${TAG}。GitHub Actions 将发布 Windows 安装包与自动更新清单。"
