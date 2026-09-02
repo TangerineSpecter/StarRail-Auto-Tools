@@ -4,13 +4,13 @@
 
 ## 首次配置（只做一次）
 
-Tauri 自动更新强制使用签名。请在一台受控电脑上生成密钥，妥善备份私钥，**不要提交私钥到仓库**：
+Tauri 自动更新强制使用签名。请在一台受控电脑上运行根目录的一键初始化脚本；它会无交互生成随机密码、密钥，并在终端打印待填写的 GitHub Secret 内容。妥善备份私钥，**不要提交私钥到仓库**：
 
 ```bash
-npm run tauri signer generate -- -w ~/.tauri/starrail-auto-tools.key
+bash setup-release-signing.sh
 ```
 
-在 GitHub 仓库的 `Settings → Secrets and variables → Actions` 创建以下 Actions secrets：
+将脚本输出逐项复制到 GitHub 仓库的 `Settings → Secrets and variables → Actions`：
 
 | Secret                               | 内容                               |
 | ------------------------------------ | ---------------------------------- |
