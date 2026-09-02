@@ -347,7 +347,11 @@ for (const match of characterHtml.matchAll(characterAnchorPattern)) {
   );
   if (!href) continue;
   const accessibleName = match[1].match(/\b(?:aria-label|title)=["']([^"']+)["']/i)?.[1] ?? "";
-  const character = parseCharacter(href[1], `${accessibleName} ${match[2]}`, sourceCharacterRarities);
+  const character = parseCharacter(
+    href[1],
+    `${accessibleName} ${match[2]}`,
+    sourceCharacterRarities,
+  );
   if (character.name) charactersBySlug.set(character.slug, character);
 }
 const characters = [...charactersBySlug.values()].sort((a, b) =>

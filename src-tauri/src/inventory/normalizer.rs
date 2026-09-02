@@ -159,6 +159,8 @@ fn character_names() -> &'static std::collections::HashMap<u32, &'static str> {
             (1506, "银狼LV. 999"),
             (1508, "远坂凛"),
             (1510, "姬子•启行"),
+            (1512, "知更鸟•晴歌"),
+            (1513, "砂金•戏浪"),
             // Trailblazer path variants: odd = male, even = female.
             (8001, "开拓者"),
             (8002, "开拓者"),

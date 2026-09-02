@@ -52,8 +52,8 @@ const displayWeights = computed(() => {
 });
 
 const showingInferred = computed(() => !hasStoredWeights.value);
-const configuredWeightCount = computed(() =>
-  SUBSTAT_KEYS.filter((stat) => (displayWeights.value[stat] ?? 0) > 0).length,
+const configuredWeightCount = computed(
+  () => SUBSTAT_KEYS.filter((stat) => (displayWeights.value[stat] ?? 0) > 0).length,
 );
 
 function weightAtLimit(stat: string) {
@@ -196,9 +196,10 @@ const roleHints = WEIGHT_ROLE_HINTS;
       </label>
     </div>
     <p class="weight-editor-hint">
-      权重用于词条质量、字母评级与预计刷本成本，最多设置 <strong>5</strong> 个非 0 词条，<strong>不是</strong>战斗伤害。范围
-      <strong>0～1</strong
-      >，步进 <strong>0.25</strong>。角色模板是按常见配队<strong>定位预设</strong>（非官方角色表）；「生命倍率输出」指技能公式吃生命面板。纯输出模板默认<strong>不计效果抵抗</strong>，避免死词条抬分。小攻/小生/小防按对应
+      权重用于词条质量、字母评级与预计刷本成本，最多设置 <strong>5</strong> 个非 0
+      词条，<strong>不是</strong>战斗伤害。范围 <strong>0～1</strong>，步进
+      <strong>0.25</strong
+      >。角色模板是按常见配队<strong>定位预设</strong>（非官方角色表）；「生命倍率输出」指技能公式吃生命面板。纯输出模板默认<strong>不计效果抵抗</strong>，避免死词条抬分。小攻/小生/小防按对应
       % 权重的 40% 计。手动改动后模板会变为「自定义权重」。改完后需保存。
     </p>
     <p v-if="showingInferred" class="weight-editor-hint weight-editor-role-hint">

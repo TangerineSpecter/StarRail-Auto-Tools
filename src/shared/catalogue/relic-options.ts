@@ -23,9 +23,7 @@ export const relicSubStats = [
 ];
 
 /** Percentage HP/ATK/DEF do not contribute to standing-stat target progress. */
-export const targetStats = relicSubStats.filter(
-  (stat) => !["HP%", "ATK%", "DEF%"].includes(stat),
-);
+export const targetStats = relicSubStats.filter((stat) => !["HP%", "ATK%", "DEF%"].includes(stat));
 
 export const relicMainStats: Record<string, string[]> = {
   Head: ["HP"],
