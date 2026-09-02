@@ -14,6 +14,8 @@ const outputFile = join(root, "src/data/light-cones.json");
 const imageRoot = join(root, "public/light-cones");
 const skipImages = process.argv.includes("--skip-images");
 const refreshImages = process.argv.includes("--refresh-images");
+const requestAttempts = 3;
+const retryDelayMs = 500;
 
 function decodeHtml(value) {
   return value
@@ -30,17 +32,36 @@ function decodeHtml(value) {
 }
 
 async function fetchOrThrow(url) {
-  const response = await fetch(url, {
-    headers: {
-      accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-      "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
-      "user-agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    },
-  });
-  if (!response.ok) throw new Error(`请求失败：${response.status} ${response.statusText} (${url})`);
-  return response;
+  let lastError;
+  for (let attempt = 1; attempt <= requestAttempts; attempt += 1) {
+    let response;
+    try {
+      response = await fetch(url, {
+        headers: {
+          accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+          "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+          "user-agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        },
+      });
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (response?.ok) return response;
+    if (response && response.status < 500 && response.status !== 429) {
+      throw new Error(`请求失败：${response.status} ${response.statusText} (${url})`);
+    }
+    if (response) {
+      lastError = new Error(`请求失败：${response.status} ${response.statusText} (${url})`);
+    }
+
+    if (attempt < requestAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
+    }
+  }
+  throw lastError;
 }
 
 async function downloadAsset(url, localPath) {

@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/relics",
-    "syncedAt": "2026-08-01T13:43:30.346Z"
+    "syncedAt": "2026-09-02T01:58:54.895Z"
   },
   "sets": [
     {
@@ -288,7 +288,7 @@
     },
     {
       "id": 111,
-      "name": "流星追迹的怪盗",
+      "name": "套装 流星追迹的怪盗",
       "kind": "cavern",
       "effects": {
         "twoPiece": "击破特攻提高 16 % 。",

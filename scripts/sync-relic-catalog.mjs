@@ -73,7 +73,7 @@ function parseCard(id, fragment) {
   };
 }
 
-function parseCharacter(slug, fragment) {
+function parseCharacter(slug, fragment, sourceRarities) {
   const labels = new Set([
     "物理",
     "火",
@@ -140,7 +140,10 @@ function parseCharacter(slug, fragment) {
     // The source currently omits the visible star text for its image-only cards.
     // Keep a previously synced value in that case, rather than silently treating
     // every character as five-star in clients.
-    rarity: rarity ?? previousCharacterRarities.get(slug) ?? null,
+    // The page config is the authoritative fallback for image-only cards. It
+    // also covers newly added alternate forms that have no prior catalogue
+    // entry from which a rarity can be retained.
+    rarity: rarity ?? sourceRarities.get(slug) ?? previousCharacterRarities.get(slug) ?? null,
     imageUrl: backgrounds.at(-1) ?? inlineImages.at(-1) ?? null,
     backgroundImageUrl: backgrounds.length > 1 ? backgrounds[0] : null,
     elementIconUrl: inlineImages[0] ?? null,
@@ -330,6 +333,12 @@ const catalogue = {
 await writeFile(relicOutputFile, `${JSON.stringify(catalogue, null, 2)}\n`, "utf8");
 
 const characterHtml = await (await fetchOrThrow(characterSourceUrl)).text();
+const characterPageConfig = parseAssignedJson(characterHtml, "window.PAGE_CONFIG=");
+const sourceCharacterRarities = new Map(
+  (characterPageConfig.entries ?? [])
+    .filter((entry) => (entry.rarity === 4 || entry.rarity === 5) && entry.pageId)
+    .map((entry) => [entry.pageId, entry.rarity]),
+);
 const charactersBySlug = new Map();
 const characterAnchorPattern = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
 for (const match of characterHtml.matchAll(characterAnchorPattern)) {
@@ -338,7 +347,7 @@ for (const match of characterHtml.matchAll(characterAnchorPattern)) {
   );
   if (!href) continue;
   const accessibleName = match[1].match(/\b(?:aria-label|title)=["']([^"']+)["']/i)?.[1] ?? "";
-  const character = parseCharacter(href[1], `${accessibleName} ${match[2]}`);
+  const character = parseCharacter(href[1], `${accessibleName} ${match[2]}`, sourceCharacterRarities);
   if (character.name) charactersBySlug.set(character.slug, character);
 }
 const characters = [...charactersBySlug.values()].sort((a, b) =>

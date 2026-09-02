@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/characters",
-    "syncedAt": "2026-08-02T08:23:59.482Z"
+    "syncedAt": "2026-09-02T01:59:01.741Z"
   },
   "characters": [
     {
@@ -8287,6 +8287,126 @@
       "pathIcon": "/character-icons/paths/存护.webp"
     },
     {
+      "slug": "aventurinewaveflair",
+      "name": "砂金•戏浪",
+      "element": "量子",
+      "path": "欢愉",
+      "rarity": 5,
+      "baseStats": {
+        "hp": 1164.24,
+        "attack": 485.1,
+        "defense": 606.375,
+        "speed": 107,
+        "taunt": 100
+      },
+      "traceStats": [
+        {
+          "id": 1513203,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.026999999
+            }
+          ]
+        },
+        {
+          "id": 1513204,
+          "name": "欢愉度强化",
+          "stats": [
+            {
+              "key": "欢愉度",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1513205,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1513206,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": 1513207,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1513208,
+          "name": "欢愉度强化",
+          "stats": [
+            {
+              "key": "欢愉度",
+              "value": 0.06
+            }
+          ]
+        },
+        {
+          "id": 1513209,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": 1513210,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.053
+            }
+          ]
+        },
+        {
+          "id": 1513201,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.026999999
+            }
+          ]
+        },
+        {
+          "id": 1513202,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 2
+            }
+          ]
+        }
+      ],
+      "image": "/characters/aventurinewaveflair.webp",
+      "backgroundImage": "/character-backgrounds/aventurinewaveflair.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
+    },
+    {
       "slug": "sushang",
       "name": "素裳",
       "element": "物理",
@@ -11165,6 +11285,126 @@
       "backgroundImage": "/character-backgrounds/robin.webp",
       "elementIcon": "/character-icons/elements/物理.webp",
       "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "robinsummeretto",
+      "name": "知更鸟•晴歌",
+      "element": "风",
+      "path": "记忆",
+      "rarity": 5,
+      "baseStats": {
+        "hp": 1203.048,
+        "attack": 601.524,
+        "defense": 485.1,
+        "speed": 95,
+        "taunt": 100
+      },
+      "traceStats": [
+        {
+          "id": 1512204,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.026999999
+            }
+          ]
+        },
+        {
+          "id": 1512205,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": 1512206,
+          "name": "生命强化",
+          "stats": [
+            {
+              "key": "生命值",
+              "value": 0.06
+            }
+          ]
+        },
+        {
+          "id": 1512207,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": 1512208,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1512209,
+          "name": "生命强化",
+          "stats": [
+            {
+              "key": "生命值",
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": 1512210,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": 1512201,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "id": 1512202,
+          "name": "生命强化",
+          "stats": [
+            {
+              "key": "生命值",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1512203,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 2
+            }
+          ]
+        }
+      ],
+      "image": "/characters/robinsummeretto.webp",
+      "backgroundImage": "/character-backgrounds/robinsummeretto.webp",
+      "elementIcon": "/character-icons/elements/风.webp",
+      "pathIcon": "/character-icons/paths/记忆.webp"
     },
     {
       "slug": "archer",
