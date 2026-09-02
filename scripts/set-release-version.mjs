@@ -35,7 +35,7 @@ const replacements = [
 for (const [relativePath, pattern] of replacements) {
   const path = resolve(root, relativePath);
   const text = await readFile(path, "utf8");
+  if (!pattern.test(text)) throw new Error(`未能在 ${relativePath} 找到版本号。`);
   const updated = text.replace(pattern, `$1${version}$2`);
-  if (updated === text) throw new Error(`未能在 ${relativePath} 更新版本号。`);
-  await writeFile(path, updated);
+  if (updated !== text) await writeFile(path, updated);
 }
