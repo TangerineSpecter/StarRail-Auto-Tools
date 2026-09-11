@@ -14,6 +14,7 @@ const props = defineProps<{
   scoresReady?: boolean;
 }>();
 const emit = defineEmits<{
+  actionAxis: [];
   edit: [];
   delete: [];
 }>();
@@ -105,6 +106,30 @@ const teamTopGrade = computed(() => {
             </svg>
             {{ filledCount }}/4
           </span>
+          <Button
+            type="button"
+            class="team-card-icon-btn axis-btn"
+            title="查看行动轴"
+            aria-label="查看行动轴"
+            text
+            rounded
+            @click="emit('actionAxis')"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M3 6h5M3 12h9M3 18h14" />
+              <circle cx="11" cy="6" r="2" />
+              <circle cx="15" cy="12" r="2" />
+              <circle cx="20" cy="18" r="2" />
+            </svg>
+          </Button>
           <Button
             type="button"
             class="team-card-icon-btn edit-btn"

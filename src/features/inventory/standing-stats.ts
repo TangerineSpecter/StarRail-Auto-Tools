@@ -1,4 +1,5 @@
 export {
+  calculateStandingSpeed,
   calculateStandingStats,
   formatStandingStat,
   isMaxStandingEquipment,

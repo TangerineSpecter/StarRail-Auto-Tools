@@ -34,6 +34,7 @@ type Accumulator = {
   attackPercent: number;
   defenseFlat: number;
   defensePercent: number;
+  baseSpeed: number;
   speed: number;
   speedPercent: number;
   percent: Record<string, number>;
@@ -78,6 +79,8 @@ const traceKeyAliases: Record<string, string> = {
   虚数属性伤害提高: "Imaginary DMG Boost",
 };
 
+const BASE_SPEED_KEY = "Base SPD";
+
 function normalizeKey(key: string): string {
   const trimmedKey = key.trim();
   const compactKey = trimmedKey.replace(/\s+/g, "");
@@ -94,6 +97,7 @@ function addStat(accumulator: Accumulator, rawKey: string, value: number) {
   else if (key === "ATK%") accumulator.attackPercent += value / 100;
   else if (key === "DEF") accumulator.defenseFlat += value;
   else if (key === "DEF%") accumulator.defensePercent += value / 100;
+  else if (key === BASE_SPEED_KEY) accumulator.baseSpeed += value;
   else if (key === "SPD") accumulator.speed += value;
   else if (key === "SPD%") accumulator.speedPercent += value / 100;
   else if (percentLabels[key])
@@ -103,17 +107,22 @@ function addStat(accumulator: Accumulator, rawKey: string, value: number) {
 function addTraceStat(accumulator: Accumulator, stat: StaticStatValue) {
   const key = normalizeKey(stat.key);
   // 星穹铁道站的行迹值以小数记录百分比，而遗器值是 5.8 这种百分点。
-  const value = key === "SPD" ? stat.value : stat.value * 100;
+  const value = key === "SPD" || key === BASE_SPEED_KEY ? stat.value : stat.value * 100;
   addStat(accumulator, key, value);
 }
 
-const setStatPatterns: Array<{ pattern: RegExp; key: string }> = [
+const setStatPatterns: Array<{ pattern: RegExp; key: string; percentage?: boolean }> = [
   {
     pattern: /^(?:(?:使)?装备者(?:的)?\s*)?(?:生命值|生命上限)提高\s*(\d+(?:\.\d+)?)\s*%/,
     key: "HP%",
   },
   { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?攻击力提高\s*(\d+(?:\.\d+)?)\s*%/, key: "ATK%" },
   { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?防御力提高\s*(\d+(?:\.\d+)?)\s*%/, key: "DEF%" },
+  {
+    pattern: /^(?:(?:使)?装备者(?:的)?\s*)?基础速度提高\s*(\d+(?:\.\d+)?)\s*$/,
+    key: BASE_SPEED_KEY,
+    percentage: false,
+  },
   { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?速度提高\s*(\d+(?:\.\d+)?)\s*%/, key: "SPD%" },
   { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?暴击率提高\s*(\d+(?:\.\d+)?)\s*%/, key: "CRIT Rate" },
   { pattern: /^(?:(?:使)?装备者(?:的)?\s*)?暴击伤害提高\s*(\d+(?:\.\d+)?)\s*%/, key: "CRIT DMG" },
@@ -200,7 +209,12 @@ export function staticSetStats(effects: string[]): StaticStatValue[] {
       if (!definition) continue;
 
       const value = Number(normalized.match(definition.pattern)?.[1]);
-      if (Number.isFinite(value)) stats.push({ key: definition.key, value: value / 100 });
+      if (Number.isFinite(value)) {
+        stats.push({
+          key: definition.key,
+          value: definition.percentage === false ? value : value / 100,
+        });
+      }
     }
     return stats;
   });
@@ -242,7 +256,7 @@ function truncatePercent(value: number): number {
   return Math.floor((value + 1e-6) * 10) / 10;
 }
 
-export function calculateStandingStats(input: StandingStatsInput): StandingStat[] {
+function accumulateStandingStats(input: StandingStatsInput): Accumulator {
   const accumulator: Accumulator = {
     hpFlat: 0,
     hpPercent: 0,
@@ -250,6 +264,7 @@ export function calculateStandingStats(input: StandingStatsInput): StandingStat[
     attackPercent: 0,
     defenseFlat: 0,
     defensePercent: 0,
+    baseSpeed: 0,
     speed: 0,
     speedPercent: 0,
     percent: {},
@@ -265,6 +280,21 @@ export function calculateStandingStats(input: StandingStatsInput): StandingStat[
   const passiveEffects = [...(input.setEffects ?? []), ...(input.lightConeEffects ?? [])];
   for (const stat of staticSetStats(passiveEffects)) addTraceStat(accumulator, stat);
   addStaticSetConversions(accumulator, passiveEffects);
+
+  return accumulator;
+}
+
+/** Exact standing SPD for breakpoint/action-axis calculations. Formatting must happen in the UI. */
+export function calculateStandingSpeed(input: StandingStatsInput): number {
+  const accumulator = accumulateStandingStats(input);
+  return (
+    (input.characterBase.speed + accumulator.baseSpeed) * (1 + accumulator.speedPercent) +
+    accumulator.speed
+  );
+}
+
+export function calculateStandingStats(input: StandingStatsInput): StandingStat[] {
+  const accumulator = accumulateStandingStats(input);
 
   const baseHp = input.characterBase.hp + input.lightConeBase.hp;
   const baseAttack = input.characterBase.attack + input.lightConeBase.attack;
@@ -294,7 +324,8 @@ export function calculateStandingStats(input: StandingStatsInput): StandingStat[
       key: "speed",
       label: "速度",
       value: floorToInteger(
-        input.characterBase.speed * (1 + accumulator.speedPercent) + accumulator.speed,
+        (input.characterBase.speed + accumulator.baseSpeed) * (1 + accumulator.speedPercent) +
+          accumulator.speed,
       ),
       unit: "flat",
     },

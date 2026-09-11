@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import lightConesJson from "@/data/light-cones.json";
 import {
+  calculateStandingSpeed,
   calculateStandingStats,
   isMaxStandingEquipment,
   lightConeSkillEffect,
@@ -16,6 +17,40 @@ const lightCone = (id: number) => {
 };
 
 describe("calculateStandingStats", () => {
+  it("keeps exact SPD decimals for action-axis calculations", () => {
+    const input = {
+      characterBase: { hp: 1000, attack: 600, defense: 500, speed: 101, taunt: 75 },
+      lightConeBase: { hp: 500, attack: 400, defense: 300 },
+      relics: [
+        {
+          mainStat: "SPD",
+          mainStatValue: 25.032,
+          substats: [{ kind: "normal", key: "SPD", value: 4.6 }],
+        },
+      ],
+      traces: [],
+      setEffects: ["使装备者的速度提高 6 % 。"],
+    };
+
+    expect(calculateStandingSpeed(input)).toBeCloseTo(136.692);
+    expect(calculateStandingStats(input).find((stat) => stat.key === "speed")?.value).toBe(136);
+  });
+
+  it("applies light-cone base SPD before percentage bonuses", () => {
+    const input = {
+      characterBase: { hp: 1000, attack: 600, defense: 500, speed: 100, taunt: 75 },
+      lightConeBase: { hp: 500, attack: 400, defense: 300 },
+      relics: [],
+      traces: [],
+      setEffects: ["使装备者的速度提高 6 % 。"],
+      lightConeEffects: ["使装备者的基础速度提高 12 ，造成伤害时无视目标 18% 的防御力。"],
+    };
+
+    expect(staticSetStats(input.lightConeEffects)).toEqual([{ key: "Base SPD", value: 12 }]);
+    expect(calculateStandingSpeed(input)).toBeCloseTo(118.72);
+    expect(calculateStandingStats(input).find((stat) => stat.key === "speed")?.value).toBe(118);
+  });
+
   it("combines max-level base stats, relic stats and selected traces without passives", () => {
     const stats = calculateStandingStats({
       characterBase: { hp: 1000, attack: 600, defense: 500, speed: 100, taunt: 75 },
@@ -136,6 +171,7 @@ describe("bundled light cone skill catalogue", () => {
     const night = lightCone(23001);
     const victory = lightCone(23005);
     const galaxy = lightCone(23000);
+    const goldenTime = lightCone(23036);
 
     expect(night.skill?.name).toBe("花与蝶");
     expect(night.skill?.effects).toHaveLength(5);
@@ -150,6 +186,9 @@ describe("bundled light cone skill catalogue", () => {
       { key: "Effect Hit Rate", value: 0.24 },
     ]);
     expect(staticSetStats([lightConeSkillEffect(galaxy.skill, 1)!])).toEqual([]);
+    expect(staticSetStats([lightConeSkillEffect(goldenTime.skill, 1)!])).toEqual([
+      { key: "Base SPD", value: 12 },
+    ]);
 
     const stats = calculateStandingStats({
       characterBase: { hp: 1000, attack: 1000, defense: 500, speed: 100, taunt: 75 },

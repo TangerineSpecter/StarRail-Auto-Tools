@@ -65,11 +65,13 @@ describe("TeamCard", () => {
     expect(wrapper.text()).toContain("65%");
   });
 
-  it("emits edit and delete", async () => {
+  it("emits action-axis, edit and delete", async () => {
     const wrapper = mountCard();
     const buttons = wrapper.findAll("button");
     await buttons[0].trigger("click");
     await buttons[1].trigger("click");
+    await buttons[2].trigger("click");
+    expect(wrapper.emitted("actionAxis")).toHaveLength(1);
     expect(wrapper.emitted("edit")).toHaveLength(1);
     expect(wrapper.emitted("delete")).toHaveLength(1);
   });

@@ -4,6 +4,7 @@ import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import type { Team } from "@/types";
+import TeamActionAxisDrawer from "./TeamActionAxisDrawer.vue";
 import TeamCard from "./TeamCard.vue";
 import TeamEditorDrawer from "./TeamEditorDrawer.vue";
 import { useTeamArchive } from "./useTeamArchive";
@@ -17,6 +18,7 @@ const archive = useTeamArchive({
 });
 
 const editing = ref<Team | null | "new">(null);
+const axisTeam = ref<Team | null>(null);
 
 function openCreate() {
   editing.value = "new";
@@ -98,6 +100,7 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
         :team="team"
         :member-scores="archive.memberScores.value"
         :scores-ready="archive.scoresReady.value"
+        @action-axis="axisTeam = team"
         @edit="openEdit(team)"
         @delete="onDelete(team)"
       />
@@ -136,6 +139,13 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
     :member-scores="archive.memberScores.value"
     @close="editing = null"
     @save="onSave"
+    @error="error = $event"
+  />
+  <TeamActionAxisDrawer
+    v-if="axisTeam"
+    :team="axisTeam"
+    :revision="inventoryRevision"
+    @close="axisTeam = null"
     @error="error = $event"
   />
 </template>
