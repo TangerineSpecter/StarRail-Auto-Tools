@@ -24,7 +24,11 @@ pub struct SnapshotConflict {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConflictConfirmation {
     pub local_generated_at: i64,
-    pub remote_revision: String,
+    /// `None` is a valid confirmation token when the remote snapshot was
+    /// observed to be absent. Keeping that distinction lets an explicit
+    /// overwrite confirm a remote deletion without treating it as an
+    /// unconfirmed request.
+    pub remote_revision: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

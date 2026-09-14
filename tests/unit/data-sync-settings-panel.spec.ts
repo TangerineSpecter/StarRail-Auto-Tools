@@ -121,4 +121,28 @@ describe("DataSyncSettingsPanel", () => {
       ),
     );
   });
+
+  it("allows confirming an upload when the remote snapshot is absent", async () => {
+    vi.mocked(syncApi.upload)
+      .mockResolvedValueOnce({
+        status: "conflict",
+        localGeneratedAt: 0,
+        remoteGeneratedAt: 0,
+        remoteRevision: null,
+      })
+      .mockResolvedValueOnce({ status: "completed" });
+    const wrapper = await mountReadyPanel();
+
+    await wrapper.get(".transfer-action.upload").trigger("click");
+    await vi.waitFor(() => expect(wrapper.text()).toContain("远端数据已变化"));
+    await wrapper.get("button.confirm-download").trigger("click");
+
+    await vi.waitFor(() =>
+      expect(syncApi.upload).toHaveBeenLastCalledWith(
+        expect.anything(),
+        expect.objectContaining({ remoteRevision: null }),
+      ),
+    );
+    expect(wrapper.emitted("notice")).toContainEqual(["已上传当前本地数据与培养方案"]);
+  });
 });

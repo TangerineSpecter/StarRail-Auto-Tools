@@ -93,11 +93,10 @@ pub async fn upload_snapshot_checked<T: RemoteTransport>(
     let confirmed = confirmation.as_ref().is_some_and(|expected| {
         expected.local_generated_at == snapshot.generated_at
             && remote.as_ref().map(|value| value.revision.as_str())
-                == Some(expected.remote_revision.as_str())
+                == expected.remote_revision.as_deref()
     });
-    let remote_changed = remote.as_ref().is_some_and(|value| {
-        local_state.remote_revision.as_deref() != Some(value.revision.as_str())
-    });
+    let remote_revision = remote.as_ref().map(|value| value.revision.as_str());
+    let remote_changed = local_state.remote_revision.as_deref() != remote_revision;
     if (confirmation.is_some() && !confirmed) || (confirmation.is_none() && remote_changed) {
         return Ok(Err(SnapshotConflict {
             local_generated_at: snapshot.generated_at,
@@ -116,7 +115,7 @@ pub async fn download_snapshot_checked<T: RemoteTransport>(
     let downloaded = download_snapshot(transport).await?;
     let confirmed = confirmation.as_ref().is_some_and(|expected| {
         expected.local_generated_at == local_state.generated_at
-            && expected.remote_revision == downloaded.version.revision
+            && expected.remote_revision.as_deref() == Some(downloaded.version.revision.as_str())
     });
     if local_state.is_dirty() && !confirmed {
         return Ok(Err(SnapshotConflict {
@@ -388,7 +387,7 @@ mod tests {
             local_state(1_700_000_000_000, Some(first.revision.clone())),
             Some(ConflictConfirmation {
                 local_generated_at: 1_700_000_000_000,
-                remote_revision: first.revision,
+                remote_revision: Some(first.revision),
             }),
         ))
         .unwrap()
@@ -426,12 +425,43 @@ mod tests {
             },
             Some(ConflictConfirmation {
                 local_generated_at: 2_000,
-                remote_revision: remote_version.revision,
+                remote_revision: Some(remote_version.revision),
             }),
         ))
         .unwrap()
         .unwrap();
         assert_eq!(restored.snapshot.generated_at, 1_000);
+    }
+
+    #[test]
+    fn requires_and_accepts_confirmation_when_remote_snapshot_was_deleted() {
+        let transport = MemoryTransport::default();
+        let first = block_on(upload_snapshot(&transport, sample_snapshot())).unwrap();
+        transport.files.lock().unwrap().remove(MANIFEST_FILE);
+
+        let local = sample_snapshot();
+        let conflict = block_on(upload_snapshot_checked(
+            &transport,
+            local.clone(),
+            local_state(local.generated_at, Some(first.revision.clone())),
+            None,
+        ))
+        .unwrap()
+        .unwrap_err();
+        assert_eq!(conflict.remote_revision, None);
+
+        let uploaded = block_on(upload_snapshot_checked(
+            &transport,
+            local.clone(),
+            local_state(local.generated_at, Some(first.revision)),
+            Some(ConflictConfirmation {
+                local_generated_at: local.generated_at,
+                remote_revision: None,
+            }),
+        ))
+        .unwrap()
+        .unwrap();
+        assert!(uploaded.revision.len() >= 12);
     }
 
     #[test]

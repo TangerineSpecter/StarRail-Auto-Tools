@@ -343,7 +343,7 @@ fn conflict_confirmation(
 ) -> Option<ConflictConfirmation> {
     Some(ConflictConfirmation {
         local_generated_at: local_generated_at?,
-        remote_revision: remote_revision?,
+        remote_revision,
     })
 }
 

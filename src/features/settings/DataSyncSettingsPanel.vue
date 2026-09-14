@@ -105,7 +105,7 @@ async function confirmConflict() {
   const direction = transferConflict.value;
   const confirmation = conflictDetails.value;
   cancelConflict();
-  if (!confirmation?.remoteRevision) return emit("error", "远端状态已变化，请重新检查");
+  if (!confirmation) return emit("error", "远端状态已变化，请重新检查");
   if (direction === "upload") await upload(confirmation);
   if (direction === "download") await download(confirmation);
 }
