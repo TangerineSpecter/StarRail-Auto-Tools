@@ -351,8 +351,11 @@ fn client_screen_rect(hwnd: HWND) -> Result<RECT, String> {
         y: client.bottom,
     };
     unsafe {
-        ClientToScreen(hwnd, &mut top_left).map_err(|error| error.to_string())?;
-        ClientToScreen(hwnd, &mut bottom_right).map_err(|error| error.to_string())?;
+        if !ClientToScreen(hwnd, &mut top_left).as_bool()
+            || !ClientToScreen(hwnd, &mut bottom_right).as_bool()
+        {
+            return Err("无法将游戏窗口客户区坐标转换为屏幕坐标".to_owned());
+        }
     }
     Ok(RECT {
         left: top_left.x,
