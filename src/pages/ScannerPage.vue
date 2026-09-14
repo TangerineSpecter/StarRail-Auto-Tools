@@ -8,6 +8,8 @@ import { relicImage } from "@/shared/catalogue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 
 const { error } = useRuntimeContext();
+defineOptions({ name: "ScannerPage" });
+
 const inventoryDetail = useInventoryDetail((message) => (error.value = message));
 const imageFor = (item: { setId: number; slot: string }) => relicImage(item.setId, item.slot);
 const mode = ref<"mainStat" | "cleanup">("cleanup");

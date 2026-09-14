@@ -1,28 +1,54 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, provide, ref, watch, type Component } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  ref,
+  watch,
+  type Component,
+} from "vue";
 import { storeToRefs } from "pinia";
 import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 import AppNavigation from "@/app/AppNavigation.vue";
 import { useAppUpdater } from "@/app/composables/useAppUpdater";
 import { useRuntimeLifecycle } from "@/app/composables/useRuntimeLifecycle";
-import type { AppView } from "@/app/navigation";
+import { cachedAppPageNames, type AppView } from "@/app/navigation";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import CapturePage from "@/pages/CapturePage.vue";
 import { APP_VERSION } from "@/shared/app-info";
 import { windowApi } from "@/shared/api/window";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 
+const loadScannerPage = () => import("@/pages/ScannerPage.vue");
 const pages: Record<AppView, Component> = {
   capture: CapturePage,
   archive: defineAsyncComponent(() => import("@/pages/InventoryPage.vue")),
   catalogue: defineAsyncComponent(() => import("@/pages/CataloguePage.vue")),
   builds: defineAsyncComponent(() => import("@/pages/BuildsPage.vue")),
-  scanner: defineAsyncComponent(() => import("@/pages/ScannerPage.vue")),
+  scanner: defineAsyncComponent(loadScannerPage),
   settings: defineAsyncComponent(() => import("@/pages/SettingsPage.vue")),
   about: defineAsyncComponent(() => import("@/pages/AboutPage.vue")),
 };
-const cachedPageNames = ["CapturePage", "InventoryPage", "CataloguePage"];
+
+let scannerPreloadHandle: number | undefined;
+
+onMounted(() => {
+  const preload = () => void loadScannerPage();
+  if ("requestIdleCallback" in window) {
+    scannerPreloadHandle = window.requestIdleCallback(preload, { timeout: 1500 });
+  } else {
+    scannerPreloadHandle = setTimeout(preload, 0);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (scannerPreloadHandle === undefined) return;
+  if ("cancelIdleCallback" in window) window.cancelIdleCallback(scannerPreloadHandle);
+  else clearTimeout(scannerPreloadHandle);
+});
 
 const activeView = ref<AppView>("capture");
 const isMaximized = ref(false);
@@ -137,7 +163,7 @@ async function toggleMaximize() {
         </header>
       </div>
       <AppNavigation v-model:active-view="activeView" :summary="summary" />
-      <KeepAlive :include="cachedPageNames">
+      <KeepAlive :include="cachedAppPageNames">
         <component :is="currentPage" :key="activeView" />
       </KeepAlive>
       <footer class="app-footer">

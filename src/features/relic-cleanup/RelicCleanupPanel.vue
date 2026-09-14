@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
 import Button from "primevue/button";
 import ProgressBar from "primevue/progressbar";
 import { relicCleanupApi } from "@/shared/api/relic-cleanup";
@@ -25,8 +25,12 @@ const model = ref<OcrModelStatus | null>(null);
 const progress = ref<CleanupProgress | null>(null);
 const capabilities = ref<CleanupCapabilities | null>(null);
 const cleanupBusy = ref(false);
-const unlisten = ref<Array<() => void>>([]);
+const unlisten: Array<() => void> = [];
+let active = false;
 let disposed = false;
+let refreshRequestId = 0;
+let pendingModel: OcrModelStatus | null = null;
+let pendingProgress: CleanupProgress | null = null;
 
 const modelPercent = computed(() => {
   if (!model.value?.totalBytes) return 0;
@@ -85,19 +89,22 @@ function getMainStatText(item: CleanupQueueItem) {
 }
 
 async function refresh() {
+  const requestId = ++refreshRequestId;
   const [nextCapabilities, nextModel, nextQueue, nextRuns] = await Promise.all([
     relicCleanupApi.capabilities(),
     relicCleanupApi.modelStatus(),
     relicCleanupApi.listQueue(),
     relicCleanupApi.listRuns(),
   ]);
-  if (disposed) return;
+  if (!active || requestId !== refreshRequestId) return;
   capabilities.value = nextCapabilities;
   model.value = nextModel;
   queue.value = nextQueue;
   runs.value = nextRuns;
   if (selectedRun.value) {
-    selectedRun.value = await relicCleanupApi.runDetail(selectedRun.value.runId);
+    const nextSelectedRun = await relicCleanupApi.runDetail(selectedRun.value.runId);
+    if (!active || requestId !== refreshRequestId) return;
+    selectedRun.value = nextSelectedRun;
   }
 }
 
@@ -187,33 +194,71 @@ function emergencyStop(event: KeyboardEvent) {
   void act(() => relicCleanupApi.cancel(), "已触发紧急停止");
 }
 
-onMounted(async () => {
-  window.addEventListener("keydown", emergencyStop);
+function deactivate() {
+  active = false;
+  refreshRequestId += 1;
+}
+
+async function activate() {
+  if (active) return;
+  active = true;
+  if (pendingModel) {
+    model.value = pendingModel;
+    pendingModel = null;
+  }
+  if (pendingProgress) {
+    progress.value = pendingProgress;
+    pendingProgress = null;
+  }
   try {
     await refresh();
-    const retain = async (subscription: Promise<() => void>) => {
-      const dispose = await subscription;
-      if (disposed) dispose();
-      else unlisten.value.push(dispose);
-    };
+  } catch (cause) {
+    if (active) error.value = String(cause);
+  }
+}
+
+async function attachTaskListeners() {
+  const retain = async (subscription: Promise<() => void>) => {
+    const dispose = await subscription;
+    if (disposed) dispose();
+    else unlisten.push(dispose);
+  };
+  try {
     await Promise.all([
-      retain(relicCleanupApi.onModelProgress((value) => (model.value = value))),
+      retain(
+        relicCleanupApi.onModelProgress((value) => {
+          if (active) model.value = value;
+          else pendingModel = value;
+        }),
+      ),
       retain(
         relicCleanupApi.onProgress(async (value) => {
-          progress.value = value;
-          if (value.terminal) await refresh();
+          if (active) {
+            progress.value = value;
+            if (value.terminal) await refresh();
+          } else {
+            pendingProgress = value;
+          }
         }),
       ),
     ]);
   } catch (cause) {
-    error.value = String(cause);
+    if (!disposed) error.value = String(cause);
   }
-});
+}
 
+onMounted(() => {
+  window.addEventListener("keydown", emergencyStop);
+  void attachTaskListeners();
+  void activate();
+});
+onActivated(() => void activate());
+onDeactivated(deactivate);
 onBeforeUnmount(() => {
   disposed = true;
+  deactivate();
   window.removeEventListener("keydown", emergencyStop);
-  unlisten.value.forEach((dispose) => dispose());
+  unlisten.splice(0).forEach((dispose) => dispose());
 });
 </script>
 

@@ -1,6 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import AppNavigation from "@/app/AppNavigation.vue";
+import { cachedAppPageNames } from "@/app/navigation";
 
 describe("AppNavigation", () => {
   it("emits the selected page and shows inventory counts", async () => {
@@ -61,5 +62,9 @@ describe("AppNavigation", () => {
     expect(labels.findIndex((label) => label.includes("软件设置"))).toBe(
       labels.findIndex((label) => label.includes("关于")) - 1,
     );
+  });
+
+  it("keeps the OCR scanner workspace alive across top-level navigation", () => {
+    expect(cachedAppPageNames).toContain("ScannerPage");
   });
 });
