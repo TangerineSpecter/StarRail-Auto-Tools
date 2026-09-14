@@ -44,7 +44,11 @@ pub struct DownloadedSnapshot {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(tag = "status", rename_all = "camelCase")]
+#[serde(
+    tag = "status",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
 pub enum SyncUploadResult {
     Completed,
     Conflict {
@@ -55,7 +59,11 @@ pub enum SyncUploadResult {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(tag = "status", rename_all = "camelCase")]
+#[serde(
+    tag = "status",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
 pub enum SyncDownloadResult {
     Completed {
         summary: InventorySummary,
@@ -69,6 +77,26 @@ pub enum SyncDownloadResult {
 
 pub use settings::{SyncProtocol, SyncSettings, SyncStore, WebDavSettings};
 pub use transport::RemoteTransport;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn serializes_conflict_fields_for_the_frontend_contract() {
+        let payload = serde_json::to_value(SyncUploadResult::Conflict {
+            local_generated_at: 1,
+            remote_generated_at: 2,
+            remote_revision: Some("remote-v2".to_owned()),
+        })
+        .unwrap();
+
+        assert_eq!(payload["localGeneratedAt"], 1);
+        assert_eq!(payload["remoteGeneratedAt"], 2);
+        assert_eq!(payload["remoteRevision"], "remote-v2");
+        assert!(payload.get("remote_revision").is_none());
+    }
+}
 
 pub async fn test(settings: &SyncSettings, known_hosts: &Path) -> Result<(), AppError> {
     dispatch(settings, known_hosts, |transport| async move {
