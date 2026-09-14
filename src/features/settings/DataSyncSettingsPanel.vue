@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { syncApi } from "@/shared/api/sync";
+import { formatTime } from "@/shared/utils/display";
 import { mergeSyncSettings, validateSyncSettings } from "./sync-settings";
-import type { SyncSettings } from "@/types";
+import type { SyncConflict, SyncSettings } from "@/types";
 import SyncConnectionCard from "./SyncConnectionCard.vue";
 import SyncTransferCard from "./SyncTransferCard.vue";
 
@@ -16,7 +17,9 @@ const emit = defineEmits<{
 const settings = ref<SyncSettings>(mergeSyncSettings());
 const loading = ref(true);
 const downloadConfirmOpen = ref(false);
+const transferConflict = ref<"upload" | "download" | null>(null);
 const activeTransfer = ref<"upload" | "download" | null>(null);
+const conflictDetails = ref<SyncConflict | null>(null);
 
 function currentSettings(): SyncSettings {
   return mergeSyncSettings(settings.value);
@@ -46,8 +49,25 @@ async function test() {
   await run(() => syncApi.test(currentSettings()), "连接正常，已验证服务器和认证信息");
 }
 
-async function upload() {
-  await run(() => syncApi.upload(currentSettings()), "已上传当前本地数据与培养方案", "upload");
+async function upload(confirmation?: SyncConflict) {
+  const invalid = validateSyncSettings(settings.value);
+  if (invalid) return emit("error", invalid);
+  activeTransfer.value = "upload";
+  emit("busy", true);
+  try {
+    const result = await syncApi.upload(currentSettings(), confirmation);
+    if (result.status === "conflict") {
+      transferConflict.value = "upload";
+      conflictDetails.value = result;
+      return;
+    }
+    emit("notice", "已上传当前本地数据与培养方案");
+  } catch (cause) {
+    emit("error", String(cause));
+  } finally {
+    activeTransfer.value = null;
+    emit("busy", false);
+  }
 }
 
 function requestDownload() {
@@ -56,12 +76,17 @@ function requestDownload() {
   downloadConfirmOpen.value = true;
 }
 
-async function download() {
+async function download(confirmation?: SyncConflict) {
   downloadConfirmOpen.value = false;
   activeTransfer.value = "download";
   emit("busy", true);
   try {
-    await syncApi.download(currentSettings());
+    const result = await syncApi.download(currentSettings(), confirmation);
+    if (result.status === "conflict") {
+      transferConflict.value = "download";
+      conflictDetails.value = result;
+      return;
+    }
     emit("notice", "已下载并覆盖本地同步数据");
   } catch (cause) {
     emit("error", String(cause));
@@ -69,6 +94,20 @@ async function download() {
     activeTransfer.value = null;
     emit("busy", false);
   }
+}
+
+function cancelConflict() {
+  transferConflict.value = null;
+  conflictDetails.value = null;
+}
+
+async function confirmConflict() {
+  const direction = transferConflict.value;
+  const confirmation = conflictDetails.value;
+  cancelConflict();
+  if (!confirmation?.remoteRevision) return emit("error", "远端状态已变化，请重新检查");
+  if (direction === "upload") await upload(confirmation);
+  if (direction === "download") await download(confirmation);
 }
 
 onMounted(async () => {
@@ -129,7 +168,43 @@ onMounted(async () => {
         <div class="download-confirm-actions">
           <button type="button" class="confirm-cancel" @click="downloadConfirmOpen = false">
             取消</button
-          ><button type="button" class="confirm-download" @click="download">确认下载</button>
+          ><button type="button" class="confirm-download" @click="download()">确认下载</button>
+        </div>
+      </section>
+    </div>
+    <div
+      v-if="transferConflict && conflictDetails"
+      class="download-confirm-backdrop"
+      role="presentation"
+      @click.self="cancelConflict"
+    >
+      <section
+        class="download-confirm transfer-conflict"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="transfer-conflict-title"
+      >
+        <p class="eyebrow">SYNC CONFLICT</p>
+        <h3 id="transfer-conflict-title">
+          {{ transferConflict === "upload" ? "远端数据已变化" : "本地数据有未同步修改" }}
+        </h3>
+        <p v-if="transferConflict === 'upload'">
+          远端快照展示时间：{{ formatTime(conflictDetails.remoteGeneratedAt) }}<br />
+          当前本地数据展示时间：{{
+            formatTime(conflictDetails.localGeneratedAt)
+          }}。继续上传会覆盖远端数据。
+        </p>
+        <p v-else>
+          当前本地数据展示时间：{{ formatTime(conflictDetails.localGeneratedAt) }}<br />
+          远端快照展示时间：{{
+            formatTime(conflictDetails.remoteGeneratedAt)
+          }}。继续下载会覆盖本地数据。
+        </p>
+        <div class="download-confirm-actions">
+          <button type="button" class="confirm-cancel" @click="cancelConflict">取消</button
+          ><button type="button" class="confirm-download" @click="confirmConflict">
+            {{ transferConflict === "upload" ? "仍然上传覆盖" : "仍然下载覆盖" }}
+          </button>
         </div>
       </section>
     </div>

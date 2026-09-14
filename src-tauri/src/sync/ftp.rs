@@ -57,6 +57,12 @@ impl RemoteTransport for FtpTransport {
         self.with_client(move |client| client.get(&file)).await
     }
 
+    async fn get_optional(&self, file: &str) -> Result<Option<Vec<u8>>, AppError> {
+        let file = file.to_owned();
+        self.with_client(move |client| client.get_optional(&file))
+            .await
+    }
+
     async fn put_many(&self, files: Vec<(String, Vec<u8>)>) -> Result<(), AppError> {
         self.with_client(move |client| {
             for (file, payload) in files {
@@ -124,6 +130,13 @@ impl FtpClient {
         }
     }
 
+    fn nlst(&mut self) -> Result<Vec<String>, FtpError> {
+        match self {
+            Self::Plain(stream) => stream.nlst(None),
+            Self::Tls(stream) => stream.nlst(None),
+        }
+    }
+
     fn probe(&mut self) -> Result<(), AppError> {
         let _ = join_remote_path(".", "probe.json")?;
         match self {
@@ -145,13 +158,41 @@ impl FtpClient {
     }
 
     fn get(&mut self, file: &str) -> Result<Vec<u8>, AppError> {
+        self.get_optional(file)?
+            .ok_or_else(|| AppError::Sync("远端同步文件不存在".to_owned()))
+    }
+
+    fn get_optional(&mut self, file: &str) -> Result<Option<Vec<u8>>, AppError> {
         assert_safe_filename(file)?;
-        let cursor = match self {
+        let result = match self {
             Self::Plain(stream) => stream.retr_as_buffer(file),
             Self::Tls(stream) => stream.retr_as_buffer(file),
+        };
+        match result {
+            Ok(cursor) => Ok(Some(cursor.into_inner())),
+            Err(error)
+                if matches!(
+                    &error,
+                    FtpError::UnexpectedResponse(response) if response.status.code() == 550
+                ) =>
+            {
+                let listed = self.nlst().map_err(|list_error| {
+                    map_ftp_error("无法确认远端同步文件是否存在", list_error)
+                })?;
+                if listed.iter().any(|entry| {
+                    entry
+                        .trim_end_matches('/')
+                        .rsplit('/')
+                        .next()
+                        .is_some_and(|name| name == file)
+                }) {
+                    Err(map_ftp_error("无权读取远端同步文件", error))
+                } else {
+                    Ok(None)
+                }
+            }
+            Err(error) => Err(map_ftp_error("远端同步文件不存在", error)),
         }
-        .map_err(|error| map_ftp_error("远端同步文件不存在", error))?;
-        Ok(cursor.into_inner())
     }
 
     fn quit(self) {

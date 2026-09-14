@@ -183,19 +183,45 @@ impl GameLaunchRuntime {
                 GameCapturePhase::DownloadingRemoteData,
                 "正在从 SFTP 同步站下载远端数据…",
             );
-            let snapshot =
-                match sync::download_snapshot(settings, self.sync.known_hosts_path()).await {
-                    Ok(snapshot) => snapshot,
-                    Err(error) => {
-                        self.update(
-                            task_id,
-                            GameCapturePhase::Failed,
-                            format!("SFTP 下载失败，未启动游戏采集：{error}"),
-                        );
-                        return;
-                    }
-                };
-            let summary = match self.inventory.replace_with_sync_snapshot(snapshot) {
+            let local_state = match self.inventory.sync_local_state() {
+                Ok(state) => state,
+                Err(error) => {
+                    self.update(task_id, GameCapturePhase::Failed, error.to_string());
+                    return;
+                }
+            };
+            let expected_local_generated_at = local_state.generated_at;
+            let downloaded = match sync::download_snapshot_checked(
+                settings,
+                self.sync.known_hosts_path(),
+                local_state,
+                None,
+            )
+            .await
+            {
+                Ok(Ok(downloaded)) => downloaded,
+                Ok(Err(_)) => {
+                    self.update(
+                        task_id,
+                        GameCapturePhase::Failed,
+                        "本地数据已有未同步修改；为避免覆盖，请先在软件的数据同步站中处理冲突。",
+                    );
+                    return;
+                }
+                Err(error) => {
+                    self.update(
+                        task_id,
+                        GameCapturePhase::Failed,
+                        format!("SFTP 下载失败，未启动游戏采集：{error}"),
+                    );
+                    return;
+                }
+            };
+            let summary = match self.inventory.replace_with_sync_snapshot_at_revision(
+                downloaded.snapshot,
+                Some(&downloaded.version.revision),
+                Some(expected_local_generated_at),
+            ) {
                 Ok(summary) => summary,
                 Err(error) => {
                     self.update(task_id, GameCapturePhase::Failed, error.to_string());
@@ -377,33 +403,75 @@ impl GameLaunchRuntime {
                         GameCapturePhase::UploadingRemoteData,
                         "游戏数据已归档，正在上传到 SFTP 同步站…",
                     );
-                    if let Err(error) = sync::upload_snapshot(
+                    let local_snapshot = match self.inventory.sync_snapshot() {
+                        Ok(snapshot) => snapshot,
+                        Err(error) => {
+                            self.finish_and_close_game(
+                                task_id,
+                                game,
+                                GameCapturePhase::Failed,
+                                format!("游戏数据已归档，但无法准备 SFTP 上传：{error}"),
+                            )
+                            .await;
+                            return;
+                        }
+                    };
+                    match sync::upload_snapshot_checked(
                         settings,
                         self.sync.known_hosts_path(),
-                        match self.inventory.sync_snapshot() {
-                            Ok(snapshot) => snapshot,
+                        local_snapshot.clone(),
+                        match self.inventory.sync_local_state() {
+                            Ok(state) => state,
                             Err(error) => {
                                 self.finish_and_close_game(
                                     task_id,
                                     game,
                                     GameCapturePhase::Failed,
-                                    format!("游戏数据已归档，但无法准备 SFTP 上传：{error}"),
+                                    error.to_string(),
                                 )
                                 .await;
                                 return;
                             }
                         },
+                        None,
                     )
                     .await
                     {
-                        self.finish_and_close_game(
-                            task_id,
-                            game,
-                            GameCapturePhase::Failed,
-                            format!("游戏数据已归档，但 SFTP 上传失败：{error}"),
-                        )
-                        .await;
-                        return;
+                        Ok(Ok(version)) => {
+                            if let Err(error) = self
+                                .inventory
+                                .mark_sync_uploaded(local_snapshot.generated_at, &version.revision)
+                            {
+                                self.finish_and_close_game(
+                                    task_id,
+                                    game,
+                                    GameCapturePhase::Failed,
+                                    error.to_string(),
+                                )
+                                .await;
+                                return;
+                            }
+                        }
+                        Ok(Err(_)) => {
+                            self.finish_and_close_game(
+                                task_id,
+                                game,
+                                GameCapturePhase::Failed,
+                                "游戏数据已归档，但远端已被其他设备更新；请在数据同步站中处理冲突。",
+                            )
+                            .await;
+                            return;
+                        }
+                        Err(error) => {
+                            self.finish_and_close_game(
+                                task_id,
+                                game,
+                                GameCapturePhase::Failed,
+                                format!("游戏数据已归档，但 SFTP 上传失败：{error}"),
+                            )
+                            .await;
+                            return;
+                        }
                     }
                 }
                 self.finish_and_close_game(

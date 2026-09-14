@@ -64,6 +64,11 @@ pub trait RemoteTransport {
         file: &str,
     ) -> impl std::future::Future<Output = Result<Vec<u8>, AppError>> + Send;
 
+    fn get_optional(
+        &self,
+        file: &str,
+    ) -> impl std::future::Future<Output = Result<Option<Vec<u8>>, AppError>> + Send;
+
     fn put_many(
         &self,
         files: Vec<(String, Vec<u8>)>,

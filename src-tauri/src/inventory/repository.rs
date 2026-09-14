@@ -29,6 +29,21 @@ pub(crate) struct AccountMismatch {
 
 pub(crate) type ApplyResult = Result<InventorySummary, AccountMismatch>;
 
+const SYNC_LOCAL_UPDATED_AT_KEY: &str = "sync_local_updated_at";
+const SYNC_LAST_SYNCED_AT_KEY: &str = "sync_last_synced_at";
+const SYNC_REMOTE_REVISION_KEY: &str = "sync_remote_revision";
+
+struct SnapshotApplyOptions<'a> {
+    clear_first: bool,
+    reset_sync_state: bool,
+    build_plans: &'a [CharacterBuildPlan],
+    build_layouts: &'a [BuildDashboardLayout],
+    teams: &'a [TeamSyncRecord],
+    sync_generated_at: Option<i64>,
+    sync_remote_revision: Option<&'a str>,
+    expected_local_generated_at: Option<i64>,
+}
+
 impl InventoryStore {
     pub fn initialize(path: PathBuf) -> Result<Self, AppError> {
         let store = Self { path };
@@ -507,6 +522,7 @@ impl InventoryStore {
                 params![display_order as i64, character_id],
             )?;
         }
+        touch_sync_local_updated_at(&transaction, now_millis())?;
         transaction.commit()?;
         Ok(())
     }
@@ -516,13 +532,17 @@ impl InventoryStore {
         character_id: u32,
         pinned: bool,
     ) -> Result<(), AppError> {
-        let changed = self.connect()?.execute(
+        let mut connection = self.connect()?;
+        let transaction = connection.transaction()?;
+        let changed = transaction.execute(
             "UPDATE character_build_plans SET pinned = ?1 WHERE character_id = ?2",
             params![pinned, character_id],
         )?;
         if changed == 0 {
             return Err(AppError::Database("毕业方案不存在".to_owned()));
         }
+        touch_sync_local_updated_at(&transaction, now_millis())?;
+        transaction.commit()?;
         Ok(())
     }
 
@@ -618,6 +638,7 @@ impl InventoryStore {
         for plan in &plans {
             save_build_plan_in_transaction(&transaction, plan)?;
         }
+        touch_sync_local_updated_at(&transaction, now_millis())?;
         transaction.commit()?;
         Ok(plans.len() as u64)
     }
@@ -708,6 +729,7 @@ impl InventoryStore {
             "DELETE FROM character_build_scores WHERE character_id = ?1",
             [plan.character_id],
         )?;
+        touch_sync_local_updated_at(&transaction, now_millis())?;
         transaction.commit()?;
         Ok(())
     }
@@ -715,7 +737,7 @@ impl InventoryStore {
     pub fn delete_build_plan(&self, character_id: u32) -> Result<(), AppError> {
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
-        transaction.execute(
+        let deleted = transaction.execute(
             "DELETE FROM character_build_plans WHERE character_id = ?1",
             [character_id],
         )?;
@@ -723,6 +745,9 @@ impl InventoryStore {
             "DELETE FROM character_build_scores WHERE character_id = ?1",
             [character_id],
         )?;
+        if deleted > 0 {
+            touch_sync_local_updated_at(&transaction, now_millis())?;
+        }
         transaction.commit()?;
         Ok(())
     }
@@ -872,10 +897,11 @@ impl InventoryStore {
             return Err(AppError::Database("配队必须包含 4 个角色槽位".to_owned()));
         }
         let slots = normalize_team_slots(&input.character_ids)?;
-        let connection = self.connect()?;
+        let mut connection = self.connect()?;
+        let transaction = connection.transaction()?;
         // Existing orphan slots may be kept on update; only newly assigned members must exist.
         let previous_slots: HashSet<u32> = if let Some(existing_id) = input.team_id {
-            connection
+            transaction
                 .query_row(
                     "SELECT slot0, slot1, slot2, slot3 FROM teams WHERE team_id = ?1",
                     [existing_id],
@@ -900,7 +926,7 @@ impl InventoryStore {
             if previous_slots.contains(slot) {
                 continue;
             }
-            let exists: bool = connection
+            let exists: bool = transaction
                 .query_row(
                     "SELECT 1 FROM characters WHERE character_id = ?1",
                     [*slot],
@@ -916,7 +942,7 @@ impl InventoryStore {
         }
         let now = now_millis();
         let team_id = if let Some(existing_id) = input.team_id {
-            let updated = connection.execute(
+            let updated = transaction.execute(
                 "UPDATE teams
                  SET name = ?1, note = ?2, slot0 = ?3, slot1 = ?4, slot2 = ?5, slot3 = ?6,
                      updated_at = ?7
@@ -937,23 +963,27 @@ impl InventoryStore {
             }
             existing_id
         } else {
-            connection.execute(
+            transaction.execute(
                 "INSERT INTO teams(name, note, slot0, slot1, slot2, slot3, created_at, updated_at)
                  VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                 params![name, note, slots[0], slots[1], slots[2], slots[3], now, now],
             )?;
-            connection.last_insert_rowid() as u32
+            transaction.last_insert_rowid() as u32
         };
+        touch_sync_local_updated_at(&transaction, now)?;
+        transaction.commit()?;
         self.get_team(team_id)
     }
 
     pub fn delete_team(&self, team_id: u32) -> Result<(), AppError> {
-        let deleted = self
-            .connect()?
-            .execute("DELETE FROM teams WHERE team_id = ?1", [team_id])?;
+        let mut connection = self.connect()?;
+        let transaction = connection.transaction()?;
+        let deleted = transaction.execute("DELETE FROM teams WHERE team_id = ?1", [team_id])?;
         if deleted == 0 {
             return Err(AppError::Database("配队不存在".to_owned()));
         }
+        touch_sync_local_updated_at(&transaction, now_millis())?;
+        transaction.commit()?;
         Ok(())
     }
 
@@ -1021,8 +1051,20 @@ impl InventoryStore {
             }
         }
 
-        self.apply_snapshot(import, false, false, &[], &[], &[])
-            .map(Ok)
+        self.apply_snapshot(
+            import,
+            SnapshotApplyOptions {
+                clear_first: false,
+                reset_sync_state: false,
+                build_plans: &[],
+                build_layouts: &[],
+                teams: &[],
+                sync_generated_at: None,
+                sync_remote_revision: None,
+                expected_local_generated_at: None,
+            },
+        )
+        .map(Ok)
     }
 
     pub fn replace_account_and_apply(
@@ -1030,27 +1072,43 @@ impl InventoryStore {
         import: &InventoryImport,
     ) -> Result<InventorySummary, AppError> {
         // Game-driven account replace refreshes inventory only; local teams are kept.
-        self.apply_snapshot(import, true, false, &[], &[], &[])
+        self.apply_snapshot(
+            import,
+            SnapshotApplyOptions {
+                clear_first: true,
+                reset_sync_state: false,
+                build_plans: &[],
+                build_layouts: &[],
+                teams: &[],
+                sync_generated_at: None,
+                sync_remote_revision: None,
+                expected_local_generated_at: None,
+            },
+        )
     }
 
     fn apply_snapshot(
         &self,
         import: &InventoryImport,
-        clear_first: bool,
-        reset_sync_state: bool,
-        build_plans: &[CharacterBuildPlan],
-        build_layouts: &[BuildDashboardLayout],
-        teams: &[TeamSyncRecord],
+        options: SnapshotApplyOptions<'_>,
     ) -> Result<InventorySummary, AppError> {
         let now = now_millis();
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
 
-        if clear_first {
+        if let Some(expected) = options.expected_local_generated_at {
+            if sync_local_updated_at(&transaction)? != expected {
+                return Err(AppError::Sync(
+                    "下载期间本地数据已变化，请重新检查后再覆盖".to_owned(),
+                ));
+            }
+        }
+
+        if options.clear_first {
             clear_all(&transaction)?;
             // Equipment may change; cached scores are always invalidated on inventory replace.
             clear_character_build_scores(&transaction)?;
-            if reset_sync_state {
+            if options.reset_sync_state {
                 transaction.execute("DELETE FROM character_build_plans", [])?;
                 // WebDAV full restore wipes local planning data, then reimports from snapshot.
                 transaction.execute("DELETE FROM teams", [])?;
@@ -1202,13 +1260,23 @@ impl InventoryStore {
                 run_id
             ],
         )?;
-        for plan in build_plans {
+        for plan in options.build_plans {
             save_build_plan_in_transaction(&transaction, plan)?;
         }
-        apply_build_layouts(&transaction, build_layouts)?;
-        if reset_sync_state {
+        apply_build_layouts(&transaction, options.build_layouts)?;
+        if options.reset_sync_state {
             // Empty slice intentionally clears all teams after wipe.
-            replace_teams_in_transaction(&transaction, teams)?;
+            replace_teams_in_transaction(&transaction, options.teams)?;
+        }
+        if let Some(sync_generated_at) = options.sync_generated_at {
+            set_sync_local_updated_at(&transaction, sync_generated_at)?;
+            if let Some(revision) = options.sync_remote_revision {
+                set_sync_baseline(&transaction, sync_generated_at, revision)?;
+            } else {
+                clear_sync_baseline(&transaction)?;
+            }
+        } else {
+            touch_sync_local_updated_at(&transaction, now)?;
         }
         transaction.commit()?;
         self.summary()
@@ -1677,6 +1745,9 @@ impl InventoryStore {
         let deleted = transaction.execute(&sql, params_from_iter(values.iter()))?;
         // Relic/character/light-cone deletes change equipped gear; drop derived scores.
         clear_character_build_scores(&transaction)?;
+        if deleted > 0 {
+            touch_sync_local_updated_at(&transaction, now_millis())?;
+        }
         transaction.commit()?;
         Ok(deleted as u64)
     }
@@ -1693,6 +1764,7 @@ impl InventoryStore {
             clear_character_build_scores(&transaction)?;
             transaction.execute("DELETE FROM app_state", [])?;
         }
+        touch_sync_local_updated_at(&transaction, now_millis())?;
         transaction.commit()?;
         Ok(())
     }
@@ -1724,10 +1796,13 @@ impl InventoryStore {
     }
 
     pub fn sync_snapshot(&self) -> Result<SyncSnapshot, AppError> {
-        let connection = self.connect()?;
+        let mut connection = self.connect()?;
+        let transaction = connection.transaction()?;
+        let generated_at = sync_local_updated_at(&transaction)?;
         let metadata = ImportMetadata {
-            uid: self.current_uid()?,
-            trailblazer: connection
+            uid: app_state_string(&transaction, "current_uid")?
+                .and_then(|value| value.parse().ok()),
+            trailblazer: transaction
                 .query_row(
                     "SELECT value FROM app_state WHERE key = 'trailblazer'",
                     [],
@@ -1737,24 +1812,24 @@ impl InventoryStore {
         };
         let inventory = InventoryImport {
             metadata,
-            relics: serde_json::from_value(Value::Array(export_relics(&connection)?))
+            relics: serde_json::from_value(Value::Array(export_relics(&transaction)?))
                 .map_err(|error| AppError::Database(error.to_string()))?,
-            light_cones: serde_json::from_value(Value::Array(export_light_cones(&connection)?))
+            light_cones: serde_json::from_value(Value::Array(export_light_cones(&transaction)?))
                 .map_err(|error| AppError::Database(error.to_string()))?,
-            characters: serde_json::from_value(Value::Array(export_characters(&connection)?))
+            characters: serde_json::from_value(Value::Array(export_characters(&transaction)?))
                 .map_err(|error| AppError::Database(error.to_string()))?,
         };
-        let character_ids = connection
+        let character_ids = transaction
             .prepare("SELECT character_id FROM character_build_plans ORDER BY character_id")?
             .query_map([], |row| row.get::<_, u32>(0))?
             .collect::<Result<Vec<_>, _>>()?;
         let mut build_plans = Vec::with_capacity(character_ids.len());
         for character_id in character_ids {
-            if let Some(plan) = self.build_plan(character_id)? {
+            if let Some(plan) = Self::build_plan_from_connection(&transaction, character_id)? {
                 build_plans.push(plan);
             }
         }
-        let build_layouts = connection
+        let build_layouts = transaction
             .prepare(
                 "SELECT character_id, display_order, pinned
                  FROM character_build_plans ORDER BY character_id",
@@ -1767,10 +1842,10 @@ impl InventoryStore {
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
-        let teams = list_team_sync_records(&connection)?;
+        let teams = list_team_sync_records(&transaction)?;
         Ok(SyncSnapshot {
             format_version: SYNC_FORMAT_VERSION,
-            generated_at: now_millis(),
+            generated_at,
             source: "starrail-auto-tools".to_owned(),
             inventory,
             build_plans,
@@ -1779,9 +1854,36 @@ impl InventoryStore {
         })
     }
 
-    pub fn replace_with_sync_snapshot(
+    pub fn sync_local_state(&self) -> Result<SyncLocalState, AppError> {
+        let connection = self.connect()?;
+        Ok(SyncLocalState {
+            generated_at: sync_local_updated_at(&connection)?,
+            last_synced_generated_at: app_state_i64(&connection, SYNC_LAST_SYNCED_AT_KEY)?,
+            remote_revision: app_state_string(&connection, SYNC_REMOTE_REVISION_KEY)?,
+        })
+    }
+
+    pub fn mark_sync_uploaded(&self, generated_at: i64, revision: &str) -> Result<(), AppError> {
+        let mut connection = self.connect()?;
+        let transaction = connection.transaction()?;
+        set_sync_baseline(&transaction, generated_at, revision)?;
+        transaction.commit()?;
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn replace_with_sync_snapshot(
+        &self,
+        snapshot: SyncSnapshot,
+    ) -> Result<InventorySummary, AppError> {
+        self.replace_with_sync_snapshot_at_revision(snapshot, None, None)
+    }
+
+    pub fn replace_with_sync_snapshot_at_revision(
         &self,
         mut snapshot: SyncSnapshot,
+        remote_revision: Option<&str>,
+        expected_local_generated_at: Option<i64>,
     ) -> Result<InventorySummary, AppError> {
         if !supports_sync_format_version(snapshot.format_version) {
             return Err(AppError::Sync(format!(
@@ -1790,13 +1892,19 @@ impl InventoryStore {
             )));
         }
         normalize_import(&mut snapshot.inventory);
+        let sync_generated_at = snapshot.generated_at;
         self.apply_snapshot(
             &snapshot.inventory,
-            true,
-            true,
-            &snapshot.build_plans,
-            &snapshot.build_layouts,
-            &snapshot.teams,
+            SnapshotApplyOptions {
+                clear_first: true,
+                reset_sync_state: true,
+                build_plans: &snapshot.build_plans,
+                build_layouts: &snapshot.build_layouts,
+                teams: &snapshot.teams,
+                sync_generated_at: Some(sync_generated_at),
+                sync_remote_revision: remote_revision,
+                expected_local_generated_at,
+            },
         )
     }
 
@@ -3224,6 +3332,102 @@ fn id_column_for_kind(kind: InventoryKind) -> &'static str {
         InventoryKind::Relic | InventoryKind::LightCone => "item_id",
         InventoryKind::Character => "character_id",
     }
+}
+
+fn sync_local_updated_at(connection: &Connection) -> Result<i64, AppError> {
+    let stored = connection
+        .query_row(
+            "SELECT value FROM app_state WHERE key = ?1",
+            [SYNC_LOCAL_UPDATED_AT_KEY],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?
+        .and_then(|value| value.parse::<i64>().ok());
+    if let Some(stored) = stored {
+        return Ok(stored.max(0));
+    }
+
+    let mut inferred = connection.query_row(
+        "SELECT COALESCE(MAX(finished_at), 0)
+         FROM import_runs WHERE status = 'complete'",
+        [],
+        |row| row.get::<_, i64>(0),
+    )?;
+    for table in [
+        "relics",
+        "light_cones",
+        "characters",
+        "character_build_plans",
+        "teams",
+    ] {
+        let value = connection.query_row(
+            &format!("SELECT COALESCE(MAX(updated_at), 0) FROM {table}"),
+            [],
+            |row| row.get::<_, i64>(0),
+        )?;
+        inferred = inferred.max(value);
+    }
+    Ok(inferred)
+}
+
+fn set_sync_local_updated_at(connection: &Connection, updated_at: i64) -> Result<(), AppError> {
+    connection.execute(
+        "INSERT INTO app_state(key, value) VALUES (?1, ?2)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        params![SYNC_LOCAL_UPDATED_AT_KEY, updated_at.max(0).to_string()],
+    )?;
+    Ok(())
+}
+
+fn app_state_string(connection: &Connection, key: &str) -> Result<Option<String>, AppError> {
+    Ok(connection
+        .query_row("SELECT value FROM app_state WHERE key = ?1", [key], |row| {
+            row.get(0)
+        })
+        .optional()?)
+}
+
+fn app_state_i64(connection: &Connection, key: &str) -> Result<Option<i64>, AppError> {
+    Ok(app_state_string(connection, key)?.and_then(|value| value.parse().ok()))
+}
+
+fn set_sync_baseline(
+    connection: &Connection,
+    generated_at: i64,
+    remote_revision: &str,
+) -> Result<(), AppError> {
+    connection.execute(
+        "INSERT INTO app_state(key, value) VALUES (?1, ?2)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        params![SYNC_LAST_SYNCED_AT_KEY, generated_at.max(0).to_string()],
+    )?;
+    connection.execute(
+        "INSERT INTO app_state(key, value) VALUES (?1, ?2)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        params![SYNC_REMOTE_REVISION_KEY, remote_revision],
+    )?;
+    Ok(())
+}
+
+fn clear_sync_baseline(connection: &Connection) -> Result<(), AppError> {
+    connection.execute(
+        "DELETE FROM app_state WHERE key IN (?1, ?2)",
+        params![SYNC_LAST_SYNCED_AT_KEY, SYNC_REMOTE_REVISION_KEY],
+    )?;
+    Ok(())
+}
+
+fn touch_sync_local_updated_at(connection: &Connection, requested_at: i64) -> Result<(), AppError> {
+    let current = connection
+        .query_row(
+            "SELECT value FROM app_state WHERE key = ?1",
+            [SYNC_LOCAL_UPDATED_AT_KEY],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?
+        .and_then(|value| value.parse::<i64>().ok())
+        .unwrap_or(0);
+    set_sync_local_updated_at(connection, requested_at.max(current.saturating_add(1)))
 }
 
 fn now_millis() -> i64 {
@@ -5112,6 +5316,41 @@ mod tests {
         assert_eq!(restored.character_id, plan.character_id);
         assert_eq!(restored.targets[0].minimum, 140.0);
         assert_eq!(restored.effective_substats, plan.effective_substats);
+    }
+
+    #[test]
+    fn sync_snapshot_uses_local_change_version_and_remote_restore_baseline() {
+        let store = InventoryStore::test_store();
+        store
+            .apply_full_snapshot(&import(10001, &[1]))
+            .unwrap()
+            .unwrap();
+        let imported_at = store.sync_snapshot().unwrap().generated_at;
+        assert!(imported_at > 0);
+
+        store.clear(Some(InventoryKind::Relic)).unwrap();
+        let cleared_at = store.sync_snapshot().unwrap().generated_at;
+        assert!(cleared_at > imported_at);
+
+        let mut remote = store.sync_snapshot().unwrap();
+        remote.generated_at = 123;
+        store
+            .replace_with_sync_snapshot_at_revision(remote, Some("remote-123"), None)
+            .unwrap();
+        assert_eq!(store.sync_snapshot().unwrap().generated_at, 123);
+        let synced = store.sync_local_state().unwrap();
+        assert!(!synced.is_dirty());
+        assert_eq!(synced.remote_revision.as_deref(), Some("remote-123"));
+
+        let stale_download = store.sync_snapshot().unwrap();
+        store.clear(Some(InventoryKind::Relic)).unwrap();
+        assert!(store.sync_local_state().unwrap().is_dirty());
+        let changed_at = store.sync_local_state().unwrap().generated_at;
+        let error = store
+            .replace_with_sync_snapshot_at_revision(stale_download, Some("remote-123"), Some(123))
+            .unwrap_err();
+        assert!(error.to_string().contains("下载期间本地数据已变化"));
+        assert_eq!(store.sync_local_state().unwrap().generated_at, changed_at);
     }
 
     #[test]

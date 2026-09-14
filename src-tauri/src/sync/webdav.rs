@@ -83,12 +83,21 @@ impl RemoteTransport for WebDavTransport {
     }
 
     async fn get(&self, file: &str) -> Result<Vec<u8>, AppError> {
+        self.get_optional(file)
+            .await?
+            .ok_or_else(|| AppError::Sync("远端同步文件不存在".to_owned()))
+    }
+
+    async fn get_optional(&self, file: &str) -> Result<Option<Vec<u8>>, AppError> {
         let response = client()?
             .get(self.file_url(file)?)
             .basic_auth(&self.settings.username, Some(&self.settings.password))
             .send()
             .await
             .map_err(|error| AppError::Sync(error.to_string()))?;
+        if response.status() == StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
         if !response.status().is_success() {
             return Err(describe_status(response.status()));
         }
@@ -96,6 +105,7 @@ impl RemoteTransport for WebDavTransport {
             .bytes()
             .await
             .map(|bytes| bytes.to_vec())
+            .map(Some)
             .map_err(|error| AppError::Sync(error.to_string()))
     }
 

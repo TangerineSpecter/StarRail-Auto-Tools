@@ -70,7 +70,7 @@ impl StarRailMcp {
 impl StarRailMcp {
     #[tool(
         name = "upload_local_data",
-        description = "仅用于远端备份：把当前本地录入、培养方案与配队上传到软件设置里已保存的 WebDAV / FTP / SFTP 同步站。不用于从游戏获取或更新数据。",
+        description = "仅用于远端备份：把当前本地录入、培养方案与配队上传到软件设置里已保存的 WebDAV / FTP / SFTP 同步站。不用于从游戏获取或更新数据。若远端已被其他设备修改，工具会停止并要求用户在软件的数据同步站中处理冲突。",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -87,7 +87,7 @@ impl StarRailMcp {
 
     #[tool(
         name = "restore_remote_backup",
-        description = "仅用于用户明确要求“从远端备份恢复”的场景：从已配置的 WebDAV / FTP / SFTP 同步站下载快照并覆盖本地数据。绝不能用于“更新数据”“获取游戏数据”或“启动星铁”。必须传 confirm=true 和 operation=restore_remote_backup。",
+        description = "仅用于用户明确要求“从远端备份恢复”的场景：从已配置的 WebDAV / FTP / SFTP 同步站下载快照并覆盖本地数据。绝不能用于“更新数据”“获取游戏数据”或“启动星铁”。必须传 confirm=true 和 operation=restore_remote_backup；若本地存在未同步修改，工具会停止并要求用户在软件的数据同步站中处理冲突。",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -113,7 +113,7 @@ impl StarRailMcp {
 
     #[tool(
         name = "start_game_data_capture",
-        description = "用于“更新数据”“获取游戏数据”“启动星铁后采集”等请求：在 Windows 上启动或复用已配置的米哈游启动器。若软件设置中已完整配置并启用 SFTP，启动前会下载远端快照并覆盖本地同步范围内的数据（库存、培养方案和配队），采集完成后会将最新数据上传到远端；未配置 SFTP 时跳过这些步骤。游戏窗口出现后，加载期间每 5 秒尝试点击一次固定的“点击进入”位置，并等待新数据；60 秒内未采集到数据则结束。立即返回 taskId；请每 2 到 3 秒调用 get_game_data_capture_status 直到 terminal=true。调用前须在软件设置 → 游戏启动与采集配置启动器 .exe。",
+        description = "用于“更新数据”“获取游戏数据”“启动星铁后采集”等请求：在 Windows 上启动或复用已配置的米哈游启动器。若软件设置中已完整配置并启用 SFTP，启动前会安全检查并下载远端快照，采集完成后会安全检查并上传最新数据；任一端存在冲突时任务会停止并要求用户到数据同步站处理。未配置 SFTP 时跳过这些步骤。游戏窗口出现后，加载期间每 5 秒尝试点击一次固定的“点击进入”位置，并等待新数据；60 秒内未采集到数据则结束。立即返回 taskId；请每 2 到 3 秒调用 get_game_data_capture_status 直到 terminal=true。调用前须在软件设置 → 游戏启动与采集配置启动器 .exe。",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -162,7 +162,7 @@ impl ServerHandler for StarRailMcp {
         .with_server_info(Implementation::new("starrail-auto-tools", env!("CARGO_PKG_VERSION")))
         .with_protocol_version(ProtocolVersion::default())
         .with_instructions(
-            "此服务有两条工作流。第一条是游戏数据采集：当用户说“更新数据”“更新星铁数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须调用 start_game_data_capture。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId。只有拿到 taskId 后，才每 2 到 3 秒调用 get_game_data_capture_status 并传入该 taskId，直到 terminal=true；没有 taskId 时不得调用状态查询。若数据同步站的当前协议为 SFTP，且 SFTP 连接信息完整，任务会在启动游戏前下载远端快照，并在游戏数据归档后上传最新快照；未配置或未启用 SFTP 时会跳过前后同步。completed 表示整套流程完成。第二条是远端备份同步：upload_local_data 仅用于手动上传备份；restore_remote_backup 仅在用户明确说要从 SFTP、FTP、WebDAV 或同步站恢复远端备份时使用。restore_remote_backup 会覆盖本地数据，必须传 confirm=true 和 operation=restore_remote_backup。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
+            "此服务有两条工作流。第一条是游戏数据采集：当用户说“更新数据”“更新星铁数据”“获取游戏数据”“启动星铁”“启动游戏”“进入游戏并采集”或类似意思时，必须调用 start_game_data_capture。该工具仅支持 Windows，需先在软件设置 → 游戏启动与采集保存启动器 .exe；它立即返回 taskId。只有拿到 taskId 后，才每 2 到 3 秒调用 get_game_data_capture_status 并传入该 taskId，直到 terminal=true；没有 taskId 时不得调用状态查询。若数据同步站的当前协议为 SFTP，且 SFTP 连接信息完整，任务会在启动游戏前和归档后执行带冲突保护的同步；发现冲突时任务会停止并要求用户到数据同步站处理。未配置或未启用 SFTP 时会跳过前后同步。completed 表示整套流程完成。第二条是远端备份同步：upload_local_data 仅用于手动上传备份；restore_remote_backup 仅在用户明确说要从 SFTP、FTP、WebDAV 或同步站恢复远端备份时使用。restore_remote_backup 会覆盖本地数据，必须传 confirm=true 和 operation=restore_remote_backup；任一工具发现冲突时都不得绕过保护。不要尝试自动填写账号、密码或验证码；桌面软件必须保持运行。"
                 .to_owned(),
         )
     }
@@ -175,12 +175,24 @@ pub async fn upload_local_snapshot(
     let settings = sync.load()?;
     settings.validate_active().map_err(sync_config_error)?;
     let protocol = protocol_label(settings.protocol);
-    sync::upload_snapshot(
+    let snapshot = inventory.sync_snapshot()?;
+    let version = match sync::upload_snapshot_checked(
         &settings,
         sync.known_hosts_path(),
-        inventory.sync_snapshot()?,
+        snapshot.clone(),
+        inventory.sync_local_state()?,
+        None,
     )
-    .await?;
+    .await?
+    {
+        Ok(version) => version,
+        Err(_) => {
+            return Err(AppError::Sync(
+                "远端数据已变化，请在软件的数据同步站中检查并确认是否覆盖".to_owned(),
+            ));
+        }
+    };
+    inventory.mark_sync_uploaded(snapshot.generated_at, &version.revision)?;
     Ok(UploadToolResult {
         protocol: protocol.to_owned(),
         message: format!("已上传当前本地数据与培养方案到{protocol}同步站"),
@@ -201,8 +213,28 @@ pub async fn download_local_snapshot(
     let settings = sync.load()?;
     settings.validate_active().map_err(sync_config_error)?;
     let protocol = protocol_label(settings.protocol);
-    let snapshot = sync::download_snapshot(&settings, sync.known_hosts_path()).await?;
-    let summary = inventory.replace_with_sync_snapshot(snapshot)?;
+    let local_state = inventory.sync_local_state()?;
+    let expected_local_generated_at = local_state.generated_at;
+    let downloaded = match sync::download_snapshot_checked(
+        &settings,
+        sync.known_hosts_path(),
+        local_state,
+        None,
+    )
+    .await?
+    {
+        Ok(downloaded) => downloaded,
+        Err(_) => {
+            return Err(AppError::Sync(
+                "本地数据已有未同步修改，请在软件的数据同步站中检查并确认是否覆盖".to_owned(),
+            ));
+        }
+    };
+    let summary = inventory.replace_with_sync_snapshot_at_revision(
+        downloaded.snapshot,
+        Some(&downloaded.version.revision),
+        Some(expected_local_generated_at),
+    )?;
     Ok(DownloadToolResult {
         protocol: protocol.to_owned(),
         message: format!("已从{protocol}同步站下载并覆盖本地同步数据"),

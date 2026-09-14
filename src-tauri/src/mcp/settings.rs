@@ -99,7 +99,7 @@ pub fn catalog_tools() -> Vec<McpToolInfo> {
         McpToolInfo {
             name: "start_game_data_capture".to_owned(),
             title: "启动游戏并采集数据".to_owned(),
-            description: "用于更新或获取游戏数据：启动或复用已配置的米哈游启动器；已完整配置并启用 SFTP 时，会先下载远端快照并覆盖本地同步范围数据，采集完成后上传最新数据。游戏加载期间每 5 秒尝试点击一次固定的“点击进入”位置，并监听新数据。".to_owned(),
+            description: "用于更新或获取游戏数据：启动或复用已配置的米哈游启动器；已完整配置并启用 SFTP 时，会安全检查后下载远端快照，采集完成后检查并上传最新数据，发现冲突时停止并要求用户处理。游戏加载期间每 5 秒尝试点击一次固定的“点击进入”位置，并监听新数据。".to_owned(),
             destructive: false,
         },
         McpToolInfo {

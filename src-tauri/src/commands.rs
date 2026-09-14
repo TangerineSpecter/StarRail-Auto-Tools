@@ -20,7 +20,10 @@ use crate::{
     relic_cleanup::{CleanupCapabilities, RelicCleanupRuntime},
     scanner::ScannerState,
     screenshot,
-    sync::{self, SyncSettings, SyncStore, WebDavSettings},
+    sync::{
+        self, ConflictConfirmation, DownloadedSnapshot, SyncDownloadResult, SyncSettings,
+        SyncStore, SyncUploadResult, WebDavSettings,
+    },
 };
 
 #[tauri::command]
@@ -171,19 +174,59 @@ pub async fn test_webdav_connection(settings: WebDavSettings) -> Result<(), AppE
 #[tauri::command]
 pub async fn upload_webdav_snapshot(
     settings: WebDavSettings,
+    store: State<'_, SyncStore>,
     inventory: State<'_, InventoryStore>,
 ) -> Result<(), AppError> {
-    sync::upload_webdav_snapshot(&settings, inventory.sync_snapshot()?).await
+    let sync_settings = SyncSettings {
+        webdav: settings,
+        ..SyncSettings::default()
+    };
+    let snapshot = inventory.sync_snapshot()?;
+    match sync::upload_snapshot_checked(
+        &sync_settings,
+        store.known_hosts_path(),
+        snapshot.clone(),
+        inventory.sync_local_state()?,
+        None,
+    )
+    .await?
+    {
+        Ok(version) => inventory.mark_sync_uploaded(snapshot.generated_at, &version.revision),
+        Err(_) => Err(AppError::Sync(
+            "远端数据已变化，请在数据同步站确认后再覆盖".to_owned(),
+        )),
+    }
 }
 
 #[tauri::command]
 pub async fn download_webdav_snapshot(
     settings: WebDavSettings,
+    store: State<'_, SyncStore>,
     app: AppHandle,
     inventory: State<'_, InventoryStore>,
 ) -> Result<InventorySummary, AppError> {
-    let snapshot = sync::download_webdav_snapshot(&settings).await?;
-    publish_restored_snapshot(&app, &inventory, snapshot)
+    let sync_settings = SyncSettings {
+        webdav: settings,
+        ..SyncSettings::default()
+    };
+    let local_state = inventory.sync_local_state()?;
+    let expected_local_generated_at = local_state.generated_at;
+    let downloaded = match sync::download_snapshot_checked(
+        &sync_settings,
+        store.known_hosts_path(),
+        local_state,
+        None,
+    )
+    .await?
+    {
+        Ok(value) => value,
+        Err(_) => {
+            return Err(AppError::Sync(
+                "本地数据已变化，请在数据同步站确认后再覆盖".to_owned(),
+            ));
+        }
+    };
+    publish_restored_snapshot(&app, &inventory, downloaded, expected_local_generated_at)
 }
 
 #[tauri::command]
@@ -213,9 +256,30 @@ pub async fn upload_sync_snapshot(
     settings: SyncSettings,
     store: State<'_, SyncStore>,
     inventory: State<'_, InventoryStore>,
-) -> Result<(), AppError> {
+    expected_local_generated_at: Option<i64>,
+    expected_remote_revision: Option<String>,
+) -> Result<SyncUploadResult, AppError> {
     let known_hosts = store.known_hosts_path().to_path_buf();
-    sync::upload_snapshot(&settings, &known_hosts, inventory.sync_snapshot()?).await
+    let snapshot = inventory.sync_snapshot()?;
+    match sync::upload_snapshot_checked(
+        &settings,
+        &known_hosts,
+        snapshot.clone(),
+        inventory.sync_local_state()?,
+        conflict_confirmation(expected_local_generated_at, expected_remote_revision),
+    )
+    .await?
+    {
+        Ok(version) => {
+            inventory.mark_sync_uploaded(snapshot.generated_at, &version.revision)?;
+            Ok(SyncUploadResult::Completed)
+        }
+        Err(conflict) => Ok(SyncUploadResult::Conflict {
+            local_generated_at: conflict.local_generated_at,
+            remote_generated_at: conflict.remote_generated_at,
+            remote_revision: conflict.remote_revision,
+        }),
+    }
 }
 
 #[tauri::command]
@@ -224,21 +288,63 @@ pub async fn download_sync_snapshot(
     store: State<'_, SyncStore>,
     app: AppHandle,
     inventory: State<'_, InventoryStore>,
-) -> Result<InventorySummary, AppError> {
+    expected_local_generated_at: Option<i64>,
+    expected_remote_revision: Option<String>,
+) -> Result<SyncDownloadResult, AppError> {
     let known_hosts = store.known_hosts_path().to_path_buf();
-    let snapshot = sync::download_snapshot(&settings, &known_hosts).await?;
-    publish_restored_snapshot(&app, &inventory, snapshot)
+    let local_state = inventory.sync_local_state()?;
+    let checked_local_generated_at = local_state.generated_at;
+    let downloaded = match sync::download_snapshot_checked(
+        &settings,
+        &known_hosts,
+        local_state,
+        conflict_confirmation(expected_local_generated_at, expected_remote_revision),
+    )
+    .await?
+    {
+        Ok(snapshot) => snapshot,
+        Err(conflict) => {
+            return Ok(SyncDownloadResult::Conflict {
+                local_generated_at: conflict.local_generated_at,
+                remote_generated_at: conflict.remote_generated_at,
+                remote_revision: conflict.remote_revision,
+            });
+        }
+    };
+    Ok(SyncDownloadResult::Completed {
+        summary: publish_restored_snapshot(
+            &app,
+            &inventory,
+            downloaded,
+            checked_local_generated_at,
+        )?,
+    })
 }
 
 fn publish_restored_snapshot(
     app: &AppHandle,
     inventory: &InventoryStore,
-    snapshot: crate::inventory::SyncSnapshot,
+    downloaded: DownloadedSnapshot,
+    expected_local_generated_at: i64,
 ) -> Result<InventorySummary, AppError> {
-    let summary = inventory.replace_with_sync_snapshot(snapshot)?;
+    let summary = inventory.replace_with_sync_snapshot_at_revision(
+        downloaded.snapshot,
+        Some(&downloaded.version.revision),
+        Some(expected_local_generated_at),
+    )?;
     direct_read::inventory_changed(app, &summary, false)?;
     let _ = app.emit("inventory://changed", &summary);
     Ok(summary)
+}
+
+fn conflict_confirmation(
+    local_generated_at: Option<i64>,
+    remote_revision: Option<String>,
+) -> Option<ConflictConfirmation> {
+    Some(ConflictConfirmation {
+        local_generated_at: local_generated_at?,
+        remote_revision: remote_revision?,
+    })
 }
 
 #[tauri::command]

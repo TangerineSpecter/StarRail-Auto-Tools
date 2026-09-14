@@ -77,6 +77,12 @@ impl RemoteTransport for SftpTransport {
             .await
     }
 
+    async fn get_optional(&self, file: &str) -> Result<Option<Vec<u8>>, AppError> {
+        let path = join_remote_path(&self.settings.remote_path, file)?;
+        self.with_session(move |sftp| async move { read_file_optional(&sftp, &path).await })
+            .await
+    }
+
     async fn put_many(&self, files: Vec<(String, Vec<u8>)>) -> Result<(), AppError> {
         let directory = self.settings.remote_path.clone();
         self.with_session(move |sftp| async move {
@@ -108,16 +114,29 @@ async fn write_file(sftp: &SftpSession, path: &str, payload: Vec<u8>) -> Result<
 }
 
 async fn read_file(sftp: &SftpSession, path: &str) -> Result<Vec<u8>, AppError> {
+    read_file_optional(sftp, path)
+        .await?
+        .ok_or_else(|| AppError::Sync("远端同步文件不存在".to_owned()))
+}
+
+async fn read_file_optional(sftp: &SftpSession, path: &str) -> Result<Option<Vec<u8>>, AppError> {
     assert_safe_filename(path.rsplit('/').next().unwrap_or(path))?;
+    let exists = sftp
+        .try_exists(path)
+        .await
+        .map_err(|error| AppError::Sync(format!("无法读取同步文件：{error}")))?;
+    if !exists {
+        return Ok(None);
+    }
     let mut file = sftp
         .open(path)
         .await
-        .map_err(|error| AppError::Sync(format!("远端同步文件不存在：{error}")))?;
+        .map_err(|error| AppError::Sync(format!("无法读取同步文件：{error}")))?;
     let mut payload = Vec::new();
     file.read_to_end(&mut payload)
         .await
         .map_err(|error| AppError::Sync(format!("无法读取同步文件：{error}")))?;
-    Ok(payload)
+    Ok(Some(payload))
 }
 
 async fn connect(

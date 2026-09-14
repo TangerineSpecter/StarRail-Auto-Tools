@@ -649,6 +649,19 @@ pub struct SyncSnapshot {
     pub teams: Vec<TeamSyncRecord>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SyncLocalState {
+    pub generated_at: i64,
+    pub last_synced_generated_at: Option<i64>,
+    pub remote_revision: Option<String>,
+}
+
+impl SyncLocalState {
+    pub fn is_dirty(&self) -> bool {
+        self.generated_at > 0 && self.last_synced_generated_at != Some(self.generated_at)
+    }
+}
+
 /// Code-owned index of the files in one WebDAV sync directory.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -657,6 +670,8 @@ pub struct SyncManifest {
     pub generated_at: i64,
     pub source: String,
     pub files: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub revision: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

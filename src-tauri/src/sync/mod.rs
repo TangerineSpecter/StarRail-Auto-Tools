@@ -7,7 +7,61 @@ mod webdav;
 
 use std::path::Path;
 
-use crate::{error::AppError, inventory::SyncSnapshot};
+use serde::Serialize;
+
+use crate::{
+    error::AppError,
+    inventory::{InventorySummary, SyncLocalState, SyncSnapshot},
+};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SnapshotConflict {
+    pub local_generated_at: i64,
+    pub remote_generated_at: i64,
+    pub remote_revision: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConflictConfirmation {
+    pub local_generated_at: i64,
+    pub remote_revision: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RemoteSnapshotVersion {
+    pub generated_at: i64,
+    pub revision: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct DownloadedSnapshot {
+    pub snapshot: SyncSnapshot,
+    pub version: RemoteSnapshotVersion,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "status", rename_all = "camelCase")]
+pub enum SyncUploadResult {
+    Completed,
+    Conflict {
+        local_generated_at: i64,
+        remote_generated_at: i64,
+        remote_revision: Option<String>,
+    },
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "status", rename_all = "camelCase")]
+pub enum SyncDownloadResult {
+    Completed {
+        summary: InventorySummary,
+    },
+    Conflict {
+        local_generated_at: i64,
+        remote_generated_at: i64,
+        remote_revision: Option<String>,
+    },
+}
 
 pub use settings::{SyncProtocol, SyncSettings, SyncStore, WebDavSettings};
 pub use transport::RemoteTransport;
@@ -19,40 +73,33 @@ pub async fn test(settings: &SyncSettings, known_hosts: &Path) -> Result<(), App
     .await
 }
 
-pub async fn upload_snapshot(
+pub async fn upload_snapshot_checked(
     settings: &SyncSettings,
     known_hosts: &Path,
     snapshot: SyncSnapshot,
-) -> Result<(), AppError> {
+    local_state: SyncLocalState,
+    confirmation: Option<ConflictConfirmation>,
+) -> Result<Result<RemoteSnapshotVersion, SnapshotConflict>, AppError> {
     dispatch(settings, known_hosts, move |transport| async move {
-        snapshot::upload_snapshot(&transport, snapshot).await
+        snapshot::upload_snapshot_checked(&transport, snapshot, local_state, confirmation).await
     })
     .await
 }
 
-pub async fn download_snapshot(
+pub async fn download_snapshot_checked(
     settings: &SyncSettings,
     known_hosts: &Path,
-) -> Result<SyncSnapshot, AppError> {
-    dispatch(settings, known_hosts, |transport| async move {
-        snapshot::download_snapshot(&transport).await
+    local_state: SyncLocalState,
+    confirmation: Option<ConflictConfirmation>,
+) -> Result<Result<DownloadedSnapshot, SnapshotConflict>, AppError> {
+    dispatch(settings, known_hosts, move |transport| async move {
+        snapshot::download_snapshot_checked(&transport, local_state, confirmation).await
     })
     .await
 }
 
 pub async fn test_webdav(settings: &WebDavSettings) -> Result<(), AppError> {
     webdav::WebDavTransport::new(settings)?.test().await
-}
-
-pub async fn upload_webdav_snapshot(
-    settings: &WebDavSettings,
-    snapshot: SyncSnapshot,
-) -> Result<(), AppError> {
-    snapshot::upload_snapshot(&webdav::WebDavTransport::new(settings)?, snapshot).await
-}
-
-pub async fn download_webdav_snapshot(settings: &WebDavSettings) -> Result<SyncSnapshot, AppError> {
-    snapshot::download_snapshot(&webdav::WebDavTransport::new(settings)?).await
 }
 
 async fn dispatch<F, Fut, T>(
@@ -105,6 +152,14 @@ impl RemoteTransport for SyncTransport {
             Self::WebDav(transport) => transport.get(file).await,
             Self::Ftp(transport) => transport.get(file).await,
             Self::Sftp(transport) => transport.get(file).await,
+        }
+    }
+
+    async fn get_optional(&self, file: &str) -> Result<Option<Vec<u8>>, AppError> {
+        match self {
+            Self::WebDav(transport) => transport.get_optional(file).await,
+            Self::Ftp(transport) => transport.get_optional(file).await,
+            Self::Sftp(transport) => transport.get_optional(file).await,
         }
     }
 

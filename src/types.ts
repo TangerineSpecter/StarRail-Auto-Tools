@@ -104,6 +104,17 @@ export interface SyncSettings {
   sftp: SftpSettings;
 }
 
+export interface SyncConflict {
+  status: "conflict";
+  localGeneratedAt: number;
+  remoteGeneratedAt: number;
+  remoteRevision: string | null;
+}
+
+export type SyncUploadResult = { status: "completed" } | SyncConflict;
+
+export type SyncDownloadResult = { status: "completed"; summary: InventorySummary } | SyncConflict;
+
 export interface McpSettings {
   enabled: boolean;
   port: number;
