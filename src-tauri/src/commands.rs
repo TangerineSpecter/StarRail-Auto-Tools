@@ -6,14 +6,14 @@ use crate::{
     error::AppError,
     game_launch::{GameLaunchDetection, GameLaunchRuntime, GameLaunchSettings},
     inventory::{
-        BuildPlanExcelImportResult, BuildRecommendation, BuildRecommendationRequest,
-        CharacterBuildPlan, CharacterBuildScore, CharacterFilter, CleanupCandidateRequest,
-        CleanupQueueItem, CleanupRunDetail, CleanupRunSummary, ClearInventoryRequest,
-        DeleteItemsRequest, InventoryDetail, InventoryEquipmentCounts, InventoryImportResult,
-        InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
-        PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatGroupedResult,
-        RelicMainStatScanResult, RelicSetFarmingProfile, RelicSetRecommendedCharacter,
-        RelicSetTargetCount, Team, TeamFilter, TeamInput,
+        BuildPlanExcelImportResult, CharacterBuildPlan, CharacterBuildScore, CharacterFilter,
+        CleanupCandidateRequest, CleanupQueueItem, CleanupRunDetail, CleanupRunSummary,
+        ClearInventoryRequest, DeleteItemsRequest, InventoryDetail, InventoryEquipmentCounts,
+        InventoryImportResult, InventoryKind, InventoryStore, InventorySummary, LightConeFilter,
+        LightConeListItem, PageQuery, PagedResult, RelicFilter, RelicListItem,
+        RelicMainStatGroupedResult, RelicMainStatScanResult, RelicOptimizerContext,
+        RelicSetFarmingProfile, RelicSetRecommendedCharacter, RelicSetTargetCount, Team,
+        TeamFilter, TeamInput,
     },
     mcp::{McpRuntime, McpSettings, McpStatus},
     ocr_model::{OcrModelManager, OcrModelStatus},
@@ -653,11 +653,11 @@ pub async fn import_character_build_plans_excel(
 }
 
 #[tauri::command]
-pub fn recommend_character_build(
-    request: BuildRecommendationRequest,
+pub fn get_relic_optimizer_context(
+    character_id: u32,
     store: State<'_, InventoryStore>,
-) -> Result<BuildRecommendation, AppError> {
-    store.recommend_build(&request)
+) -> Result<RelicOptimizerContext, AppError> {
+    store.relic_optimizer_context(character_id)
 }
 
 #[tauri::command]

@@ -582,26 +582,106 @@ export interface LightConeCatalogue {
   source: { name: string; url: string; syncedAt: string | null };
   lightCones: LightConeCatalogueEntry[];
 }
-export interface BuildProgress {
-  statKey: string;
-  current: number;
-  target: number;
-  gap: number;
-  minimum: number;
-  priority: number;
+export interface RelicOptimizerSubstat {
+  kind: string;
+  key: string;
+  value: number;
+  count: number;
+  step: number;
 }
-export interface BuildRelicChoice {
+
+export interface RelicOptimizerRelic {
   itemId: number;
-  name: string;
-  slot: string;
   setId: number;
+  name: string;
+  setName: string;
+  slot: string;
+  rarity: number;
+  level: number;
   mainStat: string;
+  mainStatValue: number;
   location: string;
-  borrowed: boolean;
+  equippedCharacterId: number | null;
+  locked: boolean;
+  discard: boolean;
+  substats: RelicOptimizerSubstat[];
 }
-export interface BuildRecommendation {
-  current: BuildProgress[];
-  recommended: BuildRelicChoice[] | null;
-  recommendedProgress: BuildProgress[] | null;
-  message: string;
+
+export interface RelicOptimizerContext {
+  character: {
+    characterId: number;
+    name: string;
+    path: string;
+    level: number;
+    ascension: number;
+  };
+  equippedLightCone: {
+    itemId: number;
+    templateId: number;
+    name: string;
+    level: number;
+    ascension: number;
+    superimposition: number;
+  } | null;
+  relics: RelicOptimizerRelic[];
+}
+
+export interface RelicOptimizerOptions {
+  includeEquipped: boolean;
+  includeUnfinished: boolean;
+  includeDiscarded: boolean;
+  includeRelaxed: boolean;
+}
+
+export interface RelicOptimizerStandingStat {
+  key: string;
+  label: string;
+  value: number;
+  unit: "flat" | "percent";
+}
+
+export interface RelicOptimizerTargetProgress extends BuildTarget {
+  current: number | null;
+  gap: number | null;
+  satisfied: boolean;
+}
+
+export interface OptimizedRelicChoice extends RelicOptimizerRelic {
+  borrowed: boolean;
+  unfinished: boolean;
+  changed: boolean;
+}
+
+export interface OptimizedRelicBuild {
+  relics: OptimizedRelicChoice[];
+  weightedRolls: number;
+  averagePotentialPct: number;
+  standingStats: RelicOptimizerStandingStat[];
+  targetProgress: RelicOptimizerTargetProgress[];
+  activeSets: Array<{ setId: number; name: string; pieces: number }>;
+  borrowedCount: number;
+  unfinishedCount: number;
+  discardedCount: number;
+  changedCount: number;
+}
+
+export interface RelicOptimizerSearchDiagnostics {
+  searchMode: "exact" | "bounded";
+  originalCandidates: number;
+  retainedCandidates: number;
+  evaluatedBuilds: number;
+  durationMs: number;
+  truncated: boolean;
+}
+
+export interface RelicOptimizerSearchResult {
+  builds: OptimizedRelicBuild[];
+  nearest: OptimizedRelicBuild | null;
+  diagnostics: RelicOptimizerSearchDiagnostics;
+}
+
+export interface RelicOptimizerResult {
+  current: OptimizedRelicBuild | null;
+  strict: RelicOptimizerSearchResult;
+  relaxed: RelicOptimizerSearchResult | null;
 }

@@ -533,44 +533,62 @@ pub struct RelicSetOption {
     pub name: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BuildRecommendationRequest {
-    pub character_id: u32,
-    #[serde(default)]
-    pub include_equipped: bool,
+pub struct RelicOptimizerSubstat {
+    pub kind: String,
+    pub key: String,
+    pub value: f64,
+    pub count: u32,
+    pub step: u32,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BuildProgress {
-    pub stat_key: String,
-    pub current: f64,
-    pub target: f64,
-    pub gap: f64,
-    pub minimum: f64,
-    pub priority: u32,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BuildRelicChoice {
+pub struct RelicOptimizerRelic {
     pub item_id: u32,
-    pub name: String,
-    pub slot: String,
     pub set_id: u32,
+    pub name: String,
+    pub set_name: String,
+    pub slot: String,
+    pub rarity: u32,
+    pub level: u32,
     pub main_stat: String,
+    pub main_stat_value: f64,
     pub location: String,
-    pub borrowed: bool,
+    pub equipped_character_id: Option<u32>,
+    pub locked: bool,
+    pub discard: bool,
+    pub substats: Vec<RelicOptimizerSubstat>,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BuildRecommendation {
-    pub current: Vec<BuildProgress>,
-    pub recommended: Option<Vec<BuildRelicChoice>>,
-    pub recommended_progress: Option<Vec<BuildProgress>>,
-    pub message: String,
+pub struct RelicOptimizerCharacter {
+    pub character_id: u32,
+    pub name: String,
+    pub path: String,
+    pub level: u32,
+    pub ascension: u32,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicOptimizerLightCone {
+    pub item_id: u32,
+    pub template_id: u32,
+    pub name: String,
+    pub level: u32,
+    pub ascension: u32,
+    pub superimposition: u32,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicOptimizerContext {
+    pub character: RelicOptimizerCharacter,
+    pub equipped_light_cone: Option<RelicOptimizerLightCone>,
+    pub relics: Vec<RelicOptimizerRelic>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

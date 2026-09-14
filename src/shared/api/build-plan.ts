@@ -2,8 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   BuildDashboardEntry,
   BuildPlanExcelImportResult,
-  BuildRecommendation,
   CharacterBuildPlan,
+  RelicOptimizerContext,
   RelicSetFarmingProfile,
   RelicSetRecommendedCharacter,
   RelicSetTargetCount,
@@ -27,8 +27,6 @@ export const buildPlanApi = {
   exportExcel: () => invoke<string | null>("export_character_build_plans_excel"),
   importExcel: () =>
     invoke<BuildPlanExcelImportResult | null>("import_character_build_plans_excel"),
-  recommend: (characterId: number, includeEquipped: boolean) =>
-    invoke<BuildRecommendation>("recommend_character_build", {
-      request: { characterId, includeEquipped },
-    }),
+  optimizerContext: (characterId: number) =>
+    invoke<RelicOptimizerContext>("get_relic_optimizer_context", { characterId }),
 };

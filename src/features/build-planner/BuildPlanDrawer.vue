@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, toRef } from "vue";
+import { computed, inject, onMounted, onUnmounted, toRef } from "vue";
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import InputNumber from "primevue/inputnumber";
@@ -12,11 +12,11 @@ import {
   relicMainStats,
   relicSubStats,
   selectableMainStatSlots,
-  slotLabel,
   statLabel,
   targetStats,
 } from "@/shared/catalogue/relic-options";
-import { formatBuildProgressValue } from "./progress";
+import RelicOptimizerResults from "./RelicOptimizerResults.vue";
+import { runtimeContextKey } from "@/shared/contracts/runtime";
 
 const props = defineProps<{ characterId: number }>();
 const emit = defineEmits<{
@@ -25,17 +25,15 @@ const emit = defineEmits<{
   notice: [message: string];
   deleted: [];
 }>();
+const runtime = inject(runtimeContextKey, null);
 const editor = useBuildPlanEditor({
   characterId: toRef(props, "characterId"),
   setError: (message) => emit("error", message),
   setNotice: (message) => emit("notice", message),
   onDeleted: () => emit("deleted"),
   onSaved: () => emit("close"),
+  inventoryRevision: runtime?.inventoryRevision,
 });
-const progressPercent = (progress: { current: number; target: number }) =>
-  progress.target <= 0
-    ? 100
-    : Math.min(100, Math.max(0, (progress.current / progress.target) * 100));
 const targetStatOptions = computed(() =>
   targetStats.map((stat) => ({ label: statLabel(stat), value: stat })),
 );
@@ -43,7 +41,9 @@ const effectiveSubstatsAtLimit = (stat: string) =>
   !editor.plan.effectiveSubstats.includes(stat) && editor.plan.effectiveSubstats.length >= 5;
 
 function closeOnEscape(event: KeyboardEvent) {
-  if (event.key === "Escape" && !event.isComposing) emit("close");
+  if (event.key !== "Escape" || event.isComposing) return;
+  if (editor.optimizerResultOpen.value) editor.optimizerResultOpen.value = false;
+  else emit("close");
 }
 onMounted(() => window.addEventListener("keydown", closeOnEscape));
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
@@ -216,47 +216,28 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             @weight-limit="emit('notice', '词条权重最多设置 5 个，请先将一个已设置的权重调为 0。')"
           />
         </section>
-        <section v-if="editor.recommendation.value" class="build-section build-results">
-          <h3>当前进度</h3>
-          <div
-            v-for="progress in editor.recommendation.value.current"
-            :key="progress.statKey"
-            class="progress-row"
-          >
-            <div>
-              <b>{{ statLabel(progress.statKey) }}</b
-              ><span
-                >{{ formatBuildProgressValue(progress.statKey, progress.current) }} /
-                {{ progress.target }}</span
-              >
-            </div>
-            <i><em :style="{ width: `${progressPercent(progress)}%` }" /></i
-            ><small>{{
-              progress.gap
-                ? `缺 ${formatBuildProgressValue(progress.statKey, progress.gap)}`
-                : "已达标"
-            }}</small>
-          </div>
-          <h3>推荐组合</h3>
-          <p class="build-message">{{ editor.recommendation.value.message }}</p>
-          <div v-if="editor.recommendation.value.recommended" class="recommend-list">
-            <div v-for="item in editor.recommendation.value.recommended" :key="item.itemId">
-              <b>{{ slotLabel(item.slot) }}</b
-              ><span>{{ item.name }} · {{ statLabel(item.mainStat) }}</span
-              ><small v-if="item.borrowed">借用：{{ item.location }}</small>
-            </div>
-          </div>
-          <div v-if="editor.recommendation.value.recommendedProgress" class="recommended-summary">
-            <span
-              v-for="progress in editor.recommendation.value.recommendedProgress"
-              :key="progress.statKey"
-              >{{ statLabel(progress.statKey) }}
-              {{ formatBuildProgressValue(progress.statKey, progress.current)
-              }}<b v-if="progress.gap">
-                · 缺 {{ formatBuildProgressValue(progress.statKey, progress.gap) }}</b
-              ></span
+        <section class="build-section optimizer-options-section">
+          <h3>全局优化选项</h3>
+          <p>默认只使用五星 +15、未装备且未标记弃置的遗器。</p>
+          <div class="optimizer-option-grid">
+            <label
+              ><Checkbox v-model="editor.optimizerOptions.includeEquipped" binary />
+              纳入其他角色已装备遗器</label
+            >
+            <label
+              ><Checkbox v-model="editor.optimizerOptions.includeUnfinished" binary />
+              纳入未满强化遗器</label
+            >
+            <label
+              ><Checkbox v-model="editor.optimizerOptions.includeDiscarded" binary />
+              纳入已标记弃置遗器</label
+            >
+            <label
+              ><Checkbox v-model="editor.optimizerOptions.includeRelaxed" binary />
+              同时计算散件对照</label
             >
           </div>
+          <small>散件结果不评价条件型套装效果，不能视为实战伤害更高。</small>
         </section>
         <section class="build-section build-note-section">
           <h3>说明</h3>
@@ -276,9 +257,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         </section>
       </div>
       <footer class="build-actions" :aria-busy="editor.saving.value || editor.calculating.value">
-        <label class="include-equipped"
-          ><Checkbox v-model="editor.includeEquipped.value" binary /> 纳入已装备遗器</label
-        ><span /><Button
+        <span /><span /><Button
           :class="['filter-reset', { 'confirm-delete': editor.deleteArmed.value }]"
           type="button"
           outlined
@@ -295,9 +274,44 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
           type="button"
           :disabled="!editor.plan.characterId || editor.saving.value || editor.calculating.value"
           @click="editor.calculate"
-          >{{ editor.calculating.value ? "计算中…" : "重新计算" }}</Button
+          >{{ editor.calculating.value ? "计算中…" : "全局优化" }}</Button
         >
       </footer>
     </aside>
+    <RelicOptimizerResults
+      v-if="editor.optimizerResultOpen.value"
+      :calculating="editor.calculating.value"
+      :phase="editor.optimizerPhase.value"
+      :result="editor.optimizerResult.value"
+      @close="editor.optimizerResultOpen.value = false"
+      @cancel="editor.cancelOptimization('计算已取消。')"
+    />
   </div>
 </template>
+
+<style scoped>
+.optimizer-options-section > p {
+  margin: 0 0 12px;
+  color: var(--text-secondary);
+}
+.optimizer-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 10px;
+}
+.optimizer-option-grid label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+}
+.optimizer-options-section > small {
+  color: #d8b66f;
+}
+@media (max-width: 760px) {
+  .optimizer-option-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -42,7 +42,10 @@ const staticSetEffects = computed(() => {
     counts.set(relic.setId, (counts.get(relic.setId) ?? 0) + 1);
   return relicCatalogue.sets
     .filter((set) => (counts.get(set.id) ?? 0) >= 2)
-    .map((set) => set.effects.twoPiece)
+    .flatMap((set) => [
+      set.effects.twoPiece,
+      set.kind === "cavern" && (counts.get(set.id) ?? 0) >= 4 ? set.effects.fourPiece : "",
+    ])
     .filter(Boolean);
 });
 const standingStats = computed(() => {

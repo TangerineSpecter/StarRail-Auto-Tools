@@ -106,7 +106,7 @@ pub fn run() {
             commands::delete_character_build_plan,
             commands::export_character_build_plans_excel,
             commands::import_character_build_plans_excel,
-            commands::recommend_character_build,
+            commands::get_relic_optimizer_context,
             commands::list_teams,
             commands::get_team,
             commands::save_team,

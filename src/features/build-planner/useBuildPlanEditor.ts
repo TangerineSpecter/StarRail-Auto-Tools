@@ -3,7 +3,8 @@ import { buildPlanApi } from "@/shared/api/build-plan";
 import { relicCatalogue } from "@/shared/catalogue";
 import { relicSlots } from "@/shared/catalogue/relic-options";
 import { recomputeAndPersistCharacterScore } from "@/shared/utils/relic-score/persist-character-score";
-import type { BuildRecommendation, CharacterBuildPlan } from "@/types";
+import type { CharacterBuildPlan } from "@/types";
+import { useRelicOptimizer } from "./useRelicOptimizer";
 
 interface BuildEditorOptions {
   characterId: Ref<number>;
@@ -11,6 +12,7 @@ interface BuildEditorOptions {
   setNotice: (message: string) => void;
   onDeleted: () => void;
   onSaved?: () => void;
+  inventoryRevision?: Ref<number>;
 }
 const emptyPlan = (characterId: number): CharacterBuildPlan => ({
   characterId,
@@ -38,13 +40,17 @@ async function yieldForCalculationFeedback() {
 export function useBuildPlanEditor(options: BuildEditorOptions) {
   const loading = ref(false);
   const saving = ref(false);
-  const calculating = ref(false);
-  const includeEquipped = ref(false);
   const deleteArmed = ref(false);
-  const recommendation = ref<BuildRecommendation | null>(null);
   const draggedTargetIndex = ref<number | null>(null);
   const dragTargetIndex = ref<number | null>(null);
   const plan = reactive<CharacterBuildPlan>(emptyPlan(options.characterId.value));
+  const optimizer = useRelicOptimizer({
+    characterId: options.characterId,
+    plan,
+    inventoryRevision: options.inventoryRevision,
+    setError: options.setError,
+    setNotice: options.setNotice,
+  });
   let targetDragPreview: HTMLElement | undefined;
   let targetDragCleanup: (() => void) | undefined;
   const setOptions = relicCatalogue.sets.map((set) => ({
@@ -71,8 +77,8 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
 
   async function load(characterId: number) {
     loading.value = true;
-    recommendation.value = null;
-    includeEquipped.value = false;
+    optimizer.result.value = null;
+    optimizer.resultOpen.value = false;
     deleteArmed.value = false;
     try {
       Object.assign(plan, emptyPlan(characterId), (await buildPlanApi.get(characterId)) ?? {});
@@ -174,7 +180,7 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     move(event);
   }
   async function save() {
-    if (saving.value || calculating.value) return;
+    if (saving.value || optimizer.calculating.value) return;
     if (plan.cavernMode === "twoPlusTwo" && plan.cavernSetA === plan.cavernSetB) {
       options.setError("2+2 件套不能选择相同的遗器套装");
       return;
@@ -197,21 +203,6 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
       options.setError(String(cause));
     } finally {
       saving.value = false;
-    }
-  }
-  async function calculate(): Promise<boolean> {
-    if (calculating.value) return false;
-    calculating.value = true;
-    try {
-      options.setNotice("正在计算推荐组合…");
-      await yieldForCalculationFeedback();
-      recommendation.value = await buildPlanApi.recommend(plan.characterId, includeEquipped.value);
-      return true;
-    } catch (cause) {
-      options.setError(String(cause));
-      return false;
-    } finally {
-      calculating.value = false;
     }
   }
   async function remove() {
@@ -242,10 +233,12 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
   return {
     loading,
     saving,
-    calculating,
-    includeEquipped,
+    calculating: optimizer.calculating,
+    optimizerPhase: optimizer.phase,
+    optimizerResult: optimizer.result,
+    optimizerResultOpen: optimizer.resultOpen,
+    optimizerOptions: optimizer.optimizerOptions,
     deleteArmed,
-    recommendation,
     draggedTargetIndex,
     dragTargetIndex,
     plan,
@@ -258,7 +251,8 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     moveTargetTo,
     beginTargetDrag,
     save,
-    calculate,
+    calculate: optimizer.calculate,
+    cancelOptimization: optimizer.cancel,
     remove,
   };
 }

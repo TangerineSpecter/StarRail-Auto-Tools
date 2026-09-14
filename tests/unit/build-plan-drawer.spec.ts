@@ -5,7 +5,7 @@ import BuildPlanDrawer from "@/features/build-planner/BuildPlanDrawer.vue";
 const api = vi.hoisted(() => ({
   get: vi.fn(),
   save: vi.fn(),
-  recommend: vi.fn(),
+  optimizerContext: vi.fn(),
   delete: vi.fn(),
 }));
 
@@ -29,12 +29,7 @@ describe("BuildPlanDrawer", () => {
       spdTarget: 134,
     });
     api.save.mockResolvedValue(undefined);
-    api.recommend.mockResolvedValue({
-      current: [],
-      recommended: null,
-      recommendedProgress: null,
-      message: "",
-    });
+    api.optimizerContext.mockResolvedValue(null);
   });
 
   it("renders the note editor for the loaded plan and closes on Escape", async () => {
@@ -67,6 +62,8 @@ describe("BuildPlanDrawer", () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("说明");
+    expect(wrapper.text()).toContain("全局优化选项");
+    expect(wrapper.text()).toContain("同时计算散件对照");
     // Head/Hands mains are game-fixed; UI must not offer checkboxes for those slots.
     expect(wrapper.text()).toContain("头部 / 手部主词条由游戏固定");
     const legends = wrapper.findAll(".main-stat-grid legend").map((node) => node.text());

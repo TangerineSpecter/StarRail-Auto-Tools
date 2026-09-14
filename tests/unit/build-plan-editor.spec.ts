@@ -6,7 +6,7 @@ import { useBuildPlanEditor } from "@/features/build-planner/useBuildPlanEditor"
 const api = vi.hoisted(() => ({
   get: vi.fn(),
   save: vi.fn(),
-  recommend: vi.fn(),
+  optimizerContext: vi.fn(),
   delete: vi.fn(),
 }));
 vi.mock("@/shared/api/build-plan", () => ({ buildPlanApi: api }));
@@ -41,12 +41,7 @@ describe("useBuildPlanEditor", () => {
     onDeleted.mockClear();
     api.get.mockResolvedValue(null);
     api.save.mockResolvedValue(undefined);
-    api.recommend.mockResolvedValue({
-      current: [],
-      recommended: null,
-      recommendedProgress: null,
-      message: "",
-    });
+    api.optimizerContext.mockResolvedValue(null);
   });
 
   it("keeps the original target defaults and rewrites priorities after sorting", async () => {
@@ -70,24 +65,50 @@ describe("useBuildPlanEditor", () => {
 
   it("exposes calculation progress and ignores repeated calculation requests", async () => {
     let finishCalculation!: () => void;
-    api.recommend.mockImplementation(
+    api.optimizerContext.mockImplementation(
       () =>
-        new Promise((resolve) => {
-          finishCalculation = () =>
-            resolve({ current: [], recommended: null, recommendedProgress: null, message: "" });
+        new Promise((_resolve, reject) => {
+          finishCalculation = () => reject(new Error("测试结束计算"));
         }),
     );
     await mountEditor();
+    editor.plan.cavernSetA = 101;
+    editor.plan.planarSetId = 301;
+    editor.plan.substatWeights = { SPD: 1 };
 
     void editor.calculate();
     void editor.calculate();
     expect(editor.calculating.value).toBe(true);
     await new Promise((resolve) => setTimeout(resolve, 20));
-    expect(api.recommend).toHaveBeenCalledTimes(1);
+    expect(api.optimizerContext).toHaveBeenCalledTimes(1);
 
     finishCalculation();
     await flushPromises();
     expect(editor.calculating.value).toBe(false);
+  });
+
+  it("does not resume optimization when cancelled while the context request is pending", async () => {
+    let resolveContext!: (value: unknown) => void;
+    api.optimizerContext.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveContext = resolve;
+        }),
+    );
+    await mountEditor();
+    editor.plan.cavernSetA = 101;
+    editor.plan.planarSetId = 301;
+    editor.plan.substatWeights = { SPD: 1 };
+
+    const calculation = editor.calculate();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    editor.cancelOptimization();
+    resolveContext({});
+
+    await expect(calculation).resolves.toBe(false);
+    expect(editor.calculating.value).toBe(false);
+    expect(editor.optimizerResult.value).toBeNull();
+    expect(setError).not.toHaveBeenCalled();
   });
 
   it("keeps the two 2-piece set selections distinct and blocks invalid saves", async () => {
@@ -117,7 +138,7 @@ describe("useBuildPlanEditor", () => {
     await editor.save();
 
     expect(api.save).toHaveBeenCalledTimes(1);
-    expect(api.recommend).not.toHaveBeenCalled();
+    expect(api.optimizerContext).not.toHaveBeenCalled();
     expect(setNotice).toHaveBeenCalledWith("培养方案已保存");
     expect(onSaved).toHaveBeenCalledOnce();
   });
@@ -148,7 +169,7 @@ describe("useBuildPlanEditor", () => {
       }),
     );
     expect(setNotice).toHaveBeenCalledWith("培养方案已保存");
-    expect(api.recommend).not.toHaveBeenCalled();
+    expect(api.optimizerContext).not.toHaveBeenCalled();
     expect(onSaved).toHaveBeenCalledOnce();
   });
 

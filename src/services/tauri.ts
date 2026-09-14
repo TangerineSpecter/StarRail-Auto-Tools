@@ -26,5 +26,4 @@ export const api = {
   characterBuildPlan: buildPlanApi.get,
   saveCharacterBuildPlan: buildPlanApi.save,
   deleteCharacterBuildPlan: buildPlanApi.delete,
-  recommendCharacterBuild: buildPlanApi.recommend,
 };
