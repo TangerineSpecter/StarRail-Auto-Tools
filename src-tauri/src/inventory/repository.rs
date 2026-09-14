@@ -310,6 +310,13 @@ impl InventoryStore {
 
     pub fn build_plan(&self, character_id: u32) -> Result<Option<CharacterBuildPlan>, AppError> {
         let connection = self.connect()?;
+        Self::build_plan_from_connection(&connection, character_id)
+    }
+
+    fn build_plan_from_connection(
+        connection: &Connection,
+        character_id: u32,
+    ) -> Result<Option<CharacterBuildPlan>, AppError> {
         let row = connection.query_row(
             "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json, effective_substats_json, note,
                     COALESCE(substat_weights_json, '{}'), COALESCE(min_potential_pct, 40), COALESCE(spd_target, 0)
@@ -387,7 +394,7 @@ impl InventoryStore {
             .collect::<Result<Vec<_>, _>>()?;
         let mut entries = Vec::new();
         for (character_id, display_order, pinned) in character_ids {
-            let Some(plan) = self.build_plan(character_id)? else {
+            let Some(plan) = Self::build_plan_from_connection(&connection, character_id)? else {
                 continue;
             };
             // A weight-only record is used by Stat Score before the user configures a graduation
@@ -406,6 +413,32 @@ impl InventoryStore {
             });
         }
         Ok(entries)
+    }
+
+    /// Return every saved plan whose character still exists, including weight-only plans.
+    /// Farming scores need the plan even before a user configures graduation targets.
+    pub fn relic_set_farming_profiles(&self) -> Result<Vec<RelicSetFarmingProfile>, AppError> {
+        let connection = self.connect()?;
+        let character_ids = connection
+            .prepare(
+                "SELECT character_build_plans.character_id
+                 FROM character_build_plans
+                 INNER JOIN characters ON characters.character_id = character_build_plans.character_id
+                 ORDER BY character_build_plans.updated_at DESC, character_build_plans.character_id ASC",
+            )?
+            .query_map([], |row| row.get::<_, u32>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut profiles = Vec::with_capacity(character_ids.len());
+        for character_id in character_ids {
+            let Some(plan) = Self::build_plan_from_connection(&connection, character_id)? else {
+                continue;
+            };
+            let Some(character) = character_detail(&connection, character_id)? else {
+                continue;
+            };
+            profiles.push(RelicSetFarmingProfile { plan, character });
+        }
+        Ok(profiles)
     }
 
     pub fn reorder_build_dashboard(&self, character_ids: &[u32]) -> Result<(), AppError> {
@@ -3825,6 +3858,100 @@ mod tests {
         assert_eq!(entries[0].display_order, 0);
         assert!(!entries[0].pinned);
         assert_eq!(entries[0].character["equippedRelics"][0]["itemId"], 1);
+    }
+
+    #[test]
+    fn relic_set_farming_profiles_include_weight_only_plans_and_keep_path_ids_isolated() {
+        let store = InventoryStore::test_store();
+        let mut snapshot = import(10001, &[1, 2]);
+        snapshot.relics[0].equipped_character_id = Some(8006);
+        snapshot.relics[0].location = "8006".to_owned();
+        snapshot.relics[1].equipped_character_id = Some(8007);
+        snapshot.relics[1].location = "8007".to_owned();
+        snapshot.characters = vec![
+            ImportCharacter {
+                id: 8006,
+                name: "开拓者".to_owned(),
+                path: "Destruction".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 6,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+            ImportCharacter {
+                id: 8007,
+                name: "开拓者".to_owned(),
+                path: "Preservation".to_owned(),
+                level: 80,
+                ascension: 6,
+                eidolon: 6,
+                skills: json!({}),
+                traces: json!({}),
+                memosprite: None,
+                ability_version: 1,
+            },
+        ];
+        store.apply_full_snapshot(&snapshot).unwrap().unwrap();
+
+        let base_plan = CharacterBuildPlan {
+            character_id: 8006,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 0,
+            cavern_set_b: None,
+            planar_set_id: 0,
+            main_stats: HashMap::new(),
+            targets: Vec::new(),
+            effective_substats: vec!["SPD".to_owned()],
+            note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
+        };
+        store.save_build_plan(&base_plan).unwrap();
+        store
+            .save_build_plan(&CharacterBuildPlan {
+                character_id: 8007,
+                ..base_plan.clone()
+            })
+            .unwrap();
+        store
+            .save_build_plan(&CharacterBuildPlan {
+                character_id: 9999,
+                ..base_plan
+            })
+            .unwrap();
+
+        let profiles = store.relic_set_farming_profiles().unwrap();
+        assert_eq!(profiles.len(), 2);
+        assert_eq!(
+            profiles
+                .iter()
+                .map(|profile| profile.plan.character_id)
+                .collect::<HashSet<_>>(),
+            HashSet::from([8006, 8007])
+        );
+        assert!(profiles
+            .iter()
+            .all(|profile| profile.plan.targets.is_empty()));
+        assert_eq!(
+            profiles
+                .iter()
+                .find(|profile| profile.plan.character_id == 8006)
+                .unwrap()
+                .character["equippedRelics"][0]["itemId"],
+            1
+        );
+        assert_eq!(
+            profiles
+                .iter()
+                .find(|profile| profile.plan.character_id == 8007)
+                .unwrap()
+                .character["equippedRelics"][0]["itemId"],
+            2
+        );
     }
 
     #[test]

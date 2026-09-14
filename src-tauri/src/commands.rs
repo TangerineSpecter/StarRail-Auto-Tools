@@ -11,8 +11,8 @@ use crate::{
         DeleteItemsRequest, InventoryDetail, InventoryEquipmentCounts, InventoryImportResult,
         InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
         PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatGroupedResult,
-        RelicMainStatScanResult, RelicSetRecommendedCharacter, RelicSetTargetCount, Team,
-        TeamFilter, TeamInput,
+        RelicMainStatScanResult, RelicSetFarmingProfile, RelicSetRecommendedCharacter,
+        RelicSetTargetCount, Team, TeamFilter, TeamInput,
     },
     mcp::{McpRuntime, McpSettings, McpStatus},
     scanner::ScannerState,
@@ -372,6 +372,13 @@ pub fn list_relic_set_target_counts(
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<RelicSetTargetCount>, AppError> {
     store.relic_set_target_counts()
+}
+
+#[tauri::command]
+pub fn list_relic_set_farming_profiles(
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<RelicSetFarmingProfile>, AppError> {
+    store.relic_set_farming_profiles()
 }
 
 #[tauri::command]

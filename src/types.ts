@@ -369,6 +369,12 @@ export interface BuildDashboardEntry {
   pinned: boolean;
 }
 
+/** Saved build-plan data plus the character's currently equipped relics. */
+export interface RelicSetFarmingProfile {
+  plan: CharacterBuildPlan;
+  character: BuildDashboardCharacter;
+}
+
 /** A character whose saved build plan targets a relic or planar ornament set. */
 export interface RelicSetRecommendedCharacter {
   characterId: number;

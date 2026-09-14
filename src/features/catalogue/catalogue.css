@@ -354,6 +354,86 @@
 .relic-target-chart-state.error {
   color: var(--danger, #b54848);
 }
+.relic-farming-chart {
+  overflow: hidden;
+  border: 1px solid rgba(155, 112, 45, 0.25);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(247, 241, 228, 0.86)),
+    repeating-linear-gradient(0deg, transparent 0 43px, rgba(166, 127, 61, 0.055) 44px);
+  box-shadow: 0 8px 22px rgba(90, 64, 25, 0.07);
+}
+.relic-farming-chart-heading {
+  border-bottom-color: rgba(155, 112, 45, 0.18);
+}
+.relic-farming-chart-heading .eyebrow {
+  color: #ad7623;
+}
+.relic-farming-chart-note {
+  margin: 0;
+  padding: 10px 18px 2px;
+  color: #856b42;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.relic-farming-bar-name {
+  display: block;
+}
+.relic-farming-bar-name b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.relic-farming-bar-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.relic-farming-bar-metrics em {
+  color: inherit;
+  font-style: normal;
+}
+.relic-farming-bar-metrics b {
+  color: #80652e;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.relic-farming-bar-row {
+  grid-template-columns:
+    28px 36px minmax(120px, 0.85fr) minmax(140px, 2.3fr) minmax(185px, 1.4fr)
+    48px 18px;
+}
+.relic-farming-bar-row .relic-target-bar-track i {
+  background: linear-gradient(90deg, #b9852e, #e6bd65);
+  box-shadow: 0 0 8px rgba(190, 137, 44, 0.36);
+}
+.relic-farming-bar-row.priority-urgent {
+  border-color: rgba(190, 105, 47, 0.22);
+  background: rgba(255, 247, 233, 0.78);
+}
+.relic-farming-bar-row.priority-urgent .relic-target-bar-track i {
+  background: linear-gradient(90deg, #c76634, #f0ad58);
+  box-shadow: 0 0 9px rgba(208, 109, 49, 0.4);
+}
+.relic-farming-bar-row.priority-urgent .relic-farming-bar-score {
+  color: #bc632f;
+}
+.relic-farming-bar-row.priority-watch .relic-farming-bar-score {
+  color: #a97926;
+}
+.relic-farming-bar-row.priority-stable .relic-farming-bar-score {
+  color: var(--blue);
+}
 @keyframes relic-target-bar-in {
   from {
     opacity: 0;
@@ -1665,6 +1745,24 @@ button.catalogue-card:hover .relic-effect-row {
   .relic-target-bar-track {
     grid-column: 3;
     grid-row: 2;
+  }
+  .relic-farming-chart-note {
+    padding: 9px 12px 1px;
+  }
+  .relic-farming-bar-metrics {
+    grid-column: 3;
+    grid-row: 3;
+    gap: 3px 6px;
+    font-size: 8px;
+  }
+  .relic-farming-bar-row {
+    grid-template-rows: auto 8px auto;
+  }
+  .relic-farming-bar-row .relic-target-bar-rank,
+  .relic-farming-bar-row .relic-target-bar-icon,
+  .relic-farming-bar-row .relic-target-bar-count,
+  .relic-farming-bar-row .relic-target-bar-arrow {
+    grid-row: 1 / 4;
   }
   .target-column-headings,
   .target-row {

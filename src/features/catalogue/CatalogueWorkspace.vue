@@ -107,6 +107,7 @@ onBeforeUnmount(removeEscapeListener);
             key="cavern"
             :sets="cavernSets"
             :owned-counts="relicCounts"
+            :inventory-revision="inventoryRevision"
             @select="selectedSet = $event"
           />
           <RelicSetGrid
@@ -114,6 +115,7 @@ onBeforeUnmount(removeEscapeListener);
             key="planar"
             :sets="planarSets"
             :owned-counts="relicCounts"
+            :inventory-revision="inventoryRevision"
             @select="selectedSet = $event"
           />
           <LightConeGrid

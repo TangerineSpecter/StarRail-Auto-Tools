@@ -4,6 +4,7 @@ import type {
   BuildPlanExcelImportResult,
   BuildRecommendation,
   CharacterBuildPlan,
+  RelicSetFarmingProfile,
   RelicSetRecommendedCharacter,
   RelicSetTargetCount,
 } from "@/types";
@@ -19,6 +20,8 @@ export const buildPlanApi = {
   recommendedCharactersForSet: (setId: number) =>
     invoke<RelicSetRecommendedCharacter[]>("list_relic_set_recommended_characters", { setId }),
   relicSetTargetCounts: () => invoke<RelicSetTargetCount[]>("list_relic_set_target_counts"),
+  relicSetFarmingProfiles: () =>
+    invoke<RelicSetFarmingProfile[]>("list_relic_set_farming_profiles"),
   save: (plan: CharacterBuildPlan) => invoke<void>("save_character_build_plan", { plan }),
   delete: (characterId: number) => invoke<void>("delete_character_build_plan", { characterId }),
   exportExcel: () => invoke<string | null>("export_character_build_plans_excel"),

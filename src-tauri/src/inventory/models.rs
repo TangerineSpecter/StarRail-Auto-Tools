@@ -495,6 +495,13 @@ pub struct BuildDashboardEntry {
     pub pinned: bool,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelicSetFarmingProfile {
+    pub plan: CharacterBuildPlan,
+    pub character: Value,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BuildDashboardLayout {

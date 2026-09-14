@@ -82,6 +82,7 @@ pub fn run() {
             commands::set_build_dashboard_pinned,
             commands::list_relic_set_recommended_characters,
             commands::list_relic_set_target_counts,
+            commands::list_relic_set_farming_profiles,
             commands::save_character_build_plan,
             commands::delete_character_build_plan,
             commands::export_character_build_plans_excel,
