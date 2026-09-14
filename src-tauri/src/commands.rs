@@ -11,7 +11,8 @@ use crate::{
         DeleteItemsRequest, InventoryDetail, InventoryEquipmentCounts, InventoryImportResult,
         InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
         PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatGroupedResult,
-        RelicMainStatScanResult, RelicSetRecommendedCharacter, Team, TeamFilter, TeamInput,
+        RelicMainStatScanResult, RelicSetRecommendedCharacter, RelicSetTargetCount, Team,
+        TeamFilter, TeamInput,
     },
     mcp::{McpRuntime, McpSettings, McpStatus},
     scanner::ScannerState,
@@ -364,6 +365,13 @@ pub fn list_relic_set_recommended_characters(
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<RelicSetRecommendedCharacter>, AppError> {
     store.recommended_characters_for_relic_set(set_id)
+}
+
+#[tauri::command]
+pub fn list_relic_set_target_counts(
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<RelicSetTargetCount>, AppError> {
+    store.relic_set_target_counts()
 }
 
 #[tauri::command]

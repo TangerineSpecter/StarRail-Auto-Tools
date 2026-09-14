@@ -133,6 +133,237 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 10px;
 }
+.relic-catalogue-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border: 1px solid rgba(46, 80, 123, 0.16);
+  border-radius: 9px;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.96), rgba(240, 246, 253, 0.9)),
+    repeating-linear-gradient(90deg, transparent 0 23px, rgba(57, 103, 160, 0.05) 24px);
+  box-shadow: 0 4px 14px rgba(18, 38, 63, 0.04);
+}
+.relic-catalogue-toolbar > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+.relic-catalogue-kicker {
+  margin: 0;
+  color: #9a7839;
+  font: 700 9px/1 var(--font-ui);
+  letter-spacing: 0.14em;
+}
+.relic-catalogue-toolbar strong {
+  color: var(--ink);
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+.relic-view-switch {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 3px;
+  border: 1px solid rgba(46, 80, 123, 0.16);
+  border-radius: 7px;
+  background: rgba(222, 232, 244, 0.66);
+}
+.relic-view-switch button {
+  min-width: 68px;
+  padding: 6px 11px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--muted);
+  background: transparent;
+  font: 600 11px/1 var(--font-ui);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.relic-view-switch button:hover,
+.relic-view-switch button:focus-visible {
+  color: var(--blue);
+  outline: none;
+}
+.relic-view-switch button.active {
+  color: #fff;
+  background: linear-gradient(135deg, #3a6eb5, #2456a6);
+  box-shadow: 0 3px 8px rgba(36, 86, 166, 0.24);
+}
+.relic-target-chart {
+  overflow: hidden;
+  border: 1px solid rgba(46, 80, 123, 0.16);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(248, 251, 255, 0.94), rgba(235, 242, 250, 0.82)),
+    repeating-linear-gradient(0deg, transparent 0 43px, rgba(53, 102, 164, 0.045) 44px);
+  box-shadow: 0 8px 22px rgba(18, 38, 63, 0.06);
+}
+.relic-target-chart-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 17px 18px 13px;
+  border-bottom: 1px solid rgba(46, 80, 123, 0.12);
+}
+.relic-target-chart-heading .eyebrow,
+.relic-target-chart-heading h3 {
+  margin: 0;
+}
+.relic-target-chart-heading .eyebrow {
+  color: #9a7839;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.relic-target-chart-heading h3 {
+  margin-top: 5px;
+  color: var(--ink);
+  font-size: 15px;
+}
+.relic-target-chart-heading > small {
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.relic-target-chart-list {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+.relic-target-bar-row {
+  display: grid;
+  grid-template-columns: 28px 36px minmax(130px, 0.95fr) minmax(160px, 3fr) 42px 18px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.54);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: relic-target-bar-in 300ms cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+  animation-delay: calc(min(var(--bar-i, 0), 10) * 35ms);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+.relic-target-bar-row:hover,
+.relic-target-bar-row:focus-visible {
+  border-color: rgba(58, 108, 181, 0.52);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 5px 14px rgba(35, 75, 128, 0.1);
+  outline: none;
+  transform: translateX(2px);
+}
+.relic-target-bar-rank {
+  color: #9caabe;
+  font: 700 10px/1 var(--font-ui);
+  letter-spacing: 0.05em;
+  text-align: right;
+}
+.relic-target-bar-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(46, 80, 123, 0.14);
+  border-radius: 6px;
+  background: linear-gradient(135deg, #eef4fb, #dce8f5);
+  color: var(--muted);
+  font-size: 17px;
+}
+.relic-target-bar-icon img {
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+}
+.relic-target-bar-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.relic-target-bar-track {
+  position: relative;
+  display: block;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dce7f3;
+  box-shadow: inset 0 1px 2px rgba(22, 49, 82, 0.08);
+}
+.relic-target-bar-track::after {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 24.5%, rgba(255, 255, 255, 0.42) 25%);
+  content: "";
+  pointer-events: none;
+}
+.relic-target-bar-track i {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2456a6, #6aa8e9);
+  box-shadow: 0 0 8px rgba(58, 123, 194, 0.34);
+  transition: width 350ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+.relic-target-bar-count {
+  color: var(--blue);
+  font: 800 16px/1 var(--font-ui);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.relic-target-bar-count small {
+  margin-left: 2px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+}
+.relic-target-bar-arrow {
+  color: #7d9bc0;
+  font-size: 16px;
+  text-align: center;
+  transition: transform 160ms ease;
+}
+.relic-target-bar-row:hover .relic-target-bar-arrow,
+.relic-target-bar-row:focus-visible .relic-target-bar-arrow {
+  transform: translateX(2px);
+}
+.relic-target-chart-state {
+  margin: 0;
+  padding: 28px 18px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+.relic-target-chart-state.error {
+  color: var(--danger, #b54848);
+}
+@keyframes relic-target-bar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 .catalogue-card {
   display: flex;
   flex-direction: column;
@@ -1404,6 +1635,37 @@ button.catalogue-card:hover .relic-effect-row {
 }
 
 @media (max-width: 760px) {
+  .relic-catalogue-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .relic-view-switch {
+    width: 100%;
+  }
+  .relic-view-switch button {
+    flex: 1 1 0;
+  }
+  .relic-target-chart-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .relic-target-bar-row {
+    grid-template-columns: 26px 34px minmax(0, 1fr) 40px 18px;
+    grid-template-rows: auto 8px;
+    gap: 4px 8px;
+    padding: 7px 6px;
+  }
+  .relic-target-bar-rank,
+  .relic-target-bar-icon,
+  .relic-target-bar-count,
+  .relic-target-bar-arrow {
+    grid-row: 1 / 3;
+  }
+  .relic-target-bar-track {
+    grid-column: 3;
+    grid-row: 2;
+  }
   .target-column-headings,
   .target-row {
     grid-template-columns: 18px 30px minmax(0, 1fr) 86px 96px 36px;

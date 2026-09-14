@@ -586,6 +586,41 @@ impl InventoryStore {
         Ok(characters)
     }
 
+    pub fn relic_set_target_counts(&self) -> Result<Vec<RelicSetTargetCount>, AppError> {
+        let connection = self.connect()?;
+        let mut statement = connection.prepare(
+            "WITH selected_sets AS (
+                 SELECT character_id, cavern_set_a AS set_id
+                 FROM character_build_plans
+                 INNER JOIN characters USING (character_id)
+                 WHERE cavern_set_a > 0
+                 UNION ALL
+                 SELECT character_id, cavern_set_b AS set_id
+                 FROM character_build_plans
+                 INNER JOIN characters USING (character_id)
+                 WHERE cavern_set_b IS NOT NULL AND cavern_set_b > 0
+                 UNION ALL
+                 SELECT character_id, planar_set_id AS set_id
+                 FROM character_build_plans
+                 INNER JOIN characters USING (character_id)
+                 WHERE planar_set_id > 0
+             )
+             SELECT set_id, COUNT(DISTINCT character_id) AS target_count
+             FROM selected_sets
+             GROUP BY set_id
+             ORDER BY target_count DESC, set_id ASC",
+        )?;
+        let counts = statement
+            .query_map([], |row| {
+                Ok(RelicSetTargetCount {
+                    set_id: row.get(0)?,
+                    count: row.get(1)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(counts)
+    }
+
     pub fn save_build_plan(&self, plan: &CharacterBuildPlan) -> Result<(), AppError> {
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
@@ -4043,6 +4078,14 @@ mod tests {
         assert_eq!(
             store.recommended_characters_for_relic_set(201).unwrap()[0].name,
             "飞霄"
+        );
+        let target_counts = store.relic_set_target_counts().unwrap();
+        assert_eq!(
+            target_counts
+                .iter()
+                .map(|item| (item.set_id, item.count))
+                .collect::<Vec<_>>(),
+            vec![(101, 2), (102, 1), (201, 1), (202, 1)]
         );
         assert!(store
             .recommended_characters_for_relic_set(999)

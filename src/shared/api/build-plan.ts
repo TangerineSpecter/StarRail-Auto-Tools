@@ -5,6 +5,7 @@ import type {
   BuildRecommendation,
   CharacterBuildPlan,
   RelicSetRecommendedCharacter,
+  RelicSetTargetCount,
 } from "@/types";
 
 export const buildPlanApi = {
@@ -17,6 +18,7 @@ export const buildPlanApi = {
     invoke<void>("set_build_dashboard_pinned", { characterId, pinned }),
   recommendedCharactersForSet: (setId: number) =>
     invoke<RelicSetRecommendedCharacter[]>("list_relic_set_recommended_characters", { setId }),
+  relicSetTargetCounts: () => invoke<RelicSetTargetCount[]>("list_relic_set_target_counts"),
   save: (plan: CharacterBuildPlan) => invoke<void>("save_character_build_plan", { plan }),
   delete: (characterId: number) => invoke<void>("delete_character_build_plan", { characterId }),
   exportExcel: () => invoke<string | null>("export_character_build_plans_excel"),

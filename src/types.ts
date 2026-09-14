@@ -377,6 +377,12 @@ export interface RelicSetRecommendedCharacter {
   effectiveSubstats: string[];
 }
 
+/** Number of distinct build-plan characters targeting a relic or planar ornament set. */
+export interface RelicSetTargetCount {
+  setId: number;
+  count: number;
+}
+
 export interface BuildDashboardSubstat {
   kind: string;
   key: string;

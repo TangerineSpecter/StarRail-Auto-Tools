@@ -514,6 +514,13 @@ pub struct RelicSetRecommendedCharacter {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RelicSetTargetCount {
+    pub set_id: u32,
+    pub count: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RelicSetOption {
     pub set_id: u32,
     pub name: String,
