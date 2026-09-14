@@ -202,20 +202,30 @@ function scoreDelta(build: OptimizedRelicBuild) {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(4, 9, 18, 0.72);
-  backdrop-filter: blur(12px);
+  background: rgba(18, 38, 70, 0.32);
+  backdrop-filter: blur(5px);
 }
 .optimizer-dialog {
-  --text-primary: #edf6ff;
-  --text-secondary: rgba(205, 220, 238, 0.76);
+  position: relative;
   width: min(1180px, 96vw);
   max-height: 92vh;
   overflow: hidden;
-  border: 1px solid rgba(121, 184, 255, 0.28);
-  border-radius: 22px;
-  background: linear-gradient(145deg, rgba(17, 31, 52, 0.98), rgba(8, 17, 31, 0.99));
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.48);
-  color: var(--text-primary);
+  border: 1px solid rgba(36, 86, 166, 0.3);
+  border-radius: 12px;
+  background: #f7f9fc;
+  box-shadow: 0 28px 70px rgba(15, 36, 70, 0.28);
+  color: var(--ink);
+  animation: optimizer-dialog-in 180ms ease-out;
+}
+.optimizer-dialog::before {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--blue-deep), var(--blue) 72%, var(--gold));
+  content: "";
 }
 .optimizer-dialog > header,
 .optimizer-summary,
@@ -226,35 +236,78 @@ function scoreDelta(build: OptimizedRelicBuild) {
   justify-content: space-between;
 }
 .optimizer-dialog > header {
-  padding: 22px 26px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  padding: 24px 28px 20px 34px;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(100deg, rgba(232, 240, 251, 0.86), rgba(255, 255, 255, 0.96) 48%), #fff;
+}
+.optimizer-dialog > header::before {
+  position: absolute;
+  top: 22px;
+  bottom: 20px;
+  left: 20px;
+  width: 3px;
+  background: linear-gradient(var(--blue), var(--gold));
+  content: "";
+}
+.optimizer-dialog > header .eyebrow {
+  margin: 0;
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
 }
 .optimizer-dialog > header h2 {
-  margin: 3px 0;
+  margin: 4px 0 5px;
+  color: var(--ink);
+  font-size: 25px;
+}
+.optimizer-dialog > header small {
+  color: var(--ink-soft);
 }
 .optimizer-dialog > header button {
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 30px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--blue);
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
   cursor: pointer;
+}
+.optimizer-dialog > header button:hover {
+  border-color: rgba(36, 86, 166, 0.45);
+  background: var(--blue-soft);
 }
 .optimizer-modes {
   display: flex;
   gap: 8px;
-  padding: 14px 20px 0;
+  padding: 13px 20px 0;
+  background: #f7f9fc;
 }
 .optimizer-modes button {
-  padding: 8px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  background: transparent;
-  color: inherit;
+  min-width: 96px;
+  padding: 8px 15px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--ink-soft);
+  background: #fff;
+  font: 600 11px/1 var(--font-ui);
   cursor: pointer;
 }
+.optimizer-modes button:hover {
+  border-color: rgba(36, 86, 166, 0.38);
+  color: var(--blue);
+}
 .optimizer-modes button.active {
-  border-color: #6eb9ff;
-  background: rgba(57, 145, 230, 0.18);
+  border-color: var(--blue);
+  color: #fff;
+  background: var(--blue);
+  box-shadow: 0 4px 12px rgba(36, 86, 166, 0.18);
 }
 .optimizer-body {
   display: grid;
@@ -262,37 +315,47 @@ function scoreDelta(build: OptimizedRelicBuild) {
   min-height: 550px;
   max-height: calc(92vh - 108px);
   overflow: hidden;
+  background: #fff;
 }
 .optimizer-ranking {
   overflow: auto;
   padding: 16px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid var(--line);
+  background: #f1f5fa;
 }
 .optimizer-diagnostics {
   display: grid;
   gap: 5px;
   padding: 12px;
   margin-bottom: 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  border-radius: 7px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.82);
   font-size: 12px;
 }
+.optimizer-diagnostics b {
+  color: var(--blue-deep);
+}
 .optimizer-diagnostics small {
-  color: #f3c976;
+  color: #8a692c;
 }
 .optimizer-current {
   display: grid;
   gap: 4px;
   padding: 11px 12px;
   margin-bottom: 12px;
-  border: 1px solid rgba(119, 217, 172, 0.2);
-  border-radius: 12px;
-  background: rgba(66, 184, 131, 0.06);
+  border: 1px solid rgba(199, 165, 90, 0.42);
+  border-radius: 7px;
+  background: linear-gradient(125deg, #fffdf7, #f5f8fc);
 }
 .optimizer-current span,
 .optimizer-current small,
 .optimizer-score small {
-  color: var(--text-secondary);
+  color: var(--ink-soft);
+}
+.optimizer-current b {
+  color: var(--blue-deep);
 }
 .optimizer-rank {
   width: 100%;
@@ -301,40 +364,62 @@ function scoreDelta(build: OptimizedRelicBuild) {
   gap: 3px 10px;
   padding: 12px;
   margin-bottom: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.025);
-  color: inherit;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.76);
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+.optimizer-rank:hover {
+  border-color: rgba(36, 86, 166, 0.4);
+  transform: translateY(-1px);
 }
 .optimizer-rank.active {
-  border-color: #66b8ff;
-  background: rgba(64, 146, 226, 0.14);
+  border-color: var(--blue);
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(36, 86, 166, 0.12);
+}
+.optimizer-rank b,
+.optimizer-rank.active span {
+  color: var(--blue);
 }
 .optimizer-rank small {
   grid-column: 1 / -1;
-  color: var(--text-secondary);
+  color: var(--muted);
 }
 .optimizer-empty {
   display: grid;
   gap: 8px;
   padding: 16px 10px;
-  color: var(--text-secondary);
+  color: var(--ink-soft);
 }
 .optimizer-detail {
   overflow: auto;
-  padding: 22px;
+  padding: 24px 28px 28px;
+  background: linear-gradient(135deg, rgba(232, 240, 251, 0.3), transparent 34%), #fff;
 }
 .optimizer-summary {
   margin-bottom: 18px;
 }
+.optimizer-summary small {
+  color: var(--blue);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
 .optimizer-summary h3 {
-  margin: 3px 0;
+  margin: 4px 0;
+  color: var(--ink);
+  font-size: 21px;
 }
 .optimizer-summary p {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--ink-soft);
 }
 .optimizer-score {
   display: grid;
@@ -342,7 +427,10 @@ function scoreDelta(build: OptimizedRelicBuild) {
 }
 .optimizer-score b {
   font-size: 28px;
-  color: #79c2ff;
+  color: var(--blue);
+}
+.optimizer-score span {
+  color: var(--ink-soft);
 }
 .optimizer-targets {
   display: grid;
@@ -354,16 +442,27 @@ function scoreDelta(build: OptimizedRelicBuild) {
   display: grid;
   gap: 3px;
   padding: 11px 13px;
-  border: 1px solid rgba(101, 212, 166, 0.22);
-  border-radius: 12px;
-  background: rgba(66, 184, 131, 0.08);
+  border: 1px solid rgba(36, 86, 166, 0.2);
+  border-radius: 7px;
+  background: linear-gradient(135deg, #f7faff, #fff);
+}
+.optimizer-targets > div > span {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.optimizer-targets > div > b {
+  color: var(--blue-deep);
+  font-size: 18px;
 }
 .optimizer-targets > div.failed {
-  border-color: rgba(246, 125, 113, 0.35);
-  background: rgba(215, 74, 65, 0.09);
+  border-color: rgba(174, 82, 67, 0.46);
+  background: #fff8f5;
+}
+.optimizer-targets > div.failed > b {
+  color: #a2584b;
 }
 .optimizer-targets small {
-  color: var(--text-secondary);
+  color: var(--muted);
 }
 .optimizer-relic-grid {
   display: grid;
@@ -373,29 +472,31 @@ function scoreDelta(build: OptimizedRelicBuild) {
 .optimizer-relic-grid article {
   min-height: 108px;
   padding: 13px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(250, 252, 255, 0.88);
+  box-shadow: 0 3px 10px rgba(35, 75, 128, 0.04);
 }
 .optimizer-relic-grid article header span {
-  color: #80c7ff;
+  color: var(--blue);
   font-size: 12px;
 }
 .optimizer-relic-grid article header .tone-keep {
-  color: #77d9ac;
+  color: #3d8a72;
 }
 .optimizer-relic-grid strong {
   display: block;
   margin-top: 10px;
+  color: var(--ink);
 }
 .optimizer-relic-grid p {
   margin: 5px 0;
-  color: var(--text-secondary);
+  color: var(--ink-soft);
 }
 .optimizer-relic-grid i {
   display: inline-block;
   margin: 4px 6px 0 0;
-  color: #f0c36b;
+  color: #8a692c;
   font-size: 11px;
   font-style: normal;
 }
@@ -404,7 +505,9 @@ function scoreDelta(build: OptimizedRelicBuild) {
   justify-content: flex-start;
   flex-wrap: wrap;
   margin-top: 18px;
-  color: var(--text-secondary);
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
   font-size: 12px;
 }
 .optimizer-loading {
@@ -419,13 +522,25 @@ function scoreDelta(build: OptimizedRelicBuild) {
 .optimizer-loading p {
   margin: 0;
 }
+.optimizer-loading h3 {
+  color: var(--ink);
+}
+.optimizer-loading p {
+  color: var(--ink-soft);
+}
 .optimizer-spinner {
   width: 42px;
   height: 42px;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #6eb9ff;
+  border: 3px solid var(--blue-soft);
+  border-top-color: var(--blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+@keyframes optimizer-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.992);
+  }
 }
 @keyframes spin {
   to {
@@ -440,7 +555,7 @@ function scoreDelta(build: OptimizedRelicBuild) {
   .optimizer-ranking {
     max-height: 210px;
     border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line);
   }
   .optimizer-relic-grid {
     grid-template-columns: repeat(2, 1fr);
