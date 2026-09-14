@@ -39,6 +39,10 @@ pub enum AppError {
     AccountMismatch,
     #[error("MCP 服务失败：{0}")]
     Mcp(String),
+    #[error("OCR 模型错误：{0}")]
+    OcrModel(String),
+    #[error("遗器清理失败：{0}")]
+    RelicCleanup(String),
 }
 
 impl Serialize for AppError {

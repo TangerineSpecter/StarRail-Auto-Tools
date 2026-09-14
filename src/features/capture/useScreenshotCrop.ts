@@ -1,13 +1,6 @@
 import { computed, onBeforeUnmount, reactive, ref, type Ref } from "vue";
 import { captureApi } from "@/shared/api/capture";
 import { windowApi } from "@/shared/api/window";
-import type { OcrModelConfig } from "@/types";
-
-const modelConfig: OcrModelConfig = {
-  detectionModel: "models/text_detection.onnx",
-  recognitionModel: "models/text_recognition.onnx",
-  characterDictionary: "models/character_dict.txt",
-};
 
 /** Owns the temporary screenshot, crop selection and its cleanup lifecycle. */
 interface ScreenshotCropOptions {
@@ -164,7 +157,6 @@ export function useScreenshotCrop({ busy, setError, setNotice }: ScreenshotCropO
       setNotice("正在本地识别框选区域…");
       ocrResult.value = await captureApi.recognizeScreenshot(
         Array.from(new Uint8Array(await image.arrayBuffer())),
-        modelConfig,
       );
       setNotice("区域已识别，临时图片已清理");
     } catch (cause) {

@@ -5,12 +5,6 @@ export interface SystemCapabilities {
   note: string;
 }
 
-export interface OcrModelConfig {
-  detectionModel: string;
-  recognitionModel: string;
-  characterDictionary: string;
-}
-
 export interface OcrTextRegion {
   text: string;
 }
@@ -264,6 +258,81 @@ export interface RelicListItem {
   source: string;
   updatedAt: number;
   substats: RelicSubstatItem[];
+}
+
+export type RelicFingerprint = Omit<RelicListItem, "source" | "updatedAt">;
+
+export interface CleanupQueueItem {
+  itemId: number;
+  displayName: string;
+  status: string;
+  lastRunId: number | null;
+  createdAt: number;
+  updatedAt: number;
+  fingerprint: RelicFingerprint;
+}
+
+export interface CleanupRunSummary {
+  runId: number;
+  runCode: string;
+  status: string;
+  uid: number;
+  inventoryHash: string;
+  modelRevision: string;
+  templateRevision: string;
+  protocolVersion: string;
+  directory: string | null;
+  message: string;
+  createdAt: number;
+  updatedAt: number;
+  completedAt: number | null;
+  itemCount: number;
+  matchedCount: number;
+  exceptionCount: number;
+}
+
+export interface CleanupRunItem {
+  itemId: number;
+  expectedFingerprint: RelicFingerprint;
+  recognizedFingerprint: RelicFingerprint | null;
+  previewStatus: string;
+  executionStatus: string;
+  confidence: number | null;
+  imagePath: string | null;
+  reason: string | null;
+}
+
+export interface CleanupRunDetail extends CleanupRunSummary {
+  items: CleanupRunItem[];
+  currentlyValid: boolean;
+}
+
+export interface CleanupProgress {
+  runId: number;
+  runCode: string;
+  phase: string;
+  current: number;
+  total: number;
+  message: string;
+  terminal: boolean;
+}
+
+export interface CleanupCapabilities {
+  platformSupported: boolean;
+  templatesCalibrated: boolean;
+  previewAvailable: boolean;
+  executionAvailable: boolean;
+  message: string;
+}
+
+export interface OcrModelStatus {
+  state: string;
+  revision: string;
+  directory: string;
+  downloadedBytes: number;
+  totalBytes: number;
+  currentFile: string | null;
+  message: string;
 }
 
 export interface RelicMainStatScanResult extends PagedResult<RelicListItem> {

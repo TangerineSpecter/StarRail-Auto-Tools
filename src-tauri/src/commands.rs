@@ -2,12 +2,13 @@ use tauri::{AppHandle, Emitter, State};
 
 use crate::{
     direct_read::{self, DirectReadSnapshot, DirectReadState},
-    domain::{OcrImageResult, OcrModelConfig, ScanSnapshot, StartScanRequest, SystemCapabilities},
+    domain::{OcrImageResult, ScanSnapshot, StartScanRequest, SystemCapabilities},
     error::AppError,
     game_launch::{GameLaunchDetection, GameLaunchRuntime, GameLaunchSettings},
     inventory::{
         BuildPlanExcelImportResult, BuildRecommendation, BuildRecommendationRequest,
-        CharacterBuildPlan, CharacterBuildScore, CharacterFilter, ClearInventoryRequest,
+        CharacterBuildPlan, CharacterBuildScore, CharacterFilter, CleanupCandidateRequest,
+        CleanupQueueItem, CleanupRunDetail, CleanupRunSummary, ClearInventoryRequest,
         DeleteItemsRequest, InventoryDetail, InventoryEquipmentCounts, InventoryImportResult,
         InventoryKind, InventoryStore, InventorySummary, LightConeFilter, LightConeListItem,
         PageQuery, PagedResult, RelicFilter, RelicListItem, RelicMainStatGroupedResult,
@@ -15,10 +16,122 @@ use crate::{
         RelicSetTargetCount, Team, TeamFilter, TeamInput,
     },
     mcp::{McpRuntime, McpSettings, McpStatus},
+    ocr_model::{OcrModelManager, OcrModelStatus},
+    relic_cleanup::{CleanupCapabilities, RelicCleanupRuntime},
     scanner::ScannerState,
     screenshot,
     sync::{self, SyncSettings, SyncStore, WebDavSettings},
 };
+
+#[tauri::command]
+pub fn get_ocr_model_status(
+    models: State<'_, OcrModelManager>,
+) -> Result<OcrModelStatus, AppError> {
+    models.snapshot()
+}
+
+#[tauri::command]
+pub fn get_cleanup_capabilities(runtime: State<'_, RelicCleanupRuntime>) -> CleanupCapabilities {
+    runtime.capabilities()
+}
+
+#[tauri::command]
+pub fn download_ocr_model(models: State<'_, OcrModelManager>) -> Result<OcrModelStatus, AppError> {
+    models.start_download()
+}
+
+#[tauri::command]
+pub fn cancel_ocr_model_download(
+    models: State<'_, OcrModelManager>,
+) -> Result<OcrModelStatus, AppError> {
+    models.cancel_download()
+}
+
+#[tauri::command]
+pub fn verify_ocr_model(models: State<'_, OcrModelManager>) -> Result<OcrModelStatus, AppError> {
+    models.verify()
+}
+
+#[tauri::command]
+pub fn delete_ocr_model_cache(
+    models: State<'_, OcrModelManager>,
+) -> Result<OcrModelStatus, AppError> {
+    models.delete_cache()
+}
+
+#[tauri::command]
+pub fn add_cleanup_candidates(
+    request: CleanupCandidateRequest,
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<CleanupQueueItem>, AppError> {
+    store.add_cleanup_candidates(&request)
+}
+
+#[tauri::command]
+pub fn remove_cleanup_candidates(
+    request: CleanupCandidateRequest,
+    store: State<'_, InventoryStore>,
+) -> Result<u64, AppError> {
+    store.remove_cleanup_candidates(&request.item_ids)
+}
+
+#[tauri::command]
+pub fn list_cleanup_queue(
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<CleanupQueueItem>, AppError> {
+    store.list_cleanup_queue()
+}
+
+#[tauri::command]
+pub fn list_cleanup_runs(
+    store: State<'_, InventoryStore>,
+) -> Result<Vec<CleanupRunSummary>, AppError> {
+    store.list_cleanup_runs()
+}
+
+#[tauri::command]
+pub fn get_cleanup_run(
+    run_id: u64,
+    store: State<'_, InventoryStore>,
+) -> Result<CleanupRunDetail, AppError> {
+    store.cleanup_run_detail(run_id)
+}
+
+#[tauri::command]
+pub fn start_cleanup_preview(
+    runtime: State<'_, RelicCleanupRuntime>,
+) -> Result<CleanupRunSummary, AppError> {
+    runtime.start_preview()
+}
+
+#[tauri::command]
+pub fn start_cleanup_execution(
+    run_id: u64,
+    runtime: State<'_, RelicCleanupRuntime>,
+) -> Result<CleanupRunDetail, AppError> {
+    runtime.start_execution(run_id)
+}
+
+#[tauri::command]
+pub fn cancel_cleanup_task(runtime: State<'_, RelicCleanupRuntime>) -> Result<(), AppError> {
+    runtime.cancel()
+}
+
+#[tauri::command]
+pub fn open_cleanup_run_directory(
+    run_id: u64,
+    runtime: State<'_, RelicCleanupRuntime>,
+) -> Result<(), AppError> {
+    runtime.open_run_directory(run_id)
+}
+
+#[tauri::command]
+pub fn delete_cleanup_run(
+    run_id: u64,
+    runtime: State<'_, RelicCleanupRuntime>,
+) -> Result<(), AppError> {
+    runtime.delete_run(run_id)
+}
 
 #[cfg(feature = "ocr")]
 use crate::ocr;
@@ -149,12 +262,13 @@ pub fn stop_scanner(state: State<'_, ScannerState>) -> Result<ScanSnapshot, AppE
 #[tauri::command]
 pub async fn recognize_image(
     image_path: String,
-    models: OcrModelConfig,
+    models: State<'_, OcrModelManager>,
 ) -> Result<OcrImageResult, AppError> {
     #[cfg(feature = "ocr")]
     {
+        let paths = models.paths()?;
         return tauri::async_runtime::spawn_blocking(move || {
-            ocr::recognize_image(image_path, models)
+            ocr::recognize_image(image_path, paths)
         })
         .await
         .map_err(|error| AppError::Ocr(error.to_string()))?;
@@ -172,12 +286,13 @@ pub async fn recognize_image(
 #[tauri::command]
 pub async fn recognize_screenshot(
     image_bytes: Vec<u8>,
-    models: OcrModelConfig,
+    models: State<'_, OcrModelManager>,
 ) -> Result<OcrImageResult, AppError> {
     #[cfg(feature = "ocr")]
     {
+        let paths = models.paths()?;
         return tauri::async_runtime::spawn_blocking(move || {
-            ocr::recognize_screenshot(image_bytes, models)
+            ocr::recognize_screenshot(image_bytes, paths)
         })
         .await
         .map_err(|error| AppError::Ocr(error.to_string()))?;

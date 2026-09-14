@@ -11,6 +11,7 @@ import TeamWorkspace from "@/features/team/TeamWorkspace.vue";
 import { useInventoryArchive } from "@/features/inventory/useInventoryArchive";
 import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import { relicCleanupApi } from "@/shared/api/relic-cleanup";
 import type { ArchiveView, InventoryKind, InventoryListItem, RelicListItem } from "@/types";
 
 defineOptions({ name: "InventoryPage" });
@@ -33,6 +34,21 @@ const listItems = computed<InventoryListItem[]>(() => {
   if (archive.kind.value === "relic" && scoredRelicItems.value) return scoredRelicItems.value;
   return archive.result.value.items;
 });
+
+async function addSelectedToCleanup() {
+  const ids = [...archive.selectedIds.value];
+  if (!ids.length) return;
+  busy.value = true;
+  try {
+    await relicCleanupApi.addCandidates(ids);
+    archive.selectedIds.value = new Set();
+    notice.value = `已将 ${ids.length} 件遗器加入清理管理`;
+  } catch (cause) {
+    error.value = String(cause);
+  } finally {
+    busy.value = false;
+  }
+}
 
 function switchArchiveView(view: ArchiveView) {
   archiveView.value = view;
@@ -93,7 +109,10 @@ onBeforeUnmount(removeEscapeListener);
       <RelicQualityToolbar
         v-if="archive.kind.value === 'relic'"
         :items="archive.result.value.items as RelicListItem[]"
+        :selected-count="archive.selectedIds.value.size"
+        :cleanup-busy="busy"
         @update:display-items="scoredRelicItems = $event"
+        @add-to-cleanup="addSelectedToCleanup"
         @notice="notice = $event"
         @error="error = $event"
       />

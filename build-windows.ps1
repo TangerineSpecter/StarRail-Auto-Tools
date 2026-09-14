@@ -75,9 +75,9 @@ if (-not (Test-Path 'node_modules')) {
 }
 
 Write-Host "Building Windows package ($format)..."
-npm run tauri -- build --bundles $format
+npm run tauri -- build --bundles $format --features ocr
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $bundleDir = Join-Path $PSScriptRoot 'src-tauri\target\release\bundle'
 Write-Host "Build complete. Installers are in: $bundleDir"
-Write-Host 'OCR models are intentionally not bundled; distribute them separately or add them to the bundle resources after licensing and size are decided.'
+Write-Host 'OCR runtime is enabled. PP-OCRv6 small model files are downloaded and verified in-app on first use.'

@@ -54,15 +54,6 @@ pub struct StartScanRequest {
     pub change_threshold: f32,
 }
 
-#[allow(dead_code)]
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OcrModelConfig {
-    pub detection_model: String,
-    pub recognition_model: String,
-    pub character_dictionary: String,
-}
-
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OcrTextRegion {

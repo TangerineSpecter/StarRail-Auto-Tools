@@ -9,7 +9,7 @@ use std::{
 use windows::{
     core::{BOOL, HRESULT},
     Win32::{
-        Foundation::{HWND, LPARAM, RECT},
+        Foundation::{HWND, LPARAM, POINT, RECT},
         System::Com::{
             CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER,
             COINIT_APARTMENTTHREADED,
@@ -24,10 +24,10 @@ use windows::{
                 MOUSEINPUT,
             },
             WindowsAndMessaging::{
-                BringWindowToTop, EnumWindows, GetForegroundWindow, GetWindowRect,
-                GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId, IsIconic,
-                IsWindowVisible, PostMessageW, SetCursorPos, SetForegroundWindow, ShowWindow,
-                SW_RESTORE, WM_CLOSE,
+                BringWindowToTop, ClientToScreen, EnumWindows, GetClientRect, GetForegroundWindow,
+                GetWindowRect, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId,
+                IsIconic, IsWindowVisible, PostMessageW, SetCursorPos, SetForegroundWindow,
+                ShowWindow, SW_RESTORE, WM_CLOSE,
             },
         },
     },
@@ -281,8 +281,7 @@ fn capture_window_png(hwnd: HWND) -> Result<Vec<u8>, String> {
     if !is_game_window(hwnd) {
         return Err("游戏窗口已关闭或无法切换到前台。".to_owned());
     }
-    let mut rect = RECT::default();
-    unsafe { GetWindowRect(hwnd, &mut rect).map_err(|error| error.to_string())? };
+    let rect = client_screen_rect(hwnd)?;
     let width = rect.right - rect.left;
     let height = rect.bottom - rect.top;
     if width <= 0 || height <= 0 {
@@ -329,6 +328,37 @@ $bitmap.Dispose()
     let bytes = fs::read(&path).map_err(|error| format!("无法读取游戏窗口截图：{error}"));
     let _ = fs::remove_file(path);
     bytes
+}
+
+pub(crate) fn capture_foreground_game_client() -> Result<Vec<u8>, String> {
+    let hwnd = find_game_window().ok_or_else(|| "未找到《崩坏：星穹铁道》游戏窗口".to_owned())?;
+    if unsafe { GetForegroundWindow() } != hwnd {
+        return Err("游戏窗口不在前台，已暂停以避免操作其他窗口".to_owned());
+    }
+    capture_window_png(hwnd)
+}
+
+fn client_screen_rect(hwnd: HWND) -> Result<RECT, String> {
+    let mut client = RECT::default();
+    unsafe { GetClientRect(hwnd, &mut client).map_err(|error| error.to_string())? };
+    let mut top_left = POINT {
+        x: client.left,
+        y: client.top,
+    };
+    let mut bottom_right = POINT {
+        x: client.right,
+        y: client.bottom,
+    };
+    unsafe {
+        ClientToScreen(hwnd, &mut top_left).map_err(|error| error.to_string())?;
+        ClientToScreen(hwnd, &mut bottom_right).map_err(|error| error.to_string())?;
+    }
+    Ok(RECT {
+        left: top_left.x,
+        top: top_left.y,
+        right: bottom_right.x,
+        bottom: bottom_right.y,
+    })
 }
 
 pub async fn close_game_window(game: GameWindow) -> Result<(), String> {

@@ -91,16 +91,19 @@ Windows 10/11 版本会以管理员权限启动，并自动监听星穹铁道登
 
 ## OCR 模型
 
-应用需要三个本地文件：
+Windows 正式构建固定使用 ModelScope 官方 PP-OCRv6 small 检测/识别 ONNX 模型。首次进入安全清理时可在软件内下载，模型不会进入安装包；下载支持取消、断点续传、锁定 revision 和 SHA-256 校验，之后可离线复用。
+
+模型保存在应用数据目录：
 
 ```text
-models/
+models/pp-ocrv6-small/<revision>/
   text_detection.onnx
   text_recognition.onnx
+  recognition-config.yml
   character_dict.txt
 ```
 
-模型不会提交到仓库。可以使用 PaddleOCR 的中文 PP-OCR ONNX 模型；最终模型版本应根据游戏截图样本进行准确率测试后锁定。
+前端不能传入任意模型路径；普通截图 OCR 与遗器清理共用后端常驻 OCR Runtime。遗器清理模板素材的采集、命名和校准流程见 [遗器清理识别素材采集](./docs/遗器清理识别素材采集.md)。
 
 ## Windows 打包
 
@@ -110,4 +113,4 @@ models/
 
 正式 Windows 版本由 GitHub Release 分发：推送 `vX.Y.Z` tag 后会自动构建并发布安装包。首次安装请下载 Release 中的 `.exe`；后续版本会在客户端启动时自动检测并提供“立即更新”，也始终可以下载新的安装包覆盖安装。发布密钥配置和发版命令见 [Windows 发布文档](./docs/Windows发布.md)。
 
-不建议直接分发 `target\release` 下的裸 EXE：用户仍可能缺少 WebView2，且后续应用资源、模型和升级管理会变得零散。当前 OCR 模型刻意未打入安装包（体积和模型许可待确定）；发布时应单独提供模型下载，或在确认许可和体积后把 `models/` 加入 Tauri bundle resources。
+不建议直接分发 `target\release` 下的裸 EXE：用户仍可能缺少 WebView2，且后续应用资源和升级管理会变得零散。OCR 模型刻意不打入安装包，由软件从锁定的 ModelScope revision 下载并校验。

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "revision": "zh-CN-uncalibrated-v1",
+  "calibrated": false,
+  "referenceSize": [1920, 1080],
+  "anchors": [],
+  "thresholds": {},
+  "notice": "由 scripts/generate-relic-cleanup-templates.py 生成；不要手工改为 calibrated=true。"
+}

@@ -92,7 +92,7 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY)) {
             throw 'Missing GitHub Actions secret TAURI_SIGNING_PRIVATE_KEY. See docs/Windows发布.md.'
           }
-          npm run tauri -- build --bundles nsis --config src-tauri/tauri.updater.conf.json
+          npm run tauri -- build --bundles nsis --config src-tauri/tauri.updater.conf.json --features ocr
 
       - name: Prepare release files and updater manifest
         shell: pwsh

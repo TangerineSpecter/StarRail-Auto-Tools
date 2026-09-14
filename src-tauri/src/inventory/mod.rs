@@ -5,7 +5,9 @@
 mod build_plan_excel;
 mod models;
 mod normalizer;
+mod relic_cleanup;
 mod repository;
 
 pub use models::*;
 pub use normalizer::*;
+pub use relic_cleanup::*;

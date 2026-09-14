@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "referenceFile": null,
+  "regions": [],
+  "thresholds": {
+    "anchorSimilarity": 0.9,
+    "selectedBorderSimilarity": 0.92,
+    "iconSimilarity": 0.88
+  }
+}

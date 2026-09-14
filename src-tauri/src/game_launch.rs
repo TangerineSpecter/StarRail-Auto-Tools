@@ -1,6 +1,6 @@
 mod settings;
 #[cfg(windows)]
-mod windows;
+pub(crate) mod windows;
 
 use std::{
     sync::{Arc, Mutex},

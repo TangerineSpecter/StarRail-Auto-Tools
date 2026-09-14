@@ -6,12 +6,15 @@ import type { BuildDashboardEntry, CharacterBuildPlan, RelicListItem } from "@/t
 
 const props = defineProps<{
   items: RelicListItem[];
+  selectedCount?: number;
+  cleanupBusy?: boolean;
 }>();
 
 const emit = defineEmits<{
   "update:display-items": [items: RelicListItem[]];
   notice: [message: string];
   error: [message: string];
+  "add-to-cleanup": [];
 }>();
 
 const plans = ref<BuildDashboardEntry[]>([]);
@@ -221,6 +224,16 @@ onMounted(() => {
         @click="confirmAction = 'discard'"
       >
         确认分解候选…
+      </button>
+      <button
+        v-if="selectedCount"
+        type="button"
+        class="score-action score-action--cleanup"
+        :disabled="cleanupBusy"
+        title="已锁定或已装备的遗器不会被加入"
+        @click="emit('add-to-cleanup')"
+      >
+        加入清理管理（{{ selectedCount }}）
       </button>
     </div>
     <p class="score-toolbar-hint">

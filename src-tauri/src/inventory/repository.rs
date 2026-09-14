@@ -179,6 +179,45 @@ impl InventoryStore {
                 computed_at INTEGER NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS cleanup_queue (
+                item_id INTEGER PRIMARY KEY,
+                uid INTEGER NOT NULL DEFAULT 0,
+                fingerprint_json TEXT NOT NULL,
+                display_name TEXT NOT NULL,
+                status TEXT NOT NULL,
+                last_run_id INTEGER,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS cleanup_runs (
+                run_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                status TEXT NOT NULL,
+                uid INTEGER NOT NULL,
+                inventory_hash TEXT NOT NULL,
+                model_revision TEXT NOT NULL,
+                template_revision TEXT NOT NULL,
+                protocol_version TEXT NOT NULL,
+                directory TEXT,
+                message TEXT NOT NULL DEFAULT '',
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL,
+                completed_at INTEGER
+            );
+
+            CREATE TABLE IF NOT EXISTS cleanup_run_items (
+                run_id INTEGER NOT NULL REFERENCES cleanup_runs(run_id) ON DELETE CASCADE,
+                item_id INTEGER NOT NULL,
+                expected_fingerprint_json TEXT NOT NULL,
+                recognized_fingerprint_json TEXT,
+                preview_status TEXT NOT NULL,
+                execution_status TEXT NOT NULL,
+                confidence REAL,
+                image_path TEXT,
+                reason TEXT,
+                PRIMARY KEY (run_id, item_id)
+            );
+
             CREATE INDEX IF NOT EXISTS idx_relics_set_slot ON relics(set_id, slot);
             CREATE INDEX IF NOT EXISTS idx_relics_rarity_level ON relics(rarity, level);
             CREATE INDEX IF NOT EXISTS idx_relics_main_stat ON relics(main_stat);
@@ -188,6 +227,8 @@ impl InventoryStore {
             CREATE INDEX IF NOT EXISTS idx_light_cones_location ON light_cones(location);
             CREATE INDEX IF NOT EXISTS idx_characters_path_level ON characters(path, level);
             CREATE INDEX IF NOT EXISTS idx_teams_updated_at ON teams(updated_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_cleanup_runs_created_at ON cleanup_runs(created_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_cleanup_run_items_status ON cleanup_run_items(run_id, preview_status, execution_status);
             "#,
         )?;
         // Older databases predate the derived main-stat value. SQLite does not support
@@ -238,6 +279,10 @@ impl InventoryStore {
         );
         let _ = connection.execute(
             "ALTER TABLE characters ADD COLUMN rarity INTEGER NOT NULL DEFAULT 5",
+            [],
+        );
+        let _ = connection.execute(
+            "ALTER TABLE cleanup_queue ADD COLUMN uid INTEGER NOT NULL DEFAULT 0",
             [],
         );
         connection.execute(

@@ -7,12 +7,16 @@ mod inventory;
 mod mcp;
 #[cfg(feature = "ocr")]
 mod ocr;
+mod ocr_model;
+mod relic_cleanup;
 mod scanner;
 mod screenshot;
 mod sync;
 
 use direct_read::DirectReadState;
 use inventory::InventoryStore;
+use ocr_model::OcrModelManager;
+use relic_cleanup::RelicCleanupRuntime;
 use scanner::ScannerState;
 use tauri::Manager;
 
@@ -30,6 +34,13 @@ pub fn run() {
             std::fs::create_dir_all(&data_dir)?;
             let store = InventoryStore::initialize(data_dir.join("inventory.sqlite3"))
                 .map_err(|error| std::io::Error::other(error.to_string()))?;
+            let ocr_models = OcrModelManager::new(&data_dir, app.handle().clone());
+            let relic_cleanup = RelicCleanupRuntime::new(
+                &data_dir,
+                store.clone(),
+                ocr_models.clone(),
+                app.handle().clone(),
+            );
             let sync_store = sync::SyncStore::new(data_dir.clone());
             let mcp_runtime = mcp::McpRuntime::new(
                 mcp::McpStore::new(data_dir.clone()),
@@ -44,6 +55,8 @@ pub fn run() {
                 app.handle().clone(),
             );
             app.manage(store);
+            app.manage(ocr_models);
+            app.manage(relic_cleanup);
             app.manage(sync_store);
             app.manage(mcp_runtime.clone());
             app.manage(game_launch_runtime);
@@ -61,6 +74,12 @@ pub fn run() {
             commands::stop_scanner,
             commands::recognize_image,
             commands::recognize_screenshot,
+            commands::get_ocr_model_status,
+            commands::download_ocr_model,
+            commands::cancel_ocr_model_download,
+            commands::verify_ocr_model,
+            commands::delete_ocr_model_cache,
+            commands::get_cleanup_capabilities,
             commands::capture_desktop,
             commands::get_direct_read_snapshot,
             commands::start_direct_read,
@@ -96,6 +115,16 @@ pub fn run() {
             commands::list_character_build_scores,
             commands::delete_character_build_score,
             commands::delete_inventory_items,
+            commands::add_cleanup_candidates,
+            commands::remove_cleanup_candidates,
+            commands::list_cleanup_queue,
+            commands::list_cleanup_runs,
+            commands::get_cleanup_run,
+            commands::start_cleanup_preview,
+            commands::start_cleanup_execution,
+            commands::cancel_cleanup_task,
+            commands::open_cleanup_run_directory,
+            commands::delete_cleanup_run,
             commands::clear_inventory,
             commands::export_inventory,
             commands::import_inventory,

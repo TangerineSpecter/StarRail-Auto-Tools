@@ -2267,6 +2267,17 @@ button.score-piece.is-weak-slot.is-open {
   gap: 6px;
   margin-top: 8px;
 }
+.score-action--cleanup {
+  margin-left: auto;
+  border-color: rgba(36, 86, 166, 0.24);
+  color: #fff;
+  background: var(--blue);
+}
+.score-action--cleanup:hover:not(:disabled) {
+  border-color: var(--blue-deep);
+  color: #fff;
+  background: var(--blue-deep);
+}
 .score-toolbar-hint {
   margin: 8px 0 0;
   color: var(--muted);
