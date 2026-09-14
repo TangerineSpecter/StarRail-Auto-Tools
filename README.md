@@ -1,6 +1,6 @@
 # 星穹铁道工具箱 · StarRail-Auto-Tools
 
-[![Version](https://img.shields.io/badge/version-1.0.1-4f7fc4?style=flat-square)](https://github.com/TangerineSpecter/StarRail-Auto-Tools/releases)
+[![Version](https://img.shields.io/badge/version-1.0.2-4f7fc4?style=flat-square)](https://github.com/TangerineSpecter/StarRail-Auto-Tools/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-4f7fc4?style=flat-square)](#游戏数据直读)
 [![Tauri](https://img.shields.io/badge/Tauri-2-24c8d8?style=flat-square&logo=tauri&logoColor=white)](https://v2.tauri.app/)
 [![Vue](https://img.shields.io/badge/Vue-3-42b883?style=flat-square&logo=vuedotjs&logoColor=white)](https://vuejs.org/)
