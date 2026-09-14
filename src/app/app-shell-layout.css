@@ -183,14 +183,42 @@
   align-items: center;
   gap: 10px;
 }
+.footer-app-name {
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
 .app-version {
-  padding-left: 9px;
-  border-left: 1px solid var(--line);
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid rgba(36, 86, 166, 0.25);
+  border-radius: 4px;
+  color: var(--blue-deep);
+  background: rgba(235, 243, 253, 0.9);
+  box-shadow: 0 2px 6px rgba(36, 86, 166, 0.08);
   font:
-    600 10px/1 "Bahnschrift",
+    700 11px/1.2 "Bahnschrift",
+    monospace,
     sans-serif;
   letter-spacing: 0.08em;
+  transition: all 150ms ease;
+}
+.app-version:hover {
+  border-color: rgba(36, 86, 166, 0.45);
+  background: #e8f1fc;
+  box-shadow: 0 3px 8px rgba(36, 86, 166, 0.12);
+}
+.app-version::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(69, 174, 183, 0.25);
 }
 .platform-label {
   opacity: 0.75;

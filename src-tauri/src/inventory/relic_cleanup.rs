@@ -157,7 +157,7 @@ impl InventoryStore {
                     fingerprint.name
                 )));
             }
-            if fingerprint.equipped_character_id.is_some() || fingerprint.location != "inventory" {
+            if fingerprint.equipped_character_id.is_some() {
                 return Err(AppError::RelicCleanup(format!(
                     "遗器 {} 已装备，未加入清理管理",
                     fingerprint.name
@@ -255,10 +255,7 @@ impl InventoryStore {
                     item.display_name
                 ))
             })?;
-            if current.locked
-                || current.equipped_character_id.is_some()
-                || current.location != "inventory"
-            {
+            if current.locked || current.equipped_character_id.is_some() {
                 return Err(AppError::RelicCleanup(format!(
                     "候选遗器 {} 当前已锁定或装备，请重新检查清理名单",
                     item.display_name
@@ -670,7 +667,7 @@ mod tests {
                                     main_stat, main_stat_value, location, locked, discard,
                                     source, updated_at)
                  VALUES(?1, 101, '测试遗器', '测试套装', 'Head', 5, 0,
-                        'HP', 112, 'inventory', ?2, 0, 'test', 1)",
+                        'HP', 112, '', ?2, 0, 'test', 1)",
                 params![item_id, locked],
             )
             .unwrap();
@@ -720,6 +717,45 @@ mod tests {
         });
         assert!(matches!(result, Err(AppError::RelicCleanup(_))));
         assert!(store.list_cleanup_queue().unwrap().is_empty());
+        drop(store);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn queue_accepts_unequipped_relic_with_empty_exporter_location() {
+        let (store, path) = test_store();
+        insert_relic(&store, 1, false);
+
+        let queued = store
+            .add_cleanup_candidates(&CleanupCandidateRequest { item_ids: vec![1] })
+            .unwrap();
+
+        assert_eq!(queued.len(), 1);
+        assert_eq!(queued[0].item_id, 1);
+        assert!(store.freeze_cleanup_run("model", "templates").is_ok());
+        drop(store);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn queue_rejects_relic_with_equipped_character_id() {
+        let (store, path) = test_store();
+        insert_relic(&store, 1, false);
+        let connection = Connection::open(&store.path).unwrap();
+        connection
+            .execute(
+                "UPDATE relics SET location = '开拓者', equipped_character_id = 8006 WHERE item_id = 1",
+                [],
+            )
+            .unwrap();
+
+        let error = store
+            .add_cleanup_candidates(&CleanupCandidateRequest { item_ids: vec![1] })
+            .unwrap_err()
+            .to_string();
+
+        assert!(error.contains("已装备"));
+        drop(connection);
         drop(store);
         let _ = std::fs::remove_file(path);
     }

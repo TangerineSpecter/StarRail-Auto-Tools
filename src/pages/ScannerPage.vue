@@ -32,12 +32,14 @@ const mode = ref<"mainStat" | "cleanup">("cleanup");
       </div>
     </nav>
     <div class="scanner-page-content">
-      <RelicCleanupPanel v-if="mode === 'cleanup'" />
-      <RelicMainStatScanner
-        v-else
-        :image-for="imageFor"
-        @open-relic="inventoryDetail.open('relic', $event.itemId)"
-      />
+      <KeepAlive>
+        <RelicCleanupPanel v-if="mode === 'cleanup'" />
+        <RelicMainStatScanner
+          v-else
+          :image-for="imageFor"
+          @open-relic="inventoryDetail.open('relic', $event.itemId)"
+        />
+      </KeepAlive>
     </div>
     <InventoryDetailDrawer
       v-if="inventoryDetail.detail.value || inventoryDetail.loading.value"

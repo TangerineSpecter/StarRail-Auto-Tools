@@ -142,7 +142,8 @@ async function toggleMaximize() {
       </KeepAlive>
       <footer class="app-footer">
         <div class="footer-brand">
-          <span>StarRail-Auto-Tools</span><span class="app-version">v{{ APP_VERSION }}</span>
+          <span class="footer-app-name">StarRail-Auto-Tools</span>
+          <span class="app-version">v{{ APP_VERSION }}</span>
         </div>
         <div class="footer-meta">
           <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
