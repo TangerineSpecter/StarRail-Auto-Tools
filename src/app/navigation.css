@@ -28,6 +28,7 @@
   background: transparent;
   text-align: left;
   font-size: 13px;
+  font-weight: 600;
 }
 .nav-item small {
   color: var(--muted);
