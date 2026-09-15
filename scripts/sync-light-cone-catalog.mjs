@@ -6,6 +6,7 @@
 import { access, mkdir, writeFile } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { join } from "node:path";
+import { publishCatalogueBatch } from "./lib/catalogue-publication.mjs";
 
 const sourceUrl = "https://starrailstation.com/cn/equipment";
 const cdnBase = "https://cdn.starrailstation.com/assets/";
@@ -254,5 +255,6 @@ const catalogue = {
   lightCones,
 };
 
-await writeFile(outputFile, `${JSON.stringify(catalogue, null, 2)}\n`, "utf8");
+// Images are optional (--skip-images) and are not part of the JSON transaction.
+await publishCatalogueBatch([{ path: outputFile, data: catalogue }]);
 console.log(`已更新 ${lightCones.length} 个光锥${skipImages ? "（已跳过图片）" : "及图片"}。`);

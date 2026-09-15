@@ -138,6 +138,16 @@ function input(
 }
 
 describe("global relic optimizer", () => {
+  it("rejects reviewed equipment calculations with unknown energy cap or source", () => {
+    const source = input([]);
+    source.useReviewedEquipment = true;
+    source.context.character.path = "Elation";
+    source.plan = plan({ cavernSetA: 101, planarSetId: 301 });
+    source.context.equippedLightCone!.templateId = 23058;
+    expect(() => optimizeRelics(source)).toThrow("Max Energy");
+    source.context.equippedLightCone!.templateId = 99999;
+    expect(() => optimizeRelics(source)).toThrow("lightCone/99999");
+  });
   it("returns strict Top builds by weighted rolls and keeps relaxed results separate", () => {
     const relics = slots.flatMap((slot, index) => [
       relic(index * 10 + 1, slot, index < 4 ? 10 : 20, { speed: 1, crit: 2.5 }),

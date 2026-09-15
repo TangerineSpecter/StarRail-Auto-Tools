@@ -15,6 +15,13 @@ downloads/
 eggs/
 .eggs/
 lib/
+!scripts/lib/
+scripts/lib/*
+!scripts/lib/catalogue-publication.mjs
+!scripts/lib/catalogue-source.mjs
+!scripts/lib/standing-rule-definitions.mjs
+!scripts/lib/standing-catalogue-rules.mjs
+!scripts/lib/featured-mechanic-rules.mjs
 lib64/
 parts/
 sdist/

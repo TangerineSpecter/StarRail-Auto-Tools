@@ -5,6 +5,7 @@ import { optimizeRelics, type RelicOptimizerRunInput } from "@/shared/utils/reli
 import { loadDisabledTraceNodes, traceNodeEnabled } from "@/shared/utils/trace-settings";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
 import { lightConeSkillEffect } from "@/shared/utils/standing-stats";
+import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import type { CharacterBuildPlan, RelicOptimizerOptions, RelicOptimizerResult } from "@/types";
 
 interface RelicOptimizerControllerOptions {
@@ -111,6 +112,15 @@ export function useRelicOptimizer(options: RelicOptimizerControllerOptions) {
       if (!context.equippedLightCone) throw new Error("请先为该角色装备光锥。");
       const lightCone = lightConeById.get(context.equippedLightCone.templateId);
       if (!lightCone?.baseStats) throw new Error("当前光锥的 80 级基础属性尚未同步。");
+      const reviewed = reviewedStandingRules(
+        standingEquipment(context.equippedLightCone, [], context.character.path ?? ""),
+      );
+      if (reviewed.missingInputs.length)
+        throw new Error(
+          `缺少可信的角色属性，无法完整优化：${reviewed.missingInputs.join("、").replaceAll("Max Energy", "最大能量")}`,
+        );
+      if (reviewed.unreviewedSources.length)
+        throw new Error(`装备规则待审核，无法完整优化：${reviewed.unreviewedSources.join("、")}`);
 
       const disabledTraceNodes = loadDisabledTraceNodes();
       const traces = primaryTraceNodes(character.traceStats ?? [])
@@ -130,6 +140,7 @@ export function useRelicOptimizer(options: RelicOptimizerControllerOptions) {
         characterBase: character.baseStats,
         lightConeBase: lightCone.baseStats,
         traces,
+        useReviewedEquipment: true,
         lightConeEffects: lightConeEffect ? [lightConeEffect] : [],
         sets: relicCatalogue.sets,
       };

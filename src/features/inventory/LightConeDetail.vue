@@ -2,7 +2,8 @@
 import { computed } from "vue";
 import { equippedCharacterLabel, lightConeById } from "@/shared/catalogue";
 import { formatBaseStat, formatTime } from "@/shared/utils/display";
-import { lightConeSkillEffect, staticSetStats } from "@/shared/utils/standing-stats";
+import { lightConeSkillEffect } from "@/shared/utils/standing-stats";
+import { reviewedStandingRules } from "@/shared/utils/standing-rule-catalogue";
 import { pathLabel } from "./options";
 import type { LightConeDetailData } from "./detail-types";
 
@@ -12,8 +13,13 @@ const baseStats = computed(() => catalogueEntry.value?.baseStats);
 const skillEffect = computed(() =>
   lightConeSkillEffect(catalogueEntry.value?.skill, props.detail.superimposition),
 );
-const standingBonuses = computed(() =>
-  skillEffect.value ? staticSetStats([skillEffect.value]) : [],
+const standingBonuses = computed(
+  () =>
+    reviewedStandingRules({
+      lightConeId: props.detail.templateId,
+      superimposition: props.detail.superimposition,
+      sets: [],
+    }).contributions,
 );
 const standingBonusLabel: Record<string, string> = {
   "HP%": "生命值",

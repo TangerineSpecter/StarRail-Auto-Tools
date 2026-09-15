@@ -1,0 +1,1171 @@
+{
+  "schemaVersion": 1,
+  "lightCones": {
+    "20000": {
+      "sourceRef": "lightcone:20000:skill:20000",
+      "sourceHash": "ffbaec36465be8e6905b9fbf8eb04cd2cffa881970f7ec62b3667f2d87b89246"
+    },
+    "20001": {
+      "sourceRef": "lightcone:20001:skill:20001",
+      "sourceHash": "76c6bfaac8876a567093f973458f07676d5c6a1f3e2fd4aa81871ae7306ec41e"
+    },
+    "20002": {
+      "sourceRef": "lightcone:20002:skill:20002",
+      "sourceHash": "5b18f243684db7b76cdacfd2fc194ee20079cb027543e6a31778c622707b1030"
+    },
+    "20003": {
+      "sourceRef": "lightcone:20003:skill:20003",
+      "sourceHash": "fab817952cd119bfe6ac2309de55dadac08f61bf62d516fae00e96fbbbb44b21"
+    },
+    "20004": {
+      "sourceRef": "lightcone:20004:skill:20004",
+      "sourceHash": "fcc2462549a18c77106c4e9c6483e8791781f064dc5c002c61372410325f8f25"
+    },
+    "20005": {
+      "sourceRef": "lightcone:20005:skill:20005",
+      "sourceHash": "5bbbeb357e67ba16a0d2fec10dfdfb40bc6ffd39d95841db9ac837d0d85a2dc0"
+    },
+    "20006": {
+      "sourceRef": "lightcone:20006:skill:20006",
+      "sourceHash": "df81ba3472afff7f94c9632a2a4047918cb723854188a6c0e23ed519ed8b4179"
+    },
+    "20007": {
+      "sourceRef": "lightcone:20007:skill:20007",
+      "sourceHash": "52d1a8a30c6b4b06b40cf440f73198b285b9f30360a4c9a880c909d10ed8678a"
+    },
+    "20008": {
+      "sourceRef": "lightcone:20008:skill:20008",
+      "sourceHash": "13b8a3f610bf47563ffc9ccaf1c2517620f3d4437d73c15f1a1b8e270245c921"
+    },
+    "20009": {
+      "sourceRef": "lightcone:20009:skill:20009",
+      "sourceHash": "3a155efb27ae012eb286cda2a0e4b971e686e988eb0178c0aaceefe2a90a29f6"
+    },
+    "20010": {
+      "sourceRef": "lightcone:20010:skill:20010",
+      "sourceHash": "0699bd7ae75ba9a5df89600e0b1a64c94d7da7b418f1e7936f0ac42d85598d7f"
+    },
+    "20011": {
+      "sourceRef": "lightcone:20011:skill:20011",
+      "sourceHash": "f65e5c0b2963f2a5c30a1648f4fc76fd761124830db4e01df2eb4c327ab96767"
+    },
+    "20012": {
+      "sourceRef": "lightcone:20012:skill:20012",
+      "sourceHash": "1e2d337fe3c0a14ea1f10ef66d8157fba657880769aa61d76f2417e6a2698d43"
+    },
+    "20013": {
+      "sourceRef": "lightcone:20013:skill:20013",
+      "sourceHash": "8f07af7cb27484ff2a137dbc89900ca6b464e10a385f7643e9777cbbabe8bad3"
+    },
+    "20014": {
+      "sourceRef": "lightcone:20014:skill:20014",
+      "sourceHash": "853c8bf4edea32e16d489f9357a18f58bbfca21c0e5ac30e1684ff57ddd1c110"
+    },
+    "20015": {
+      "sourceRef": "lightcone:20015:skill:20015",
+      "sourceHash": "76b81483789528d9683df4858473a5822ab630c2c0e00c43da76156a904c1443"
+    },
+    "20016": {
+      "sourceRef": "lightcone:20016:skill:20016",
+      "sourceHash": "1b423627f728fe7a0cd5fee74ea1f9653bdd322dbcbe62255311344aaa054afd"
+    },
+    "20017": {
+      "sourceRef": "lightcone:20017:skill:20017",
+      "sourceHash": "ae432c53b7c1fa3e335a6840d51f5c3dd878e210ec8fb70416d5ef1b703b3ae7"
+    },
+    "20018": {
+      "sourceRef": "lightcone:20018:skill:20018",
+      "sourceHash": "862a64c3df8db05160bd761f3e772d4461913cf4a6ec59c4e33973b679ac8f53"
+    },
+    "20019": {
+      "sourceRef": "lightcone:20019:skill:20019",
+      "sourceHash": "7bf4b3e2ec6ed79fd7d504d503690861767f90c12387330c16cf39645c6753af"
+    },
+    "20020": {
+      "sourceRef": "lightcone:20020:skill:20020",
+      "sourceHash": "9278313a5227d1c5f8c85ae68af94e0882b9cdddbde226dfdc7f37fcbc90a40f"
+    },
+    "20021": {
+      "sourceRef": "lightcone:20021:skill:20021",
+      "sourceHash": "ab1a1770f29950e6967df62a85362d0da93f4a5dbb5b99bba40ff49c11a547e9"
+    },
+    "20022": {
+      "sourceRef": "lightcone:20022:skill:20022",
+      "sourceHash": "0177457fb0b67d658d30f462aa9776c53ddd0c636b5bd4490ffe67d7eb909391"
+    },
+    "20023": {
+      "sourceRef": "lightcone:20023:skill:20023",
+      "sourceHash": "633681ffc20e8279d7b17af44faa82cbc5af72029fc97734b594cafb97ce4fb9"
+    },
+    "20024": {
+      "sourceRef": "lightcone:20024:skill:20024",
+      "sourceHash": "ec29f20a33092a6cb2f388545e0d64e24070bf1dffe67f203f4d8758a4af0316"
+    },
+    "21000": {
+      "sourceRef": "lightcone:21000:skill:21000",
+      "sourceHash": "bfe40d64763003207f8fc1e44a5124558e5c260f5b4425cb986145ec7eeb64e3"
+    },
+    "21001": {
+      "sourceRef": "lightcone:21001:skill:21001",
+      "sourceHash": "e4b81333a9b1c4aca7458cb20f86d554f2810f0da517ca6c16a925fc73716c92"
+    },
+    "21002": {
+      "sourceRef": "lightcone:21002:skill:21002",
+      "sourceHash": "744165d9b745b72575e498b72db0ea091aadb6e383c8b3c54f2a204ca306502b"
+    },
+    "21003": {
+      "sourceRef": "lightcone:21003:skill:21003",
+      "sourceHash": "21cb9598ab292c80a4f507eb774a5b6f7cc6b2ddee9c8cf7c620964bd3a74b58"
+    },
+    "21004": {
+      "sourceRef": "lightcone:21004:skill:21004",
+      "sourceHash": "6c10dfc835bc63db7e199594494afe9eb9097cffedfce8b2839b35dacd779b01"
+    },
+    "21005": {
+      "sourceRef": "lightcone:21005:skill:21005",
+      "sourceHash": "4ca06a0f12ce9c5ab5cc895850c340d5ed0b190ecefb7a6ea2f699c5d74447c8"
+    },
+    "21006": {
+      "sourceRef": "lightcone:21006:skill:21006",
+      "sourceHash": "ab1c252a1aad9b2728c05d46b58ce9f757401fde145d318ed8e3302f5d085b50"
+    },
+    "21007": {
+      "sourceRef": "lightcone:21007:skill:21007",
+      "sourceHash": "bb9e5f5413891ea544e6ba5eaa3cfe1e47ee736cfdbdb61b93b4b5b2fccd4eda"
+    },
+    "21008": {
+      "sourceRef": "lightcone:21008:skill:21008",
+      "sourceHash": "23caf39d433e74ba7bef4fe811cfc1a1b85be0c73a6d7c3778fd417ae1628573"
+    },
+    "21009": {
+      "sourceRef": "lightcone:21009:skill:21009",
+      "sourceHash": "c3717608f273710443d655d5cc5dc932c2d99c43a08918cf2013ba6774bcd5fe"
+    },
+    "21010": {
+      "sourceRef": "lightcone:21010:skill:21010",
+      "sourceHash": "4ed2a180d7df8403491066c45732d9be0ff4b2c6e0305540807304bf13cb8225"
+    },
+    "21011": {
+      "sourceRef": "lightcone:21011:skill:21011",
+      "sourceHash": "2d92806912323c88037c292851e2bc869db64513928ca6d47718b5d4e7eb8034"
+    },
+    "21012": {
+      "sourceRef": "lightcone:21012:skill:21012",
+      "sourceHash": "d389b5085239bb37f2856ee29c46c382593a7aa14f8b9b0548f17a2eb9bb5253"
+    },
+    "21013": {
+      "sourceRef": "lightcone:21013:skill:21013",
+      "sourceHash": "6e84c18d710470d8e7c25715550956d36044e791ed3ea25c6651d506cd916aec"
+    },
+    "21014": {
+      "sourceRef": "lightcone:21014:skill:21014",
+      "sourceHash": "9c2dc65f893bb424aa4fbd657c38b9ca601b56e7f6e1474b69ade7de540764fe"
+    },
+    "21015": {
+      "sourceRef": "lightcone:21015:skill:21015",
+      "sourceHash": "ffa6f276ace4ad39626d605bf8000bf24a88146fef3052c28459fdec2d6006f8"
+    },
+    "21016": {
+      "sourceRef": "lightcone:21016:skill:21016",
+      "sourceHash": "222c74d6ee3a9dacf5bddaacb9a09fe31f500eddddc7845cdc7fa44a057662e5"
+    },
+    "21017": {
+      "sourceRef": "lightcone:21017:skill:21017",
+      "sourceHash": "813e37f4b9d57771c2c2160cf573ef79ed086b6bf1e190988ac4e486118c97f0"
+    },
+    "21018": {
+      "sourceRef": "lightcone:21018:skill:21018",
+      "sourceHash": "b5c7d8130a88bace940a6143c62ea993d8381c7479738e5b903be01570ab0d16"
+    },
+    "21019": {
+      "sourceRef": "lightcone:21019:skill:21019",
+      "sourceHash": "91ce3e55a8348917f3dcd2608b20ce2eabdba5728e251bffb8b1738008451be0"
+    },
+    "21020": {
+      "sourceRef": "lightcone:21020:skill:21020",
+      "sourceHash": "e0f1981d9fb09b02a3acff102f2037b660346d880d406ffe0cae5ff1c2a9c3de"
+    },
+    "21021": {
+      "sourceRef": "lightcone:21021:skill:21021",
+      "sourceHash": "cf751de54a226de3097fcd784b39cc4d719cc5927b2b6274732c9101401b3b7e"
+    },
+    "21022": {
+      "sourceRef": "lightcone:21022:skill:21022",
+      "sourceHash": "fb6979f848b874894b435af4b265699572d2f19d9511bb3005541788167e6b55"
+    },
+    "21023": {
+      "sourceRef": "lightcone:21023:skill:21023",
+      "sourceHash": "397ab02cfbf8bf1679d08a1fab4edfe92fd84534b9698d83791bcddc8a6d5d56"
+    },
+    "21024": {
+      "sourceRef": "lightcone:21024:skill:21024",
+      "sourceHash": "48342f8389a1d0f1e63a9a22d43ec69199cbe22515cc50508684497e18f36074"
+    },
+    "21025": {
+      "sourceRef": "lightcone:21025:skill:21025",
+      "sourceHash": "3e52d97fd46ad95add9c4bf06c5122dd6abcfce312cf71390e78866885b8a855"
+    },
+    "21026": {
+      "sourceRef": "lightcone:21026:skill:21026",
+      "sourceHash": "443a58ec11a7fbafd49e10bc76fa5ade1d84f09c970838f56a9cd76fdd3b043c"
+    },
+    "21027": {
+      "sourceRef": "lightcone:21027:skill:21027",
+      "sourceHash": "a19b77e55276a2ff6295d1db13d405f680011dc99d4689a53243d61b9827b475"
+    },
+    "21028": {
+      "sourceRef": "lightcone:21028:skill:21028",
+      "sourceHash": "abf540dd0cb84a44722284e907181b5705452b2ab431a745e2fcb1fff443521b"
+    },
+    "21029": {
+      "sourceRef": "lightcone:21029:skill:21029",
+      "sourceHash": "e2a9071643db075056b76659d594080900ccd07952624cb325e4c1442eed1ab4"
+    },
+    "21030": {
+      "sourceRef": "lightcone:21030:skill:21030",
+      "sourceHash": "6230bc011a84cc583202c49e0c5ee3e7b944b58b4b517c453502c9d5f47410ee"
+    },
+    "21031": {
+      "sourceRef": "lightcone:21031:skill:21031",
+      "sourceHash": "8b8f663aaa71b5dc5c5d08e96789aade503d43d259e00ec19f2a2f2267136050"
+    },
+    "21032": {
+      "sourceRef": "lightcone:21032:skill:21032",
+      "sourceHash": "885871d6a37e3b47ca9c34c63e6d0d89686b46dd28ef399fb68a0d08980af036"
+    },
+    "21033": {
+      "sourceRef": "lightcone:21033:skill:21033",
+      "sourceHash": "e40bdd523a0bd458ca3b3a048c5931eace99fe62cea320e5b1bfc5397ceb01d0"
+    },
+    "21034": {
+      "sourceRef": "lightcone:21034:skill:21034",
+      "sourceHash": "25b246181d94f25ffff486bef0c925d0ef580ec7e2b98120d4c4b1bf75176aaa"
+    },
+    "21035": {
+      "sourceRef": "lightcone:21035:skill:21035",
+      "sourceHash": "dd1d94fe1f370f48d7cbf6b1710803b40e4116c008529efec7653a552b249e73"
+    },
+    "21036": {
+      "sourceRef": "lightcone:21036:skill:21036",
+      "sourceHash": "11698500ed7c6ca48e9866fc9fd8a1c5dad3a0716591a5bc3975944a33a19484"
+    },
+    "21037": {
+      "sourceRef": "lightcone:21037:skill:21037",
+      "sourceHash": "0411487ba78960374e8bbf7338b236984e1923acb8666d7daf8759de30eb4dad"
+    },
+    "21038": {
+      "sourceRef": "lightcone:21038:skill:21038",
+      "sourceHash": "38670b27c2b29c6e5be23365d4928a9dae54433e5b49c02fad7630b05b1ac5e0"
+    },
+    "21039": {
+      "sourceRef": "lightcone:21039:skill:21039",
+      "sourceHash": "3678a9e6ba498d11d6de9d7a3de832d8e560a5e0e93d91bd3c7394e91d893263"
+    },
+    "21040": {
+      "sourceRef": "lightcone:21040:skill:21040",
+      "sourceHash": "b8fa1523502f1b24850b86a035e9c93d2025368a264daa2cc56d38a4826cae79"
+    },
+    "21041": {
+      "sourceRef": "lightcone:21041:skill:21041",
+      "sourceHash": "a0ee604ebd5733e791348405c1cd60592c9d1b48a576debdc0c5fe2526bff09e"
+    },
+    "21042": {
+      "sourceRef": "lightcone:21042:skill:21042",
+      "sourceHash": "0229d828e3c32b253e1e33ae2cb5ddf68345109880992a7e0d8b941a51e01525"
+    },
+    "21043": {
+      "sourceRef": "lightcone:21043:skill:21043",
+      "sourceHash": "ba4310e429f6916e6931373c29d8346e58ad7f1e085d935b716c580944f653da"
+    },
+    "21044": {
+      "sourceRef": "lightcone:21044:skill:21044",
+      "sourceHash": "df2f3c231bd8f2295711e0e92b4cc99f70d49dc0efa56e866f02011294d1ea4f"
+    },
+    "21045": {
+      "sourceRef": "lightcone:21045:skill:21045",
+      "sourceHash": "6ff3fe9c5d6aec111ec1256bfc5ad40cac5a0aca26180433fdbf4923eeb1faa2"
+    },
+    "21046": {
+      "sourceRef": "lightcone:21046:skill:21046",
+      "sourceHash": "0d112462d388b65e294b4828eccb4d4b0665cfd0b845e4bd0889692dca8c3d04"
+    },
+    "21047": {
+      "sourceRef": "lightcone:21047:skill:21047",
+      "sourceHash": "b4d9836efbe660523b4489ed46e2c36a942207ba7b812968c9405e9ec381c486"
+    },
+    "21048": {
+      "sourceRef": "lightcone:21048:skill:21048",
+      "sourceHash": "ef9a464ed39e550e437e0f87ef8fc9c7d81621771b87ea9eea2bc1a56d34fcd9"
+    },
+    "21050": {
+      "sourceRef": "lightcone:21050:skill:21050",
+      "sourceHash": "3de3a74cc721ecc92ee5988db100e53f846607fec55a71cb3648eb046ff21f6d"
+    },
+    "21051": {
+      "sourceRef": "lightcone:21051:skill:21051",
+      "sourceHash": "3fd0176e281f1c6ab604e4da9f1d73d4a7b3b27c18034501551041d2670cac26"
+    },
+    "21052": {
+      "sourceRef": "lightcone:21052:skill:21052",
+      "sourceHash": "a22a203ffaa0e1afd8da7d9da730dd1b6beaf9cf646480cccd9fc6eb559b6bd7"
+    },
+    "21053": {
+      "sourceRef": "lightcone:21053:skill:21053",
+      "sourceHash": "ccfeb31f6ffacb14997a129e5b25db4107a3885b0e966248b1b5a5b55cd5e256"
+    },
+    "21054": {
+      "sourceRef": "lightcone:21054:skill:21054",
+      "sourceHash": "8565645861606aaa0437800bdc4485f716ee15fe0290e6d4a0dde5c51807f4cf"
+    },
+    "21055": {
+      "sourceRef": "lightcone:21055:skill:21055",
+      "sourceHash": "d268ec7984237c163bac1d5d78f759940952d75fe39ec77b23e3f861286bc27e"
+    },
+    "21056": {
+      "sourceRef": "lightcone:21056:skill:21056",
+      "sourceHash": "792013d6400e948f23361df8dcb45a1702097a2d076bcf1399333ec1913e610b"
+    },
+    "21057": {
+      "sourceRef": "lightcone:21057:skill:21057",
+      "sourceHash": "43ed098a335a21d007e7d4f45f71ec161ae8fc0f639ad35a80cc74811c7bed60"
+    },
+    "21058": {
+      "sourceRef": "lightcone:21058:skill:21058",
+      "sourceHash": "3c02ec84e27667c4d79a6879ad07f7ded3bbb2f84a669f025160c498ecc93d38"
+    },
+    "21060": {
+      "sourceRef": "lightcone:21060:skill:21060",
+      "sourceHash": "956655b9947c493436fc82401e398fc79f73bd38a4e615ca8c73c4527a5cb5e4"
+    },
+    "21061": {
+      "sourceRef": "lightcone:21061:skill:21061",
+      "sourceHash": "bc6c2eab18bae6bcb5ed1788e813f30a74d6d56e2355a4fbb4e13c17f0192b57"
+    },
+    "21062": {
+      "sourceRef": "lightcone:21062:skill:21062",
+      "sourceHash": "c4e3da97f937800465c7fb5d4287903b36015cf24facc963c934827fed1f0c5c"
+    },
+    "21064": {
+      "sourceRef": "lightcone:21064:skill:21064",
+      "sourceHash": "6504f6c0ea653a24b027297fd82f495faaf78a18ca7d0f06bea1047e4781c5fb"
+    },
+    "21065": {
+      "sourceRef": "lightcone:21065:skill:21065",
+      "sourceHash": "f934f576179f37c3e59b52af5a528a21941319ac991442ba09a9767ac06ec86f"
+    },
+    "21066": {
+      "sourceRef": "lightcone:21066:skill:21066",
+      "sourceHash": "652cf8b2611385d7e80e7c9f41a2ab848c08a4685051f55b63d474d1c0f65429"
+    },
+    "22000": {
+      "sourceRef": "lightcone:22000:skill:22000",
+      "sourceHash": "6e812f7b7810b3a6f26a750f30ab966f2ea9f7a79b5821204e99038e62f34890"
+    },
+    "22001": {
+      "sourceRef": "lightcone:22001:skill:22001",
+      "sourceHash": "5cdb891993c282c5b9e27cb73dda555fde083bff5efec4f9e52d4e9a7a6f958c"
+    },
+    "22002": {
+      "sourceRef": "lightcone:22002:skill:22002",
+      "sourceHash": "e8edd2f0c7b2c381e834adb2dc66d008b7202a5b54072ac09cd53312488b5f6f"
+    },
+    "22003": {
+      "sourceRef": "lightcone:22003:skill:22003",
+      "sourceHash": "1f13b6b2532bc7196482cd8a9c51db75339589c3fedd978e7daba8b72a22a957"
+    },
+    "22004": {
+      "sourceRef": "lightcone:22004:skill:22004",
+      "sourceHash": "8daf625d1fd77448dfcc8c6890dbccb81b00470d7dd22c11192e9c047ef4727e"
+    },
+    "22005": {
+      "sourceRef": "lightcone:22005:skill:22005",
+      "sourceHash": "ac68dc50104cc28e1e87225133c7cd6b9ca62a3d596839d8fb65f4bdf5ea5b7d"
+    },
+    "22006": {
+      "sourceRef": "lightcone:22006:skill:22006",
+      "sourceHash": "509bdfc505aa364eef821c847979b8b9dc25d8b31ba35c51fc81240ba405cbd8"
+    },
+    "22007": {
+      "sourceRef": "lightcone:22007:skill:22007",
+      "sourceHash": "3c9546248b1cf90559d312f83d634d873e0fbf4ad506d503c561bd76b2fdd644"
+    },
+    "22008": {
+      "sourceRef": "lightcone:22008:skill:22008",
+      "sourceHash": "c2428476531f6fc3183dd8c8b988ce2d2a5568381d65edf3e6995c0eaefa1e4a"
+    },
+    "23000": {
+      "sourceRef": "lightcone:23000:skill:23000",
+      "sourceHash": "5a089ce3c2234f27f60380a840c839db2c8ce7242e52567a5827838861bfb776"
+    },
+    "23001": {
+      "sourceRef": "lightcone:23001:skill:23001",
+      "sourceHash": "5d2ba53b04c1e4ba56d35dae60329613c328ff9127c0361c2cf2e4988fcbfa6c"
+    },
+    "23002": {
+      "sourceRef": "lightcone:23002:skill:23002",
+      "sourceHash": "7def0892c50ea5df79a1574aa249a2885ae2526c209f229f6f07580d09adc2e0"
+    },
+    "23003": {
+      "sourceRef": "lightcone:23003:skill:23003",
+      "sourceHash": "d9c2b119a2011eac8f8db9a915954f4aff4a2c413e6ace728c4232d1c008b445"
+    },
+    "23004": {
+      "sourceRef": "lightcone:23004:skill:23004",
+      "sourceHash": "2fca8d201ac29d4a84a5b3b72d40b0c77f4d543d488a3271fde667f085983b5f"
+    },
+    "23005": {
+      "sourceRef": "lightcone:23005:skill:23005",
+      "sourceHash": "f5a5e2c4112f09d1ae4d0ffe02a2e703c6ec30d84ae65bb3bb6a905410611064"
+    },
+    "23006": {
+      "sourceRef": "lightcone:23006:skill:23006",
+      "sourceHash": "4b3dce661bb6d605b1e3af445b83fd2e509d714d0235bba9ccc27c6cca58bc2b"
+    },
+    "23007": {
+      "sourceRef": "lightcone:23007:skill:23007",
+      "sourceHash": "ef4c902b8c908e9f63ce25c1b36439b9afdcb20736a1b72ec0767e523935c72f"
+    },
+    "23008": {
+      "sourceRef": "lightcone:23008:skill:23008",
+      "sourceHash": "d5ac2ad1d4121d9ce336a6839f39f26547972eb93681b5f6eaa607eb70f1a344"
+    },
+    "23009": {
+      "sourceRef": "lightcone:23009:skill:23009",
+      "sourceHash": "40042c1cd98503d353146491c07f40b3f2c3002df5fb8a3efa37e915892e4803"
+    },
+    "23010": {
+      "sourceRef": "lightcone:23010:skill:23010",
+      "sourceHash": "5623448b4b7d73f35e5343550afb99bb61fc98297206ad45cea545d7819f5516"
+    },
+    "23011": {
+      "sourceRef": "lightcone:23011:skill:23011",
+      "sourceHash": "7c1d71d08110b3fae74916f1b7a157b6e79621f561fe541e90c4ee7c6cb1d135"
+    },
+    "23012": {
+      "sourceRef": "lightcone:23012:skill:23012",
+      "sourceHash": "a1b8948818761f11e5a705b351dc3197a5ad4237d40da753f77e6b1e3914c1f7"
+    },
+    "23013": {
+      "sourceRef": "lightcone:23013:skill:23013",
+      "sourceHash": "60e6f13ef3d994a2ee436ede995465dce066f4277ef5df8827172c42a1577a5b"
+    },
+    "23014": {
+      "sourceRef": "lightcone:23014:skill:23014",
+      "sourceHash": "b2164df5fcf9742a40613a090fe02224b2a0fd9d1a25d09160ff83ecc57a0548"
+    },
+    "23015": {
+      "sourceRef": "lightcone:23015:skill:23015",
+      "sourceHash": "1f287defd5545650f7736ed6536b571bc19e5078e5cb352706981987386c5e7b"
+    },
+    "23016": {
+      "sourceRef": "lightcone:23016:skill:23016",
+      "sourceHash": "8f28b312d3e44df23400a7d8c578abd7c8ac2c13d4ced990d2f86b41023bd2e5"
+    },
+    "23017": {
+      "sourceRef": "lightcone:23017:skill:23017",
+      "sourceHash": "0568ee496268d0b17dd7f04720e7a8c810268c523ae7892d99a70b83919be7c6"
+    },
+    "23018": {
+      "sourceRef": "lightcone:23018:skill:23018",
+      "sourceHash": "398ef282fbb7c8c3c4a4af77bc11e767ac9920a0b206963c098860b35f018c76"
+    },
+    "23019": {
+      "sourceRef": "lightcone:23019:skill:23019",
+      "sourceHash": "717260613e3b0ffd1b1ad5b65ce6dd92be91eb11969e9e68ffb93686f5f6d9f3"
+    },
+    "23020": {
+      "sourceRef": "lightcone:23020:skill:23020",
+      "sourceHash": "89ae44f851932c8873b91d7ec6816763a482ff996286337e40a7dc9406e2bf8f"
+    },
+    "23021": {
+      "sourceRef": "lightcone:23021:skill:23021",
+      "sourceHash": "f97f44ee2e0864e4e6e135001e9849bba44e1b26082e7a29ee943c46673ca375"
+    },
+    "23022": {
+      "sourceRef": "lightcone:23022:skill:23022",
+      "sourceHash": "52b751aef6fc992340f5886548aee87626fd3b54b8df0150fc3ee290ac50ed72"
+    },
+    "23023": {
+      "sourceRef": "lightcone:23023:skill:23023",
+      "sourceHash": "67dc6e10876e9781af72134ad43b73d6b1a9f036a4285cb79056abc87fa2597d"
+    },
+    "23024": {
+      "sourceRef": "lightcone:23024:skill:23024",
+      "sourceHash": "5662f425e4ddcc9ae8bfc3eff6b273d09d2eadc7e9bbea95e0fbdba927d7b96d"
+    },
+    "23025": {
+      "sourceRef": "lightcone:23025:skill:23025",
+      "sourceHash": "cf875bccd8f52e73631c47c2472b7717d2b4111ae96d9bdbe3fa1abddf95afd2"
+    },
+    "23026": {
+      "sourceRef": "lightcone:23026:skill:23026",
+      "sourceHash": "3cd0b7ed2556bcf21bc434993a01e4917d8f0d06a90b9b490ef739d3a7503af7"
+    },
+    "23027": {
+      "sourceRef": "lightcone:23027:skill:23027",
+      "sourceHash": "2b9ae66a04a60dad771a59ea005a3db47a986ea58675092b4b4eee8e757376fd"
+    },
+    "23028": {
+      "sourceRef": "lightcone:23028:skill:23028",
+      "sourceHash": "eaad343747230a7d5bda5cc86673714467239fd7cd04b8eb92b756c53de4e773"
+    },
+    "23029": {
+      "sourceRef": "lightcone:23029:skill:23029",
+      "sourceHash": "3374ecd24266c0da30294eb67ee3397d5a93b5339c8dc22179920398539ac191"
+    },
+    "23030": {
+      "sourceRef": "lightcone:23030:skill:23030",
+      "sourceHash": "c2222503f86f4b171fc694526c10e41b97dffe5a2f7381f8b00ede80aec82576"
+    },
+    "23031": {
+      "sourceRef": "lightcone:23031:skill:23031",
+      "sourceHash": "72a3f0190f64c8f6c891cf35be4713b4ef17a32fef16161937b1f11ef8ac40ae"
+    },
+    "23032": {
+      "sourceRef": "lightcone:23032:skill:23032",
+      "sourceHash": "03e04eaaf031be943348cf85c6d378e366375ccc6dc4e7b654a8d9fe4dc8afe6"
+    },
+    "23033": {
+      "sourceRef": "lightcone:23033:skill:23033",
+      "sourceHash": "4875f4fcb62cd52a5debba1362854777a186a84e89c4d3515cc5afd400e526ff"
+    },
+    "23034": {
+      "sourceRef": "lightcone:23034:skill:23034",
+      "sourceHash": "4973a44d3906a89625e0e047c98559c5ca53fd3bb63477151fc37e23819ce00b"
+    },
+    "23035": {
+      "sourceRef": "lightcone:23035:skill:23035",
+      "sourceHash": "9756c453f66322bf49a9387d7dc47843b82539f031a24ed5842a95456f0d853b"
+    },
+    "23036": {
+      "sourceRef": "lightcone:23036:skill:23036",
+      "sourceHash": "3017600cde70343a9d530a4b366d0a0536b6d649c59f0fe61d6dae1fbe41c5ff"
+    },
+    "23037": {
+      "sourceRef": "lightcone:23037:skill:23037",
+      "sourceHash": "4b201e2eeb9ff9f5069f821e21fc47df754a338e842b26d81550a04b8e27f3e8"
+    },
+    "23038": {
+      "sourceRef": "lightcone:23038:skill:23038",
+      "sourceHash": "8949638869783132ba0a9282b1ec9913270d8b12eb11f7e05119186280dc8505"
+    },
+    "23039": {
+      "sourceRef": "lightcone:23039:skill:23039",
+      "sourceHash": "3d0cdb71958210cf1fc95818d8e80d80ea9ae3f4a7cac20d17e978be85932e1d"
+    },
+    "23040": {
+      "sourceRef": "lightcone:23040:skill:23040",
+      "sourceHash": "e6f4db0afdc76e376a023fed2d115cce9c05b0912bf5c7c1507843a4a6a2f697"
+    },
+    "23041": {
+      "sourceRef": "lightcone:23041:skill:23041",
+      "sourceHash": "dcd81f7fb8102cf0bbdc94645b0f614083a10207534c74ba97830648583a0013"
+    },
+    "23042": {
+      "sourceRef": "lightcone:23042:skill:23042",
+      "sourceHash": "5d5ccf7872952ec141b8a19d07ece12d33e6727153f31982ea59f2e33cfcfe58"
+    },
+    "23043": {
+      "sourceRef": "lightcone:23043:skill:23043",
+      "sourceHash": "b6692302c9b3d5b02c8baea1d7df1116436a24f3ef9a45e5cfc8e7017b07bd11"
+    },
+    "23044": {
+      "sourceRef": "lightcone:23044:skill:23044",
+      "sourceHash": "fc750ffbdc3595fca589c152856814ad2e0d87f0b6d027084e8c7bb897f33a18"
+    },
+    "23045": {
+      "sourceRef": "lightcone:23045:skill:23045",
+      "sourceHash": "faeb23a3f0fb4ee2ae0262ceb6229a61a6ed263219ff9bb3c2d2077ffa6a88b6"
+    },
+    "23046": {
+      "sourceRef": "lightcone:23046:skill:23046",
+      "sourceHash": "220461bce0a90a223ccaa696518db71ca620e17e379d31e19d0519bd8cb509a6"
+    },
+    "23047": {
+      "sourceRef": "lightcone:23047:skill:23047",
+      "sourceHash": "d34a8fffd359831f0ee14237cb89b9a6d60e96878724d21c4d41ec11b0656f4f"
+    },
+    "23048": {
+      "sourceRef": "lightcone:23048:skill:23048",
+      "sourceHash": "b84dc884c44c7b9a9ed66cc33b79b1760024138b8ace5a8de206e19611c26279"
+    },
+    "23049": {
+      "sourceRef": "lightcone:23049:skill:23049",
+      "sourceHash": "271a20e3a308cd51f2a32ee43f135903e509692066f4dd65099aded1d9ce9cde"
+    },
+    "23050": {
+      "sourceRef": "lightcone:23050:skill:23050",
+      "sourceHash": "ce2a81d03e5a400d5ea08e07e593b67c3b03b21a08e85fa30d25bac38b1add12"
+    },
+    "23051": {
+      "sourceRef": "lightcone:23051:skill:23051",
+      "sourceHash": "9e5c3a756f3aacee68b077f0e004f6d5d59b23a7bcd751968dcc9308e37fab49"
+    },
+    "23052": {
+      "sourceRef": "lightcone:23052:skill:23052",
+      "sourceHash": "6d03b8e6cfb0e5d91b874cb6222f776090e2ce1abb70e7905f62e068ede45fe5"
+    },
+    "23053": {
+      "sourceRef": "lightcone:23053:skill:23053",
+      "sourceHash": "37e71b866a35c5a8a0ae135267ceb6ca3f2165f8726389261474eccead5b9a23"
+    },
+    "23054": {
+      "sourceRef": "lightcone:23054:skill:23054",
+      "sourceHash": "9cd1225f5f3857d377cd0a4044b47ac8a47c2b53cb4a1ff4c82366a70e21cfa3"
+    },
+    "23056": {
+      "sourceRef": "lightcone:23056:skill:23056",
+      "sourceHash": "0c58a9f905c36108f3e2ba7a35f8f182b9e4dd55d284f71c3fbd34b88871d23a"
+    },
+    "23057": {
+      "sourceRef": "lightcone:23057:skill:23057",
+      "sourceHash": "901b03c9e4d11fec7e73067cbb6bbc9445494249add10a19867ff194526daeb0"
+    },
+    "23058": {
+      "sourceRef": "lightcone:23058:skill:23058",
+      "sourceHash": "9f8540db79507eedf39caa33feb740f4d45ed48a7f22fdcf9b1fa740ee87fe3b"
+    },
+    "23059": {
+      "sourceRef": "lightcone:23059:skill:23059",
+      "sourceHash": "4ed8f5ece0a7274e31d27cb779e45e239cfccff0c45f7ec79cbb0eb07d4ac306"
+    },
+    "23060": {
+      "sourceRef": "lightcone:23060:skill:23060",
+      "sourceHash": "89a85fe4a2fa76ef68a2015917880e751d43975e98eefe4fdb3bc91eab7828c8"
+    },
+    "23061": {
+      "sourceRef": "lightcone:23061:skill:23061",
+      "sourceHash": "60401ca3312fc1cbcad8a4376836194b7fd38c8c1ce5b1c8892d2f28c1e3cc88"
+    },
+    "23062": {
+      "sourceRef": "lightcone:23062:skill:23062",
+      "sourceHash": "1dd2cd8e39657735baf6692e5d397102a19f0eaf4b55d3f6f86ec8b77b041a65"
+    },
+    "23063": {
+      "sourceRef": "lightcone:23063:skill:23063",
+      "sourceHash": "cb939059db5346ac211ed94794540c0fa4f8c7a3c8984d4606087ee48cb7a5f3"
+    },
+    "23064": {
+      "sourceRef": "lightcone:23064:skill:23064",
+      "sourceHash": "ed1664c7d71b13b78d060aa41c3e17aed257df62e18c812e26a5e8e50dba6c6f"
+    },
+    "24000": {
+      "sourceRef": "lightcone:24000:skill:24000",
+      "sourceHash": "64d09295818a100a34158357efc03b7d15000e5f74ce759df9e5335f1daf112d"
+    },
+    "24001": {
+      "sourceRef": "lightcone:24001:skill:24001",
+      "sourceHash": "9ff7f4d2644b89878feed8e0b175e9e49cba15f2d1a264bb80ed49ceb588c09c"
+    },
+    "24002": {
+      "sourceRef": "lightcone:24002:skill:24002",
+      "sourceHash": "e31d51624212d5a338de530b63c879e48b4c270eb0fab5a1887b18db38869066"
+    },
+    "24003": {
+      "sourceRef": "lightcone:24003:skill:24003",
+      "sourceHash": "4d60ac722966a7375ae6a972dd04391c507bc9e21bbb5c7c30aae8d0980f3a01"
+    },
+    "24004": {
+      "sourceRef": "lightcone:24004:skill:24004",
+      "sourceHash": "f4755e5762b33d5a3727b389a973cf048e0b92940ccc6e698b9e63e64f335285"
+    },
+    "24005": {
+      "sourceRef": "lightcone:24005:skill:24005",
+      "sourceHash": "ee56010ce99d87c79260fb119c8b8a4ada861f7ca07aff2ffa424fb376f61abf"
+    },
+    "24006": {
+      "sourceRef": "lightcone:24006:skill:24006",
+      "sourceHash": "1a119fb26f328cda9e56f3e0172a259141074b75580a781b5d73c6a792cee40e"
+    }
+  },
+  "relics": {
+    "101": {
+      "twoPiece": {
+        "sourceRef": "relic:101:set:2",
+        "sourceHash": "d8b3debeb97dcd138edcb2ad52a81d40cfc56f9c9a76d1686a0fbba430a88634"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:101:set:4",
+        "sourceHash": "19023c1ef1529ac821cfbbbd6956dc6baf9df2517d81937d06c39d6f22432f9e"
+      }
+    },
+    "102": {
+      "twoPiece": {
+        "sourceRef": "relic:102:set:2",
+        "sourceHash": "a28f3541d5d9869c6534df06a3f9b750306ec6d167b37ded89de1578d24c0f8e"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:102:set:4",
+        "sourceHash": "013bf6fd63d57c3ee121f5d63c6a9b233d2573b0e2b75fefaeecc355a749c78c"
+      }
+    },
+    "103": {
+      "twoPiece": {
+        "sourceRef": "relic:103:set:2",
+        "sourceHash": "d8743c8e9e2bd3a5bd665fac30362f48e8fd3eb5cd3f4bf523fe13574a631b3f"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:103:set:4",
+        "sourceHash": "984d50320efe4f43a2ad258bf9c8ce01c2851daa2bab0aef4dc8f8b648ca217b"
+      }
+    },
+    "104": {
+      "twoPiece": {
+        "sourceRef": "relic:104:set:2",
+        "sourceHash": "838eee9e4705d43e5a8b5f2f0b240a39adfabe7c312397cfd787f2417febb083"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:104:set:4",
+        "sourceHash": "20b20ab4b2fc255d200dda155bd8cbbbe1dc5f7a956785951bff04ddb6b0cc59"
+      }
+    },
+    "105": {
+      "twoPiece": {
+        "sourceRef": "relic:105:set:2",
+        "sourceHash": "e708251bed80bc6b1219b5d659d9be880ef2ad07683e153212ca5d804a8e83fe"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:105:set:4",
+        "sourceHash": "15cd93a2d39502b23c8bda5d337fc134ebcaf598b42b545f95ea6c1383fae7b2"
+      }
+    },
+    "106": {
+      "twoPiece": {
+        "sourceRef": "relic:106:set:2",
+        "sourceHash": "1d3d332ccbcd1dca5fe0988f3f6c1c56234bfecbf1eed69fc82e03f78555a24c"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:106:set:4",
+        "sourceHash": "f57bc5a09629515f5872dd84c659c058639b368eb533785868994ed0ea7cb9e3"
+      }
+    },
+    "107": {
+      "twoPiece": {
+        "sourceRef": "relic:107:set:2",
+        "sourceHash": "3cb61bd5e3867f132894cb2daa15c44232ef97975ff0b5a15796c34f52e83f82"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:107:set:4",
+        "sourceHash": "89ca9c50ce7f525f12e6e3e611724bac8737edf5420043a36e78573567daff38"
+      }
+    },
+    "108": {
+      "twoPiece": {
+        "sourceRef": "relic:108:set:2",
+        "sourceHash": "a169bcd72970ba5ded51a251812a74dc42264312782d323619ac28fb4ae95677"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:108:set:4",
+        "sourceHash": "c97365ba4832e40de48b3f07ccdbefa988a5d11143fb0291238764df27127a61"
+      }
+    },
+    "109": {
+      "twoPiece": {
+        "sourceRef": "relic:109:set:2",
+        "sourceHash": "edffeed85c8e52afc7168ac322cc26ce6c862bee38a635d461973c90d8d002d5"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:109:set:4",
+        "sourceHash": "bbfbfd71c249df6749967ebe48e7d616d47aac7759ff42a32968aea225a078d2"
+      }
+    },
+    "110": {
+      "twoPiece": {
+        "sourceRef": "relic:110:set:2",
+        "sourceHash": "f182f79152f0c1f047a8a57f48e42e9794484277f430436f3ac35807f72e310f"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:110:set:4",
+        "sourceHash": "4c7bc83f46e0bf22e3f7b0be2f451591b8769d6f7f7297b0ca97f33598a53c69"
+      }
+    },
+    "111": {
+      "twoPiece": {
+        "sourceRef": "relic:111:set:2",
+        "sourceHash": "c521dfc57234396c6a7d030f90264f9d89c8f335383ab84558882bb8426210be"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:111:set:4",
+        "sourceHash": "2e33d2e609bc82f858bfeeafa1b2e5a8d6f48f098b7e3866d824e5b38972a68b"
+      }
+    },
+    "112": {
+      "twoPiece": {
+        "sourceRef": "relic:112:set:2",
+        "sourceHash": "7138ca0f0cd03ff86fea89d52fff8d38d91f4d3a21b16332c2df73434c39eaee"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:112:set:4",
+        "sourceHash": "5384a9e4edbb26f647d3687b57b0c34e2831f6ee8549c6b42e65a8585352ff8e"
+      }
+    },
+    "113": {
+      "twoPiece": {
+        "sourceRef": "relic:113:set:2",
+        "sourceHash": "6659be64a5555c56a782372a193e97c858f1e81094db952ae60086c9fb45e83d"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:113:set:4",
+        "sourceHash": "6100fee05b6c7383ed9ef9a147db6715d760958c26d8ff4fe5fcf78c8688cb23"
+      }
+    },
+    "114": {
+      "twoPiece": {
+        "sourceRef": "relic:114:set:2",
+        "sourceHash": "591213a3058fb33b1e21cc64f6cf68695c8f7a23dbd3705de0e26481d45c1118"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:114:set:4",
+        "sourceHash": "146073eabd6aff95083acffe87341b08dcdd6a0956da5cc88f9d76ffe8273431"
+      }
+    },
+    "115": {
+      "twoPiece": {
+        "sourceRef": "relic:115:set:2",
+        "sourceHash": "e0e307b0212c9149e076f74638c7dd4fc2e7db2e6e02ec7f9c68fb6c9066d7d9"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:115:set:4",
+        "sourceHash": "456228fc22b6a03dd46ae0f2b495c2c4ee08413a6586b9c47aba923320370f13"
+      }
+    },
+    "116": {
+      "twoPiece": {
+        "sourceRef": "relic:116:set:2",
+        "sourceHash": "fe96a090cc7225a3924b2b6b73bb0f2291d63b32eab42b337cf97bf7eb86aeeb"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:116:set:4",
+        "sourceHash": "38f7939b9135ca5beded2bfee5d0786acecbff0756d164b4130478643a99e4b4"
+      }
+    },
+    "117": {
+      "twoPiece": {
+        "sourceRef": "relic:117:set:2",
+        "sourceHash": "05f18ec0a298c570209cfb617042d30871ce340ddf25e605e355b11fc67ce4fc"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:117:set:4",
+        "sourceHash": "1d5b323a50cb07208383ed5009376733e346f7864b9a2d567a1bfaf043fb4685"
+      }
+    },
+    "118": {
+      "twoPiece": {
+        "sourceRef": "relic:118:set:2",
+        "sourceHash": "762ab7354f7ea3133a764ede93b46e1a34e6ac158856230ceac05992a10480fe"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:118:set:4",
+        "sourceHash": "8dce44cdd545bdca9080e74c8c4b98284a6ff411eda1191fdebeb80d85394f3e"
+      }
+    },
+    "119": {
+      "twoPiece": {
+        "sourceRef": "relic:119:set:2",
+        "sourceHash": "d68c328b0de61a14964b4e0ef37ab5b15f0fbab0d1dee1874c91d76dffd1aff1"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:119:set:4",
+        "sourceHash": "bd70d63b7e894b7b7f9e761d030941d9bdf4def3b6dc7e14bc66326dd8853774"
+      }
+    },
+    "120": {
+      "twoPiece": {
+        "sourceRef": "relic:120:set:2",
+        "sourceHash": "2c6d77cc1e3ec0a48df90d2477d12ff8cd6a819c865f57170dd65243404c8040"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:120:set:4",
+        "sourceHash": "f36fcdd48280917033f2baad2281823eb98b8575dc3340cf9598156b9fadd469"
+      }
+    },
+    "121": {
+      "twoPiece": {
+        "sourceRef": "relic:121:set:2",
+        "sourceHash": "88cccc8a13ee8fef858660256c963d45a8db14c7b072faab1ed6d8a5c1a0c3d0"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:121:set:4",
+        "sourceHash": "483866735d183d8c86414be7968ecb4c6cfdee4124c25752e7262fa11547e04c"
+      }
+    },
+    "122": {
+      "twoPiece": {
+        "sourceRef": "relic:122:set:2",
+        "sourceHash": "40b33a4a47af6a7e97bb1ce508a28f2ac9e1fd1f853ec35e1e3191f525a15d38"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:122:set:4",
+        "sourceHash": "4ebe024c7f1910d2bec760eaaa105322997d91ffd5de8ad1c65c539a91eb110f"
+      }
+    },
+    "123": {
+      "twoPiece": {
+        "sourceRef": "relic:123:set:2",
+        "sourceHash": "548b0b315e6881cdc277bb486e5192115bf4d12ecc01081e2abb2f43951fde42"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:123:set:4",
+        "sourceHash": "5480cafed33be3ea9b5ad92250d28eb2bc20795e0dbab08c555410cc0248b56c"
+      }
+    },
+    "124": {
+      "twoPiece": {
+        "sourceRef": "relic:124:set:2",
+        "sourceHash": "e7159cdbafc5b1e2b0f65fb72c420188e5ca622238e046241d6ddb08ac720c83"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:124:set:4",
+        "sourceHash": "dc278716ab80d65826e8f487abef8e8e37c9ad26906e1a4494ae2b8d79094564"
+      }
+    },
+    "125": {
+      "twoPiece": {
+        "sourceRef": "relic:125:set:2",
+        "sourceHash": "53707d66dc774d6b203a23148f5fdacad505c08157c32b55c1a449b05ee764be"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:125:set:4",
+        "sourceHash": "309cb5f4082b37ef79ad785f8c6f536ec1017baa72ceb0eacebcfda5fc4c618b"
+      }
+    },
+    "126": {
+      "twoPiece": {
+        "sourceRef": "relic:126:set:2",
+        "sourceHash": "a8dbae74f065b32a7fd58c908dba2623bada6c73d9cd47530b57e381edff3c8a"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:126:set:4",
+        "sourceHash": "4fa05e00ac2e23fae541cfc04945a3aa191e9f4a2d3877bea5ab4bb81429c51f"
+      }
+    },
+    "127": {
+      "twoPiece": {
+        "sourceRef": "relic:127:set:2",
+        "sourceHash": "aee3cfc25ed79165f40409c60187b76fbbfcd35e3548c0731d3e9a9be3ab461b"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:127:set:4",
+        "sourceHash": "014d81eeeef8ff03c7c5553fe00500dbec816ef1b3576855d7164681955422da"
+      }
+    },
+    "128": {
+      "twoPiece": {
+        "sourceRef": "relic:128:set:2",
+        "sourceHash": "193374b8a19c9fe3b3ec01371a192f7675b0e58d85e5990c04b0b88608a3d9ab"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:128:set:4",
+        "sourceHash": "749d0c67859b9ecded547112633b9df83361fc26c5ef8b8945fd76c86fa64f33"
+      }
+    },
+    "129": {
+      "twoPiece": {
+        "sourceRef": "relic:129:set:2",
+        "sourceHash": "5840b6f249d20b9d48951a22f9ae12a11ed93cbf2be46aad9950f37e76c2879b"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:129:set:4",
+        "sourceHash": "b1159eb1a37b3434d9618e9d5ef05800464b8d9d2cadf1ac3401b7be39056290"
+      }
+    },
+    "130": {
+      "twoPiece": {
+        "sourceRef": "relic:130:set:2",
+        "sourceHash": "82d4c9c41741becc358f48a0633bdf3187fcc951e134f53e8494eb36bc5c167c"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:130:set:4",
+        "sourceHash": "4d35ec16986c02329ccee5fdc1602629448f70d5a439d940fdc397ddf4b41292"
+      }
+    },
+    "131": {
+      "twoPiece": {
+        "sourceRef": "relic:131:set:2",
+        "sourceHash": "dce8296abcd3a88fbaaa14a769c7f6b83f842ed0f15bf2cbe66aecac5118e065"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:131:set:4",
+        "sourceHash": "77f940edc13a9a6ea1755eb14c6790e696b17a564e4a2003a1e0776ae6e9c4a0"
+      }
+    },
+    "132": {
+      "twoPiece": {
+        "sourceRef": "relic:132:set:2",
+        "sourceHash": "0660694f0e47eabe8d5ae85d661e4c6e7ec5713cc734539f8d2a432681804d57"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:132:set:4",
+        "sourceHash": "111cba7a13da9980a99944506e4a488e5a64cf1e707d377afdd3e88c14d669e1"
+      }
+    },
+    "301": {
+      "twoPiece": {
+        "sourceRef": "relic:301:set:2",
+        "sourceHash": "617e6a90b8be81f0820b2a49c6a1097136b90ff347831c79d8c0cd2e6d093d3f"
+      }
+    },
+    "302": {
+      "twoPiece": {
+        "sourceRef": "relic:302:set:2",
+        "sourceHash": "c37d0165ac8e8bbc2088ac1c923411a19418a510ab9707d8ca4da9e8c8ff9b3b"
+      }
+    },
+    "303": {
+      "twoPiece": {
+        "sourceRef": "relic:303:set:2",
+        "sourceHash": "f7674b72f93fecc5907155b4d83316b5f6a1fadd1b8307c0f9da8378dbfae508"
+      }
+    },
+    "304": {
+      "twoPiece": {
+        "sourceRef": "relic:304:set:2",
+        "sourceHash": "3c7ad1dbf348452b42378bd0e1e36be9b3ce94291287bec8185bb3368b483923"
+      }
+    },
+    "305": {
+      "twoPiece": {
+        "sourceRef": "relic:305:set:2",
+        "sourceHash": "9abd43ffff1bc6b9e0b712bfb6dab66d61c9f96b8f00e67412dc8e70768c56ac"
+      }
+    },
+    "306": {
+      "twoPiece": {
+        "sourceRef": "relic:306:set:2",
+        "sourceHash": "b7b374e008bbf8d7f8eebe146522d92669c960af7a9910503d99de72ae591130"
+      }
+    },
+    "307": {
+      "twoPiece": {
+        "sourceRef": "relic:307:set:2",
+        "sourceHash": "771411b538cb4c61bd872bf465c4fe693ffdcb285c9f7cd9ddffbd82b64c29ab"
+      }
+    },
+    "308": {
+      "twoPiece": {
+        "sourceRef": "relic:308:set:2",
+        "sourceHash": "87ef292c734e31015d4086d6a22383cd425dccc5d8f13b4d46a294f7ddc35035"
+      }
+    },
+    "309": {
+      "twoPiece": {
+        "sourceRef": "relic:309:set:2",
+        "sourceHash": "e5194cb236f7c10efc971b12ed9c25f44639c6b9980cac4fa55565fb780c946d"
+      }
+    },
+    "310": {
+      "twoPiece": {
+        "sourceRef": "relic:310:set:2",
+        "sourceHash": "c2537ea46e79541a145e40c8ef022e5969b92197f4a2b4f8601efad6c3df3af4"
+      }
+    },
+    "311": {
+      "twoPiece": {
+        "sourceRef": "relic:311:set:2",
+        "sourceHash": "9633fd530bcf9911c2ad85ed49983434913b3331a6de73a8b7432a0381cfe9ac"
+      }
+    },
+    "312": {
+      "twoPiece": {
+        "sourceRef": "relic:312:set:2",
+        "sourceHash": "ff7de98b9d56d8ecb094161bcb5d9d73b23ea23194e8022fe7c8019197d986e2"
+      }
+    },
+    "313": {
+      "twoPiece": {
+        "sourceRef": "relic:313:set:2",
+        "sourceHash": "f5e39a38d46bb1dbbf9e61163b3a3816c7d23e6efedcbac7428fafe5ff5098a0"
+      }
+    },
+    "314": {
+      "twoPiece": {
+        "sourceRef": "relic:314:set:2",
+        "sourceHash": "b1b9e04fa98bf93822270ee4b3d4ea71e3c3f2caf908d4e058082937e1c1bc99"
+      }
+    },
+    "315": {
+      "twoPiece": {
+        "sourceRef": "relic:315:set:2",
+        "sourceHash": "980fb49a2eb8596bff09ab8cac0ccc9763d8d687ee02c22f08ecb488a6bace00"
+      }
+    },
+    "316": {
+      "twoPiece": {
+        "sourceRef": "relic:316:set:2",
+        "sourceHash": "82dc762e2b24088de746a83f148c3c8e2a3d4b3d8f238663ae38f5c0ba0011c9"
+      }
+    },
+    "317": {
+      "twoPiece": {
+        "sourceRef": "relic:317:set:2",
+        "sourceHash": "040d806fc7e4e483a6da31a050c85aac6053f354c7aee93dd77314304859aa9b"
+      }
+    },
+    "318": {
+      "twoPiece": {
+        "sourceRef": "relic:318:set:2",
+        "sourceHash": "6e1f15bb587aeb0e21f7f3032f96aca171ac0b59471a24cc7cfa0ac290c07fae"
+      }
+    },
+    "319": {
+      "twoPiece": {
+        "sourceRef": "relic:319:set:2",
+        "sourceHash": "66bbed1e2362eeb41808c95c9fd5564f312fa69dbe988ae038ae98755cba694d"
+      }
+    },
+    "320": {
+      "twoPiece": {
+        "sourceRef": "relic:320:set:2",
+        "sourceHash": "1dcb2f0d920c30d2606a41ebac49789abcd188e7e836f92595847e400b87bdd7"
+      }
+    },
+    "321": {
+      "twoPiece": {
+        "sourceRef": "relic:321:set:2",
+        "sourceHash": "cd1cde79e411411be647a12c01fe6bf5327652fa62b1a4d9752433552864c47e"
+      }
+    },
+    "322": {
+      "twoPiece": {
+        "sourceRef": "relic:322:set:2",
+        "sourceHash": "6cf161c031c86c0dd497fe1a5fe237f7a1574809c21f8bb164ff4e5d4f95861d"
+      }
+    },
+    "323": {
+      "twoPiece": {
+        "sourceRef": "relic:323:set:2",
+        "sourceHash": "e9706c78611526c0caee180a4ca48474963098006cd8d38919483d6298691d2e"
+      }
+    },
+    "324": {
+      "twoPiece": {
+        "sourceRef": "relic:324:set:2",
+        "sourceHash": "47afa525c0d77c403c38d232e25b4b77272c440eeb580aa011a85915cf00ab18"
+      }
+    },
+    "325": {
+      "twoPiece": {
+        "sourceRef": "relic:325:set:2",
+        "sourceHash": "fa4d6b787c927cd4a27b25115b48add603f3930cfc39699dc0892320f47fd6f9"
+      }
+    },
+    "326": {
+      "twoPiece": {
+        "sourceRef": "relic:326:set:2",
+        "sourceHash": "37fb33844158cfedf8c6b421e73c3101c12030b213ee508936edd18f2f832889"
+      }
+    },
+    "327": {
+      "twoPiece": {
+        "sourceRef": "relic:327:set:2",
+        "sourceHash": "1cb95f0e0c6dbed4f404fb38fdb5c7de6d2e964d1341ad904972442e5db63794"
+      }
+    },
+    "328": {
+      "twoPiece": {
+        "sourceRef": "relic:328:set:2",
+        "sourceHash": "9fb5964fa234609619b7fbb8e108eedc7987f715cf55adc1a98ba4626620bebc"
+      }
+    }
+  }
+}

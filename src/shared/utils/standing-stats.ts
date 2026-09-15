@@ -1,4 +1,5 @@
 // Shared standing-stat calculation for inventory details and build planning.
+import { reviewedStandingRules, type StandingEquipment } from "./standing-rule-catalogue";
 export type StaticStatValue = {
   key: string;
   value: number;
@@ -18,6 +19,8 @@ export type StandingStatsInput = {
   setEffects?: string[];
   /** 已装备光锥在当前叠影下的技能描述（仅解析无条件站街加成）。 */
   lightConeEffects?: string[];
+  /** Reviewed ID-bound rules take precedence over legacy text compatibility inputs. */
+  equipment?: StandingEquipment;
 };
 
 export type StandingStat = {
@@ -277,9 +280,27 @@ function accumulateStandingStats(input: StandingStatsInput): Accumulator {
     }
   }
   for (const trace of input.traces) addTraceStat(accumulator, trace);
-  const passiveEffects = [...(input.setEffects ?? []), ...(input.lightConeEffects ?? [])];
-  for (const stat of staticSetStats(passiveEffects)) addTraceStat(accumulator, stat);
-  addStaticSetConversions(accumulator, passiveEffects);
+  if (input.equipment) {
+    const rules = reviewedStandingRules(input.equipment);
+    for (const stat of rules.contributions) addTraceStat(accumulator, stat);
+    for (const conversion of rules.conversions) {
+      const inputValue =
+        conversion.inputKey === "Max Energy"
+          ? input.equipment.entityStats?.[conversion.inputKey]
+          : (accumulator.percent[conversion.inputKey] ?? 0);
+      if (inputValue === undefined) continue;
+      const value = Math.min(
+        Math.max(0, inputValue - conversion.inputOffset) * conversion.ratio,
+        conversion.cap,
+      );
+      addTraceStat(accumulator, { key: conversion.key, value });
+    }
+  } else {
+    // Compatibility for existing callers/fixtures; application equipment paths use reviewed IDs.
+    const passiveEffects = [...(input.setEffects ?? []), ...(input.lightConeEffects ?? [])];
+    for (const stat of staticSetStats(passiveEffects)) addTraceStat(accumulator, stat);
+    addStaticSetConversions(accumulator, passiveEffects);
+  }
 
   return accumulator;
 }

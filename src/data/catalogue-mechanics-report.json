@@ -1,0 +1,1937 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-15T04:54:12.179Z",
+  "manifest": [
+    {
+      "kind": "character",
+      "url": "https://starrailstation.com/cn/characters",
+      "count": 97,
+      "mapping": [
+        {
+          "slug": "aventurinewaveflair",
+          "gameId": "1513",
+          "pathId": 9
+        },
+        {
+          "slug": "robinsummeretto",
+          "gameId": "1512",
+          "pathId": 8
+        },
+        {
+          "slug": "himekonova",
+          "gameId": "1510",
+          "pathId": 3
+        },
+        {
+          "slug": "gilgamesh",
+          "gameId": "1509",
+          "pathId": 1
+        },
+        {
+          "slug": "tohsakarin",
+          "gameId": "1508",
+          "pathId": 3
+        },
+        {
+          "slug": "mortenaxblade",
+          "gameId": "1507",
+          "pathId": 5
+        },
+        {
+          "slug": "silverwolflv999",
+          "gameId": "1506",
+          "pathId": 9
+        },
+        {
+          "slug": "evanescia",
+          "gameId": "1505",
+          "pathId": 9
+        },
+        {
+          "slug": "ashveil",
+          "gameId": "1504",
+          "pathId": 2
+        },
+        {
+          "slug": "yaoguang",
+          "gameId": "1502",
+          "pathId": 9
+        },
+        {
+          "slug": "sparxie",
+          "gameId": "1501",
+          "pathId": 9
+        },
+        {
+          "slug": "cyrene",
+          "gameId": "1415",
+          "pathId": 8
+        },
+        {
+          "slug": "danhengpt",
+          "gameId": "1414",
+          "pathId": 6
+        },
+        {
+          "slug": "evernight",
+          "gameId": "1413",
+          "pathId": 8
+        },
+        {
+          "slug": "cerydra",
+          "gameId": "1412",
+          "pathId": 4
+        },
+        {
+          "slug": "hysilens",
+          "gameId": "1410",
+          "pathId": 5
+        },
+        {
+          "slug": "hyacine",
+          "gameId": "1409",
+          "pathId": 8
+        },
+        {
+          "slug": "phainon",
+          "gameId": "1408",
+          "pathId": 1
+        },
+        {
+          "slug": "castorice",
+          "gameId": "1407",
+          "pathId": 8
+        },
+        {
+          "slug": "cipher",
+          "gameId": "1406",
+          "pathId": 5
+        },
+        {
+          "slug": "anaxa",
+          "gameId": "1405",
+          "pathId": 3
+        },
+        {
+          "slug": "mydei",
+          "gameId": "1404",
+          "pathId": 1
+        },
+        {
+          "slug": "tribbie",
+          "gameId": "1403",
+          "pathId": 4
+        },
+        {
+          "slug": "aglaea",
+          "gameId": "1402",
+          "pathId": 8
+        },
+        {
+          "slug": "theherta",
+          "gameId": "1401",
+          "pathId": 3
+        },
+        {
+          "slug": "dahlia",
+          "gameId": "1321",
+          "pathId": 5
+        },
+        {
+          "slug": "rappa",
+          "gameId": "1317",
+          "pathId": 3
+        },
+        {
+          "slug": "boothill",
+          "gameId": "1315",
+          "pathId": 2
+        },
+        {
+          "slug": "jade",
+          "gameId": "1314",
+          "pathId": 3
+        },
+        {
+          "slug": "sunday",
+          "gameId": "1313",
+          "pathId": 4
+        },
+        {
+          "slug": "sam",
+          "gameId": "1310",
+          "pathId": 1
+        },
+        {
+          "slug": "robin",
+          "gameId": "1309",
+          "pathId": 4
+        },
+        {
+          "slug": "acheron",
+          "gameId": "1308",
+          "pathId": 5
+        },
+        {
+          "slug": "blackswan",
+          "gameId": "1307",
+          "pathId": 5
+        },
+        {
+          "slug": "sparkle",
+          "gameId": "1306",
+          "pathId": 4
+        },
+        {
+          "slug": "drratio",
+          "gameId": "1305",
+          "pathId": 2
+        },
+        {
+          "slug": "aventurine",
+          "gameId": "1304",
+          "pathId": 6
+        },
+        {
+          "slug": "ruanmei",
+          "gameId": "1303",
+          "pathId": 4
+        },
+        {
+          "slug": "argenti",
+          "gameId": "1302",
+          "pathId": 3
+        },
+        {
+          "slug": "fugue",
+          "gameId": "1225",
+          "pathId": 5
+        },
+        {
+          "slug": "lingsha",
+          "gameId": "1222",
+          "pathId": 7
+        },
+        {
+          "slug": "yunli",
+          "gameId": "1221",
+          "pathId": 1
+        },
+        {
+          "slug": "feixiao",
+          "gameId": "1220",
+          "pathId": 2
+        },
+        {
+          "slug": "jiaoqiu",
+          "gameId": "1218",
+          "pathId": 5
+        },
+        {
+          "slug": "huohuo",
+          "gameId": "1217",
+          "pathId": 7
+        },
+        {
+          "slug": "danhengil",
+          "gameId": "1213",
+          "pathId": 1
+        },
+        {
+          "slug": "jingliu",
+          "gameId": "1212",
+          "pathId": 1
+        },
+        {
+          "slug": "bailu",
+          "gameId": "1211",
+          "pathId": 7
+        },
+        {
+          "slug": "yanqing",
+          "gameId": "1209",
+          "pathId": 2
+        },
+        {
+          "slug": "fuxuan",
+          "gameId": "1208",
+          "pathId": 6
+        },
+        {
+          "slug": "blade",
+          "gameId": "1205",
+          "pathId": 1
+        },
+        {
+          "slug": "jingyuan",
+          "gameId": "1204",
+          "pathId": 3
+        },
+        {
+          "slug": "luocha",
+          "gameId": "1203",
+          "pathId": 7
+        },
+        {
+          "slug": "topaz",
+          "gameId": "1112",
+          "pathId": 2
+        },
+        {
+          "slug": "clara",
+          "gameId": "1107",
+          "pathId": 1
+        },
+        {
+          "slug": "gepard",
+          "gameId": "1104",
+          "pathId": 6
+        },
+        {
+          "slug": "seele",
+          "gameId": "1102",
+          "pathId": 2
+        },
+        {
+          "slug": "bronya",
+          "gameId": "1101",
+          "pathId": 4
+        },
+        {
+          "slug": "archer",
+          "gameId": "1015",
+          "pathId": 2
+        },
+        {
+          "slug": "saber",
+          "gameId": "1014",
+          "pathId": 1
+        },
+        {
+          "slug": "silverwolf",
+          "gameId": "1006",
+          "pathId": 5
+        },
+        {
+          "slug": "kafka",
+          "gameId": "1005",
+          "pathId": 5
+        },
+        {
+          "slug": "welt",
+          "gameId": "1004",
+          "pathId": 5
+        },
+        {
+          "slug": "himeko",
+          "gameId": "1003",
+          "pathId": 3
+        },
+        {
+          "slug": "playerboy",
+          "gameId": "8001",
+          "pathId": 1
+        },
+        {
+          "slug": "playergirl",
+          "gameId": "8002",
+          "pathId": 1
+        },
+        {
+          "slug": "playerboy2",
+          "gameId": "8003",
+          "pathId": 6
+        },
+        {
+          "slug": "playergirl2",
+          "gameId": "8004",
+          "pathId": 6
+        },
+        {
+          "slug": "playerboy3",
+          "gameId": "8005",
+          "pathId": 4
+        },
+        {
+          "slug": "playergirl3",
+          "gameId": "8006",
+          "pathId": 4
+        },
+        {
+          "slug": "playerboy4",
+          "gameId": "8007",
+          "pathId": 8
+        },
+        {
+          "slug": "playergirl4",
+          "gameId": "8008",
+          "pathId": 8
+        },
+        {
+          "slug": "playerboy5",
+          "gameId": "8009",
+          "pathId": 9
+        },
+        {
+          "slug": "playergirl5",
+          "gameId": "8010",
+          "pathId": 9
+        },
+        {
+          "slug": "misha",
+          "gameId": "1312",
+          "pathId": 1
+        },
+        {
+          "slug": "gallagher",
+          "gameId": "1301",
+          "pathId": 7
+        },
+        {
+          "slug": "mar7th2",
+          "gameId": "1224",
+          "pathId": 2
+        },
+        {
+          "slug": "moze",
+          "gameId": "1223",
+          "pathId": 2
+        },
+        {
+          "slug": "hanya",
+          "gameId": "1215",
+          "pathId": 4
+        },
+        {
+          "slug": "xueyi",
+          "gameId": "1214",
+          "pathId": 1
+        },
+        {
+          "slug": "guinaifen",
+          "gameId": "1210",
+          "pathId": 5
+        },
+        {
+          "slug": "yukong",
+          "gameId": "1207",
+          "pathId": 4
+        },
+        {
+          "slug": "sushang",
+          "gameId": "1206",
+          "pathId": 2
+        },
+        {
+          "slug": "tingyun",
+          "gameId": "1202",
+          "pathId": 4
+        },
+        {
+          "slug": "qingque",
+          "gameId": "1201",
+          "pathId": 3
+        },
+        {
+          "slug": "luka",
+          "gameId": "1111",
+          "pathId": 5
+        },
+        {
+          "slug": "lynx",
+          "gameId": "1110",
+          "pathId": 7
+        },
+        {
+          "slug": "hook",
+          "gameId": "1109",
+          "pathId": 1
+        },
+        {
+          "slug": "sampo",
+          "gameId": "1108",
+          "pathId": 5
+        },
+        {
+          "slug": "pela",
+          "gameId": "1106",
+          "pathId": 5
+        },
+        {
+          "slug": "natasha",
+          "gameId": "1105",
+          "pathId": 7
+        },
+        {
+          "slug": "serval",
+          "gameId": "1103",
+          "pathId": 3
+        },
+        {
+          "slug": "herta",
+          "gameId": "1013",
+          "pathId": 3
+        },
+        {
+          "slug": "asta",
+          "gameId": "1009",
+          "pathId": 4
+        },
+        {
+          "slug": "arlan",
+          "gameId": "1008",
+          "pathId": 1
+        },
+        {
+          "slug": "danheng",
+          "gameId": "1002",
+          "pathId": 2
+        },
+        {
+          "slug": "mar7th",
+          "gameId": "1001",
+          "pathId": 6
+        }
+      ],
+      "added": [],
+      "deleted": []
+    },
+    {
+      "kind": "lightcone",
+      "url": "https://starrailstation.com/cn/equipment",
+      "count": 169,
+      "mapping": [
+        {
+          "slug": "23064",
+          "gameId": "23064",
+          "pathId": 9
+        },
+        {
+          "slug": "23063",
+          "gameId": "23063",
+          "pathId": 8
+        },
+        {
+          "slug": "23062",
+          "gameId": "23062",
+          "pathId": 1
+        },
+        {
+          "slug": "23061",
+          "gameId": "23061",
+          "pathId": 3
+        },
+        {
+          "slug": "23060",
+          "gameId": "23060",
+          "pathId": 3
+        },
+        {
+          "slug": "23059",
+          "gameId": "23059",
+          "pathId": 5
+        },
+        {
+          "slug": "23058",
+          "gameId": "23058",
+          "pathId": 9
+        },
+        {
+          "slug": "23057",
+          "gameId": "23057",
+          "pathId": 9
+        },
+        {
+          "slug": "23056",
+          "gameId": "23056",
+          "pathId": 2
+        },
+        {
+          "slug": "23054",
+          "gameId": "23054",
+          "pathId": 9
+        },
+        {
+          "slug": "23053",
+          "gameId": "23053",
+          "pathId": 9
+        },
+        {
+          "slug": "23052",
+          "gameId": "23052",
+          "pathId": 8
+        },
+        {
+          "slug": "23051",
+          "gameId": "23051",
+          "pathId": 6
+        },
+        {
+          "slug": "23050",
+          "gameId": "23050",
+          "pathId": 5
+        },
+        {
+          "slug": "23049",
+          "gameId": "23049",
+          "pathId": 8
+        },
+        {
+          "slug": "23048",
+          "gameId": "23048",
+          "pathId": 4
+        },
+        {
+          "slug": "23047",
+          "gameId": "23047",
+          "pathId": 5
+        },
+        {
+          "slug": "23046",
+          "gameId": "23046",
+          "pathId": 2
+        },
+        {
+          "slug": "23045",
+          "gameId": "23045",
+          "pathId": 1
+        },
+        {
+          "slug": "23044",
+          "gameId": "23044",
+          "pathId": 1
+        },
+        {
+          "slug": "23043",
+          "gameId": "23043",
+          "pathId": 5
+        },
+        {
+          "slug": "23042",
+          "gameId": "23042",
+          "pathId": 8
+        },
+        {
+          "slug": "23041",
+          "gameId": "23041",
+          "pathId": 3
+        },
+        {
+          "slug": "23040",
+          "gameId": "23040",
+          "pathId": 8
+        },
+        {
+          "slug": "23039",
+          "gameId": "23039",
+          "pathId": 1
+        },
+        {
+          "slug": "23038",
+          "gameId": "23038",
+          "pathId": 4
+        },
+        {
+          "slug": "23037",
+          "gameId": "23037",
+          "pathId": 3
+        },
+        {
+          "slug": "23036",
+          "gameId": "23036",
+          "pathId": 8
+        },
+        {
+          "slug": "23035",
+          "gameId": "23035",
+          "pathId": 5
+        },
+        {
+          "slug": "23034",
+          "gameId": "23034",
+          "pathId": 4
+        },
+        {
+          "slug": "23033",
+          "gameId": "23033",
+          "pathId": 3
+        },
+        {
+          "slug": "23032",
+          "gameId": "23032",
+          "pathId": 7
+        },
+        {
+          "slug": "23031",
+          "gameId": "23031",
+          "pathId": 2
+        },
+        {
+          "slug": "23030",
+          "gameId": "23030",
+          "pathId": 1
+        },
+        {
+          "slug": "23029",
+          "gameId": "23029",
+          "pathId": 5
+        },
+        {
+          "slug": "23028",
+          "gameId": "23028",
+          "pathId": 3
+        },
+        {
+          "slug": "23027",
+          "gameId": "23027",
+          "pathId": 2
+        },
+        {
+          "slug": "23026",
+          "gameId": "23026",
+          "pathId": 4
+        },
+        {
+          "slug": "23025",
+          "gameId": "23025",
+          "pathId": 1
+        },
+        {
+          "slug": "23024",
+          "gameId": "23024",
+          "pathId": 5
+        },
+        {
+          "slug": "23023",
+          "gameId": "23023",
+          "pathId": 6
+        },
+        {
+          "slug": "23022",
+          "gameId": "23022",
+          "pathId": 5
+        },
+        {
+          "slug": "23021",
+          "gameId": "23021",
+          "pathId": 4
+        },
+        {
+          "slug": "23020",
+          "gameId": "23020",
+          "pathId": 2
+        },
+        {
+          "slug": "23019",
+          "gameId": "23019",
+          "pathId": 4
+        },
+        {
+          "slug": "23018",
+          "gameId": "23018",
+          "pathId": 3
+        },
+        {
+          "slug": "23017",
+          "gameId": "23017",
+          "pathId": 7
+        },
+        {
+          "slug": "23016",
+          "gameId": "23016",
+          "pathId": 2
+        },
+        {
+          "slug": "23015",
+          "gameId": "23015",
+          "pathId": 1
+        },
+        {
+          "slug": "23014",
+          "gameId": "23014",
+          "pathId": 1
+        },
+        {
+          "slug": "23013",
+          "gameId": "23013",
+          "pathId": 7
+        },
+        {
+          "slug": "23012",
+          "gameId": "23012",
+          "pathId": 2
+        },
+        {
+          "slug": "23011",
+          "gameId": "23011",
+          "pathId": 6
+        },
+        {
+          "slug": "23010",
+          "gameId": "23010",
+          "pathId": 3
+        },
+        {
+          "slug": "23009",
+          "gameId": "23009",
+          "pathId": 1
+        },
+        {
+          "slug": "23008",
+          "gameId": "23008",
+          "pathId": 7
+        },
+        {
+          "slug": "23007",
+          "gameId": "23007",
+          "pathId": 5
+        },
+        {
+          "slug": "23006",
+          "gameId": "23006",
+          "pathId": 5
+        },
+        {
+          "slug": "23005",
+          "gameId": "23005",
+          "pathId": 6
+        },
+        {
+          "slug": "23004",
+          "gameId": "23004",
+          "pathId": 5
+        },
+        {
+          "slug": "23003",
+          "gameId": "23003",
+          "pathId": 4
+        },
+        {
+          "slug": "23002",
+          "gameId": "23002",
+          "pathId": 1
+        },
+        {
+          "slug": "23001",
+          "gameId": "23001",
+          "pathId": 2
+        },
+        {
+          "slug": "23000",
+          "gameId": "23000",
+          "pathId": 3
+        },
+        {
+          "slug": "24006",
+          "gameId": "24006",
+          "pathId": 9
+        },
+        {
+          "slug": "24005",
+          "gameId": "24005",
+          "pathId": 8
+        },
+        {
+          "slug": "24004",
+          "gameId": "24004",
+          "pathId": 3
+        },
+        {
+          "slug": "24003",
+          "gameId": "24003",
+          "pathId": 5
+        },
+        {
+          "slug": "24002",
+          "gameId": "24002",
+          "pathId": 6
+        },
+        {
+          "slug": "24001",
+          "gameId": "24001",
+          "pathId": 2
+        },
+        {
+          "slug": "24000",
+          "gameId": "24000",
+          "pathId": 1
+        },
+        {
+          "slug": "22008",
+          "gameId": "22008",
+          "pathId": 2
+        },
+        {
+          "slug": "22007",
+          "gameId": "22007",
+          "pathId": 9
+        },
+        {
+          "slug": "22006",
+          "gameId": "22006",
+          "pathId": 8
+        },
+        {
+          "slug": "22005",
+          "gameId": "22005",
+          "pathId": 4
+        },
+        {
+          "slug": "22004",
+          "gameId": "22004",
+          "pathId": 3
+        },
+        {
+          "slug": "22003",
+          "gameId": "22003",
+          "pathId": 1
+        },
+        {
+          "slug": "22002",
+          "gameId": "22002",
+          "pathId": 4
+        },
+        {
+          "slug": "22001",
+          "gameId": "22001",
+          "pathId": 7
+        },
+        {
+          "slug": "22000",
+          "gameId": "22000",
+          "pathId": 5
+        },
+        {
+          "slug": "21066",
+          "gameId": "21066",
+          "pathId": 9
+        },
+        {
+          "slug": "21065",
+          "gameId": "21065",
+          "pathId": 9
+        },
+        {
+          "slug": "21064",
+          "gameId": "21064",
+          "pathId": 9
+        },
+        {
+          "slug": "21062",
+          "gameId": "21062",
+          "pathId": 2
+        },
+        {
+          "slug": "21061",
+          "gameId": "21061",
+          "pathId": 5
+        },
+        {
+          "slug": "21060",
+          "gameId": "21060",
+          "pathId": 3
+        },
+        {
+          "slug": "21058",
+          "gameId": "21058",
+          "pathId": 1
+        },
+        {
+          "slug": "21057",
+          "gameId": "21057",
+          "pathId": 8
+        },
+        {
+          "slug": "21056",
+          "gameId": "21056",
+          "pathId": 4
+        },
+        {
+          "slug": "21055",
+          "gameId": "21055",
+          "pathId": 7
+        },
+        {
+          "slug": "21054",
+          "gameId": "21054",
+          "pathId": 8
+        },
+        {
+          "slug": "21053",
+          "gameId": "21053",
+          "pathId": 6
+        },
+        {
+          "slug": "21052",
+          "gameId": "21052",
+          "pathId": 8
+        },
+        {
+          "slug": "21051",
+          "gameId": "21051",
+          "pathId": 8
+        },
+        {
+          "slug": "21050",
+          "gameId": "21050",
+          "pathId": 8
+        },
+        {
+          "slug": "21048",
+          "gameId": "21048",
+          "pathId": 7
+        },
+        {
+          "slug": "21047",
+          "gameId": "21047",
+          "pathId": 2
+        },
+        {
+          "slug": "21046",
+          "gameId": "21046",
+          "pathId": 4
+        },
+        {
+          "slug": "21045",
+          "gameId": "21045",
+          "pathId": 3
+        },
+        {
+          "slug": "21044",
+          "gameId": "21044",
+          "pathId": 5
+        },
+        {
+          "slug": "21043",
+          "gameId": "21043",
+          "pathId": 6
+        },
+        {
+          "slug": "21042",
+          "gameId": "21042",
+          "pathId": 1
+        },
+        {
+          "slug": "21041",
+          "gameId": "21041",
+          "pathId": 5
+        },
+        {
+          "slug": "21040",
+          "gameId": "21040",
+          "pathId": 3
+        },
+        {
+          "slug": "21039",
+          "gameId": "21039",
+          "pathId": 6
+        },
+        {
+          "slug": "21038",
+          "gameId": "21038",
+          "pathId": 1
+        },
+        {
+          "slug": "21037",
+          "gameId": "21037",
+          "pathId": 2
+        },
+        {
+          "slug": "21036",
+          "gameId": "21036",
+          "pathId": 4
+        },
+        {
+          "slug": "21035",
+          "gameId": "21035",
+          "pathId": 7
+        },
+        {
+          "slug": "21034",
+          "gameId": "21034",
+          "pathId": 3
+        },
+        {
+          "slug": "21033",
+          "gameId": "21033",
+          "pathId": 1
+        },
+        {
+          "slug": "21032",
+          "gameId": "21032",
+          "pathId": 4
+        },
+        {
+          "slug": "21031",
+          "gameId": "21031",
+          "pathId": 2
+        },
+        {
+          "slug": "21030",
+          "gameId": "21030",
+          "pathId": 6
+        },
+        {
+          "slug": "21029",
+          "gameId": "21029",
+          "pathId": 5
+        },
+        {
+          "slug": "21028",
+          "gameId": "21028",
+          "pathId": 7
+        },
+        {
+          "slug": "21027",
+          "gameId": "21027",
+          "pathId": 3
+        },
+        {
+          "slug": "21026",
+          "gameId": "21026",
+          "pathId": 1
+        },
+        {
+          "slug": "21025",
+          "gameId": "21025",
+          "pathId": 4
+        },
+        {
+          "slug": "21024",
+          "gameId": "21024",
+          "pathId": 2
+        },
+        {
+          "slug": "21023",
+          "gameId": "21023",
+          "pathId": 6
+        },
+        {
+          "slug": "21022",
+          "gameId": "21022",
+          "pathId": 5
+        },
+        {
+          "slug": "21021",
+          "gameId": "21021",
+          "pathId": 7
+        },
+        {
+          "slug": "21020",
+          "gameId": "21020",
+          "pathId": 3
+        },
+        {
+          "slug": "21019",
+          "gameId": "21019",
+          "pathId": 1
+        },
+        {
+          "slug": "21018",
+          "gameId": "21018",
+          "pathId": 4
+        },
+        {
+          "slug": "21017",
+          "gameId": "21017",
+          "pathId": 2
+        },
+        {
+          "slug": "21016",
+          "gameId": "21016",
+          "pathId": 6
+        },
+        {
+          "slug": "21015",
+          "gameId": "21015",
+          "pathId": 5
+        },
+        {
+          "slug": "21014",
+          "gameId": "21014",
+          "pathId": 7
+        },
+        {
+          "slug": "21013",
+          "gameId": "21013",
+          "pathId": 3
+        },
+        {
+          "slug": "21012",
+          "gameId": "21012",
+          "pathId": 1
+        },
+        {
+          "slug": "21011",
+          "gameId": "21011",
+          "pathId": 4
+        },
+        {
+          "slug": "21010",
+          "gameId": "21010",
+          "pathId": 2
+        },
+        {
+          "slug": "21009",
+          "gameId": "21009",
+          "pathId": 6
+        },
+        {
+          "slug": "21008",
+          "gameId": "21008",
+          "pathId": 5
+        },
+        {
+          "slug": "21007",
+          "gameId": "21007",
+          "pathId": 7
+        },
+        {
+          "slug": "21006",
+          "gameId": "21006",
+          "pathId": 3
+        },
+        {
+          "slug": "21005",
+          "gameId": "21005",
+          "pathId": 1
+        },
+        {
+          "slug": "21004",
+          "gameId": "21004",
+          "pathId": 4
+        },
+        {
+          "slug": "21003",
+          "gameId": "21003",
+          "pathId": 2
+        },
+        {
+          "slug": "21002",
+          "gameId": "21002",
+          "pathId": 6
+        },
+        {
+          "slug": "21001",
+          "gameId": "21001",
+          "pathId": 5
+        },
+        {
+          "slug": "21000",
+          "gameId": "21000",
+          "pathId": 7
+        },
+        {
+          "slug": "20024",
+          "gameId": "20024",
+          "pathId": 9
+        },
+        {
+          "slug": "20023",
+          "gameId": "20023",
+          "pathId": 9
+        },
+        {
+          "slug": "20022",
+          "gameId": "20022",
+          "pathId": 8
+        },
+        {
+          "slug": "20021",
+          "gameId": "20021",
+          "pathId": 8
+        },
+        {
+          "slug": "20020",
+          "gameId": "20020",
+          "pathId": 3
+        },
+        {
+          "slug": "20019",
+          "gameId": "20019",
+          "pathId": 4
+        },
+        {
+          "slug": "20018",
+          "gameId": "20018",
+          "pathId": 5
+        },
+        {
+          "slug": "20017",
+          "gameId": "20017",
+          "pathId": 6
+        },
+        {
+          "slug": "20016",
+          "gameId": "20016",
+          "pathId": 1
+        },
+        {
+          "slug": "20015",
+          "gameId": "20015",
+          "pathId": 7
+        },
+        {
+          "slug": "20014",
+          "gameId": "20014",
+          "pathId": 2
+        },
+        {
+          "slug": "20013",
+          "gameId": "20013",
+          "pathId": 3
+        },
+        {
+          "slug": "20012",
+          "gameId": "20012",
+          "pathId": 4
+        },
+        {
+          "slug": "20011",
+          "gameId": "20011",
+          "pathId": 5
+        },
+        {
+          "slug": "20010",
+          "gameId": "20010",
+          "pathId": 6
+        },
+        {
+          "slug": "20009",
+          "gameId": "20009",
+          "pathId": 1
+        },
+        {
+          "slug": "20008",
+          "gameId": "20008",
+          "pathId": 7
+        },
+        {
+          "slug": "20007",
+          "gameId": "20007",
+          "pathId": 2
+        },
+        {
+          "slug": "20006",
+          "gameId": "20006",
+          "pathId": 3
+        },
+        {
+          "slug": "20005",
+          "gameId": "20005",
+          "pathId": 4
+        },
+        {
+          "slug": "20004",
+          "gameId": "20004",
+          "pathId": 5
+        },
+        {
+          "slug": "20003",
+          "gameId": "20003",
+          "pathId": 6
+        },
+        {
+          "slug": "20002",
+          "gameId": "20002",
+          "pathId": 1
+        },
+        {
+          "slug": "20001",
+          "gameId": "20001",
+          "pathId": 7
+        },
+        {
+          "slug": "20000",
+          "gameId": "20000",
+          "pathId": 2
+        }
+      ],
+      "added": [],
+      "deleted": []
+    },
+    {
+      "kind": "relic",
+      "url": "https://starrailstation.com/cn/relics",
+      "count": 60,
+      "mapping": [
+        {
+          "slug": "101",
+          "gameId": "101",
+          "pathId": null
+        },
+        {
+          "slug": "102",
+          "gameId": "102",
+          "pathId": null
+        },
+        {
+          "slug": "103",
+          "gameId": "103",
+          "pathId": null
+        },
+        {
+          "slug": "104",
+          "gameId": "104",
+          "pathId": null
+        },
+        {
+          "slug": "105",
+          "gameId": "105",
+          "pathId": null
+        },
+        {
+          "slug": "106",
+          "gameId": "106",
+          "pathId": null
+        },
+        {
+          "slug": "107",
+          "gameId": "107",
+          "pathId": null
+        },
+        {
+          "slug": "108",
+          "gameId": "108",
+          "pathId": null
+        },
+        {
+          "slug": "109",
+          "gameId": "109",
+          "pathId": null
+        },
+        {
+          "slug": "110",
+          "gameId": "110",
+          "pathId": null
+        },
+        {
+          "slug": "111",
+          "gameId": "111",
+          "pathId": null
+        },
+        {
+          "slug": "112",
+          "gameId": "112",
+          "pathId": null
+        },
+        {
+          "slug": "113",
+          "gameId": "113",
+          "pathId": null
+        },
+        {
+          "slug": "114",
+          "gameId": "114",
+          "pathId": null
+        },
+        {
+          "slug": "115",
+          "gameId": "115",
+          "pathId": null
+        },
+        {
+          "slug": "116",
+          "gameId": "116",
+          "pathId": null
+        },
+        {
+          "slug": "117",
+          "gameId": "117",
+          "pathId": null
+        },
+        {
+          "slug": "118",
+          "gameId": "118",
+          "pathId": null
+        },
+        {
+          "slug": "119",
+          "gameId": "119",
+          "pathId": null
+        },
+        {
+          "slug": "120",
+          "gameId": "120",
+          "pathId": null
+        },
+        {
+          "slug": "121",
+          "gameId": "121",
+          "pathId": null
+        },
+        {
+          "slug": "122",
+          "gameId": "122",
+          "pathId": null
+        },
+        {
+          "slug": "123",
+          "gameId": "123",
+          "pathId": null
+        },
+        {
+          "slug": "124",
+          "gameId": "124",
+          "pathId": null
+        },
+        {
+          "slug": "125",
+          "gameId": "125",
+          "pathId": null
+        },
+        {
+          "slug": "126",
+          "gameId": "126",
+          "pathId": null
+        },
+        {
+          "slug": "127",
+          "gameId": "127",
+          "pathId": null
+        },
+        {
+          "slug": "128",
+          "gameId": "128",
+          "pathId": null
+        },
+        {
+          "slug": "129",
+          "gameId": "129",
+          "pathId": null
+        },
+        {
+          "slug": "130",
+          "gameId": "130",
+          "pathId": null
+        },
+        {
+          "slug": "131",
+          "gameId": "131",
+          "pathId": null
+        },
+        {
+          "slug": "132",
+          "gameId": "132",
+          "pathId": null
+        },
+        {
+          "slug": "301",
+          "gameId": "301",
+          "pathId": null
+        },
+        {
+          "slug": "302",
+          "gameId": "302",
+          "pathId": null
+        },
+        {
+          "slug": "303",
+          "gameId": "303",
+          "pathId": null
+        },
+        {
+          "slug": "304",
+          "gameId": "304",
+          "pathId": null
+        },
+        {
+          "slug": "305",
+          "gameId": "305",
+          "pathId": null
+        },
+        {
+          "slug": "306",
+          "gameId": "306",
+          "pathId": null
+        },
+        {
+          "slug": "307",
+          "gameId": "307",
+          "pathId": null
+        },
+        {
+          "slug": "308",
+          "gameId": "308",
+          "pathId": null
+        },
+        {
+          "slug": "309",
+          "gameId": "309",
+          "pathId": null
+        },
+        {
+          "slug": "310",
+          "gameId": "310",
+          "pathId": null
+        },
+        {
+          "slug": "311",
+          "gameId": "311",
+          "pathId": null
+        },
+        {
+          "slug": "312",
+          "gameId": "312",
+          "pathId": null
+        },
+        {
+          "slug": "313",
+          "gameId": "313",
+          "pathId": null
+        },
+        {
+          "slug": "314",
+          "gameId": "314",
+          "pathId": null
+        },
+        {
+          "slug": "315",
+          "gameId": "315",
+          "pathId": null
+        },
+        {
+          "slug": "316",
+          "gameId": "316",
+          "pathId": null
+        },
+        {
+          "slug": "317",
+          "gameId": "317",
+          "pathId": null
+        },
+        {
+          "slug": "318",
+          "gameId": "318",
+          "pathId": null
+        },
+        {
+          "slug": "319",
+          "gameId": "319",
+          "pathId": null
+        },
+        {
+          "slug": "320",
+          "gameId": "320",
+          "pathId": null
+        },
+        {
+          "slug": "321",
+          "gameId": "321",
+          "pathId": null
+        },
+        {
+          "slug": "322",
+          "gameId": "322",
+          "pathId": null
+        },
+        {
+          "slug": "323",
+          "gameId": "323",
+          "pathId": null
+        },
+        {
+          "slug": "324",
+          "gameId": "324",
+          "pathId": null
+        },
+        {
+          "slug": "325",
+          "gameId": "325",
+          "pathId": null
+        },
+        {
+          "slug": "326",
+          "gameId": "326",
+          "pathId": null
+        },
+        {
+          "slug": "327",
+          "gameId": "327",
+          "pathId": null
+        },
+        {
+          "slug": "328",
+          "gameId": "328",
+          "pathId": null
+        }
+      ],
+      "added": [],
+      "deleted": []
+    }
+  ],
+  "changes": {
+    "added": [],
+    "changed": [
+      "lightcone:20000:skill:20000",
+      "lightcone:20001:skill:20001",
+      "lightcone:20002:skill:20002",
+      "lightcone:20003:skill:20003",
+      "lightcone:20004:skill:20004",
+      "lightcone:20005:skill:20005",
+      "lightcone:20006:skill:20006",
+      "lightcone:20007:skill:20007",
+      "lightcone:20008:skill:20008",
+      "lightcone:20009:skill:20009",
+      "lightcone:20010:skill:20010",
+      "lightcone:20011:skill:20011",
+      "lightcone:20012:skill:20012",
+      "lightcone:20013:skill:20013",
+      "lightcone:20014:skill:20014",
+      "lightcone:20015:skill:20015",
+      "lightcone:20016:skill:20016",
+      "lightcone:20017:skill:20017",
+      "lightcone:20018:skill:20018",
+      "lightcone:20019:skill:20019",
+      "lightcone:20020:skill:20020",
+      "lightcone:20021:skill:20021",
+      "lightcone:20022:skill:20022",
+      "lightcone:20023:skill:20023",
+      "lightcone:20024:skill:20024",
+      "lightcone:21000:skill:21000",
+      "lightcone:21001:skill:21001",
+      "lightcone:21002:skill:21002",
+      "lightcone:21003:skill:21003",
+      "lightcone:21004:skill:21004",
+      "lightcone:21005:skill:21005",
+      "lightcone:21006:skill:21006",
+      "lightcone:21007:skill:21007",
+      "lightcone:21008:skill:21008",
+      "lightcone:21009:skill:21009",
+      "lightcone:21010:skill:21010",
+      "lightcone:21011:skill:21011",
+      "lightcone:21012:skill:21012",
+      "lightcone:21013:skill:21013",
+      "lightcone:21014:skill:21014",
+      "lightcone:21015:skill:21015",
+      "lightcone:21016:skill:21016",
+      "lightcone:21017:skill:21017",
+      "lightcone:21018:skill:21018",
+      "lightcone:21019:skill:21019",
+      "lightcone:21020:skill:21020",
+      "lightcone:21021:skill:21021",
+      "lightcone:21022:skill:21022",
+      "lightcone:21023:skill:21023",
+      "lightcone:21024:skill:21024",
+      "lightcone:21025:skill:21025",
+      "lightcone:21026:skill:21026",
+      "lightcone:21027:skill:21027",
+      "lightcone:21028:skill:21028",
+      "lightcone:21029:skill:21029",
+      "lightcone:21030:skill:21030",
+      "lightcone:21031:skill:21031",
+      "lightcone:21032:skill:21032",
+      "lightcone:21033:skill:21033",
+      "lightcone:21034:skill:21034",
+      "lightcone:21035:skill:21035",
+      "lightcone:21036:skill:21036",
+      "lightcone:21037:skill:21037",
+      "lightcone:21038:skill:21038",
+      "lightcone:21039:skill:21039",
+      "lightcone:21040:skill:21040",
+      "lightcone:21041:skill:21041",
+      "lightcone:21042:skill:21042",
+      "lightcone:21043:skill:21043",
+      "lightcone:21044:skill:21044",
+      "lightcone:21045:skill:21045",
+      "lightcone:21046:skill:21046",
+      "lightcone:21047:skill:21047",
+      "lightcone:21048:skill:21048",
+      "lightcone:21050:skill:21050",
+      "lightcone:21051:skill:21051",
+      "lightcone:21052:skill:21052",
+      "lightcone:21053:skill:21053",
+      "lightcone:21054:skill:21054",
+      "lightcone:21055:skill:21055",
+      "lightcone:21056:skill:21056",
+      "lightcone:21057:skill:21057",
+      "lightcone:21058:skill:21058",
+      "lightcone:21060:skill:21060",
+      "lightcone:21061:skill:21061",
+      "lightcone:21062:skill:21062",
+      "lightcone:21064:skill:21064",
+      "lightcone:21065:skill:21065",
+      "lightcone:21066:skill:21066",
+      "lightcone:22000:skill:22000",
+      "lightcone:22001:skill:22001",
+      "lightcone:22002:skill:22002",
+      "lightcone:22003:skill:22003",
+      "lightcone:22004:skill:22004",
+      "lightcone:22005:skill:22005",
+      "lightcone:22006:skill:22006",
+      "lightcone:22007:skill:22007",
+      "lightcone:22008:skill:22008",
+      "lightcone:23000:skill:23000",
+      "lightcone:23001:skill:23001",
+      "lightcone:23002:skill:23002",
+      "lightcone:23003:skill:23003",
+      "lightcone:23004:skill:23004",
+      "lightcone:23005:skill:23005",
+      "lightcone:23006:skill:23006",
+      "lightcone:23007:skill:23007",
+      "lightcone:23008:skill:23008",
+      "lightcone:23009:skill:23009",
+      "lightcone:23010:skill:23010",
+      "lightcone:23011:skill:23011",
+      "lightcone:23012:skill:23012",
+      "lightcone:23013:skill:23013",
+      "lightcone:23014:skill:23014",
+      "lightcone:23015:skill:23015",
+      "lightcone:23016:skill:23016",
+      "lightcone:23017:skill:23017",
+      "lightcone:23018:skill:23018",
+      "lightcone:23019:skill:23019",
+      "lightcone:23020:skill:23020",
+      "lightcone:23021:skill:23021",
+      "lightcone:23022:skill:23022",
+      "lightcone:23023:skill:23023",
+      "lightcone:23024:skill:23024",
+      "lightcone:23025:skill:23025",
+      "lightcone:23026:skill:23026",
+      "lightcone:23027:skill:23027",
+      "lightcone:23028:skill:23028",
+      "lightcone:23029:skill:23029",
+      "lightcone:23030:skill:23030",
+      "lightcone:23031:skill:23031",
+      "lightcone:23032:skill:23032",
+      "lightcone:23033:skill:23033",
+      "lightcone:23034:skill:23034",
+      "lightcone:23035:skill:23035",
+      "lightcone:23036:skill:23036",
+      "lightcone:23037:skill:23037",
+      "lightcone:23038:skill:23038",
+      "lightcone:23039:skill:23039",
+      "lightcone:23040:skill:23040",
+      "lightcone:23041:skill:23041",
+      "lightcone:23042:skill:23042",
+      "lightcone:23043:skill:23043",
+      "lightcone:23044:skill:23044",
+      "lightcone:23045:skill:23045",
+      "lightcone:23046:skill:23046",
+      "lightcone:23047:skill:23047",
+      "lightcone:23048:skill:23048",
+      "lightcone:23049:skill:23049",
+      "lightcone:23050:skill:23050",
+      "lightcone:23051:skill:23051",
+      "lightcone:23052:skill:23052",
+      "lightcone:23053:skill:23053",
+      "lightcone:23054:skill:23054",
+      "lightcone:23056:skill:23056",
+      "lightcone:23057:skill:23057",
+      "lightcone:23058:skill:23058",
+      "lightcone:23059:skill:23059",
+      "lightcone:23060:skill:23060",
+      "lightcone:23061:skill:23061",
+      "lightcone:23062:skill:23062",
+      "lightcone:23063:skill:23063",
+      "lightcone:23064:skill:23064",
+      "lightcone:24000:skill:24000",
+      "lightcone:24001:skill:24001",
+      "lightcone:24002:skill:24002",
+      "lightcone:24003:skill:24003",
+      "lightcone:24004:skill:24004",
+      "lightcone:24005:skill:24005",
+      "lightcone:24006:skill:24006",
+      "relic:101:set:2",
+      "relic:101:set:4",
+      "relic:102:set:2",
+      "relic:102:set:4",
+      "relic:103:set:2",
+      "relic:103:set:4",
+      "relic:104:set:2",
+      "relic:104:set:4",
+      "relic:105:set:2",
+      "relic:105:set:4",
+      "relic:106:set:2",
+      "relic:106:set:4",
+      "relic:107:set:2",
+      "relic:107:set:4",
+      "relic:108:set:2",
+      "relic:108:set:4",
+      "relic:109:set:2",
+      "relic:109:set:4",
+      "relic:110:set:2",
+      "relic:110:set:4",
+      "relic:111:set:2",
+      "relic:111:set:4",
+      "relic:112:set:2",
+      "relic:112:set:4",
+      "relic:113:set:2",
+      "relic:113:set:4",
+      "relic:114:set:2",
+      "relic:114:set:4",
+      "relic:115:set:2",
+      "relic:115:set:4",
+      "relic:116:set:2",
+      "relic:116:set:4",
+      "relic:117:set:2",
+      "relic:117:set:4",
+      "relic:118:set:2",
+      "relic:118:set:4",
+      "relic:119:set:2",
+      "relic:119:set:4",
+      "relic:120:set:2",
+      "relic:120:set:4",
+      "relic:121:set:2",
+      "relic:121:set:4",
+      "relic:122:set:2",
+      "relic:122:set:4",
+      "relic:123:set:2",
+      "relic:123:set:4",
+      "relic:124:set:2",
+      "relic:124:set:4",
+      "relic:125:set:2",
+      "relic:125:set:4",
+      "relic:126:set:2",
+      "relic:126:set:4",
+      "relic:127:set:2",
+      "relic:127:set:4",
+      "relic:128:set:2",
+      "relic:128:set:4",
+      "relic:129:set:2",
+      "relic:129:set:4",
+      "relic:130:set:2",
+      "relic:130:set:4",
+      "relic:131:set:2",
+      "relic:131:set:4",
+      "relic:132:set:2",
+      "relic:132:set:4",
+      "relic:301:set:2",
+      "relic:302:set:2",
+      "relic:303:set:2",
+      "relic:304:set:2",
+      "relic:305:set:2",
+      "relic:306:set:2",
+      "relic:307:set:2",
+      "relic:308:set:2",
+      "relic:309:set:2",
+      "relic:310:set:2",
+      "relic:311:set:2",
+      "relic:312:set:2",
+      "relic:313:set:2",
+      "relic:314:set:2",
+      "relic:315:set:2",
+      "relic:316:set:2",
+      "relic:317:set:2",
+      "relic:318:set:2",
+      "relic:319:set:2",
+      "relic:320:set:2",
+      "relic:321:set:2",
+      "relic:322:set:2",
+      "relic:323:set:2",
+      "relic:324:set:2",
+      "relic:325:set:2",
+      "relic:326:set:2",
+      "relic:327:set:2",
+      "relic:328:set:2"
+    ],
+    "deleted": []
+  },
+  "counts": {
+    "owners": 334,
+    "abilities": 2967,
+    "pending": 2967,
+    "reviewed": 0
+  },
+  "auditStatus": "pending"
+}

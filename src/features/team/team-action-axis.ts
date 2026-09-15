@@ -1,3 +1,4 @@
+import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import {
   characterDisplayName,
   lightConeById,
@@ -97,6 +98,15 @@ export function resolveTeamActionAxisProfile(
   }
 
   const relics = detail.equippedRelics ?? [];
+  const equipment = standingEquipment(lightCone, relics, detail.path ?? "");
+  const review = reviewedStandingRules(equipment);
+  if (review.unreviewedSources.length || review.missingInputs.length) {
+    return unavailable(
+      member,
+      `站街规则待审核或缺少计算状态：${[...review.unreviewedSources, ...review.missingInputs].join("、")}`,
+      displayName,
+    );
+  }
   const setCounts = new Map<number, number>();
   for (const relic of relics) setCounts.set(relic.setId, (setCounts.get(relic.setId) ?? 0) + 1);
 
@@ -117,6 +127,7 @@ export function resolveTeamActionAxisProfile(
     traces,
     setEffects,
     lightConeEffects: lightConeEffect ? [lightConeEffect] : [],
+    equipment,
   });
 
   const hasVonwacq = (setCounts.get(VONWACQ_SET_ID) ?? 0) >= 2;

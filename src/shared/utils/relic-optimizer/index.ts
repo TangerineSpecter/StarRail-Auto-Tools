@@ -11,6 +11,7 @@ import type {
   RelicSetCatalogueEntry,
 } from "@/types";
 import { isMainStatAllowed, resolvePlanWeights, scoreRelic } from "@/shared/utils/relic-score";
+import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import {
   calculateStandingStats,
   type StandingStatsInput,
@@ -40,6 +41,7 @@ export interface RelicOptimizerRunInput {
   lightConeBase: StandingStatsInput["lightConeBase"];
   traces: StaticStatValue[];
   lightConeEffects: string[];
+  useReviewedEquipment?: boolean;
   sets: RelicSetCatalogueEntry[];
 }
 
@@ -184,6 +186,14 @@ function evaluateBuild(
     traces: input.traces,
     setEffects: effects,
     lightConeEffects: input.lightConeEffects,
+    equipment:
+      input.useReviewedEquipment && input.context.equippedLightCone
+        ? standingEquipment(
+            input.context.equippedLightCone,
+            relics,
+            input.context.character.path ?? "",
+          )
+        : undefined,
   });
   const currentBySlot = new Map(
     input.context.relics
@@ -594,6 +604,23 @@ function search(
 }
 
 export function optimizeRelics(input: RelicOptimizerRunInput): RelicOptimizerResult {
+  if (input.useReviewedEquipment && input.context.equippedLightCone) {
+    const equipment = standingEquipment(
+      input.context.equippedLightCone,
+      [],
+      input.context.character.path ?? "",
+    );
+    equipment.sets = [
+      { setId: input.plan.cavernSetA, count: input.plan.cavernMode === "twoPlusTwo" ? 2 : 4 },
+      { setId: input.plan.cavernSetB ?? 0, count: input.plan.cavernMode === "twoPlusTwo" ? 2 : 0 },
+      { setId: input.plan.planarSetId, count: 2 },
+    ].filter((entry) => entry.setId > 0 && entry.count > 0);
+    const reviewed = reviewedStandingRules(equipment);
+    if (reviewed.missingInputs.length || reviewed.unreviewedSources.length)
+      throw new Error(
+        `站街规则无法确定：${[...reviewed.missingInputs, ...reviewed.unreviewedSources].join("、")}`,
+      );
+  }
   const weights = resolvePlanWeights(input.plan);
   if (!Object.values(weights).some((weight) => weight > 0))
     throw new Error("请先配置词条权重或至少一个有效副词条。");

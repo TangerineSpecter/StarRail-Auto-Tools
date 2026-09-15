@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import fingerprints from "@/data/catalogue-mechanics-fingerprints.json";
+import bindings from "@/data/standing-rule-bindings.json";
 import { resolveTeamActionAxisProfile } from "@/features/team/team-action-axis";
 import type { TeamMember } from "@/types";
 
@@ -11,6 +13,52 @@ const member: TeamMember = {
 };
 
 describe("resolveTeamActionAxisProfile", () => {
+  it("does not schedule with stale or absent speed source fingerprints", async () => {
+    const actor = { ...member, characterId: 1402, name: "阿格莱雅", path: "Remembrance" };
+    const detail = {
+      ...actor,
+      ascension: 6,
+      equippedRelics: [
+        { setId: 308, mainStat: "SPD", mainStatValue: 25.032 },
+        { setId: 308, mainStat: "HP%", mainStatValue: 43.2 },
+      ],
+      equippedLightCone: { templateId: 23036, level: 80, ascension: 6, superimposition: 1 },
+    };
+    expect(resolveTeamActionAxisProfile(actor, detail, {}).available).toBe(true);
+    try {
+      for (const stale of ["changed-source", undefined]) {
+        vi.resetModules();
+        vi.doMock("@/data/catalogue-mechanics-fingerprints.json", () => ({
+          default: { ...fingerprints, [bindings.lightCones[23036].sourceRef]: stale },
+        }));
+        const { resolveTeamActionAxisProfile: resolve } =
+          await import("@/features/team/team-action-axis");
+        const profile = resolve(actor, detail, {});
+        expect(profile.available).toBe(false);
+        expect(profile.speed).toBeNull();
+        expect(profile.initialAdvance).toBe(0);
+        expect(profile.reason).toContain("lightCone/23036");
+      }
+    } finally {
+      vi.doUnmock("@/data/catalogue-mechanics-fingerprints.json");
+      vi.resetModules();
+    }
+  });
+  it("reports missing character path rather than returning incomplete speed", () => {
+    const profile = resolveTeamActionAxisProfile(
+      member,
+      {
+        ...member,
+        path: "",
+        ascension: 6,
+        equippedLightCone: { templateId: 23005, level: 80, ascension: 6, superimposition: 1 },
+      },
+      {},
+    );
+    expect(profile.available).toBe(false);
+    expect(profile.speed).toBeNull();
+    expect(profile.reason).toContain("character.path");
+  });
   it("includes unconditional four-piece speed bonuses", () => {
     const detail = {
       characterId: member.characterId,

@@ -7,6 +7,7 @@ import { formatBaseStat } from "@/shared/utils/display";
 import type { CharacterCatalogueEntry } from "@/types";
 import type { CatalogueCharacterEquipment, CatalogueEquippedRelic } from "./equipped-items";
 import { useCloseOnEscape } from "./close-on-escape";
+import CharacterAbilities from "./CharacterAbilities.vue";
 
 const props = defineProps<{ character: CharacterCatalogueEntry }>();
 const emit = defineEmits<{ close: [] }>();
@@ -163,6 +164,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </section>
+        <CharacterAbilities :character="character" />
         <footer>基础属性不含光锥、遗器、行迹、星魂和战斗内增益；当前装备来自本地背包。</footer>
       </div>
     </section>

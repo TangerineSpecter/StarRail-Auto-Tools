@@ -6,6 +6,7 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { dirname, extname, join } from "node:path";
+import { publishCatalogueBatch } from "./lib/catalogue-publication.mjs";
 
 const relicSourceUrl = "https://starrailstation.com/cn/relics";
 const characterSourceUrl = "https://starrailstation.com/cn/characters";
@@ -330,7 +331,6 @@ const catalogue = {
   },
   sets,
 };
-await writeFile(relicOutputFile, `${JSON.stringify(catalogue, null, 2)}\n`, "utf8");
 
 const characterHtml = await (await fetchOrThrow(characterSourceUrl)).text();
 const characterPageConfig = parseAssignedJson(characterHtml, "window.PAGE_CONFIG=");
@@ -434,7 +434,11 @@ const characterCatalogue = {
   },
   characters,
 };
-await writeFile(characterOutputFile, `${JSON.stringify(characterCatalogue, null, 2)}\n`, "utf8");
+// Images are optional (--skip-images) and are not part of the JSON transaction.
+await publishCatalogueBatch([
+  { path: relicOutputFile, data: catalogue },
+  { path: characterOutputFile, data: characterCatalogue },
+]);
 console.log(
   `已更新 ${sets.length} 个套装和 ${characters.length} 名角色${skipImages ? "（已跳过图片）" : "及图片"}。`,
 );

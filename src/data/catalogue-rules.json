@@ -1,0 +1,4295 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "character:1508:skills:33056465:basic",
+      "sourceRef": "character:1508:skills:33056465",
+      "sourceHash": "595966283a354badc6ae2cdf407a9175ac0ef112610bb8b01fd2fe4fe84173f6",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.basic" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "quantum.basic:0",
+          "kind": "hit_definition",
+          "stat": "quantum.basic",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isPrimary" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33264869:skill",
+      "sourceRef": "character:1508:skills:33264869",
+      "sourceHash": "106ac656417f1b7a2cac406b0f3c9288cbb52a90f18f55301d8c927a19e0cece",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.skill" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "quantum.skill:0",
+          "kind": "hit_definition",
+          "stat": "quantum.skill",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isPrimary" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33536761:ultimate",
+      "sourceRef": "character:1508:skills:33536761",
+      "sourceHash": "5113358a7698d58ff3b482f16c93342250412b570ba006d8189512d665a10c56",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.ultimate" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "quantum.ultimate.primary:0",
+          "kind": "hit_definition",
+          "stat": "quantum.ultimate.primary",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isPrimary" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "quantum.ultimate.other:1",
+          "kind": "hit_definition",
+          "stat": "quantum.ultimate.other",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p2" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isPrimary" },
+              "right": { "kind": "literal", "value": false }
+            }
+          }
+        },
+        {
+          "id": "skillPoints:2",
+          "kind": "resource_delta",
+          "stat": "skillPoints",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p4" },
+          "scope": { "target": "team" }
+        },
+        {
+          "id": "damageTaken:3",
+          "kind": "stat_modifier",
+          "stat": "damageTaken",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p5" },
+          "scope": { "target": "enemy" },
+          "duration": { "kind": "turns", "value": 3 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33286284:initial-gems",
+      "sourceRef": "character:1508:skills:33286284",
+      "sourceHash": "2a194cc4d2692e2872b75ba93039afbc8ec0c273553ca602a9cec29444244849",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "combat.start" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "rin.gems:0",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33286284:gems-spent",
+      "sourceRef": "character:1508:skills:33286284",
+      "sourceHash": "2a194cc4d2692e2872b75ba93039afbc8ec0c273553ca602a9cec29444244849",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "team.skillPoints.spent" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "rin.gems:0",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": { "kind": "context", "key": "event.skillPointsChanged" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "critDamage:1",
+          "kind": "stat_modifier",
+          "stat": "critDamage",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isEventActor" },
+              "right": { "kind": "literal", "value": true }
+            }
+          },
+          "duration": { "kind": "turns", "value": 2 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33286284:gems-restored",
+      "sourceRef": "character:1508:skills:33286284",
+      "sourceHash": "2a194cc4d2692e2872b75ba93039afbc8ec0c273553ca602a9cec29444244849",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "team.skillPoints.restored" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "rin.gems:0",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": { "kind": "context", "key": "event.skillPointsChanged" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "critDamage:1",
+          "kind": "stat_modifier",
+          "stat": "critDamage",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isEventActor" },
+              "right": { "kind": "literal", "value": true }
+            }
+          },
+          "duration": { "kind": "turns", "value": 2 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33286284:enhance",
+      "sourceRef": "character:1508:skills:33286284",
+      "sourceHash": "2a194cc4d2692e2872b75ba93039afbc8ec0c273553ca602a9cec29444244849",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "boolean",
+          "op": "or",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "gte",
+              "left": { "kind": "context", "key": "rin.gems" },
+              "right": { "kind": "param", "key": "p5" }
+            },
+            {
+              "kind": "compare",
+              "op": "gte",
+              "left": { "kind": "context", "key": "team.skillPoints" },
+              "right": { "kind": "param", "key": "p4" }
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "rin.enhancedSkillAvailable:0",
+          "kind": "state_change",
+          "stat": "rin.enhancedSkillAvailable",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33496730:linked-attack",
+      "sourceRef": "character:1508:skills:33496730",
+      "sourceHash": "6cd57c00b7e39c529eff1f09c9dc9fc6e62c12e7f9224cb59b8c5d128d037f2b",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "archer.spiralSword.after",
+        "condition": {
+          "kind": "boolean",
+          "op": "and",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "rin.linkedAttackUsed" },
+              "right": { "kind": "literal", "value": false }
+            },
+            {
+              "kind": "boolean",
+              "op": "or",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "lte",
+                  "left": { "kind": "context", "key": "team.skillPoints" },
+                  "right": { "kind": "param", "key": "p3" }
+                },
+                {
+                  "kind": "compare",
+                  "op": "gte",
+                  "left": { "kind": "context", "key": "archer.circuitActiveSkillCount" },
+                  "right": { "kind": "literal", "value": 5 }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "quantum.linked.rin:0",
+          "kind": "hit_definition",
+          "stat": "quantum.linked.rin",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": { "target": "enemy" }
+        },
+        {
+          "id": "quantum.linked.archer:1",
+          "kind": "hit_definition",
+          "stat": "quantum.linked.archer",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "archer.attack" },
+            "right": { "kind": "param", "key": "p4" }
+          },
+          "scope": { "target": "enemy" }
+        },
+        {
+          "id": "skillPoints:2",
+          "kind": "resource_delta",
+          "stat": "skillPoints",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "team" }
+        },
+        {
+          "id": "rin.linkedAttackUsed:3",
+          "kind": "state_change",
+          "stat": "rin.linkedAttackUsed",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33496730:reset-linked",
+      "sourceRef": "character:1508:skills:33496730",
+      "sourceHash": "6cd57c00b7e39c529eff1f09c9dc9fc6e62c12e7f9224cb59b8c5d128d037f2b",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.turn.end" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "rin.linkedAttackUsed:0",
+          "kind": "state_change",
+          "stat": "rin.linkedAttackUsed",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 0 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33518407:technique",
+      "sourceRef": "character:1508:skills:33518407",
+      "sourceHash": "fe09e1159d23d2bdf752cf220eaabaeaddc9e0e00bd0a96dbe3964133cdf46aa",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "combat.start",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "rin.techniqueUsed" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "rin.gems:0",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33478499:enhanced-aoe",
+      "sourceRef": "character:1508:skills:33478499",
+      "sourceHash": "2532e0aaf9425627cfbe853318e39a38e7d963bc893ab04c6ac12a9d5704b832",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.enhancedSkill" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "quantum.enhancedSkill.aoe:0",
+          "kind": "hit_definition",
+          "stat": "quantum.enhancedSkill.aoe",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": { "target": "enemy" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33478499:convert-sp",
+      "sourceRef": "character:1508:skills:33478499",
+      "sourceHash": "2532e0aaf9425627cfbe853318e39a38e7d963bc893ab04c6ac12a9d5704b832",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "rin.enhancedSkill",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "rin.usingShadowGems" },
+          "right": { "kind": "literal", "value": false }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "skillPoints:0",
+          "kind": "resource_delta",
+          "stat": "skillPoints",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "literal", "value": -1 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "max",
+              "left": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "context", "key": "team.skillPoints" },
+                "right": { "kind": "param", "key": "p4" }
+              },
+              "right": { "kind": "literal", "value": 0 }
+            }
+          },
+          "scope": { "target": "team" }
+        },
+        {
+          "id": "rin.gems:1",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": {
+              "kind": "arithmetic",
+              "op": "max",
+              "left": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "context", "key": "team.skillPoints" },
+                "right": { "kind": "param", "key": "p4" }
+              },
+              "right": { "kind": "literal", "value": 0 }
+            },
+            "right": { "kind": "param", "key": "p5" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:skills:33478499:gem-repeat",
+      "sourceRef": "character:1508:skills:33478499",
+      "sourceHash": "2532e0aaf9425627cfbe853318e39a38e7d963bc893ab04c6ac12a9d5704b832",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "rin.enhancedSkill.repeat",
+        "condition": {
+          "kind": "boolean",
+          "op": "and",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "rin.usingShadowGems" },
+              "right": { "kind": "literal", "value": false }
+            },
+            {
+              "kind": "compare",
+              "op": "gte",
+              "left": { "kind": "context", "key": "rin.gems" },
+              "right": { "kind": "param", "key": "p2" }
+            },
+            {
+              "kind": "compare",
+              "op": "lt",
+              "left": { "kind": "context", "key": "rin.enhancedRepeatCount" },
+              "right": { "kind": "param", "key": "p6" }
+            },
+            {
+              "kind": "compare",
+              "op": "gt",
+              "left": { "kind": "context", "key": "enemy.aliveCount" },
+              "right": { "kind": "literal", "value": 0 }
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "quantum.enhancedSkill.repeat:0",
+          "kind": "hit_definition",
+          "stat": "quantum.enhancedSkill.repeat",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isRandomHitTarget" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "rin.gems:1",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "literal", "value": -1 },
+            "right": { "kind": "param", "key": "p2" }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "rin.enhancedRepeatCount:2",
+          "kind": "resource_delta",
+          "stat": "rin.enhancedRepeatCount",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:traces:1508101:sp-cap",
+      "sourceRef": "character:1508:traces:1508101",
+      "sourceHash": "8bf476cbbd324da0372d8608a1e0a19c59aad735fd05b1230bb76f766af3a30d",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "rin.onField" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1508.trace:1508101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "skillPoints.cap:0",
+          "kind": "resource_delta",
+          "stat": "skillPoints.cap",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "team" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:traces:1508101:entry-buffs",
+      "sourceRef": "character:1508:traces:1508101",
+      "sourceHash": "8bf476cbbd324da0372d8608a1e0a19c59aad735fd05b1230bb76f766af3a30d",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "combat.start" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1508.trace:1508101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "attack:0",
+          "kind": "stat_modifier",
+          "stat": "attack",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "quantum.resistancePenetration:1",
+          "kind": "stat_modifier",
+          "stat": "quantum.resistancePenetration",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "attack:2",
+          "kind": "stat_modifier",
+          "stat": "attack",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isArcher" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "quantum.resistancePenetration:3",
+          "kind": "stat_modifier",
+          "stat": "quantum.resistancePenetration",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isArcher" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:traces:1508102:combat.start",
+      "sourceRef": "character:1508:traces:1508102",
+      "sourceHash": "b4135d7e86e40a6830e7847d97911b7573da73d7900846ef9747acb04536aae0",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "combat.start" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1508.trace:1508102" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "speed:0",
+          "kind": "stat_modifier",
+          "stat": "speed",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" },
+          "duration": { "kind": "turns", "value": 3 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1508:traces:1508102:rin.enhancedSkill.after",
+      "sourceRef": "character:1508:traces:1508102",
+      "sourceHash": "b4135d7e86e40a6830e7847d97911b7573da73d7900846ef9747acb04536aae0",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.enhancedSkill.after" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1508.trace:1508102" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "speed:0",
+          "kind": "stat_modifier",
+          "stat": "speed",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" },
+          "duration": { "kind": "turns", "value": 3 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1508:traces:1508103:ultimate-gems",
+      "sourceRef": "character:1508:traces:1508103",
+      "sourceHash": "f314257315b02eac51032c2c0def056b76e96898e6e1027cd394a3f8ecf92b30",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.ultimate" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1508.trace:1508103" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "rin.gems:0",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:ranks:1:shadow-gems",
+      "sourceRef": "character:1508:ranks:1",
+      "sourceHash": "c0e76820237377d17c73e909d8892cbd731d1bb325e57f6d118e24a1c416f99b",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "rin.enhancedSkill.after",
+        "condition": {
+          "kind": "compare",
+          "op": "gte",
+          "left": { "kind": "context", "key": "event.gemsConsumed" },
+          "right": { "kind": "param", "key": "p1" }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1508.eidolon" },
+        "right": { "kind": "literal", "value": 1 }
+      },
+      "effects": [
+        {
+          "id": "rin.shadowGems:0",
+          "kind": "resource_delta",
+          "stat": "rin.shadowGems",
+          "unit": "count",
+          "expression": { "kind": "context", "key": "event.gemsConsumed" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:ranks:2:skill-buffs",
+      "sourceRef": "character:1508:ranks:2",
+      "sourceHash": "a78d2ca1670be1249dcb3386595f688d1c3dc30396380c95df5597c55e87638f",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "rin.onField" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1508.eidolon" },
+        "right": { "kind": "literal", "value": 2 }
+      },
+      "effects": [
+        {
+          "id": "skill.damageBonus:0",
+          "kind": "stat_modifier",
+          "stat": "skill.damageBonus",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skill.finalMultiplier:1",
+          "kind": "stat_modifier",
+          "stat": "skill.finalMultiplier",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "team" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:ranks:4:talent-stack-cap",
+      "sourceRef": "character:1508:ranks:4",
+      "sourceHash": "6736cc367b26a368a759cf34d4946c393d830c21e6c7ebb8da05702ab61ac96f",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1508.eidolon" },
+        "right": { "kind": "literal", "value": 4 }
+      },
+      "effects": [
+        {
+          "id": "rin.gemMagic.maxStacks:0",
+          "kind": "state_change",
+          "stat": "rin.gemMagic.maxStacks",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:ranks:6:penetration",
+      "sourceRef": "character:1508:ranks:6",
+      "sourceHash": "93e5727e0232940bc0f8c4e5e284d0413990fc25fcd55403a2192e9b794358f8",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1508.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "all.resistancePenetration:0",
+          "kind": "stat_modifier",
+          "stat": "all.resistancePenetration",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:ranks:6:ultimate-gems-turn",
+      "sourceRef": "character:1508:ranks:6",
+      "sourceHash": "93e5727e0232940bc0f8c4e5e284d0413990fc25fcd55403a2192e9b794358f8",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "rin.ultimate" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1508.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "rin.gems:0",
+          "kind": "resource_delta",
+          "stat": "rin.gems",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "extraTurn:1",
+          "kind": "action_adjustment",
+          "stat": "extraTurn",
+          "unit": "ratio",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4087223:basic",
+      "sourceRef": "character:1512:skills:4087223",
+      "sourceHash": "3d41709a751ac46edc541e6c00d8c08b62cdf2addaf3315356af5387f8ece732",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "summerRobin.basic" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "wind.basic:0",
+          "kind": "hit_definition",
+          "stat": "wind.basic",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.maxHp" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isPrimary" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:3813281:summon-bessie",
+      "sourceRef": "character:1512:skills:3813281",
+      "sourceHash": "da99f3f6197d71d5a80dcd9ed47f324840f5dc0591ec2d42331eaffca21192d6",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.skill",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.anySkylarkPresent" },
+          "right": { "kind": "literal", "value": false }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "skylark.bessie:0",
+          "kind": "summon_change",
+          "stat": "skylark.bessie",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:3813281:heal-atmosphere",
+      "sourceRef": "character:1512:skills:3813281",
+      "sourceHash": "da99f3f6197d71d5a80dcd9ed47f324840f5dc0591ec2d42331eaffca21192d6",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.skill",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.anySkylarkPresent" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "hp.restore:0",
+          "kind": "healing",
+          "stat": "hp.restore",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "target.maxHp" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isSkylark" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "summerRobin.atmosphere:1",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:3799442:ultimate",
+      "sourceRef": "character:1512:skills:3799442",
+      "sourceHash": "ea5db2ca81c6a9d667c957a9f0c10a2386af453e4c5e9a48098e7d715422ea1e",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "summerRobin.ultimate" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "actionAdvance:0",
+          "kind": "action_adjustment",
+          "stat": "actionAdvance",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "boolean",
+              "op": "and",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isPrimary" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": false }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "energy.fixed:1",
+          "kind": "resource_delta",
+          "stat": "energy.fixed",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "target.maxEnergy" },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "boolean",
+              "op": "and",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isPrimary" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": false }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "summerRobin.specialGuest:2",
+          "kind": "state_change",
+          "stat": "summerRobin.specialGuest",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "boolean",
+              "op": "and",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isPrimary" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": false }
+                }
+              ]
+            }
+          },
+          "duration": { "kind": "turns", "value": 2 },
+          "snapshot": "activation"
+        },
+        {
+          "id": "cannotAdvanceOtherAllies:3",
+          "kind": "state_change",
+          "stat": "cannotAdvanceOtherAllies",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "boolean",
+              "op": "and",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isPrimary" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": false }
+                }
+              ]
+            }
+          },
+          "duration": { "kind": "turns", "value": 2 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:3799442:guest-atmosphere",
+      "sourceRef": "character:1512:skills:3799442",
+      "sourceHash": "ea5db2ca81c6a9d667c957a9f0c10a2386af453e4c5e9a48098e7d715422ea1e",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "team.attack",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.actorOrSummonerIsSpecialGuest" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:summon-stats",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summon.maxHp:0",
+          "kind": "stat_modifier",
+          "stat": "summon.maxHp",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.maxHp" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isSkylark" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "summon.speed:1",
+          "kind": "stat_modifier",
+          "stat": "summon.speed",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.speed" },
+            "right": { "kind": "param", "key": "p2" }
+          },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isSkylark" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:atmosphere-cap",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere.cap:0",
+          "kind": "state_change",
+          "stat": "summerRobin.atmosphere.cap",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p5" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:attack-atmosphere",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "team.attack" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "min",
+            "left": { "kind": "literal", "value": 1 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "max",
+              "left": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "context", "key": "summerRobin.atmosphereCap" },
+                "right": { "kind": "context", "key": "summerRobin.atmosphere" }
+              },
+              "right": { "kind": "literal", "value": 0 }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:team.heal",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "team.heal",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.firstHealOrShieldThisTurn" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:team.shield",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "team.shield",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.firstHealOrShieldThisTurn" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:summon-chumi",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.atmosphere.changed",
+        "condition": {
+          "kind": "boolean",
+          "op": "and",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.bessiePresent" },
+              "right": { "kind": "literal", "value": true }
+            },
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.chumiPresent" },
+              "right": { "kind": "literal", "value": false }
+            },
+            {
+              "kind": "compare",
+              "op": "gte",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": { "kind": "param", "key": "p6" }
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "skylark.chumi:0",
+          "kind": "summon_change",
+          "stat": "skylark.chumi",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:summon-padding",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.atmosphere.changed",
+        "condition": {
+          "kind": "boolean",
+          "op": "and",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.bessiePresent" },
+              "right": { "kind": "literal", "value": true }
+            },
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.paddingPresent" },
+              "right": { "kind": "literal", "value": false }
+            },
+            {
+              "kind": "compare",
+              "op": "gte",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": { "kind": "param", "key": "p7" }
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "skylark.padding:0",
+          "kind": "summon_change",
+          "stat": "skylark.padding",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:fever-defense-ignore",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "defenseIgnore:0",
+          "kind": "stat_modifier",
+          "stat": "defenseIgnore",
+          "unit": "ratio",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "add",
+            "left": { "kind": "param", "key": "p8" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "multiply",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": { "kind": "param", "key": "p9" }
+            }
+          },
+          "scope": { "target": "team" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:fever-control-immunity",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "controlImmunity:0",
+          "kind": "state_change",
+          "stat": "controlImmunity",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": {
+            "target": "all",
+            "filter": {
+              "kind": "boolean",
+              "op": "or",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSkylark" },
+                  "right": { "kind": "literal", "value": true }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "summerRobin.preventOwnTurn:1",
+          "kind": "state_change",
+          "stat": "summerRobin.preventOwnTurn",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:4049802:enter-fever",
+      "sourceRef": "character:1512:skills:4049802",
+      "sourceHash": "c456d16babf1c68dd0d4ac3444f8f89d4a01556a92190b3be6626cf9d6de2590",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.members.changed",
+        "condition": {
+          "kind": "boolean",
+          "op": "and",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.allSkylarksPresent" },
+              "right": { "kind": "literal", "value": true }
+            },
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.fever" },
+              "right": { "kind": "literal", "value": false }
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.fever:0",
+          "kind": "state_change",
+          "stat": "summerRobin.fever",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "removeControlDebuffs:1",
+          "kind": "state_change",
+          "stat": "removeControlDebuffs",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": {
+            "target": "all",
+            "filter": {
+              "kind": "boolean",
+              "op": "or",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSkylark" },
+                  "right": { "kind": "literal", "value": true }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:skills:3752513:technique",
+      "sourceRef": "character:1512:skills:3752513",
+      "sourceHash": "e48625aa44fd3ffc1c791cbe80724a556e03a2d8ff9fe19acc2d813e4603fc55",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "combat.start",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.techniqueUsed" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "actionAdvance:0",
+          "kind": "action_adjustment",
+          "stat": "actionAdvance",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "summerRobin.atmosphere:1",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "damageBonus:2",
+          "kind": "stat_modifier",
+          "stat": "damageBonus",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "team" },
+          "duration": { "kind": "turns", "value": 2 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1512:traces:1512101:attack-branch",
+      "sourceRef": "character:1512:traces:1512101",
+      "sourceHash": "799ea85fdedab22e2177d3dde5e66b65e4b3f3456c8361d096978efc66b23485",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "summerRobin.atmosphere.gained" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1512.trace:1512101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "attack.flat:0",
+          "kind": "stat_modifier",
+          "stat": "attack.flat",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.maxHp" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "add",
+              "left": { "kind": "param", "key": "p1" },
+              "right": {
+                "kind": "arithmetic",
+                "op": "multiply",
+                "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+                "right": { "kind": "param", "key": "p2" }
+              }
+            }
+          },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "boolean",
+              "op": "and",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isEventActor" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "gt",
+                  "left": { "kind": "context", "key": "target.attack" },
+                  "right": { "kind": "context", "key": "owner.attack" }
+                }
+              ]
+            }
+          },
+          "duration": { "kind": "turns", "value": 2 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1512:traces:1512101:crit-branch",
+      "sourceRef": "character:1512:traces:1512101",
+      "sourceHash": "799ea85fdedab22e2177d3dde5e66b65e4b3f3456c8361d096978efc66b23485",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "summerRobin.atmosphere.gained" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1512.trace:1512101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "critDamage:0",
+          "kind": "stat_modifier",
+          "stat": "critDamage",
+          "unit": "ratio",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "add",
+            "left": { "kind": "param", "key": "p3" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "multiply",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": { "kind": "param", "key": "p4" }
+            }
+          },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "boolean",
+              "op": "and",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isEventActor" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "lte",
+                  "left": { "kind": "context", "key": "target.attack" },
+                  "right": { "kind": "context", "key": "owner.attack" }
+                }
+              ]
+            }
+          },
+          "duration": { "kind": "turns", "value": 2 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1512:traces:1512102:summerRobinOrSkylark.teammateHeal",
+      "sourceRef": "character:1512:traces:1512102",
+      "sourceHash": "b63459a5c1c1f75c2dc464024fe7eb0208368c3aa427f944546e15aeb10e9a9b",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "summerRobinOrSkylark.teammateHeal" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1512.trace:1512102" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "summerRobin.rhythm:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.rhythm",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "min",
+            "left": { "kind": "param", "key": "p1" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "max",
+              "left": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "param", "key": "p3" },
+                "right": { "kind": "context", "key": "summerRobin.rhythm" }
+              },
+              "right": { "kind": "literal", "value": 0 }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:traces:1512102:summerRobinOrSkylark.teammateShield",
+      "sourceRef": "character:1512:traces:1512102",
+      "sourceHash": "b63459a5c1c1f75c2dc464024fe7eb0208368c3aa427f944546e15aeb10e9a9b",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "summerRobinOrSkylark.teammateShield" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1512.trace:1512102" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "summerRobin.rhythm:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.rhythm",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "min",
+            "left": { "kind": "param", "key": "p1" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "max",
+              "left": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "param", "key": "p3" },
+                "right": { "kind": "context", "key": "summerRobin.rhythm" }
+              },
+              "right": { "kind": "literal", "value": 0 }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:traces:1512102:consume-rhythm",
+      "sourceRef": "character:1512:traces:1512102",
+      "sourceHash": "b63459a5c1c1f75c2dc464024fe7eb0208368c3aa427f944546e15aeb10e9a9b",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.atmosphere.gained",
+        "condition": {
+          "kind": "boolean",
+          "op": "and",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "event.firstAtmosphereGainThisTurn" },
+              "right": { "kind": "literal", "value": true }
+            },
+            {
+              "kind": "compare",
+              "op": "gt",
+              "left": { "kind": "context", "key": "summerRobin.rhythm" },
+              "right": { "kind": "literal", "value": 0 }
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1512.trace:1512102" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "summerRobin.rhythm:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.rhythm",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": -1 },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "energy.fixed:1",
+          "kind": "resource_delta",
+          "stat": "energy.fixed",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:traces:1512103:crit",
+      "sourceRef": "character:1512:traces:1512103",
+      "sourceHash": "1c6da1be4bdd28feb8e5e161965c6c8f1065c44837a8e7b7ed0e383ed18b4aa6",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1512.trace:1512103" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "critRate:0",
+          "kind": "stat_modifier",
+          "stat": "critRate",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": {
+            "target": "all",
+            "filter": {
+              "kind": "boolean",
+              "op": "or",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSkylark" },
+                  "right": { "kind": "literal", "value": true }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10076134:memo-hit",
+      "sourceRef": "summon:1512:servant:servant-skills:10076134",
+      "sourceHash": "3843b4cbc0ca06833ef184f7b431e69283541a886b8104bd5c1779e037f90c9e",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "skylark.skill" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "wind.memosprite:0",
+          "kind": "hit_definition",
+          "stat": "wind.memosprite",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "summon.maxHp" },
+            "right": { "kind": "param", "key": "p2" }
+          },
+          "scope": { "target": "enemy" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:fever-damage",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "damageBonus:0",
+          "kind": "stat_modifier",
+          "stat": "damageBonus",
+          "unit": "ratio",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "add",
+            "left": { "kind": "param", "key": "p1" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "multiply",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": { "kind": "param", "key": "p2" }
+            }
+          },
+          "scope": {
+            "target": "all",
+            "filter": {
+              "kind": "boolean",
+              "op": "or",
+              "operands": [
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSummerRobin" },
+                  "right": { "kind": "literal", "value": true }
+                },
+                {
+                  "kind": "compare",
+                  "op": "eq",
+                  "left": { "kind": "context", "key": "target.isSkylark" },
+                  "right": { "kind": "literal", "value": true }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:vulnerability-1",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.skylarkCount" },
+          "right": { "kind": "literal", "value": 1 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "damageTaken:0",
+          "kind": "stat_modifier",
+          "stat": "damageTaken",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": { "target": "enemy" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:vulnerability-2",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.skylarkCount" },
+          "right": { "kind": "literal", "value": 2 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "damageTaken:0",
+          "kind": "stat_modifier",
+          "stat": "damageTaken",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p4" },
+          "scope": { "target": "enemy" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:vulnerability-3",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.skylarkCount" },
+          "right": { "kind": "literal", "value": 3 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "damageTaken:0",
+          "kind": "stat_modifier",
+          "stat": "damageTaken",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p5" },
+          "scope": { "target": "enemy" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:countdown-speed",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.countdown.speed:0",
+          "kind": "stat_modifier",
+          "stat": "summerRobin.countdown.speed",
+          "unit": "flat",
+          "expression": { "kind": "param", "key": "p9" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:countdown",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.countdown.turn.start",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "literal", "value": -1 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": {
+                "kind": "arithmetic",
+                "op": "max",
+                "left": {
+                  "kind": "arithmetic",
+                  "op": "multiply",
+                  "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+                  "right": { "kind": "param", "key": "p10" }
+                },
+                "right": { "kind": "param", "key": "p6" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:memo-turn",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "skylark.turn.start",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "skylark.castSkill:0",
+          "kind": "action_adjustment",
+          "stat": "skylark.castSkill",
+          "unit": "ratio",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isSkylark" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10032094:exit-fever",
+      "sourceRef": "summon:1512:servant:servant-skills:10032094",
+      "sourceHash": "151bd18e66d6a0b2f9a9c67bef5978e2df6d6a7e901cd8e960a47cf290bd516a",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.atmosphere.changed",
+        "condition": {
+          "kind": "boolean",
+          "op": "and",
+          "operands": [
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.fever" },
+              "right": { "kind": "literal", "value": true }
+            },
+            {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": { "kind": "literal", "value": 0 }
+            }
+          ]
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "summerRobin.fever:0",
+          "kind": "state_change",
+          "stat": "summerRobin.fever",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 0 },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skylark.all:1",
+          "kind": "summon_change",
+          "stat": "skylark.all",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 0 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10057535:summon-energy",
+      "sourceRef": "summon:1512:servant:servant-skills:10057535",
+      "sourceHash": "ca86921b7e444f6523586445e01ac81027f68d10346a194ce9d099d4a31930ed",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "skylark.summoned" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "energy.fixed:0",
+          "kind": "resource_delta",
+          "stat": "energy.fixed",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "summon:1512:servant:servant-skills:10262787:disappear-advance",
+      "sourceRef": "summon:1512:servant:servant-skills:10262787",
+      "sourceHash": "f70f6e988839ac8233d430a65286a06f7bc2e87e1b8bfae331459dc18108c3a7",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "skylark.disappeared" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "actionAdvance:0",
+          "kind": "action_adjustment",
+          "stat": "actionAdvance",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:1:record",
+      "sourceRef": "character:1512:ranks:1",
+      "sourceHash": "556fd631ddcae46fa34992ba99230508231b319e62ceb3007d043399cca751c1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "team.damage",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.isTrueDamage" },
+          "right": { "kind": "literal", "value": false }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 1 }
+      },
+      "effects": [
+        {
+          "id": "summerRobin.recordedDamage:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.recordedDamage",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "event.damage" },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:1:true-damage",
+      "sourceRef": "character:1512:ranks:1",
+      "sourceHash": "556fd631ddcae46fa34992ba99230508231b319e62ceb3007d043399cca751c1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "skylark.skill" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 1 }
+      },
+      "effects": [
+        {
+          "id": "true.memosprite.e1:0",
+          "kind": "hit_definition",
+          "stat": "true.memosprite.e1",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "summerRobin.recordedDamage" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "add",
+              "left": { "kind": "param", "key": "p1" },
+              "right": {
+                "kind": "arithmetic",
+                "op": "multiply",
+                "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+                "right": { "kind": "param", "key": "p2" }
+              }
+            }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.hasHighestCurrentHp" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "summerRobin.recordedDamage:1",
+          "kind": "resource_delta",
+          "stat": "summerRobin.recordedDamage",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "literal", "value": -1 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "multiply",
+              "left": { "kind": "context", "key": "summerRobin.recordedDamage" },
+              "right": { "kind": "param", "key": "p4" }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:2:cap-penetration",
+      "sourceRef": "character:1512:ranks:2",
+      "sourceHash": "5f217ffca07c1890611fd4a122460e57aad99c999cd5e7934e2a26106db22d72",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 2 }
+      },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere.capBonus:0",
+          "kind": "state_change",
+          "stat": "summerRobin.atmosphere.capBonus",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "all.resistancePenetration:1",
+          "kind": "stat_modifier",
+          "stat": "all.resistancePenetration",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": { "target": "team" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:2:first-gain",
+      "sourceRef": "character:1512:ranks:2",
+      "sourceHash": "5f217ffca07c1890611fd4a122460e57aad99c999cd5e7934e2a26106db22d72",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.atmosphere.gained",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.actorFirstSkillAtmosphereGainThisTurn" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 2 }
+      },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:4:fever-atmosphere",
+      "sourceRef": "character:1512:ranks:4",
+      "sourceHash": "7e923a265d8981fa344891cff06957a6ebfc24bb0965695d17657ae3bbdd2eb1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "summerRobin.fever.enter" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 4 }
+      },
+      "effects": [
+        {
+          "id": "summerRobin.atmosphere:0",
+          "kind": "resource_delta",
+          "stat": "summerRobin.atmosphere",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:4:summon-speed",
+      "sourceRef": "character:1512:ranks:4",
+      "sourceHash": "7e923a265d8981fa344891cff06957a6ebfc24bb0965695d17657ae3bbdd2eb1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 4 }
+      },
+      "effects": [
+        {
+          "id": "speed:0",
+          "kind": "stat_modifier",
+          "stat": "speed",
+          "unit": "ratio",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "add",
+            "left": { "kind": "param", "key": "p2" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "multiply",
+              "left": { "kind": "context", "key": "summerRobin.atmosphere" },
+              "right": { "kind": "param", "key": "p3" }
+            }
+          },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isSkylark" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:6:memo-multiplier",
+      "sourceRef": "character:1512:ranks:6",
+      "sourceHash": "5dee56a4d043ff8e62738cedf5f628de331dae7ff13a26489a479d3b2cd61f53",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "memosprite.skill.multiplierBonus:0",
+          "kind": "stat_modifier",
+          "stat": "memosprite.skill.multiplierBonus",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": {
+            "target": "team",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isSkylark" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:6:ultimate-storage",
+      "sourceRef": "character:1512:ranks:6",
+      "sourceHash": "5dee56a4d043ff8e62738cedf5f628de331dae7ff13a26489a479d3b2cd61f53",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "condition",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "ultimate.storageCap:0",
+          "kind": "state_change",
+          "stat": "ultimate.storageCap",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 2 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:6:first-fever-energy",
+      "sourceRef": "character:1512:ranks:6",
+      "sourceHash": "5dee56a4d043ff8e62738cedf5f628de331dae7ff13a26489a479d3b2cd61f53",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.fever.enter",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.firstFeverThisCombat" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "energy.fixed:0",
+          "kind": "resource_delta",
+          "stat": "energy.fixed",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:6:countdown-energy",
+      "sourceRef": "character:1512:ranks:6",
+      "sourceHash": "5dee56a4d043ff8e62738cedf5f628de331dae7ff13a26489a479d3b2cd61f53",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "summerRobin.countdown.turn.start",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "summerRobin.fever" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "energy.fixed:0",
+          "kind": "resource_delta",
+          "stat": "energy.fixed",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:320937:basic",
+      "sourceRef": "character:1505:skills:320937",
+      "sourceHash": "28c1f69b289efc96933fbdea5c7f52499080b50659a7b421d46f114d2607652d",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.basic" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.basic:0",
+          "kind": "hit_definition",
+          "stat": "physical.basic",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isPrimary" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:52167:skill",
+      "sourceRef": "character:1505:skills:52167",
+      "sourceHash": "ce53d33574bc35b4c745249764403cce0b052aa00d9bb2bc399e21592dabcb95",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.skill" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.skill.primary:0",
+          "kind": "hit_definition",
+          "stat": "physical.skill.primary",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p2" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isPrimary" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "physical.skill.adjacent:1",
+          "kind": "hit_definition",
+          "stat": "physical.skill.adjacent",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isAdjacent" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        },
+        {
+          "id": "punchline:2",
+          "kind": "resource_delta",
+          "stat": "punchline",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p4" },
+          "scope": { "target": "team" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:301520:ultimate-aoe",
+      "sourceRef": "character:1505:skills:301520",
+      "sourceHash": "ca6607dd5c4b77bfb5927863768434a2da090fcae9a4e88fde70de15f12a61f7",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.ultimate" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.ultimate.aoe:0",
+          "kind": "hit_definition",
+          "stat": "physical.ultimate.aoe",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": { "target": "enemy" }
+        },
+        {
+          "id": "evanescia.ultimate.baseBounceCount:1",
+          "kind": "state_change",
+          "stat": "evanescia.ultimate.baseBounceCount",
+          "unit": "count",
+          "expression": { "kind": "literal", "value": 5 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:301520:ultimate-bounce",
+      "sourceRef": "character:1505:skills:301520",
+      "sourceHash": "ca6607dd5c4b77bfb5927863768434a2da090fcae9a4e88fde70de15f12a61f7",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.ultimate.bounce" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.ultimate.bounce:0",
+          "kind": "hit_definition",
+          "stat": "physical.ultimate.bounce",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isRandomHitTarget" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:crit-to-elation",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "elation:0",
+          "kind": "stat_modifier",
+          "stat": "elation",
+          "unit": "ratio",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.critDamage" },
+            "right": { "kind": "param", "key": "p5" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:energy-to-reward",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.energy.gained",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.fromRewardSync" },
+          "right": { "kind": "literal", "value": false }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "evanescia.reward:0",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "min",
+            "left": { "kind": "context", "key": "event.energyGained" },
+            "right": { "kind": "literal", "value": 100 }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "evanescia.energyCounter:1",
+          "kind": "resource_delta",
+          "stat": "evanescia.energyCounter",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "min",
+            "left": { "kind": "context", "key": "event.energyGained" },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:reward-to-energy",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.reward.gained",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "event.fromEnergySync" },
+          "right": { "kind": "literal", "value": false }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "energy:0",
+          "kind": "resource_delta",
+          "stat": "energy",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "min",
+            "left": { "kind": "context", "key": "event.rewardGained" },
+            "right": { "kind": "literal", "value": 100 }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:fox-follow-up",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.energyCounter.changed",
+        "condition": {
+          "kind": "compare",
+          "op": "gte",
+          "left": { "kind": "context", "key": "evanescia.energyCounter" },
+          "right": { "kind": "param", "key": "p3" }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "evanescia.energyCounter:0",
+          "kind": "resource_delta",
+          "stat": "evanescia.energyCounter",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "literal", "value": -1 },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "physical.foxFollowUp:1",
+          "kind": "hit_definition",
+          "stat": "physical.foxFollowUp",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": { "target": "enemy" }
+        },
+        {
+          "id": "energy:2",
+          "kind": "resource_delta",
+          "stat": "energy",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p4" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:skill-elation",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.skill",
+        "condition": {
+          "kind": "compare",
+          "op": "gt",
+          "left": { "kind": "context", "key": "evanescia.reward" },
+          "right": { "kind": "literal", "value": 0 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.elation.skill.multiplier:0",
+          "kind": "hit_definition",
+          "stat": "physical.elation.skill.multiplier",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p7" },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.wasHitBySkill" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:ultimate-elation",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.ultimate",
+        "condition": {
+          "kind": "compare",
+          "op": "gt",
+          "left": { "kind": "context", "key": "evanescia.reward" },
+          "right": { "kind": "literal", "value": 0 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.elation.ultimate.multiplier:0",
+          "kind": "hit_definition",
+          "stat": "physical.elation.ultimate.multiplier",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p6" },
+          "scope": { "target": "enemy" }
+        },
+        {
+          "id": "evanescia.ultimate.rewardForDamage:1",
+          "kind": "state_change",
+          "stat": "evanescia.ultimate.rewardForDamage",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "context", "key": "evanescia.reward" },
+            "right": { "kind": "context", "key": "owner.maxEnergy" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:bounce-elation",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.ultimate.bounce",
+        "condition": {
+          "kind": "compare",
+          "op": "gt",
+          "left": { "kind": "context", "key": "evanescia.reward" },
+          "right": { "kind": "literal", "value": 0 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.elation.bounce.multiplier:0",
+          "kind": "hit_definition",
+          "stat": "physical.elation.bounce.multiplier",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p8" },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.isRandomHitTarget" },
+              "right": { "kind": "literal", "value": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:28644:fox-elation",
+      "sourceRef": "character:1505:skills:28644",
+      "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.fox.attack",
+        "condition": {
+          "kind": "compare",
+          "op": "gt",
+          "left": { "kind": "context", "key": "evanescia.reward" },
+          "right": { "kind": "literal", "value": 0 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.elation.fox.multiplier:0",
+          "kind": "hit_definition",
+          "stat": "physical.elation.fox.multiplier",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "enemy" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:380959:technique",
+      "sourceRef": "character:1505:skills:380959",
+      "sourceHash": "5afeed15b0c46450937a570ef52143e0addbef30b439de5942c605bd76377d61",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "combat.start",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "evanescia.techniqueUsed" },
+          "right": { "kind": "literal", "value": true }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.technique:0",
+          "kind": "hit_definition",
+          "stat": "physical.technique",
+          "unit": "flat",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "owner.attack" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": { "target": "enemy" }
+        },
+        {
+          "id": "evanescia.reward:1",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:skills:495155:elation",
+      "sourceRef": "character:1505:skills:495155",
+      "sourceHash": "4b2b1ad8ccb7b02e5363ec0df12829877d058ef056ec401979ebb501dc1b7444",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.elationSkill" },
+      "environments": ["combat"],
+      "unlock": { "kind": "literal", "value": true },
+      "effects": [
+        {
+          "id": "physical.elation.multiplier:0",
+          "kind": "hit_definition",
+          "stat": "physical.elation.multiplier",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "enemy" }
+        },
+        {
+          "id": "evanescia.reward:1",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:traces:1505101:crit",
+      "sourceRef": "character:1505:traces:1505101",
+      "sourceHash": "eba23dac8bfa33b0548b3c8e90978cc3e4c36f34a3df0dd4289b36c1b2cef651",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1505.trace:1505101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "critRate:0",
+          "kind": "stat_modifier",
+          "stat": "critRate",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:traces:1505101:bounces-many",
+      "sourceRef": "character:1505:traces:1505101",
+      "sourceHash": "eba23dac8bfa33b0548b3c8e90978cc3e4c36f34a3df0dd4289b36c1b2cef651",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.ultimate",
+        "condition": {
+          "kind": "compare",
+          "op": "gte",
+          "left": { "kind": "context", "key": "enemy.aliveCount" },
+          "right": { "kind": "literal", "value": 3 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1505.trace:1505101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "evanescia.ultimate.extraBounceCount:0",
+          "kind": "state_change",
+          "stat": "evanescia.ultimate.extraBounceCount",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:traces:1505101:bounces-two",
+      "sourceRef": "character:1505:traces:1505101",
+      "sourceHash": "eba23dac8bfa33b0548b3c8e90978cc3e4c36f34a3df0dd4289b36c1b2cef651",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.ultimate",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "enemy.aliveCount" },
+          "right": { "kind": "literal", "value": 2 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1505.trace:1505101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "evanescia.ultimate.extraBounceCount:0",
+          "kind": "state_change",
+          "stat": "evanescia.ultimate.extraBounceCount",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p3" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:traces:1505101:bounces-one",
+      "sourceRef": "character:1505:traces:1505101",
+      "sourceHash": "eba23dac8bfa33b0548b3c8e90978cc3e4c36f34a3df0dd4289b36c1b2cef651",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.ultimate",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": { "kind": "context", "key": "enemy.aliveCount" },
+          "right": { "kind": "literal", "value": 1 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1505.trace:1505101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "evanescia.ultimate.extraBounceCount:0",
+          "kind": "state_change",
+          "stat": "evanescia.ultimate.extraBounceCount",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p4" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:traces:1505101:teammate-reward",
+      "sourceRef": "character:1505:traces:1505101",
+      "sourceHash": "eba23dac8bfa33b0548b3c8e90978cc3e4c36f34a3df0dd4289b36c1b2cef651",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "teammate.reward.gained",
+        "condition": {
+          "kind": "compare",
+          "op": "lt",
+          "left": { "kind": "context", "key": "event.actorElationOrder" },
+          "right": { "kind": "context", "key": "evanescia.elationOrder" }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1505.trace:1505101" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "evanescia.reward:0",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "event.rewardGained" },
+            "right": { "kind": "param", "key": "p5" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:traces:1505102:fox-vulnerability",
+      "sourceRef": "character:1505:traces:1505102",
+      "sourceHash": "3cec1e038f443690a47d03977d0ed8aedeae2d0c449a5cb0dc0c8bde82fb59a3",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.fox.attack" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1505.trace:1505102" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "damageTaken:0",
+          "kind": "stat_modifier",
+          "stat": "damageTaken",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": {
+            "target": "enemy",
+            "filter": {
+              "kind": "compare",
+              "op": "eq",
+              "left": { "kind": "context", "key": "target.wasHitByFox" },
+              "right": { "kind": "literal", "value": true }
+            }
+          },
+          "duration": { "kind": "turns", "value": 3 },
+          "snapshot": "activation"
+        }
+      ]
+    },
+    {
+      "id": "character:1505:traces:1505103:expired-reward",
+      "sourceRef": "character:1505:traces:1505103",
+      "sourceHash": "fbca321bf5890534821980098fbab846b492163bf03e38111f6ca094ef11d455",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "teammate.reward.expired" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "eq",
+        "left": { "kind": "context", "key": "character:1505.trace:1505103" },
+        "right": { "kind": "literal", "value": true }
+      },
+      "effects": [
+        {
+          "id": "evanescia.reward:0",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "event.expiredReward" },
+            "right": { "kind": "param", "key": "p1" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:1:penetration",
+      "sourceRef": "character:1505:ranks:1",
+      "sourceHash": "396b171fbe887fe6bd17697a54262872731edec7bb227c240308e092a5c1af5f",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 1 }
+      },
+      "effects": [
+        {
+          "id": "all.resistancePenetration:0",
+          "kind": "stat_modifier",
+          "stat": "all.resistancePenetration",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:1:extra-elation",
+      "sourceRef": "character:1505:ranks:1",
+      "sourceHash": "396b171fbe887fe6bd17697a54262872731edec7bb227c240308e092a5c1af5f",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.fox.attack.after" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 1 }
+      },
+      "effects": [
+        {
+          "id": "evanescia.castElationSkill:0",
+          "kind": "action_adjustment",
+          "stat": "evanescia.castElationSkill",
+          "unit": "ratio",
+          "expression": { "kind": "literal", "value": 1 },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:1:extra-reward",
+      "sourceRef": "character:1505:ranks:1",
+      "sourceHash": "396b171fbe887fe6bd17697a54262872731edec7bb227c240308e092a5c1af5f",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.elationSkill" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 1 }
+      },
+      "effects": [
+        {
+          "id": "evanescia.reward:0",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:2:crit",
+      "sourceRef": "character:1505:ranks:2",
+      "sourceHash": "f7cbbc52b267f04252a096531382afaec1b000d1eb4369904979085a99606aea",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 2 }
+      },
+      "effects": [
+        {
+          "id": "critDamage:0",
+          "kind": "stat_modifier",
+          "stat": "critDamage",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:2:evanescia.trace15817762.reward",
+      "sourceRef": "character:1505:ranks:2",
+      "sourceHash": "f7cbbc52b267f04252a096531382afaec1b000d1eb4369904979085a99606aea",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.trace15817762.reward" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 2 }
+      },
+      "effects": [
+        {
+          "id": "evanescia.reward:0",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "event.traceRewardGained" },
+            "right": { "kind": "param", "key": "p2" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:2:evanescia.trace15792254.reward",
+      "sourceRef": "character:1505:ranks:2",
+      "sourceHash": "f7cbbc52b267f04252a096531382afaec1b000d1eb4369904979085a99606aea",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "event", "event": "evanescia.trace15792254.reward" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 2 }
+      },
+      "effects": [
+        {
+          "id": "evanescia.reward:0",
+          "kind": "resource_delta",
+          "stat": "evanescia.reward",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "multiply",
+            "left": { "kind": "context", "key": "event.traceRewardGained" },
+            "right": { "kind": "param", "key": "p3" }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:4:defense-ignore",
+      "sourceRef": "character:1505:ranks:4",
+      "sourceHash": "8108727a96676106857cc2487059a787e0ea492ef00885b65dadd617318c0336",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 4 }
+      },
+      "effects": [
+        {
+          "id": "defenseIgnore:0",
+          "kind": "stat_modifier",
+          "stat": "defenseIgnore",
+          "unit": "ratio",
+          "expression": { "kind": "param", "key": "p1" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:6:reward-duration",
+      "sourceRef": "character:1505:ranks:6",
+      "sourceHash": "6cbb3d67078be2a90cbc6e864d132bd4508c918f0f52d29966c1b6f5fe8aef5c",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "evanescia.reward.durationBonus:0",
+          "kind": "state_change",
+          "stat": "evanescia.reward.durationBonus",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p2" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:6:elation-amplification",
+      "sourceRef": "character:1505:ranks:6",
+      "sourceHash": "6cbb3d67078be2a90cbc6e864d132bd4508c918f0f52d29966c1b6f5fe8aef5c",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "elation.amplification:0",
+          "kind": "stat_modifier",
+          "stat": "elation.amplification",
+          "unit": "ratio",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "add",
+            "left": { "kind": "param", "key": "p1" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "multiply",
+              "left": {
+                "kind": "arithmetic",
+                "op": "divide",
+                "left": {
+                  "kind": "arithmetic",
+                  "op": "min",
+                  "left": { "kind": "context", "key": "evanescia.reward" },
+                  "right": { "kind": "literal", "value": 1000 }
+                },
+                "right": { "kind": "literal", "value": 100 }
+              },
+              "right": { "kind": "param", "key": "p3" }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:6:ultimate-energy",
+      "sourceRef": "character:1505:ranks:6",
+      "sourceHash": "6cbb3d67078be2a90cbc6e864d132bd4508c918f0f52d29966c1b6f5fe8aef5c",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": {
+        "kind": "event",
+        "event": "evanescia.ultimate.after",
+        "condition": {
+          "kind": "compare",
+          "op": "eq",
+          "left": {
+            "kind": "arithmetic",
+            "op": "subtract",
+            "left": { "kind": "context", "key": "evanescia.ultimateCastCount" },
+            "right": {
+              "kind": "arithmetic",
+              "op": "multiply",
+              "left": {
+                "kind": "floor",
+                "operand": {
+                  "kind": "arithmetic",
+                  "op": "divide",
+                  "left": {
+                    "kind": "arithmetic",
+                    "op": "subtract",
+                    "left": { "kind": "context", "key": "evanescia.ultimateCastCount" },
+                    "right": { "kind": "literal", "value": 1 }
+                  },
+                  "right": { "kind": "param", "key": "p5" }
+                }
+              },
+              "right": { "kind": "param", "key": "p5" }
+            }
+          },
+          "right": { "kind": "literal", "value": 1 }
+        }
+      },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 6 }
+      },
+      "effects": [
+        {
+          "id": "energy.fixed:0",
+          "kind": "resource_delta",
+          "stat": "energy.fixed",
+          "unit": "count",
+          "expression": { "kind": "param", "key": "p4" },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:ranks:3:levels",
+      "sourceRef": "character:1508:ranks:3",
+      "sourceHash": "17c49a1e3a0f123f91bd3bbadc0ac2eab641b50063ba34b5f8e96b9d8fce64f5",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1508.eidolon" },
+        "right": { "kind": "literal", "value": 3 }
+      },
+      "effects": [
+        {
+          "id": "skillLevel.skill:0",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.skill",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1508.level.skill" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.basic:1",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.basic",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 1 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 10 },
+                "right": { "kind": "context", "key": "character:1508.level.basic" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1508:ranks:5:levels",
+      "sourceRef": "character:1508:ranks:5",
+      "sourceHash": "2b446c96d35736d234a1deeb0ba2c902951cbbc85202b80a11b1bdf2ccefe4de",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1508.eidolon" },
+        "right": { "kind": "literal", "value": 5 }
+      },
+      "effects": [
+        {
+          "id": "skillLevel.ultimate:0",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.ultimate",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1508.level.ultimate" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.talent:1",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.talent",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1508.level.talent" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:3:levels",
+      "sourceRef": "character:1512:ranks:3",
+      "sourceHash": "ccac3faa1251174e9732b4a1d673685d574812c1b6e5b0dc2c3df4f49674c2d2",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 3 }
+      },
+      "effects": [
+        {
+          "id": "skillLevel.skill:0",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.skill",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1512.level.skill" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.talent:1",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.talent",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1512.level.talent" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.memospriteTalent:2",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.memospriteTalent",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 1 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 10 },
+                "right": { "kind": "context", "key": "character:1512.level.memospriteTalent" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1512:ranks:5:levels",
+      "sourceRef": "character:1512:ranks:5",
+      "sourceHash": "e4172e950e8496c4eb2e8c7aeeb658f8790228245cf6b8c481fa83e4899d41c8",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1512.eidolon" },
+        "right": { "kind": "literal", "value": 5 }
+      },
+      "effects": [
+        {
+          "id": "skillLevel.ultimate:0",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.ultimate",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1512.level.ultimate" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.basic:1",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.basic",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 1 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 10 },
+                "right": { "kind": "context", "key": "character:1512.level.basic" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.memospriteSkill:2",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.memospriteSkill",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 1 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 10 },
+                "right": { "kind": "context", "key": "character:1512.level.memospriteSkill" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:3:levels",
+      "sourceRef": "character:1505:ranks:3",
+      "sourceHash": "ef7025f6ad2785ee6296359912d4d46507c42fb56093bbdf2197ca6d2c575204",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 3 }
+      },
+      "effects": [
+        {
+          "id": "skillLevel.ultimate:0",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.ultimate",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1505.level.ultimate" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.basic:1",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.basic",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 1 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 10 },
+                "right": { "kind": "context", "key": "character:1505.level.basic" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.elationSkill:2",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.elationSkill",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 1 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1505.level.elationSkill" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    },
+    {
+      "id": "character:1505:ranks:5:levels",
+      "sourceRef": "character:1505:ranks:5",
+      "sourceHash": "3187fbd26265ace08de1228c293d89696826dcac67a14a3001e3042a404bf4b7",
+      "status": "reviewed",
+      "ruleVersion": 1,
+      "activation": { "kind": "passive" },
+      "environments": ["combat"],
+      "unlock": {
+        "kind": "compare",
+        "op": "gte",
+        "left": { "kind": "context", "key": "character:1505.eidolon" },
+        "right": { "kind": "literal", "value": 5 }
+      },
+      "effects": [
+        {
+          "id": "skillLevel.skill:0",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.skill",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1505.level.skill" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.talent:1",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.talent",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 2 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1505.level.talent" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        },
+        {
+          "id": "skillLevel.elationSkill:2",
+          "kind": "skill_level_delta",
+          "stat": "skillLevel.elationSkill",
+          "unit": "count",
+          "expression": {
+            "kind": "arithmetic",
+            "op": "max",
+            "left": { "kind": "literal", "value": 0 },
+            "right": {
+              "kind": "arithmetic",
+              "op": "min",
+              "left": { "kind": "literal", "value": 1 },
+              "right": {
+                "kind": "arithmetic",
+                "op": "subtract",
+                "left": { "kind": "literal", "value": 15 },
+                "right": { "kind": "context", "key": "character:1505.level.elationSkill" }
+              }
+            }
+          },
+          "scope": { "target": "self" }
+        }
+      ]
+    }
+  ],
+  "review": {
+    "complete": false,
+    "incompleteClauses": [
+      {
+        "sourceRef": "character:1508:ranks:1",
+        "remaining": "Shadow-gem enhanced-skill availability, all-shadow consumption and shadow repeat damage allocation."
+      },
+      {
+        "sourceRef": "character:1508:ranks:4",
+        "remaining": "Apply the two-stack crit-damage override to the talent buff, with self-only stacking."
+      },
+      {
+        "sourceRef": "character:1505:skills:28644",
+        "remaining": "Elation hit coefficients are authored; full elation damage scaling is owned by the combat formula layer. Synced energy must also advance the energy counter without recursive conversion."
+      },
+      {
+        "sourceRef": "character:1512:skills:4049802",
+        "remaining": "All atmosphere gains must use the eidolon-adjusted cap; first heal/shield gain still requires cap enforcement."
+      },
+      {
+        "sourceRef": "character:1512:skills:3799442",
+        "remaining": "Special guest duration decrements at the guest character's turn start."
+      },
+      {
+        "sourceRef": "all-three",
+        "remaining": "Minor stat trace nodes and overworld attack toughness clauses are not authored here. Event dispatch/state application are separate from trigger candidates."
+      }
+    ]
+  }
+}

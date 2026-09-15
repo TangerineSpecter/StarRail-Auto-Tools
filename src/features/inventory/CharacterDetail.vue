@@ -13,6 +13,7 @@ import {
   traceSettingsStorageKey,
 } from "@/shared/utils/trace-settings";
 import { primaryTraceNodes } from "@/shared/utils/trace-stats";
+import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import { formatTime, formatTraceStat } from "@/shared/utils/display";
 import type { CharacterBuildPlan } from "@/types";
 import { characterSkillEntries } from "./character-skills";
@@ -60,6 +61,24 @@ const standingStats = computed(() => {
     return { available: false, reason: "该光锥的满级基础属性尚未同步。", stats: [] };
   if (!isMaxStandingEquipment(props.detail, lightCone))
     return { available: false, reason: "角色与已装备光锥需均为 Lv.80、满突破后展示。", stats: [] };
+  const equipment = standingEquipment(
+    lightCone,
+    props.detail.equippedRelics ?? [],
+    props.detail.path ?? "",
+  );
+  const rules = reviewedStandingRules(equipment);
+  if (rules.missingInputs.length)
+    return {
+      available: false,
+      reason: `缺少属性输入：${rules.missingInputs.join("、").replaceAll("Max Energy", "最大能量")}。`,
+      stats: [],
+    };
+  if (rules.unreviewedSources.length)
+    return {
+      available: false,
+      reason: `装备来源规则尚未审核：${rules.unreviewedSources.join("、")}。`,
+      stats: [],
+    };
   const lightConeEffect = lightConeSkillEffect(lightConeEntry?.skill, lightCone.superimposition);
   return {
     available: true,
@@ -71,6 +90,7 @@ const standingStats = computed(() => {
       traces: selectedTraces.value,
       setEffects: staticSetEffects.value,
       lightConeEffects: lightConeEffect ? [lightConeEffect] : [],
+      equipment,
     }),
   };
 });

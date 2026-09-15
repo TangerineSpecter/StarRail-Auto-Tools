@@ -31,6 +31,7 @@ import { useDashboardDrag } from "./useDashboardDrag";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
 import { resolveCharacterCatalogue } from "@/shared/catalogue";
+import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import type { BuildDashboardEntry, LightConeCatalogue, RelicSetCatalogue } from "@/types";
 
 const entries = ref<BuildDashboardEntry[]>([]);
@@ -93,6 +94,20 @@ function dashboardState(entry: BuildDashboardEntry) {
   if (!coneBase) return { available: false, reason: "该光锥的满级基础属性尚未同步。", stats: [] };
   if (!isMaxStandingEquipment(character, cone))
     return { available: false, reason: "角色与已装备光锥需均为 Lv.80、满突破后展示。", stats: [] };
+  const equipment = standingEquipment(cone, character.equippedRelics ?? [], catalogue.path);
+  const rules = reviewedStandingRules(equipment);
+  if (rules.missingInputs.length)
+    return {
+      available: false,
+      reason: `缺少属性输入：${rules.missingInputs.join("、").replaceAll("Max Energy", "最大能量")}。`,
+      stats: [],
+    };
+  if (rules.unreviewedSources.length)
+    return {
+      available: false,
+      reason: `装备来源规则尚未审核：${rules.unreviewedSources.join("、")}。`,
+      stats: [],
+    };
   const pieceCounts = new Map<number, number>();
   for (const relic of character.equippedRelics ?? [])
     pieceCounts.set(relic.setId, (pieceCounts.get(relic.setId) ?? 0) + 1);
@@ -113,11 +128,28 @@ function dashboardState(entry: BuildDashboardEntry) {
         .flatMap((trace) => trace.stats),
       setEffects,
       lightConeEffects: lightConeEffect ? [lightConeEffect] : [],
+      equipment,
     }),
   };
 }
 
 const canDrag = computed(() => !search.value.trim() && !loading.value && !error.value);
+const standingWarnings = computed(() =>
+  entries.value.flatMap((entry) => {
+    const state = dashboardState(entry);
+    return !state.available &&
+      (state.reason.startsWith("缺少属性输入：") ||
+        state.reason.startsWith("装备来源规则尚未审核："))
+      ? [
+          {
+            characterId: entry.character.characterId,
+            name: entry.character.name,
+            reason: state.reason,
+          },
+        ]
+      : [];
+  }),
+);
 
 function compareCards(
   left: {
@@ -366,6 +398,18 @@ defineExpose({ reload: loadDashboard });
         </small>
       </div>
     </header>
+    <aside
+      v-if="!loading && !error && standingWarnings.length"
+      class="build-standing-warnings"
+      aria-label="站街属性数据待补全"
+    >
+      <p>以下角色的站街属性暂不可计算：</p>
+      <ul>
+        <li v-for="warning in standingWarnings" :key="warning.characterId">
+          {{ warning.name }}：{{ warning.reason }}
+        </li>
+      </ul>
+    </aside>
     <p v-if="loading" class="dashboard-state">正在汇总毕业进度…</p>
     <p v-else-if="error" class="dashboard-state error">{{ error }}</p>
     <p v-else-if="!cards.length" class="dashboard-state">暂无具备完整站街属性的毕业方案。</p>
@@ -1427,6 +1471,22 @@ defineExpose({ reload: loadDashboard });
   padding: 48px;
   text-align: center;
   color: var(--muted);
+}
+.build-standing-warnings {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(154, 120, 57, 0.25);
+  border-radius: 6px;
+  color: #9a7839;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.build-standing-warnings p {
+  margin: 0;
+}
+.build-standing-warnings ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
 }
 .dashboard-state.error {
   color: #b04d43;
