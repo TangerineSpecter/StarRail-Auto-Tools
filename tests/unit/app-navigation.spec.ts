@@ -89,4 +89,60 @@ describe("AppNavigation", () => {
 
     expect(wrapper.emitted("preload-view")).toEqual([["scanner"], ["scanner"]]);
   });
+
+  it("switches all top-level pages with the number keys 1 through 7", () => {
+    const wrapper = mount(AppNavigation, {
+      props: {
+        activeView: "capture",
+        summary: {
+          relics: 0,
+          lightCones: 0,
+          characters: 0,
+          teams: 0,
+          lastSyncAt: null,
+          protocolVersion: "v",
+        },
+      },
+    });
+
+    for (const key of ["1", "2", "3", "4", "5", "6", "7"]) {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key }));
+    }
+
+    expect(wrapper.emitted("update:activeView")).toEqual([
+      ["capture"],
+      ["archive"],
+      ["catalogue"],
+      ["builds"],
+      ["scanner"],
+      ["settings"],
+      ["about"],
+    ]);
+    wrapper.unmount();
+  });
+
+  it("does not switch pages while typing or using a modified shortcut", () => {
+    const wrapper = mount(AppNavigation, {
+      props: {
+        activeView: "capture",
+        summary: {
+          relics: 0,
+          lightCones: 0,
+          characters: 0,
+          teams: 0,
+          lastSyncAt: null,
+          protocolVersion: "v",
+        },
+      },
+    });
+    const input = document.createElement("input");
+    document.body.append(input);
+
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "2", bubbles: true }));
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "2", ctrlKey: true }));
+
+    expect(wrapper.emitted("update:activeView")).toBeUndefined();
+    input.remove();
+    wrapper.unmount();
+  });
 });

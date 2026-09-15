@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted } from "vue";
 import type { InventorySummary } from "@/types";
 import { appViews, type AppView } from "@/app/navigation";
 
@@ -9,6 +10,33 @@ const emit = defineEmits<{
 }>();
 
 const views = appViews;
+
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+}
+
+function handleShortcut(event: KeyboardEvent) {
+  if (
+    event.defaultPrevented ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey ||
+    event.shiftKey ||
+    isEditableTarget(event.target)
+  ) {
+    return;
+  }
+
+  const view = views[Number(event.key) - 1];
+  if (!view) return;
+
+  event.preventDefault();
+  emit("update:activeView", view.id);
+}
+
+onMounted(() => window.addEventListener("keydown", handleShortcut));
+onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
 </script>
 
 <template>
@@ -19,6 +47,7 @@ const views = appViews;
       <button
         :class="['nav-item', { active: activeView === view.id }]"
         type="button"
+        :aria-keyshortcuts="String(index + 1)"
         @pointerenter="emit('preload-view', view.id)"
         @focus="emit('preload-view', view.id)"
         @click="emit('update:activeView', view.id)"
