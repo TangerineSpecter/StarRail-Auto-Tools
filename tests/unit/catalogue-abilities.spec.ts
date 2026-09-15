@@ -273,6 +273,45 @@ describe("CharacterAbilities", () => {
     expect(wrapper.find("section").exists()).toBe(false);
     wrapper.unmount();
   });
+
+  it("interacts with range slider and step buttons smoothly with correct bounds", async () => {
+    const groups = characterAbilityGroups(character, catalogue([ability({ levels: [1, 10, 15] })]));
+    vi.spyOn(mechanics, "characterAbilityGroups").mockReturnValue(groups);
+    const wrapper = mount(CharacterAbilities, { props: { character } });
+
+    const slider = wrapper.find<HTMLInputElement>('input[type="range"]');
+    expect(slider.exists()).toBe(true);
+    expect(slider.attributes("min")).toBe("0");
+    expect(slider.attributes("max")).toBe("2");
+    expect(slider.element.value).toBe("0");
+
+    const stepBtns = wrapper.findAll(".level-step-btn");
+    expect(stepBtns).toHaveLength(2);
+    expect(stepBtns[0].attributes("disabled")).toBeDefined();
+    expect(stepBtns[1].attributes("disabled")).toBeUndefined();
+
+    // Step up to Lv.10
+    await stepBtns[1].trigger("click");
+    expect(slider.element.value).toBe("1");
+    expect(wrapper.find(".level-val-text").text()).toBe("Lv.10");
+    expect(stepBtns[0].attributes("disabled")).toBeUndefined();
+    expect(stepBtns[1].attributes("disabled")).toBeUndefined();
+
+    // Step up to Lv.15
+    await stepBtns[1].trigger("click");
+    expect(slider.element.value).toBe("2");
+    expect(wrapper.find(".level-val-text").text()).toBe("Lv.15");
+    expect(stepBtns[0].attributes("disabled")).toBeUndefined();
+    expect(stepBtns[1].attributes("disabled")).toBeDefined();
+
+    // Drag slider back to Lv.1
+    await slider.setValue(0);
+    await slider.trigger("input");
+    expect(wrapper.find(".level-val-text").text()).toBe("Lv.1");
+    expect(stepBtns[0].attributes("disabled")).toBeDefined();
+
+    wrapper.unmount();
+  });
 });
 
 describe("reviewed standing rule availability", () => {
