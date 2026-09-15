@@ -64,7 +64,29 @@ describe("AppNavigation", () => {
     );
   });
 
-  it("keeps the OCR scanner workspace alive across top-level navigation", () => {
-    expect(cachedAppPageNames).toContain("ScannerPage");
+  it("does not retain the OCR scanner workspace across top-level navigation", () => {
+    expect(cachedAppPageNames).not.toContain("ScannerPage");
+  });
+
+  it("requests scanner preloading from pointer and keyboard intent", async () => {
+    const wrapper = mount(AppNavigation, {
+      props: {
+        activeView: "capture",
+        summary: {
+          relics: 0,
+          lightCones: 0,
+          characters: 0,
+          teams: 0,
+          lastSyncAt: null,
+          protocolVersion: "v",
+        },
+      },
+    });
+    const scanner = wrapper.findAll("button").find((button) => button.text().includes("背包扫描"));
+
+    await scanner?.trigger("pointerenter");
+    await scanner?.trigger("focus");
+
+    expect(wrapper.emitted("preload-view")).toEqual([["scanner"], ["scanner"]]);
   });
 });

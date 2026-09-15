@@ -1,6 +1,6 @@
-import { flushPromises, shallowMount } from "@vue/test-utils";
-import { ref } from "vue";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { flushPromises, mount } from "@vue/test-utils";
+import { defineComponent, onMounted, onUnmounted, ref } from "vue";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScannerPage from "@/pages/ScannerPage.vue";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 
@@ -23,6 +23,7 @@ const cleanupApi = vi.hoisted(() => ({
   }),
   listQueue: vi.fn().mockResolvedValue([]),
   listRuns: vi.fn().mockResolvedValue([]),
+  taskStatus: vi.fn().mockResolvedValue(null),
   onModelProgress: vi.fn().mockResolvedValue(vi.fn()),
   onProgress: vi.fn().mockResolvedValue(vi.fn()),
   cancel: vi.fn().mockResolvedValue(undefined),
@@ -31,14 +32,31 @@ const cleanupApi = vi.hoisted(() => ({
 vi.mock("@/shared/api/relic-cleanup", () => ({ relicCleanupApi: cleanupApi }));
 
 describe("ScannerPage", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+  });
+  afterEach(() => vi.restoreAllMocks());
 
-  it("has the stable component name required by the app page cache", () => {
+  it("keeps a stable component name without requiring page caching", () => {
     expect(ScannerPage.name).toBe("ScannerPage");
   });
 
-  it("refreshes cleanup data when returning to the cached mode", async () => {
-    const wrapper = shallowMount(ScannerPage, {
+  it("unmounts the cleanup panel when switching modes and mounts a fresh one when returning", async () => {
+    const mounted = vi.fn();
+    const unmounted = vi.fn();
+    const CleanupPanelStub = defineComponent({
+      name: "RelicCleanupPanel",
+      setup() {
+        onMounted(mounted);
+        onUnmounted(unmounted);
+        return () => "清理面板";
+      },
+    });
+    const wrapper = mount(ScannerPage, {
       global: {
         provide: {
           [runtimeContextKey as symbol]: {
@@ -51,8 +69,7 @@ describe("ScannerPage", () => {
           },
         },
         stubs: {
-          KeepAlive: false,
-          RelicCleanupPanel: false,
+          RelicCleanupPanel: CleanupPanelStub,
           RelicMainStatScanner: true,
           InventoryDetailDrawer: true,
         },
@@ -60,99 +77,18 @@ describe("ScannerPage", () => {
     });
     await flushPromises();
 
-    expect(cleanupApi.capabilities).toHaveBeenCalledOnce();
-    expect(cleanupApi.modelStatus).toHaveBeenCalledOnce();
-    expect(cleanupApi.listQueue).toHaveBeenCalledOnce();
-    expect(cleanupApi.listRuns).toHaveBeenCalledOnce();
+    expect(mounted).toHaveBeenCalledOnce();
 
     await wrapper.get(".scanner-mode-switch button:nth-child(2)").trigger("click");
+    await flushPromises();
+
+    expect(unmounted).toHaveBeenCalledOnce();
+
     await wrapper.get(".scanner-mode-switch button:first-child").trigger("click");
     await flushPromises();
 
-    expect(cleanupApi.capabilities).toHaveBeenCalledTimes(2);
-    expect(cleanupApi.modelStatus).toHaveBeenCalledTimes(2);
-    expect(cleanupApi.listQueue).toHaveBeenCalledTimes(2);
-    expect(cleanupApi.listRuns).toHaveBeenCalledTimes(2);
-    expect(cleanupApi.onModelProgress).toHaveBeenCalledOnce();
-    expect(cleanupApi.onProgress).toHaveBeenCalledOnce();
+    expect(mounted).toHaveBeenCalledTimes(2);
     wrapper.unmount();
-  });
-
-  it("keeps the emergency stop available while the cleanup panel is cached", async () => {
-    const wrapper = shallowMount(ScannerPage, {
-      global: {
-        provide: {
-          [runtimeContextKey as symbol]: {
-            direct: ref({ phase: "stopped" }),
-            summary: ref({ relics: 0, lightCones: 0, characters: 0, teams: 0 }),
-            busy: ref(false),
-            error: ref(""),
-            notice: ref(""),
-            inventoryRevision: ref(0),
-          },
-        },
-        stubs: {
-          KeepAlive: false,
-          RelicCleanupPanel: false,
-          RelicMainStatScanner: true,
-          InventoryDetailDrawer: true,
-        },
-      },
-    });
-    await flushPromises();
-
-    await wrapper.get(".scanner-mode-switch button:nth-child(2)").trigger("click");
-    window.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "F12", ctrlKey: true, shiftKey: true }),
-    );
-    await flushPromises();
-
-    expect(cleanupApi.cancel).toHaveBeenCalledOnce();
-    wrapper.unmount();
-  });
-
-  it("applies progress received while the cleanup panel is cached when it becomes active", async () => {
-    let progressHandler: ((value: Record<string, unknown>) => void) | undefined;
-    cleanupApi.onProgress.mockImplementationOnce((handler) => {
-      progressHandler = handler;
-      return Promise.resolve(vi.fn());
-    });
-    const wrapper = shallowMount(ScannerPage, {
-      global: {
-        provide: {
-          [runtimeContextKey as symbol]: {
-            direct: ref({ phase: "stopped" }),
-            summary: ref({ relics: 0, lightCones: 0, characters: 0, teams: 0 }),
-            busy: ref(false),
-            error: ref(""),
-            notice: ref(""),
-            inventoryRevision: ref(0),
-          },
-        },
-        stubs: {
-          KeepAlive: false,
-          RelicCleanupPanel: false,
-          RelicMainStatScanner: true,
-          InventoryDetailDrawer: true,
-        },
-      },
-    });
-    await flushPromises();
-    await wrapper.get(".scanner-mode-switch button:nth-child(2)").trigger("click");
-
-    progressHandler?.({
-      runId: 1,
-      runCode: "run-000001",
-      phase: "previewCompleted",
-      current: 1,
-      total: 1,
-      message: "后台识别完成",
-      terminal: true,
-    });
-    await wrapper.get(".scanner-mode-switch button:first-child").trigger("click");
-    await flushPromises();
-
-    expect(wrapper.text()).toContain("后台识别完成");
-    wrapper.unmount();
+    expect(unmounted).toHaveBeenCalledTimes(2);
   });
 });

@@ -26,6 +26,16 @@ use crate::{
     },
 };
 
+async fn run_cleanup_blocking<T, F>(task: F) -> Result<T, AppError>
+where
+    T: Send + 'static,
+    F: FnOnce() -> Result<T, AppError> + Send + 'static,
+{
+    tauri::async_runtime::spawn_blocking(task)
+        .await
+        .map_err(|error| AppError::RelicCleanup(format!("清理任务线程失败：{error}")))?
+}
+
 #[tauri::command]
 pub fn get_ocr_model_status(
     models: State<'_, OcrModelManager>,
@@ -86,33 +96,44 @@ pub fn list_cleanup_queue(
 }
 
 #[tauri::command]
-pub fn list_cleanup_runs(
+pub async fn list_cleanup_runs(
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<CleanupRunSummary>, AppError> {
-    store.list_cleanup_runs()
+    let store = store.inner().clone();
+    run_cleanup_blocking(move || store.list_cleanup_runs()).await
 }
 
 #[tauri::command]
-pub fn get_cleanup_run(
+pub fn get_cleanup_task_status(
+    runtime: State<'_, RelicCleanupRuntime>,
+) -> Result<Option<crate::relic_cleanup::CleanupProgress>, AppError> {
+    runtime.task_status()
+}
+
+#[tauri::command]
+pub async fn get_cleanup_run(
     run_id: u64,
     store: State<'_, InventoryStore>,
 ) -> Result<CleanupRunDetail, AppError> {
-    store.cleanup_run_detail(run_id)
+    let store = store.inner().clone();
+    run_cleanup_blocking(move || store.cleanup_run_detail(run_id)).await
 }
 
 #[tauri::command]
-pub fn start_cleanup_preview(
+pub async fn start_cleanup_preview(
     runtime: State<'_, RelicCleanupRuntime>,
 ) -> Result<CleanupRunSummary, AppError> {
-    runtime.start_preview()
+    let runtime = runtime.inner().clone();
+    run_cleanup_blocking(move || runtime.start_preview()).await
 }
 
 #[tauri::command]
-pub fn start_cleanup_execution(
+pub async fn start_cleanup_execution(
     run_id: u64,
     runtime: State<'_, RelicCleanupRuntime>,
 ) -> Result<CleanupRunDetail, AppError> {
-    runtime.start_execution(run_id)
+    let runtime = runtime.inner().clone();
+    run_cleanup_blocking(move || runtime.start_execution(run_id)).await
 }
 
 #[tauri::command]
@@ -121,19 +142,21 @@ pub fn cancel_cleanup_task(runtime: State<'_, RelicCleanupRuntime>) -> Result<()
 }
 
 #[tauri::command]
-pub fn open_cleanup_run_directory(
+pub async fn open_cleanup_run_directory(
     run_id: u64,
     runtime: State<'_, RelicCleanupRuntime>,
 ) -> Result<(), AppError> {
-    runtime.open_run_directory(run_id)
+    let runtime = runtime.inner().clone();
+    run_cleanup_blocking(move || runtime.open_run_directory(run_id)).await
 }
 
 #[tauri::command]
-pub fn delete_cleanup_run(
+pub async fn delete_cleanup_run(
     run_id: u64,
     runtime: State<'_, RelicCleanupRuntime>,
 ) -> Result<(), AppError> {
-    runtime.delete_run(run_id)
+    let runtime = runtime.inner().clone();
+    run_cleanup_blocking(move || runtime.delete_run(run_id)).await
 }
 
 #[cfg(feature = "ocr")]

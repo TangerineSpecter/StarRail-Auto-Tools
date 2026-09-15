@@ -1018,7 +1018,11 @@ onMounted(async () => {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 245, 253, 0.88));
   box-shadow: 0 4px 16px rgba(42, 69, 105, 0.06);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
   user-select: none;
   position: relative;
@@ -1521,7 +1525,11 @@ onMounted(async () => {
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .cat-tab-btn:hover {
@@ -1602,7 +1610,9 @@ onMounted(async () => {
   font-size: 12px;
   color: var(--ink);
   outline: none;
-  transition: all 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .search-input:focus {
@@ -1639,7 +1649,10 @@ onMounted(async () => {
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .view-toggle-btn.active {
@@ -1662,7 +1675,9 @@ onMounted(async () => {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .collapse-toggle-btn:hover {
@@ -1702,7 +1717,11 @@ onMounted(async () => {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(243, 247, 254, 0.9));
   box-shadow: 0 4px 16px rgba(37, 75, 122, 0.04);
   overflow: hidden;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modern-set-card:hover {
@@ -1967,7 +1986,9 @@ onMounted(async () => {
   border: 1px solid rgba(46, 79, 126, 0.14);
   font-size: 11px;
   box-shadow: 0 1px 3px rgba(37, 75, 122, 0.03);
-  transition: all 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
 .modern-stat-chip:hover {
@@ -2097,7 +2118,10 @@ onMounted(async () => {
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .engine-btn:hover {

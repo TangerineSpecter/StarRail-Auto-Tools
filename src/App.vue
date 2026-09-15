@@ -14,15 +14,18 @@ import Toast from "primevue/toast";
 import { useToast } from "primevue/usetoast";
 import AppNavigation from "@/app/AppNavigation.vue";
 import { useAppUpdater } from "@/app/composables/useAppUpdater";
+import { useCleanupEmergencyStop } from "@/app/composables/useCleanupEmergencyStop";
 import { useRuntimeLifecycle } from "@/app/composables/useRuntimeLifecycle";
 import { cachedAppPageNames, type AppView } from "@/app/navigation";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import CapturePage from "@/pages/CapturePage.vue";
+import { preloadScannerDefaultMode } from "@/pages/scanner-loaders";
 import { APP_VERSION } from "@/shared/app-info";
 import { windowApi } from "@/shared/api/window";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 
 const loadScannerPage = () => import("@/pages/ScannerPage.vue");
+
 const pages: Record<AppView, Component> = {
   capture: CapturePage,
   archive: defineAsyncComponent(() => import("@/pages/InventoryPage.vue")),
@@ -35,12 +38,15 @@ const pages: Record<AppView, Component> = {
 
 let scannerPreloadHandle: number | undefined;
 
+function preloadScanner() {
+  void Promise.all([loadScannerPage(), preloadScannerDefaultMode()]).catch(() => undefined);
+}
+
 onMounted(() => {
-  const preload = () => void loadScannerPage();
   if ("requestIdleCallback" in window) {
-    scannerPreloadHandle = window.requestIdleCallback(preload, { timeout: 1500 });
+    scannerPreloadHandle = window.requestIdleCallback(preloadScanner, { timeout: 1500 });
   } else {
-    scannerPreloadHandle = setTimeout(preload, 0);
+    scannerPreloadHandle = setTimeout(preloadScanner, 1000);
   }
 });
 
@@ -56,6 +62,7 @@ const runtime = useRuntimeStore();
 const { direct, summary, busy, error, notice, inventoryRevision } = storeToRefs(runtime);
 const toast = useToast();
 provide(runtimeContextKey, { direct, summary, busy, error, notice, inventoryRevision });
+useCleanupEmergencyStop({ error, notice });
 const { capabilities } = useRuntimeLifecycle();
 const { update, isInstalling, installAvailableUpdate } = useAppUpdater();
 const currentPage = computed(() => pages[activeView.value]);
@@ -121,6 +128,10 @@ async function toggleMaximize() {
   else await windowApi.maximize();
   isMaximized.value = !isMaximized.value;
 }
+
+function preloadView(view: AppView) {
+  if (view === "scanner") preloadScanner();
+}
 </script>
 
 <template>
@@ -162,7 +173,11 @@ async function toggleMaximize() {
           </div>
         </header>
       </div>
-      <AppNavigation v-model:active-view="activeView" :summary="summary" />
+      <AppNavigation
+        v-model:active-view="activeView"
+        :summary="summary"
+        @preload-view="preloadView"
+      />
       <KeepAlive :include="cachedAppPageNames">
         <component :is="currentPage" :key="activeView" />
       </KeepAlive>

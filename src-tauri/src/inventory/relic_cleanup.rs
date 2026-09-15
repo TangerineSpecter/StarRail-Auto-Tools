@@ -413,8 +413,11 @@ impl InventoryStore {
             .query_map([], map_run_summary)?
             .collect::<Result<Vec<_>, _>>()
             .map_err(AppError::from)?;
+        if !runs.iter().any(|run| run.status == "previewCompleted") {
+            return Ok(runs);
+        }
         let current_uid = self.current_uid()?.unwrap_or_default();
-        let current_hash = self.cleanup_inventory_hash()?;
+        let current_hash = cleanup_inventory_hash_from_connection(&connection, current_uid)?;
         for run in &mut runs {
             if run.status == "previewCompleted"
                 && (run.uid != current_uid || run.inventory_hash != current_hash)
@@ -509,18 +512,66 @@ fn cleanup_inventory_hash_from_connection(
     connection: &Connection,
     uid: u32,
 ) -> Result<String, AppError> {
-    let mut ids_statement = connection.prepare("SELECT item_id FROM relics ORDER BY item_id")?;
-    let ids = ids_statement
-        .query_map([], |row| row.get::<_, u32>(0))?
-        .collect::<Result<Vec<_>, _>>()?;
-    drop(ids_statement);
-    let mut fingerprints = Vec::with_capacity(ids.len());
-    for id in ids {
-        if let Some(fingerprint) = load_fingerprint(connection, id)? {
+    let fingerprints = load_all_fingerprints(connection)?;
+    hash_serializable(&serde_json::json!({ "uid": uid, "relics": fingerprints }))
+}
+
+fn load_all_fingerprints(connection: &Connection) -> Result<Vec<RelicFingerprint>, AppError> {
+    let mut statement = connection.prepare(
+        "SELECT r.item_id, r.set_id, r.name, r.set_name, r.slot, r.rarity, r.level,
+                r.main_stat, r.main_stat_value, r.location, r.equipped_character_id,
+                r.locked, r.discard,
+                s.kind, s.position, s.stat_key, s.value, s.count, s.step
+         FROM relics r
+         LEFT JOIN relic_substats s ON s.relic_id = r.item_id
+         ORDER BY r.item_id, s.kind, s.position",
+    )?;
+    let rows = statement.query_map([], |row| {
+        let fingerprint = RelicFingerprint {
+            item_id: row.get(0)?,
+            set_id: row.get(1)?,
+            name: row.get(2)?,
+            set_name: row.get(3)?,
+            slot: row.get(4)?,
+            rarity: row.get(5)?,
+            level: row.get(6)?,
+            main_stat: row.get(7)?,
+            main_stat_value: row.get(8)?,
+            location: row.get(9)?,
+            equipped_character_id: row.get(10)?,
+            locked: row.get(11)?,
+            discard: row.get(12)?,
+            substats: Vec::new(),
+        };
+        let kind = row.get::<_, Option<String>>(13)?;
+        let substat = kind
+            .map(|kind| -> rusqlite::Result<RelicSubstatItem> {
+                Ok(RelicSubstatItem {
+                    kind,
+                    position: row.get(14)?,
+                    key: row.get(15)?,
+                    value: row.get(16)?,
+                    count: row.get(17)?,
+                    step: row.get(18)?,
+                })
+            })
+            .transpose()?;
+        Ok((fingerprint, substat))
+    })?;
+
+    let mut fingerprints = Vec::<RelicFingerprint>::new();
+    for row in rows {
+        let (fingerprint, substat) = row?;
+        if fingerprints.last().map(|item| item.item_id) != Some(fingerprint.item_id) {
             fingerprints.push(fingerprint);
         }
+        if let Some(substat) = substat {
+            if let Some(latest) = fingerprints.last_mut() {
+                latest.substats.push(substat);
+            }
+        }
     }
-    hash_serializable(&serde_json::json!({ "uid": uid, "relics": fingerprints }))
+    Ok(fingerprints)
 }
 
 fn load_fingerprint(
@@ -679,6 +730,42 @@ mod tests {
             .unwrap();
     }
 
+    fn insert_cleanup_run(store: &InventoryStore, status: &str, inventory_hash: &str) -> u64 {
+        let connection = Connection::open(&store.path).unwrap();
+        connection
+            .execute(
+                "INSERT INTO cleanup_runs(status, uid, inventory_hash, model_revision,
+                                           template_revision, protocol_version, message,
+                                           created_at, updated_at)
+                 VALUES(?1, 123456789, ?2, 'model', 'templates', '1', '', 1, 1)",
+                params![status, inventory_hash],
+            )
+            .unwrap();
+        connection.last_insert_rowid() as u64
+    }
+
+    fn legacy_cleanup_inventory_hash(store: &InventoryStore) -> String {
+        let connection = Connection::open(&store.path).unwrap();
+        let mut statement = connection
+            .prepare("SELECT item_id FROM relics ORDER BY item_id")
+            .unwrap();
+        let ids = statement
+            .query_map([], |row| row.get::<_, u32>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        drop(statement);
+        let fingerprints = ids
+            .into_iter()
+            .map(|item_id| load_fingerprint(&connection, item_id).unwrap().unwrap())
+            .collect::<Vec<_>>();
+        hash_serializable(&serde_json::json!({
+            "uid": 123456789,
+            "relics": fingerprints,
+        }))
+        .unwrap()
+    }
+
     #[test]
     fn visual_key_ignores_internal_id_and_safety_flags() {
         let mut a = RelicFingerprint {
@@ -814,6 +901,84 @@ mod tests {
             .unwrap_err()
             .to_string();
         assert!(error.contains("锁定或装备"));
+        drop(store);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn list_runs_skips_inventory_hash_without_completed_preview() {
+        let (store, path) = test_store();
+        insert_relic(&store, 1, false);
+        let connection = Connection::open(&store.path).unwrap();
+        connection
+            .execute("UPDATE relics SET set_id = 'invalid' WHERE item_id = 1", [])
+            .unwrap();
+        drop(connection);
+
+        assert!(store.list_cleanup_runs().unwrap().is_empty());
+
+        let run_id = insert_cleanup_run(&store, "preparingPreview", "unused");
+
+        let runs = store.list_cleanup_runs().unwrap();
+
+        assert_eq!(runs.len(), 1);
+        assert_eq!(runs[0].run_id, run_id);
+        assert_eq!(runs[0].status, "preparingPreview");
+        drop(store);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn batched_inventory_hash_matches_the_legacy_algorithm() {
+        let (store, path) = test_store();
+        insert_relic(&store, 2, false);
+        insert_relic(&store, 1, false);
+        let connection = Connection::open(&store.path).unwrap();
+        connection
+            .execute(
+                "INSERT INTO relic_substats(relic_id, kind, position, stat_key, value, count, step)
+                 VALUES(1, 'effective', 1, 'CRIT Rate', 3.2, 1, 0),
+                       (1, 'raw', 0, 'ATK', 16, 1, 0),
+                       (2, 'raw', 0, 'HP', 33, 1, 0)",
+                [],
+            )
+            .unwrap();
+        drop(connection);
+
+        assert_eq!(
+            store.cleanup_inventory_hash().unwrap(),
+            legacy_cleanup_inventory_hash(&store)
+        );
+        drop(store);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn completed_preview_is_invalidated_when_inventory_changes() {
+        let (store, path) = test_store();
+        insert_relic(&store, 1, false);
+        let inventory_hash = store.cleanup_inventory_hash().unwrap();
+        let run_id = insert_cleanup_run(&store, "previewCompleted", &inventory_hash);
+        let connection = Connection::open(&store.path).unwrap();
+        connection
+            .execute("UPDATE relics SET level = level + 1 WHERE item_id = 1", [])
+            .unwrap();
+        drop(connection);
+
+        let runs = store.list_cleanup_runs().unwrap();
+
+        assert_eq!(runs[0].run_id, run_id);
+        assert_eq!(runs[0].status, "previewInvalidated");
+        let connection = Connection::open(&store.path).unwrap();
+        let persisted_status = connection
+            .query_row(
+                "SELECT status FROM cleanup_runs WHERE run_id = ?1",
+                [run_id],
+                |row| row.get::<_, String>(0),
+            )
+            .unwrap();
+        assert_eq!(persisted_status, "previewInvalidated");
+        drop(connection);
         drop(store);
         let _ = std::fs::remove_file(path);
     }

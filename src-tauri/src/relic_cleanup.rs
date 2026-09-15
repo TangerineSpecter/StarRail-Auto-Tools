@@ -57,6 +57,7 @@ pub struct RelicCleanupRuntime {
     app: AppHandle,
     cancelled: Arc<AtomicBool>,
     active_run: Arc<Mutex<Option<u64>>>,
+    latest_progress: Arc<Mutex<Option<CleanupProgress>>>,
 }
 
 impl RelicCleanupRuntime {
@@ -73,7 +74,15 @@ impl RelicCleanupRuntime {
             app,
             cancelled: Arc::new(AtomicBool::new(false)),
             active_run: Arc::new(Mutex::new(None)),
+            latest_progress: Arc::new(Mutex::new(None)),
         }
+    }
+
+    pub fn task_status(&self) -> Result<Option<CleanupProgress>, AppError> {
+        self.latest_progress
+            .lock()
+            .map(|progress| progress.clone())
+            .map_err(|_| AppError::StateUnavailable)
     }
 
     pub fn capabilities(&self) -> CleanupCapabilities {
@@ -129,6 +138,14 @@ impl RelicCleanupRuntime {
         *active = Some(run_id);
         drop(active);
         self.cancelled.store(false, Ordering::SeqCst);
+        self.emit(
+            run_id,
+            "preparingPreview",
+            0,
+            frozen.items.len() as u64,
+            "预览已冻结，等待页面校验",
+            false,
+        );
         let runtime = self.clone();
         tauri::async_runtime::spawn(async move { runtime.run_preview(frozen, directory).await });
         self.inventory
@@ -390,18 +407,19 @@ impl RelicCleanupRuntime {
         message: impl Into<String>,
         terminal: bool,
     ) {
-        let _ = self.app.emit(
-            "relic-cleanup://progress",
-            CleanupProgress {
-                run_id,
-                run_code: format!("run-{run_id:06}"),
-                phase: phase.to_owned(),
-                current,
-                total,
-                message: message.into(),
-                terminal,
-            },
-        );
+        let progress = CleanupProgress {
+            run_id,
+            run_code: format!("run-{run_id:06}"),
+            phase: phase.to_owned(),
+            current,
+            total,
+            message: message.into(),
+            terminal,
+        };
+        if let Ok(mut latest) = self.latest_progress.lock() {
+            *latest = Some(progress.clone());
+        }
+        let _ = self.app.emit("relic-cleanup://progress", progress);
     }
 }
 

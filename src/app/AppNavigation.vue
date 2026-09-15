@@ -3,7 +3,10 @@ import type { InventorySummary } from "@/types";
 import { appViews, type AppView } from "@/app/navigation";
 
 defineProps<{ activeView: AppView; summary: InventorySummary }>();
-const emit = defineEmits<{ "update:activeView": [view: AppView] }>();
+const emit = defineEmits<{
+  "update:activeView": [view: AppView];
+  "preload-view": [view: AppView];
+}>();
 
 const views = appViews;
 </script>
@@ -16,6 +19,8 @@ const views = appViews;
       <button
         :class="['nav-item', { active: activeView === view.id }]"
         type="button"
+        @pointerenter="emit('preload-view', view.id)"
+        @focus="emit('preload-view', view.id)"
         @click="emit('update:activeView', view.id)"
       >
         <small>{{ view.label }}</small>

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import RelicMainStatScanner from "@/features/relic-scanner/RelicMainStatScanner.vue";
-import RelicCleanupPanel from "@/features/relic-cleanup/RelicCleanupPanel.vue";
+import { defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
 import InventoryDetailDrawer from "@/features/inventory/InventoryDetailDrawer.vue";
 import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
+import { loadRelicCleanupPanel, loadRelicMainStatScanner } from "@/pages/scanner-loaders";
 import { relicImage } from "@/shared/catalogue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 
@@ -13,6 +12,29 @@ defineOptions({ name: "ScannerPage" });
 const inventoryDetail = useInventoryDetail((message) => (error.value = message));
 const imageFor = (item: { setId: number; slot: string }) => relicImage(item.setId, item.slot);
 const mode = ref<"mainStat" | "cleanup">("cleanup");
+const panelReady = ref(false);
+const RelicCleanupPanel = defineAsyncComponent(loadRelicCleanupPanel);
+const RelicMainStatScanner = defineAsyncComponent(loadRelicMainStatScanner);
+let mountFrame: number | undefined;
+
+function selectMode(nextMode: "mainStat" | "cleanup") {
+  if (nextMode === "mainStat") void loadRelicMainStatScanner();
+  else void loadRelicCleanupPanel();
+  mode.value = nextMode;
+}
+
+onMounted(() => {
+  mountFrame = window.requestAnimationFrame(() => {
+    mountFrame = window.requestAnimationFrame(() => {
+      panelReady.value = true;
+      mountFrame = undefined;
+    });
+  });
+});
+
+onBeforeUnmount(() => {
+  if (mountFrame !== undefined) window.cancelAnimationFrame(mountFrame);
+});
 </script>
 <template>
   <section class="scanner-page">
@@ -25,23 +47,33 @@ const mode = ref<"mainStat" | "cleanup">("cleanup");
         </div>
       </div>
       <div class="scanner-mode-switch">
-        <button type="button" :class="{ active: mode === 'cleanup' }" @click="mode = 'cleanup'">
+        <button
+          type="button"
+          :class="{ active: mode === 'cleanup' }"
+          @pointerenter="loadRelicCleanupPanel()"
+          @focus="loadRelicCleanupPanel()"
+          @click="selectMode('cleanup')"
+        >
           <small>01</small><span>安全清理</span>
         </button>
-        <button type="button" :class="{ active: mode === 'mainStat' }" @click="mode = 'mainStat'">
+        <button
+          type="button"
+          :class="{ active: mode === 'mainStat' }"
+          @pointerenter="loadRelicMainStatScanner()"
+          @focus="loadRelicMainStatScanner()"
+          @click="selectMode('mainStat')"
+        >
           <small>02</small><span>主词条扫描</span>
         </button>
       </div>
     </nav>
     <div class="scanner-page-content">
-      <KeepAlive>
-        <RelicCleanupPanel v-if="mode === 'cleanup'" />
-        <RelicMainStatScanner
-          v-else
-          :image-for="imageFor"
-          @open-relic="inventoryDetail.open('relic', $event.itemId)"
-        />
-      </KeepAlive>
+      <RelicCleanupPanel v-if="panelReady && mode === 'cleanup'" />
+      <RelicMainStatScanner
+        v-else-if="panelReady"
+        :image-for="imageFor"
+        @open-relic="inventoryDetail.open('relic', $event.itemId)"
+      />
     </div>
     <InventoryDetailDrawer
       v-if="inventoryDetail.detail.value || inventoryDetail.loading.value"

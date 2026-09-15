@@ -21,6 +21,7 @@ export const relicCleanupApi = {
     invoke<number>("remove_cleanup_candidates", { request: candidateRequest(itemIds) }),
   listQueue: () => invoke<CleanupQueueItem[]>("list_cleanup_queue"),
   listRuns: () => invoke<CleanupRunSummary[]>("list_cleanup_runs"),
+  taskStatus: () => invoke<CleanupProgress | null>("get_cleanup_task_status"),
   runDetail: (runId: number) => invoke<CleanupRunDetail>("get_cleanup_run", { runId }),
   startPreview: () => invoke<CleanupRunSummary>("start_cleanup_preview"),
   startExecution: (runId: number) => invoke<CleanupRunDetail>("start_cleanup_execution", { runId }),

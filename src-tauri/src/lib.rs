@@ -119,6 +119,7 @@ pub fn run() {
             commands::remove_cleanup_candidates,
             commands::list_cleanup_queue,
             commands::list_cleanup_runs,
+            commands::get_cleanup_task_status,
             commands::get_cleanup_run,
             commands::start_cleanup_preview,
             commands::start_cleanup_execution,

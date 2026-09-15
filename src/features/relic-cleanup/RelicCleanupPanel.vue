@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import Button from "primevue/button";
 import ProgressBar from "primevue/progressbar";
 import { relicCleanupApi } from "@/shared/api/relic-cleanup";
@@ -26,11 +26,9 @@ const progress = ref<CleanupProgress | null>(null);
 const capabilities = ref<CleanupCapabilities | null>(null);
 const cleanupBusy = ref(false);
 const unlisten: Array<() => void> = [];
-let active = false;
 let disposed = false;
 let refreshRequestId = 0;
-let pendingModel: OcrModelStatus | null = null;
-let pendingProgress: CleanupProgress | null = null;
+let progressEventSequence = 0;
 
 const modelPercent = computed(() => {
   if (!model.value?.totalBytes) return 0;
@@ -90,20 +88,23 @@ function getMainStatText(item: CleanupQueueItem) {
 
 async function refresh() {
   const requestId = ++refreshRequestId;
-  const [nextCapabilities, nextModel, nextQueue, nextRuns] = await Promise.all([
+  const progressSequence = progressEventSequence;
+  const [nextCapabilities, nextModel, nextQueue, nextRuns, nextProgress] = await Promise.all([
     relicCleanupApi.capabilities(),
     relicCleanupApi.modelStatus(),
     relicCleanupApi.listQueue(),
     relicCleanupApi.listRuns(),
+    relicCleanupApi.taskStatus(),
   ]);
-  if (!active || requestId !== refreshRequestId) return;
+  if (disposed || requestId !== refreshRequestId) return;
   capabilities.value = nextCapabilities;
   model.value = nextModel;
   queue.value = nextQueue;
   runs.value = nextRuns;
+  if (progressSequence === progressEventSequence) progress.value = nextProgress;
   if (selectedRun.value) {
     const nextSelectedRun = await relicCleanupApi.runDetail(selectedRun.value.runId);
-    if (!active || requestId !== refreshRequestId) return;
+    if (disposed || requestId !== refreshRequestId) return;
     selectedRun.value = nextSelectedRun;
   }
 }
@@ -188,35 +189,6 @@ function deleteRun(runId: number) {
   }, "预览历史已删除");
 }
 
-function emergencyStop(event: KeyboardEvent) {
-  if (event.key !== "F12" || !event.ctrlKey || !event.shiftKey) return;
-  event.preventDefault();
-  void act(() => relicCleanupApi.cancel(), "已触发紧急停止");
-}
-
-function deactivate() {
-  active = false;
-  refreshRequestId += 1;
-}
-
-async function activate() {
-  if (active) return;
-  active = true;
-  if (pendingModel) {
-    model.value = pendingModel;
-    pendingModel = null;
-  }
-  if (pendingProgress) {
-    progress.value = pendingProgress;
-    pendingProgress = null;
-  }
-  try {
-    await refresh();
-  } catch (cause) {
-    if (active) error.value = String(cause);
-  }
-}
-
 async function attachTaskListeners() {
   const retain = async (subscription: Promise<() => void>) => {
     const dispose = await subscription;
@@ -227,18 +199,15 @@ async function attachTaskListeners() {
     await Promise.all([
       retain(
         relicCleanupApi.onModelProgress((value) => {
-          if (active) model.value = value;
-          else pendingModel = value;
+          if (!disposed) model.value = value;
         }),
       ),
       retain(
         relicCleanupApi.onProgress(async (value) => {
-          if (active) {
-            progress.value = value;
-            if (value.terminal) await refresh();
-          } else {
-            pendingProgress = value;
-          }
+          if (disposed) return;
+          progressEventSequence += 1;
+          progress.value = value;
+          if (value.terminal) await refresh();
         }),
       ),
     ]);
@@ -248,16 +217,16 @@ async function attachTaskListeners() {
 }
 
 onMounted(() => {
-  window.addEventListener("keydown", emergencyStop);
-  void attachTaskListeners();
-  void activate();
+  void attachTaskListeners().then(() => {
+    if (disposed) return;
+    void refresh().catch((cause) => {
+      if (!disposed) error.value = String(cause);
+    });
+  });
 });
-onActivated(() => void activate());
-onDeactivated(deactivate);
 onBeforeUnmount(() => {
   disposed = true;
-  deactivate();
-  window.removeEventListener("keydown", emergencyStop);
+  refreshRequestId += 1;
   unlisten.splice(0).forEach((dispose) => dispose());
 });
 </script>
@@ -768,7 +737,10 @@ onBeforeUnmount(() => {
   background: var(--blue);
   color: #ffffff !important;
   font-weight: 600;
-  transition: all 150ms ease;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 :deep(.p-button:not(.p-button-outlined):not(.p-button-text):hover:not(:disabled)) {
@@ -790,7 +762,10 @@ onBeforeUnmount(() => {
   background: #ffffff;
   color: var(--ink-soft);
   font-weight: 500;
-  transition: all 150ms ease;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 :deep(.p-button.p-button-outlined:hover:not(:disabled)) {
@@ -858,7 +833,10 @@ onBeforeUnmount(() => {
   border-radius: 4px;
   color: var(--ink-soft);
   font-size: 11px;
-  transition: all 150ms ease;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .pipeline-step.current {
@@ -965,7 +943,9 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: #b9c2cf;
   box-shadow: 0 0 0 3px rgba(155, 168, 185, 0.18);
-  transition: all 200ms ease;
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease;
 }
 
 .model-state-indicator.ready {
@@ -1208,7 +1188,9 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(48, 75, 117, 0.12);
   border-radius: 6px;
   background: #ffffff;
-  transition: all 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .candidate-item-card:hover {
@@ -1318,7 +1300,10 @@ onBeforeUnmount(() => {
   background: rgba(254, 242, 240, 0.8);
   font-size: 10px;
   font-weight: 500;
-  transition: all 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .remove-btn:hover {
@@ -1550,7 +1535,10 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   background: #ffffff;
   cursor: pointer;
-  transition: all 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .run-row-card:hover {
@@ -1610,7 +1598,9 @@ onBeforeUnmount(() => {
   color: var(--muted);
   font-size: 10px;
   border-radius: 3px;
-  transition: all 120ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .run-delete-btn:hover {

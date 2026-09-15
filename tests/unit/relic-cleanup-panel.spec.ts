@@ -9,6 +9,7 @@ const api = vi.hoisted(() => ({
   modelStatus: vi.fn(),
   listQueue: vi.fn(),
   listRuns: vi.fn(),
+  taskStatus: vi.fn(),
   onModelProgress: vi.fn(),
   onProgress: vi.fn(),
   fileUrl: vi.fn(),
@@ -59,6 +60,7 @@ describe("RelicCleanupPanel", () => {
     });
     api.listQueue.mockResolvedValue([]);
     api.listRuns.mockResolvedValue([]);
+    api.taskStatus.mockResolvedValue(null);
     api.fileUrl.mockReturnValue("asset://test");
   });
 
@@ -98,5 +100,25 @@ describe("RelicCleanupPanel", () => {
 
     expect(disposeModel).toHaveBeenCalledOnce();
     expect(disposeProgress).toHaveBeenCalledOnce();
+  });
+
+  it("restores the latest backend task progress when remounted", async () => {
+    api.onModelProgress.mockResolvedValue(vi.fn());
+    api.onProgress.mockResolvedValue(vi.fn());
+    api.taskStatus.mockResolvedValue({
+      runId: 3,
+      runCode: "run-000003",
+      phase: "scanning",
+      current: 2,
+      total: 5,
+      message: "后台任务仍在运行",
+      terminal: false,
+    });
+
+    const wrapper = mountPanel();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("后台任务仍在运行");
+    expect(wrapper.text()).toContain("run-000003");
   });
 });
