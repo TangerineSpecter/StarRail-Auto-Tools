@@ -86,9 +86,35 @@ describe("mechanic catalogue ownership and levels", () => {
     ]);
     const wrapper = mount(CharacterAbilities, { props: { character } });
     expect(wrapper.findAll(".catalogue-ability-audit")[0]!.text()).toBe(
-      `已记录 ${reviewedCatalogueAbilityRuleCount(source)} 条规则，完整机制待审核`,
+      `部分机制可计算（${reviewedCatalogueAbilityRuleCount(source)} 条规则）`,
     );
-    expect(wrapper.findAll(".catalogue-ability-audit")[1]!.text()).toBe("机制待审核");
+    expect(wrapper.findAll(".catalogue-ability-audit")[1]!.text()).toBe(
+      "数值已同步，计算规则未标注",
+    );
+    wrapper.unmount();
+  });
+  it("shows a complete clause audit separately from data synchronization", () => {
+    const source = mechanicCatalogue.abilities.find(
+      (entry) => entry.id === "character:1211:skills:947065",
+    )!;
+    expect(mechanics.catalogueAbilityMechanicStatus(source).stage).toBe("reviewed");
+    expect(
+      mechanics.catalogueAbilityMechanicStatus({ ...source, sourceHash: "changed" }).stage,
+    ).toBe("parameters");
+    vi.spyOn(mechanics, "characterAbilityGroups").mockReturnValue([
+      {
+        id: "bailu",
+        ownerId: source.ownerId,
+        sourceKind: "character",
+        label: "主要技能 · 战技",
+        abilities: [source],
+      },
+    ]);
+    const wrapper = mount(CharacterAbilities, { props: { character } });
+    const badge = wrapper.find(".catalogue-ability-audit");
+    expect(badge.text()).toBe("机制已审核（1 条规则）");
+    expect(badge.attributes("title")).toContain("不代表自动战斗模拟");
+    expect(wrapper.text()).toContain("7.8%");
     wrapper.unmount();
   });
   it("integrates real source owners, grouped skill forms and summons", () => {

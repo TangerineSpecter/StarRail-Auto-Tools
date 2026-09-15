@@ -22,6 +22,8 @@ scripts/lib/*
 !scripts/lib/standing-rule-definitions.mjs
 !scripts/lib/standing-catalogue-rules.mjs
 !scripts/lib/featured-mechanic-rules.mjs
+!scripts/lib/bailu-mechanic-rules.mjs
+!scripts/lib/compile-mechanisms.mjs
 lib64/
 parts/
 sdist/

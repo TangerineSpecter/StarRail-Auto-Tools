@@ -8,12 +8,47 @@ import type {
   MechanicCatalogue,
 } from "@/shared/contracts/catalogue-rules";
 import type { CharacterCatalogueEntry } from "@/types";
+import {
+  evaluateCatalogueCoverage,
+  type CatalogueAbilityAudit,
+} from "@/shared/utils/catalogue-coverage";
+import type { AccountLevelDelta } from "@/shared/utils/catalogue-account";
 
 export type OwnedMechanicCatalogue = MechanicCatalogue & { owners: readonly CatalogueOwner[] };
 export const mechanicCatalogue = mechanicsJson as unknown as MechanicCatalogue;
 export const bundledCatalogueRules: readonly CatalogueRule[] = (
   rulesJson as unknown as { schemaVersion: 1; rules: readonly CatalogueRule[] }
 ).rules;
+const ruleLibrary = rulesJson as unknown as {
+  audits?: readonly CatalogueAbilityAudit[];
+  accountLevelDeltas?: readonly AccountLevelDelta[];
+};
+export const bundledAccountLevelDeltas = ruleLibrary.accountLevelDeltas ?? [];
+let completeAbilityIds: Set<string> | undefined;
+
+export function catalogueAbilityMechanicStatus(ability: CatalogueAbility) {
+  completeAbilityIds ??= new Set(
+    evaluateCatalogueCoverage(mechanicCatalogue, bundledCatalogueRules, ruleLibrary.audits ?? [])
+      .abilities.filter((entry) => entry.status === "complete")
+      .map((entry) => entry.sourceRef),
+  );
+  const count = reviewedCatalogueAbilityRuleCount(ability);
+  const current = mechanicCatalogue.abilities.find((entry) => entry.id === ability.id);
+  const complete = current?.sourceHash === ability.sourceHash && completeAbilityIds.has(ability.id);
+  return {
+    stage: complete ? "reviewed" : count ? "partial" : "parameters",
+    label: complete
+      ? `机制已审核（${count} 条规则）`
+      : count
+        ? `部分机制可计算（${count} 条规则）`
+        : "数值已同步，计算规则未标注",
+    detail: complete
+      ? "描述条款已映射到审核规则；事件仅返回效果定义，不代表自动战斗模拟已实现。"
+      : count
+        ? "已有审核规则，但完整机制仍待审核；缺少属性、状态或事件时不能直接计算。"
+        : "技能数值独立保存为常量或等级表；尚未定义这些数值的目标、条件与计算方式。",
+  };
+}
 
 export function reviewedCatalogueAbilityRuleCount(ability: CatalogueAbility): number {
   return bundledCatalogueRules.filter(

@@ -23,6 +23,7 @@ export interface AccountLevelDelta {
   id: string;
   binding: AccountLevelBinding;
   delta: number;
+  cap?: number;
   status: "reviewed" | "pending";
   sourceRef: string;
   sourceHash: string;
@@ -98,6 +99,7 @@ export function adaptCatalogueAccount(
       deltas.filter((entry) => entry.id === delta.id).length !== 1 ||
       delta.status !== "reviewed" ||
       !integer(delta.delta, 0) ||
+      (delta.cap !== undefined && !integer(delta.cap, 1)) ||
       !unlocked ||
       sources.length !== 1 ||
       !delta.sourceHash ||
@@ -111,7 +113,12 @@ export function adaptCatalogueAccount(
       continue;
     }
     ids.add(delta.id);
-    reviewedDeltas[delta.binding] = (reviewedDeltas[delta.binding] ?? 0) + delta.delta;
+    const current = baseLevels[delta.binding]! + (reviewedDeltas[delta.binding] ?? 0);
+    const addition =
+      delta.cap === undefined
+        ? delta.delta
+        : Math.max(0, Math.min(delta.delta, delta.cap - current));
+    reviewedDeltas[delta.binding] = (reviewedDeltas[delta.binding] ?? 0) + addition;
   }
   for (const binding of accountLevelBindings) {
     const base = baseLevels[binding];

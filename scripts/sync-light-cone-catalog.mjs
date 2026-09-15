@@ -11,7 +11,7 @@ import { publishCatalogueBatch } from "./lib/catalogue-publication.mjs";
 const sourceUrl = "https://starrailstation.com/cn/equipment";
 const cdnBase = "https://cdn.starrailstation.com/assets/";
 const root = new URL("..", import.meta.url).pathname;
-const outputFile = join(root, "src/data/light-cones.json");
+const outputFile = join(process.env.CATALOGUE_CANDIDATE_ROOT || root, "src/data/light-cones.json");
 const imageRoot = join(root, "public/light-cones");
 const skipImages = process.argv.includes("--skip-images");
 const refreshImages = process.argv.includes("--refresh-images");

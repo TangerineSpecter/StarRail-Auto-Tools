@@ -35,7 +35,7 @@ async function readOptional(path, fallback) {
 /** Return a complete validated candidate and report without publishing anything. */
 export async function synchronizeMechanics({
   fetchConfig = fetchPageConfig,
-  projectRoot = root,
+  projectRoot = process.env.CATALOGUE_CANDIDATE_ROOT || root,
   onProgress = () => {},
 } = {}) {
   const previous = await readOptional(resolve(projectRoot, "src/data/catalogue-mechanics.json"), {

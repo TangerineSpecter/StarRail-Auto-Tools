@@ -21,6 +21,8 @@
     "sync:light-cone-catalog": "node scripts/sync-light-cone-catalog.mjs",
     "sync:mechanic-catalog": "node scripts/sync-mechanic-catalogue.mjs",
     "validate:mechanic-catalog": "node scripts/validate-mechanic-catalogue.mjs",
+    "build:catalogue-rules": "node scripts/build-catalogue-rules.mjs",
+    "compile:mechanisms": "node scripts/compile-mechanisms.mjs",
     "build:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File ./build-windows.ps1",
     "preview": "vite preview",
     "tauri": "tauri"

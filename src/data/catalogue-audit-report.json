@@ -2,10 +2,10 @@
   "complete": false,
   "summary": {
     "abilities": 2967,
-    "completeAbilities": 0,
-    "pendingAbilities": 2967,
-    "clauses": 0,
-    "mappedClauses": 0,
+    "completeAbilities": 24,
+    "pendingAbilities": 2943,
+    "clauses": 27,
+    "mappedClauses": 27,
     "excludedClauses": 0,
     "pendingClauses": 0,
     "complete": false
@@ -13,10 +13,10 @@
   "byKind": {
     "character": {
       "abilities": 2637,
-      "completeAbilities": 0,
-      "pendingAbilities": 2637,
-      "clauses": 0,
-      "mappedClauses": 0,
+      "completeAbilities": 24,
+      "pendingAbilities": 2613,
+      "clauses": 27,
+      "mappedClauses": 27,
       "excludedClauses": 0,
       "pendingClauses": 0,
       "complete": false
@@ -11705,105 +11705,145 @@
       "sourceRef": "character:1211:ranks:1",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:ranks:1",
-          "reason": "missing-audit"
+          "id": "character:1211:ranks:1:clause:0",
+          "textHash": "772598abaab54d5df2bd8579b3cb8ca932a183e812686045180e63b295876c80",
+          "ruleIds": ["character:1211:ranks:1:energy"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:ranks:2",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:ranks:2",
-          "reason": "missing-audit"
+          "id": "character:1211:ranks:2:clause:0",
+          "textHash": "deab2c1f09840fdf1ccc71d4aab0b264b324a9debe702f3d13ca8217173f884c",
+          "ruleIds": ["character:1211:ranks:2:outgoing-healing"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:ranks:3",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:ranks:3",
-          "reason": "missing-audit"
+          "id": "character:1211:ranks:3:clause:0",
+          "textHash": "a5f493a299c3bdbf266dc9fe25924c983701f4a6d4d10dd623a5e782f6a63fc9",
+          "ruleIds": ["character:1211:ranks:3:levels"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:ranks:4",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:ranks:4",
-          "reason": "missing-audit"
+          "id": "character:1211:ranks:4:clause:0",
+          "textHash": "931329db9a60a227bcc0ce1a68f5685fa6ba9560fd359422d4481823b40169e0",
+          "ruleIds": ["character:1211:ranks:4:skill-heal-buff"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:ranks:5",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:ranks:5",
-          "reason": "missing-audit"
+          "id": "character:1211:ranks:5:clause:0",
+          "textHash": "23cfa9c67b05dc7d19ffe28a9c710afcf11bbd926ddff30608e44c828e6e421f",
+          "ruleIds": ["character:1211:ranks:5:levels"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:ranks:6",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:ranks:6",
-          "reason": "missing-audit"
+          "id": "character:1211:ranks:6:clause:0",
+          "textHash": "23ab419372d8fd0002240354ca598f2b23daaab0e022212beae206a93cc9fcf8",
+          "ruleIds": ["character:1211:ranks:6:extra-revival"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:skills:231592",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:skills:231592",
-          "reason": "missing-audit"
+          "id": "character:1211:skills:231592:clause:0",
+          "textHash": "6a4c378f8a408377cbb46b6318a1e5e4fd82b441d010f26c72f3021896d99ef2",
+          "ruleIds": ["character:1211:skills:231592:basic"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:skills:31006",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:skills:31006",
-          "reason": "missing-audit"
+          "id": "character:1211:skills:31006:clause:0",
+          "textHash": "500fd0cd9a2a375de7747ec1d28c9b57ac752bfa850a15e5d11cc72609884ac0",
+          "ruleIds": [
+            "character:1211:skills:31006:healing",
+            "character:1211:skills:31006:new-invigoration",
+            "character:1211:skills:31006:extend-invigoration"
+          ],
+          "status": "mapped"
+        },
+        {
+          "id": "character:1211:skills:31006:clause:1",
+          "textHash": "dd8c71937539fe4950350cedebbb6200814e2a8386bd987f5fa60131ba363610",
+          "ruleIds": [
+            "character:1211:skills:31006:healing",
+            "character:1211:skills:31006:new-invigoration",
+            "character:1211:skills:31006:extend-invigoration"
+          ],
+          "status": "mapped"
+        },
+        {
+          "id": "character:1211:skills:31006:clause:2",
+          "textHash": "1702232512143ce95dde37f7ba63a6cf3cfe7e5d0547651d2e7df1c612cb8dba",
+          "ruleIds": [
+            "character:1211:skills:31006:healing",
+            "character:1211:skills:31006:new-invigoration",
+            "character:1211:skills:31006:extend-invigoration"
+          ],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:skills:545893",
@@ -11822,209 +11862,255 @@
       "sourceRef": "character:1211:skills:662538",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:skills:662538",
-          "reason": "missing-audit"
+          "id": "character:1211:skills:662538:clause:0",
+          "textHash": "d4e4a55a02f19f559c40443daa7b94e9d7c62bacca01603a080ec9986c25303a",
+          "ruleIds": ["character:1211:skills:662538:technique"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:skills:746479",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:skills:746479",
-          "reason": "missing-audit"
+          "id": "character:1211:skills:746479:clause:0",
+          "textHash": "ece64a32d68c0b9c3b1f69fba37cd45a60be9a67e43335b2aef7c28d24d60033",
+          "ruleIds": [
+            "character:1211:skills:746479:capacities",
+            "character:1211:skills:746479:invigoration-heal",
+            "character:1211:skills:746479:fatal-prevention"
+          ],
+          "status": "mapped"
+        },
+        {
+          "id": "character:1211:skills:746479:clause:1",
+          "textHash": "1f6f566f8baaba7d7f7a4b4b8d3b3e27747577ab4f327a400b0aa70cfd9668f9",
+          "ruleIds": [
+            "character:1211:skills:746479:capacities",
+            "character:1211:skills:746479:invigoration-heal",
+            "character:1211:skills:746479:fatal-prevention"
+          ],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:skills:947065",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:skills:947065",
-          "reason": "missing-audit"
+          "id": "character:1211:skills:947065:clause:0",
+          "textHash": "54871067e08647870948a243aae405913e1d7836a8aa49cc1bbc7606cbe688e2",
+          "ruleIds": ["character:1211:skills:947065:heals"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211101",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211101",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211101:clause:0",
+          "textHash": "fdb3cdd3bd4d3604eb1b4309ab79dfc5c21fdcf22f74cd719bf8d53e455dd627",
+          "ruleIds": ["character:1211:traces:1211101:overheal"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211102",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211102",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211102:clause:0",
+          "textHash": "e0492c22ec1b4ab3650eedd577724cadfe8f8dbb38ed49a8ab36b610ee417bdd",
+          "ruleIds": ["character:1211:traces:1211102:extra-invigoration"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211103",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211103",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211103:clause:0",
+          "textHash": "57bf6accb2f6f81a07d2549700169add4f38aeaf44a07c23462dbf6c0e54c3ef",
+          "ruleIds": ["character:1211:traces:1211103:damage-reduction"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211201",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211201",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211201:clause:0",
+          "textHash": "244ae33cd0fc55f4f46f5de6bc6d419d3a473306f1a52670e2ad0a697baaf437",
+          "ruleIds": ["character:1211:traces:1211201:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211202",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211202",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211202:clause:0",
+          "textHash": "8d59d2d0a0ce47b9622624c002432179e1fc8cad153c8d7b561f37d4522d63b6",
+          "ruleIds": ["character:1211:traces:1211202:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211203",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211203",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211203:clause:0",
+          "textHash": "244ae33cd0fc55f4f46f5de6bc6d419d3a473306f1a52670e2ad0a697baaf437",
+          "ruleIds": ["character:1211:traces:1211203:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211204",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211204",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211204:clause:0",
+          "textHash": "f6dcbf6e7cd1038179dcf3945e64bf526de3772b87afb44e3c22cb7a4287208c",
+          "ruleIds": ["character:1211:traces:1211204:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211205",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211205",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211205:clause:0",
+          "textHash": "244ae33cd0fc55f4f46f5de6bc6d419d3a473306f1a52670e2ad0a697baaf437",
+          "ruleIds": ["character:1211:traces:1211205:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211206",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211206",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211206:clause:0",
+          "textHash": "8d59d2d0a0ce47b9622624c002432179e1fc8cad153c8d7b561f37d4522d63b6",
+          "ruleIds": ["character:1211:traces:1211206:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211207",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211207",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211207:clause:0",
+          "textHash": "244ae33cd0fc55f4f46f5de6bc6d419d3a473306f1a52670e2ad0a697baaf437",
+          "ruleIds": ["character:1211:traces:1211207:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211208",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211208",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211208:clause:0",
+          "textHash": "f6dcbf6e7cd1038179dcf3945e64bf526de3772b87afb44e3c22cb7a4287208c",
+          "ruleIds": ["character:1211:traces:1211208:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211209",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211209",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211209:clause:0",
+          "textHash": "8d59d2d0a0ce47b9622624c002432179e1fc8cad153c8d7b561f37d4522d63b6",
+          "ruleIds": ["character:1211:traces:1211209:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1211:traces:1211210",
       "ownerId": "character:1211",
       "kind": "character",
-      "status": "pending",
-      "clauses": [],
-      "issues": [
+      "status": "complete",
+      "clauses": [
         {
-          "sourceRef": "character:1211:traces:1211210",
-          "reason": "missing-audit"
+          "id": "character:1211:traces:1211210:clause:0",
+          "textHash": "244ae33cd0fc55f4f46f5de6bc6d419d3a473306f1a52670e2ad0a697baaf437",
+          "ruleIds": ["character:1211:traces:1211210:attribute"],
+          "status": "mapped"
         }
-      ]
+      ],
+      "issues": []
     },
     {
       "sourceRef": "character:1212:ranks:1",
@@ -42211,103 +42297,7 @@
       "reason": "missing-audit"
     },
     {
-      "sourceRef": "character:1211:ranks:1",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:ranks:2",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:ranks:3",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:ranks:4",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:ranks:5",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:ranks:6",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:skills:231592",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:skills:31006",
-      "reason": "missing-audit"
-    },
-    {
       "sourceRef": "character:1211:skills:545893",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:skills:662538",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:skills:746479",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:skills:947065",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211101",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211102",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211103",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211201",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211202",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211203",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211204",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211205",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211206",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211207",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211208",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211209",
-      "reason": "missing-audit"
-    },
-    {
-      "sourceRef": "character:1211:traces:1211210",
       "reason": "missing-audit"
     },
     {
@@ -55875,151 +55865,7 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:ranks:1",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:ranks:2",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:ranks:3",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:ranks:4",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:ranks:5",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:ranks:6",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:skills:231592",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:skills:31006",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1211:skills:545893",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:skills:662538",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:skills:746479",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:skills:947065",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211101",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211102",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211103",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211201",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211202",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211203",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211204",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211205",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211206",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211207",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211208",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211209",
-      "severity": "warning"
-    },
-    {
-      "code": "uncovered-ability",
-      "message": "No computational rule; not implicitly reviewed",
-      "abilityId": "character:1211:traces:1211210",
       "severity": "warning"
     },
     {

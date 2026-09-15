@@ -77,16 +77,26 @@ export interface CatalogueRuleEffect {
   unit: RuleUnit;
   expression: RuleExpression;
   scope: RuleScope;
-  operation?: "add" | "multiply" | "max" | "override";
+  operation?: "add" | "multiply" | "multiplicative_complement" | "max" | "override";
   duration?: {
     kind: "turns" | "actions" | "permanent";
     value?: number;
+    valueExpression?: RuleExpression;
     clock?: "owner" | "target" | "global";
     expiry?: "start" | "end";
   };
   stacking?: { key: string; mode: "add" | "replace" | "max"; maxStacks: number };
   snapshot?: "activation" | "dynamic";
   snapshotKeys?: readonly string[];
+  settlement?: {
+    kind: "base_healing" | "base_damage";
+    scalingStat: "hp" | "attack" | "defense";
+    entity: "owner" | "target";
+    attributeStage: "effective" | "base";
+    readAt: "hit" | "activation";
+    sequenceIndex?: number;
+    selection: "selected" | "random" | "all" | "event_actor";
+  };
 }
 export interface CatalogueRule {
   id: string;
@@ -99,6 +109,7 @@ export interface CatalogueRule {
   /** Explicit even when unconditional: use a literal true expression. */
   unlock: RuleExpression;
   effects: readonly CatalogueRuleEffect[];
+  reference?: { url: string; commit: string; notes: readonly string[] };
 }
 export interface RuleTarget {
   id: string;
@@ -154,6 +165,10 @@ export interface RuleContribution {
   stacking?: CatalogueRuleEffect["stacking"];
   snapshot?: CatalogueRuleEffect["snapshot"];
   snapshotValues?: Readonly<Record<string, RuleValue>>;
+  /** Exact resolved inputs, not the rounded description values. */
+  parameters?: Readonly<Record<string, RuleValue>>;
+  settlement?: CatalogueRuleEffect["settlement"];
+  reference?: CatalogueRule["reference"];
 }
 export interface RuleTriggerCandidate {
   ruleId: string;

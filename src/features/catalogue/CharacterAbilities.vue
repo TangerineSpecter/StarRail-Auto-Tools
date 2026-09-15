@@ -5,11 +5,12 @@ import {
   catalogueAbilityLevels,
   defaultCatalogueAbilityLevel,
   catalogueAbilitySlotLabel,
-  reviewedCatalogueAbilityRuleCount,
+  catalogueAbilityMechanicStatus,
 } from "@/shared/catalogue/mechanics";
 import { resolveAbility } from "@/shared/utils/catalogue-rules";
 import type { CatalogueAbility } from "@/shared/contracts/catalogue-rules";
 import type { CharacterCatalogueEntry } from "@/types";
+import AbilityExplanation from "./AbilityExplanation.vue";
 
 interface AbilityDescriptionSegment {
   text: string;
@@ -149,7 +150,7 @@ const displayedGroups = computed(() =>
         eidolonRank,
         description,
         segments,
-        reviewedRuleCount: reviewedCatalogueAbilityRuleCount(ability),
+        mechanicStatus: catalogueAbilityMechanicStatus(ability),
       };
     }),
   })),
@@ -269,12 +270,14 @@ function stepLevel(
                   </p>
 
                   <footer class="ability-footer">
-                    <small class="catalogue-ability-audit">{{
-                      item.reviewedRuleCount
-                        ? `已记录 ${item.reviewedRuleCount} 条规则，完整机制待审核`
-                        : "机制待审核"
-                    }}</small>
+                    <small
+                      class="catalogue-ability-audit"
+                      :title="item.mechanicStatus.detail"
+                      :data-stage="item.mechanicStatus.stage"
+                      >{{ item.mechanicStatus.label }}</small
+                    >
                   </footer>
+                  <AbilityExplanation :ability="item.ability" :level="item.level" />
                 </div>
               </div>
             </template>
@@ -371,12 +374,14 @@ function stepLevel(
               </p>
 
               <footer class="ability-footer">
-                <small class="catalogue-ability-audit">{{
-                  item.reviewedRuleCount
-                    ? `已记录 ${item.reviewedRuleCount} 条规则，完整机制待审核`
-                    : "机制待审核"
-                }}</small>
+                <small
+                  class="catalogue-ability-audit"
+                  :title="item.mechanicStatus.detail"
+                  :data-stage="item.mechanicStatus.stage"
+                  >{{ item.mechanicStatus.label }}</small
+                >
               </footer>
+              <AbilityExplanation :ability="item.ability" :level="item.level" />
             </template>
           </article>
         </div>

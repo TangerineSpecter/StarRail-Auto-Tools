@@ -389,6 +389,18 @@ export function validateCatalogueRules(
       issue("pending-review", "Rule has not been reviewed", rule.id, undefined, "warning");
     if (rule.ruleVersion !== 1) issue("rule-version", "Unsupported rule version", rule.id);
     if (
+      rule.reference &&
+      (!/^https:\/\//.test(rule.reference.url) ||
+        !/^[a-f0-9]{40}$/.test(rule.reference.commit) ||
+        !Array.isArray(rule.reference.notes) ||
+        rule.reference.notes.some((note) => typeof note !== "string" || !note.trim()))
+    )
+      issue(
+        "reference",
+        "Reference requires a pinned commit, HTTPS URL and explanatory notes",
+        rule.id,
+      );
+    if (
       !rule.activation ||
       !["passive", "condition", "event"].includes(rule.activation.kind) ||
       (rule.activation.kind === "event" && !rule.activation.event)
@@ -436,13 +448,20 @@ export function validateCatalogueRules(
         ].includes(effect.kind)
       )
         issue("effect-kind", "Invalid effect kind", rule.id);
-      if (effect.operation && !["add", "multiply", "max", "override"].includes(effect.operation))
+      if (
+        effect.operation &&
+        !["add", "multiply", "multiplicative_complement", "max", "override"].includes(
+          effect.operation,
+        )
+      )
         issue("operation", "Invalid effect operation", rule.id);
       if (
         effect.duration &&
         (!["turns", "actions", "permanent"].includes(effect.duration.kind) ||
           (effect.duration.kind !== "permanent" &&
-            (!Number.isInteger(effect.duration.value) || effect.duration.value! <= 0)))
+            !effect.duration.valueExpression &&
+            (!Number.isInteger(effect.duration.value) || effect.duration.value! <= 0)) ||
+          (effect.duration.value !== undefined && effect.duration.valueExpression !== undefined))
       )
         issue("duration", "Duration requires positive integral length", rule.id);
       if (
@@ -464,6 +483,28 @@ export function validateCatalogueRules(
       if (!["flat", "ratio", "percent", "count"].includes(effect.unit))
         issue("effect-unit", "Contributions must use numeric units", rule.id);
       expressions.push(effect.expression);
+      if (effect.duration?.valueExpression) expressions.push(effect.duration.valueExpression);
+      if (effect.duration?.valueExpression && validExpression(effect.duration.valueExpression)) {
+        const unit = inferUnit(effect.duration.valueExpression, ability, rule.id);
+        if (unit && unit !== "count")
+          issue("duration-unit", "Duration expressions must resolve to a count", rule.id);
+      }
+      if (
+        effect.settlement &&
+        (!["base_healing", "base_damage"].includes(effect.settlement.kind) ||
+          !["hp", "attack", "defense"].includes(effect.settlement.scalingStat) ||
+          !["owner", "target"].includes(effect.settlement.entity) ||
+          !["effective", "base"].includes(effect.settlement.attributeStage) ||
+          !["hit", "activation"].includes(effect.settlement.readAt) ||
+          !["selected", "random", "all", "event_actor"].includes(effect.settlement.selection) ||
+          (effect.settlement.sequenceIndex !== undefined &&
+            (!Number.isInteger(effect.settlement.sequenceIndex) ||
+              effect.settlement.sequenceIndex < 0)) ||
+          (effect.settlement.kind === "base_healing"
+            ? effect.kind !== "healing"
+            : effect.kind !== "hit_definition"))
+      )
+        issue("settlement", "Invalid base settlement metadata", rule.id);
       if (effect.scope?.filter) expressions.push(effect.scope.filter);
       if (validExpression(effect.expression)) {
         const unit = inferUnit(effect.expression, ability, rule.id);
@@ -492,6 +533,7 @@ export function validateCatalogueRules(
       effectRules.set(id, rule.id);
       const expressions = [
         effect.expression,
+        effect.duration?.valueExpression,
         rule.unlock,
         effect.scope?.filter,
         rule.activation?.kind === "condition"
@@ -663,6 +705,7 @@ export function evaluateRules(
     for (const expression of [
       rule.unlock,
       effect.expression,
+      effect.duration?.valueExpression,
       effect.scope.filter,
       rule.activation.kind === "condition"
         ? rule.activation.condition
@@ -695,7 +738,15 @@ export function evaluateRules(
       }
     }
     const value = evaluateExpression(effect.expression, expressionContext);
+    const durationValue = effect.duration?.valueExpression
+      ? evaluateExpression(effect.duration.valueExpression, expressionContext)
+      : effect.duration?.value;
     visiting.delete(key);
+    if (
+      effect.duration?.valueExpression &&
+      (typeof durationValue !== "number" || !Number.isInteger(durationValue) || durationValue <= 0)
+    )
+      return skip(durationValue === null ? "unknown" : "invalid");
     if (effect.snapshot === "activation")
       for (const key of effect.snapshotKeys ?? []) {
         if (safe(own(expressionContext.values, key)) === null) missingKeys.add(`context:${key}`);
@@ -717,10 +768,15 @@ export function evaluateRules(
       unit: effect.unit,
       value,
       kind: effect.kind,
-      duration: effect.duration,
+      duration: effect.duration
+        ? { ...effect.duration, value: durationValue as number | undefined }
+        : undefined,
       stacking: effect.stacking,
       snapshot: effect.snapshot,
       operation: effect.operation,
+      parameters: { ...parameters },
+      settlement: effect.settlement,
+      reference: rule.reference,
       snapshotValues:
         effect.snapshot === "activation"
           ? Object.fromEntries(
