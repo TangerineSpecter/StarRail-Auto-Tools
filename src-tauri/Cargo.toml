@@ -1,6 +1,6 @@
 [package]
 name = "starrail-auto-tools"
-version = "1.0.5"
+version = "1.0.6"
 description = "Star Rail automation and local OCR toolbox"
 authors = ["StarRail-Auto-Tools contributors"]
 edition = "2021"
