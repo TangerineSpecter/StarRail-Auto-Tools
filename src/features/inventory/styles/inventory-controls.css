@@ -665,9 +665,14 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: none;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
   border-radius: calc(var(--control-radius) + 1px);
+}
+.table-shell::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 table {

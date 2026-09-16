@@ -1,6 +1,7 @@
 use tauri::{AppHandle, Emitter, State};
 
 use crate::{
+    diagnostics::{BackendDiagnostics, DiagnosticExportRequest},
     direct_read::{self, DirectReadSnapshot, DirectReadState},
     domain::{OcrImageResult, ScanSnapshot, StartScanRequest, SystemCapabilities},
     error::AppError,
@@ -34,6 +35,34 @@ where
     tauri::async_runtime::spawn_blocking(task)
         .await
         .map_err(|error| AppError::RelicCleanup(format!("清理任务线程失败：{error}")))?
+}
+
+#[tauri::command]
+pub async fn export_diagnostic_log(
+    request: DiagnosticExportRequest,
+    diagnostics: State<'_, BackendDiagnostics>,
+) -> Result<Option<String>, AppError> {
+    let diagnostics = diagnostics.inner().clone();
+    diagnostics.record("info", "diagnostics", "diagnostic report export requested");
+    let Some(file) = rfd::AsyncFileDialog::new()
+        .set_title("导出诊断日志")
+        .set_file_name("starrail-auto-tools-diagnostics.json")
+        .add_filter("诊断日志", &["json"])
+        .save_file()
+        .await
+    else {
+        diagnostics.record("debug", "diagnostics", "diagnostic report export cancelled");
+        return Ok(None);
+    };
+
+    let report = diagnostics
+        .render_report(request)
+        .map_err(|error| AppError::Export(format!("生成诊断日志失败：{error}")))?;
+    tokio::fs::write(file.path(), report)
+        .await
+        .map_err(|error| AppError::Export(format!("写入诊断日志失败：{error}")))?;
+    diagnostics.record("info", "diagnostics", "diagnostic report exported");
+    Ok(Some(file.path().display().to_string()))
 }
 
 #[tauri::command]

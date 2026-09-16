@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/shared/api/invoke";
 import type { PagedResult, Team, TeamFilter, TeamInput } from "@/types";
 
 export const teamApi = {

@@ -225,6 +225,21 @@
   font-size: 8px;
   letter-spacing: 0.12em;
 }
+.frame-rate {
+  display: inline-flex;
+  align-items: center;
+  min-width: 49px;
+  justify-content: center;
+  padding: 5px 7px;
+  border: 1px solid rgba(44, 76, 121, 0.13);
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.62);
+  font:
+    700 9px/1 "Bahnschrift",
+    monospace,
+    sans-serif;
+  letter-spacing: 0.06em;
+}
 .runtime-pill {
   display: flex;
   min-width: 86px;

@@ -8,6 +8,11 @@
   padding: 14px;
   background: linear-gradient(135deg, rgba(237, 243, 249, 0.9), rgba(248, 250, 252, 0.72));
   overflow-y: auto;
+  scrollbar-width: none;
+}
+.character-card-grid::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .character-card {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { onActivated, onDeactivated, onMounted, onUnmounted, ref } from "vue";
 
 type ParticleType = "sparkle" | "dust" | "nebula";
 
@@ -299,15 +299,21 @@ function render() {
   animFrameId = requestAnimationFrame(render);
 }
 
-onMounted(() => {
+function startRendering() {
+  if (animFrameId !== undefined) return;
   animFrameId = requestAnimationFrame(render);
-});
+}
 
-onUnmounted(() => {
-  if (animFrameId !== undefined) {
-    cancelAnimationFrame(animFrameId);
-  }
-});
+function stopRendering() {
+  if (animFrameId === undefined) return;
+  cancelAnimationFrame(animFrameId);
+  animFrameId = undefined;
+}
+
+onMounted(startRendering);
+onActivated(startRendering);
+onDeactivated(stopRendering);
+onUnmounted(stopRendering);
 </script>
 
 <template>

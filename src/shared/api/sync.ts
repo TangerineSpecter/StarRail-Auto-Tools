@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/shared/api/invoke";
 import type { SyncConflict, SyncDownloadResult, SyncSettings, SyncUploadResult } from "@/types";
 
 export const syncApi = {

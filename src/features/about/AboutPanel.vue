@@ -1,9 +1,29 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { APP_NAME, APP_SLUG, APP_VERSION, PROJECT_URL } from "@/shared/app-info";
+import { diagnosticsApi } from "@/shared/api/diagnostics";
+import { frontendDiagnostics } from "@/shared/diagnostics/frontend";
 import { openExternalUrl } from "@/shared/utils/open-external-url";
+
+const exporting = ref(false);
+const exportStatus = ref("");
 
 async function openProject() {
   await openExternalUrl(PROJECT_URL);
+}
+
+async function exportDiagnostics() {
+  if (exporting.value) return;
+  exporting.value = true;
+  exportStatus.value = "正在整理前端与后端日志…";
+  try {
+    const path = await diagnosticsApi.export(frontendDiagnostics.exportPayload(APP_VERSION));
+    exportStatus.value = path ? `诊断日志已导出：${path}` : "已取消导出诊断日志";
+  } catch (cause) {
+    exportStatus.value = `诊断日志导出失败：${String(cause)}`;
+  } finally {
+    exporting.value = false;
+  }
 }
 </script>
 
@@ -75,6 +95,24 @@ async function openProject() {
         </div>
       </article>
     </section>
+
+    <section class="diagnostic-card" aria-labelledby="diagnostic-title">
+      <div class="diagnostic-copy">
+        <p class="eyebrow">DIAGNOSTIC LOG</p>
+        <h3 id="diagnostic-title">日志诊断</h3>
+        <p>
+          导出当前会话的前端异常、IPC 调用耗时、帧率采样、运行环境，以及 Rust 后端启动日志。
+          内容会过滤密码、令牌和带认证信息的地址。
+        </p>
+      </div>
+      <div class="diagnostic-action">
+        <span>FRONTEND · IPC · RUST</span>
+        <button type="button" :disabled="exporting" @click="exportDiagnostics">
+          {{ exporting ? "整理中…" : "导出分析日志" }}
+        </button>
+        <small v-if="exportStatus" role="status">{{ exportStatus }}</small>
+      </div>
+    </section>
   </section>
 </template>
 
@@ -83,10 +121,18 @@ async function openProject() {
   position: relative;
   display: grid;
   align-content: center;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
   padding: 46px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
   isolation: isolate;
+}
+.about-workspace::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 .constellation {
   position: absolute;
@@ -108,10 +154,10 @@ async function openProject() {
 }
 .constellation-left {
   top: 8%;
-  left: -85px;
+  left: 10px;
 }
 .constellation-right {
-  right: -90px;
+  right: 10px;
   bottom: 12%;
   transform: rotate(25deg);
 }
@@ -119,6 +165,8 @@ async function openProject() {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 250px;
+  width: 100%;
+  min-width: 0;
   min-height: 320px;
   max-width: 1030px;
   overflow: hidden;
@@ -262,6 +310,8 @@ h2 {
 .capability-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
   max-width: 1030px;
   margin-top: 15px;
   border: 1px solid rgba(42, 72, 113, 0.12);
@@ -296,6 +346,67 @@ h2 {
   font-size: 11px;
   line-height: 1.55;
 }
+.diagnostic-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  width: 100%;
+  max-width: 1030px;
+  margin-top: 15px;
+  padding: 19px 22px;
+  border: 1px solid rgba(42, 72, 113, 0.14);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 14px 35px rgba(47, 73, 110, 0.06);
+}
+.diagnostic-copy {
+  min-width: 0;
+}
+.diagnostic-copy h3 {
+  margin: 7px 0 5px;
+  color: var(--ink);
+  font-size: 18px;
+}
+.diagnostic-copy p:last-child {
+  max-width: 660px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+.diagnostic-action {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 8px;
+}
+.diagnostic-action > span {
+  color: var(--muted);
+  font:
+    700 8px/1 "Bahnschrift",
+    sans-serif;
+  letter-spacing: 0.12em;
+}
+.diagnostic-action button {
+  min-height: 35px;
+  padding: 0 14px;
+  border: 1px solid var(--blue-deep);
+  color: #fff;
+  background: var(--blue-deep);
+  font: 700 11px/1 var(--font-ui);
+}
+.diagnostic-action button:hover:not(:disabled) {
+  background: var(--blue);
+  box-shadow: 0 8px 18px rgba(41, 81, 136, 0.18);
+}
+.diagnostic-action small {
+  max-width: 300px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 900px) {
   .about-workspace {
     padding: 28px;
@@ -310,6 +421,16 @@ h2 {
   .capability-list {
     grid-template-columns: repeat(2, 1fr);
   }
+  .diagnostic-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .diagnostic-action {
+    justify-items: start;
+  }
+  .diagnostic-action small {
+    text-align: left;
+  }
   .capability-list article:nth-child(2) {
     border-right: 0;
   }
@@ -323,6 +444,9 @@ h2 {
   }
   .capability-list {
     grid-template-columns: 1fr;
+  }
+  .diagnostic-card {
+    padding: 18px;
   }
   .capability-list article {
     border-right: 0;

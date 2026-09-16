@@ -135,11 +135,17 @@ onMounted(async () => {
   gap: 26px;
   min-height: 0;
   padding: 24px clamp(32px, 5vw, 86px) 48px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
   isolation: isolate;
   background:
     radial-gradient(circle at 79% 15%, rgba(199, 165, 90, 0.18), transparent 25%),
     radial-gradient(circle at 18% 93%, rgba(69, 174, 183, 0.12), transparent 27%);
+}
+.settings-workspace::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 .settings-hero {
   display: flex;

@@ -15,6 +15,7 @@ import { useToast } from "primevue/usetoast";
 import AppNavigation from "@/app/AppNavigation.vue";
 import { useAppUpdater } from "@/app/composables/useAppUpdater";
 import { useCleanupEmergencyStop } from "@/app/composables/useCleanupEmergencyStop";
+import { useFrameRate } from "@/app/composables/useFrameRate";
 import { useRuntimeLifecycle } from "@/app/composables/useRuntimeLifecycle";
 import { cachedAppPageNames, type AppView } from "@/app/navigation";
 import { useRuntimeStore } from "@/app/stores/runtime";
@@ -23,6 +24,7 @@ import { preloadScannerDefaultMode } from "@/pages/scanner-loaders";
 import { APP_VERSION } from "@/shared/app-info";
 import { windowApi } from "@/shared/api/window";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
+import { frontendDiagnostics } from "@/shared/diagnostics/frontend";
 
 const loadScannerPage = () => import("@/pages/ScannerPage.vue");
 
@@ -43,6 +45,7 @@ function preloadScanner() {
 }
 
 onMounted(() => {
+  frontendDiagnostics.install();
   if ("requestIdleCallback" in window) {
     scannerPreloadHandle = window.requestIdleCallback(preloadScanner, { timeout: 1500 });
   } else {
@@ -51,9 +54,11 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (scannerPreloadHandle === undefined) return;
-  if ("cancelIdleCallback" in window) window.cancelIdleCallback(scannerPreloadHandle);
-  else clearTimeout(scannerPreloadHandle);
+  if (scannerPreloadHandle !== undefined) {
+    if ("cancelIdleCallback" in window) window.cancelIdleCallback(scannerPreloadHandle);
+    else clearTimeout(scannerPreloadHandle);
+  }
+  frontendDiagnostics.uninstall();
 });
 
 const activeView = ref<AppView>("capture");
@@ -61,6 +66,7 @@ const isMaximized = ref(false);
 const runtime = useRuntimeStore();
 const { direct, summary, busy, error, notice, inventoryRevision } = storeToRefs(runtime);
 const toast = useToast();
+const { frameRate } = useFrameRate();
 provide(runtimeContextKey, { direct, summary, busy, error, notice, inventoryRevision });
 useCleanupEmergencyStop({ error, notice });
 const { capabilities } = useRuntimeLifecycle();
@@ -188,6 +194,9 @@ function preloadView(view: AppView) {
         </div>
         <div class="footer-meta">
           <span class="platform-label">{{ capabilities?.platform ?? "SYSTEM" }}</span>
+          <span class="frame-rate" title="当前 WebView 界面帧率，按 1 秒窗口采样">
+            FPS {{ frameRate ?? "--" }}
+          </span>
           <div :class="['runtime-pill', `tone-${phaseCode}`]">
             <span :class="['status-dot', { active: directRunning }]" />{{ phaseLabel }}
           </div>

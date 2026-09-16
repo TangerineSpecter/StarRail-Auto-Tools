@@ -1,4 +1,5 @@
 mod commands;
+mod diagnostics;
 mod direct_read;
 mod domain;
 mod error;
@@ -32,8 +33,18 @@ pub fn run() {
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
-            let store = InventoryStore::initialize(data_dir.join("inventory.sqlite3"))
-                .map_err(|error| std::io::Error::other(error.to_string()))?;
+            let diagnostics = diagnostics::BackendDiagnostics::new(&data_dir);
+            diagnostics.record("info", "startup", "backend initialized");
+            let store = InventoryStore::initialize(data_dir.join("inventory.sqlite3")).map_err(
+                |error| {
+                    diagnostics.record(
+                        "error",
+                        "startup",
+                        format!("inventory initialization failed: {error}"),
+                    );
+                    std::io::Error::other(error.to_string())
+                },
+            )?;
             let ocr_models = OcrModelManager::new(&data_dir, app.handle().clone());
             let relic_cleanup = RelicCleanupRuntime::new(
                 &data_dir,
@@ -55,6 +66,7 @@ pub fn run() {
                 app.handle().clone(),
             );
             app.manage(store);
+            app.manage(diagnostics);
             app.manage(ocr_models);
             app.manage(relic_cleanup);
             app.manage(sync_store);
@@ -147,6 +159,7 @@ pub fn run() {
             commands::save_game_launch_settings,
             commands::detect_game_launcher,
             commands::pick_game_launcher,
+            commands::export_diagnostic_log,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run StarRail-Auto-Tools");
