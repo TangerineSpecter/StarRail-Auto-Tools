@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { APP_NAME, APP_SLUG, APP_VERSION, PROJECT_URL } from "@/shared/app-info";
 import { diagnosticsApi } from "@/shared/api/diagnostics";
 import { frontendDiagnostics } from "@/shared/diagnostics/frontend";
 import { openExternalUrl } from "@/shared/utils/open-external-url";
 
+const props = defineProps<{ protocolVersion: string }>();
+const supportedGameVersion = computed(
+  () => props.protocolVersion.match(/HSR-(\d+(?:\.\d+)*)/)?.[1] ?? "未知",
+);
 const exporting = ref(false);
 const exportStatus = ref("");
 
@@ -41,6 +45,9 @@ async function exportDiagnostics() {
 
         <div class="profile-meta">
           <span class="version-label"><small>VERSION</small>v{{ APP_VERSION }}</span>
+          <span class="version-label game-version-label"
+            ><small>游戏直读支持版本 · WINDOWS</small>星穹铁道 {{ supportedGameVersion }}</span
+          >
           <button
             class="github-tag"
             type="button"
@@ -211,6 +218,7 @@ h2 {
 .profile-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 29px;
 }
@@ -231,6 +239,9 @@ h2 {
     700 8px/1 "Bahnschrift",
     sans-serif;
   letter-spacing: 0.14em;
+}
+.game-version-label {
+  border-left-color: var(--blue);
 }
 .github-tag {
   display: inline-flex;
