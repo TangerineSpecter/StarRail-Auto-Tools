@@ -37,6 +37,7 @@ export interface DirectReadSnapshot {
   currentUid: number | null;
   incomingUid: number | null;
   requiresAccountSwitch: boolean;
+  logs?: { at: number; level: "info" | "warn" | "error"; message: string }[];
 }
 
 export interface InventorySummary {

@@ -41,6 +41,52 @@ pub struct DirectReadSnapshot {
     pub current_uid: Option<u32>,
     pub incoming_uid: Option<u32>,
     pub requires_account_switch: bool,
+    pub logs: Vec<DirectReadLog>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DirectReadLog {
+    pub at: i64,
+    pub level: &'static str,
+    pub message: String,
+}
+
+const MAX_DIRECT_READ_LOGS: usize = 80;
+
+fn append_log(snapshot: &mut DirectReadSnapshot) -> bool {
+    let at = now_millis();
+    if snapshot
+        .logs
+        .iter()
+        .rev()
+        .take(12)
+        .any(|entry| entry.message == snapshot.message && at.saturating_sub(entry.at) < 10_000)
+    {
+        return false;
+    }
+    let level = if snapshot.phase == DirectReadPhase::Error {
+        "error"
+    } else if snapshot.message.contains("未收到")
+        || snapshot.message.contains("无法解析")
+        || snapshot.message.contains("仅适配")
+        || snapshot.message.contains("可能")
+    {
+        "warn"
+    } else {
+        "info"
+    };
+    snapshot.logs.push(DirectReadLog {
+        at,
+        level,
+        message: snapshot.message.clone(),
+    });
+    if snapshot.logs.len() > MAX_DIRECT_READ_LOGS {
+        snapshot
+            .logs
+            .drain(..snapshot.logs.len() - MAX_DIRECT_READ_LOGS);
+    }
+    true
 }
 
 impl Default for DirectReadSnapshot {
@@ -65,6 +111,7 @@ impl Default for DirectReadSnapshot {
             current_uid: None,
             incoming_uid: None,
             requires_account_switch: false,
+            logs: Vec::new(),
         }
     }
 }
@@ -97,11 +144,22 @@ impl DirectReadState {
         app: &AppHandle,
         update: impl FnOnce(&mut DirectReadSnapshot),
     ) -> Result<DirectReadSnapshot, AppError> {
-        let snapshot = {
+        let (snapshot, changed) = {
             let mut inner = self.inner.lock().map_err(|_| AppError::StateUnavailable)?;
+            let previous_message = inner.snapshot.message.clone();
             update(&mut inner.snapshot);
-            inner.snapshot.clone()
+            let changed =
+                inner.snapshot.message != previous_message && append_log(&mut inner.snapshot);
+            (inner.snapshot.clone(), changed)
         };
+        if changed {
+            if let Some(entry) = snapshot.logs.last() {
+                if let Some(diagnostics) = app.try_state::<crate::diagnostics::BackendDiagnostics>()
+                {
+                    diagnostics.record(entry.level, "direct_read", &entry.message);
+                }
+            }
+        }
         app.emit("direct-read://status", &snapshot)
             .map_err(|error| AppError::DirectRead(error.to_string()))?;
         Ok(snapshot)
@@ -172,13 +230,18 @@ pub fn start(app: AppHandle) -> Result<DirectReadSnapshot, AppError> {
             inner.restart_requested = false;
             inner.pending_import = None;
             inner.snapshot.phase = DirectReadPhase::Starting;
-            inner.snapshot.message = "正在初始化 Windows Packet Monitor…".to_owned();
+            inner.snapshot.message =
+                "正在初始化 Windows Packet Monitor…（内置 reliquary v23，适配游戏 4.5）".to_owned();
             inner.snapshot.started_at = Some(now_millis());
             inner.snapshot.requires_account_switch = false;
             inner.snapshot.incoming_uid = None;
+            append_log(&mut inner.snapshot);
             cancel
         };
         let initial = state.snapshot()?;
+        if let Some(diagnostics) = app.try_state::<crate::diagnostics::BackendDiagnostics>() {
+            diagnostics.record("info", "direct_read", &initial.message);
+        }
         app.emit("direct-read://status", &initial)
             .map_err(|error| AppError::DirectRead(error.to_string()))?;
 
@@ -332,21 +395,80 @@ fn now_millis() -> i64 {
         .as_millis() as i64
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn status_log_is_bounded_and_ignores_duplicate_messages() {
+        let mut snapshot = DirectReadSnapshot::default();
+        snapshot.message = "监听已就绪".to_owned();
+        append_log(&mut snapshot);
+        append_log(&mut snapshot);
+        assert_eq!(snapshot.logs.len(), 1);
+
+        for index in 0..100 {
+            snapshot.message = format!("进度 {index}");
+            append_log(&mut snapshot);
+        }
+        assert_eq!(snapshot.logs.len(), MAX_DIRECT_READ_LOGS);
+        assert_eq!(snapshot.logs.first().unwrap().message, "进度 20");
+        assert_eq!(snapshot.logs.last().unwrap().message, "进度 99");
+    }
+}
+
 #[cfg(windows)]
 mod windows_capture {
     use std::collections::HashMap;
+    use std::time::{Duration, Instant};
 
     use futures::StreamExt;
     use pktmon::{
         filter::{PktMonFilter, TransportProtocol},
         Capture, PacketPayload,
     };
-    use reliquary::network::{command::command_id, ConnectionPacket, GamePacket, GameSniffer};
+    use reliquary::network::{
+        command::command_id, ConnectionPacket, GameCommandError, GamePacket, GameSniffer,
+        NetworkError,
+    };
     use reliquary_archiver::export::{fribbels::OptimizerExporter, Exporter};
 
     use super::*;
 
     const PORTS: [u16; 2] = [23301, 23302];
+
+    #[derive(Default)]
+    struct CaptureCounts {
+        packets: u64,
+        commands: u64,
+        parse_errors: u64,
+        relevant: u64,
+        imports: u64,
+        handshake: bool,
+    }
+
+    fn progress_message(counts: &CaptureCounts, elapsed_secs: u64) -> String {
+        if counts.packets == 0 {
+            format!("监听运行 {elapsed_secs} 秒，尚未收到游戏 UDP 包；若已进入游戏，请检查端口或抓包权限。")
+        } else if !counts.handshake {
+            format!(
+                "已收到 {} 个候选 UDP 包，尚未识别到游戏握手；请检查游戏端口。",
+                counts.packets
+            )
+        } else if counts.commands == 0 {
+            format!(
+                "已识别游戏握手，收到 {} 个包，但尚未解析出命令；游戏更新后可能需要更新协议。",
+                counts.packets
+            )
+        } else if counts.relevant == 0 {
+            format!(
+                "已解析 {} 条游戏命令，但没有识别到背包/角色命令；可能是游戏协议已变化。",
+                counts.commands
+            )
+        } else {
+            format!("收到 {} 包，解析 {} 条命令（失败 {}），背包相关 {} 条，成功入库 {} 次；等待后续数据。", counts.packets, counts.commands, counts.parse_errors, counts.relevant, counts.imports)
+        }
+    }
 
     pub async fn run(app: AppHandle, cancel: Arc<AtomicBool>) -> Result<(), String> {
         let state = app.state::<DirectReadState>();
@@ -378,6 +500,9 @@ mod windows_capture {
 
         let mut sniffer = GameSniffer::new();
         let mut exporters: HashMap<u32, OptimizerExporter> = HashMap::new();
+        let mut counts = CaptureCounts::default();
+        let capture_started = Instant::now();
+        let mut last_progress = Instant::now();
 
         loop {
             let packet = tokio::select! {
@@ -385,6 +510,15 @@ mod windows_capture {
                 _ = tokio::time::sleep(std::time::Duration::from_millis(250)) => {
                     if cancel.load(Ordering::Relaxed) {
                         return Ok(());
+                    }
+                    if last_progress.elapsed() >= Duration::from_secs(10) {
+                        let message = progress_message(&counts, capture_started.elapsed().as_secs());
+                        let _ = state.update(&app, |snapshot| {
+                            if matches!(snapshot.phase, DirectReadPhase::WaitingForLogin | DirectReadPhase::Connected | DirectReadPhase::Syncing) {
+                                snapshot.message = message;
+                            }
+                        });
+                        last_progress = Instant::now();
                     }
                     continue;
                 }
@@ -396,10 +530,25 @@ mod windows_capture {
             let PacketPayload::Ethernet(payload) = packet.payload else {
                 continue;
             };
+            counts.packets += 1;
+            if counts.packets == 1 {
+                let _ = state.update(&app, |snapshot| {
+                    snapshot.message = "已收到首个候选 UDP 包，正在识别游戏连接…".to_owned();
+                });
+            }
 
             let game_packets = match sniffer.receive_packet(payload) {
                 Ok(packets) => packets,
-                Err(_) => continue,
+                Err(error) => {
+                    counts.parse_errors += 1;
+                    if matches!(
+                        error,
+                        NetworkError::GameCommand(GameCommandError::DecryptionKeyMissing)
+                    ) {
+                        return Err("无法解析游戏加密密钥；当前协议可能不支持更新后的游戏版本。请导出“关于”中的分析日志。".to_owned());
+                    }
+                    continue;
+                }
             };
             for game_packet in game_packets {
                 if cancel.load(Ordering::Relaxed) {
@@ -407,6 +556,7 @@ mod windows_capture {
                 }
                 match game_packet {
                     GamePacket::Connection(ConnectionPacket::HandshakeEstablished { .. }) => {
+                        counts.handshake = true;
                         let _ = state.update(&app, |snapshot| {
                             snapshot.phase = DirectReadPhase::Connected;
                             snapshot.message = "已连接游戏服务器，正在等待背包数据…".to_owned();
@@ -419,9 +569,17 @@ mod windows_capture {
                         });
                     }
                     GamePacket::Commands { conv_id, result } => {
-                        let Ok(command) = result else {
-                            continue;
+                        let command = match result {
+                            Ok(command) => command,
+                            Err(GameCommandError::DecryptionKeyMissing) => {
+                                return Err("无法解析游戏加密密钥；当前协议可能不支持更新后的游戏版本。请导出“关于”中的分析日志。".to_owned());
+                            }
+                            Err(_) => {
+                                counts.parse_errors += 1;
+                                continue;
+                            }
                         };
+                        counts.commands += 1;
                         let command_id_value = command.command_id;
                         let relevant = matches!(
                             command_id_value,
@@ -433,6 +591,7 @@ mod windows_capture {
                                 | command_id::SetAvatarEnhancedIdScRsp
                         );
                         if relevant {
+                            counts.relevant += 1;
                             let _ = state.update(&app, |snapshot| {
                                 snapshot.phase = DirectReadPhase::Syncing;
                                 snapshot.message = "正在解析游戏背包与角色数据…".to_owned();
@@ -447,6 +606,7 @@ mod windows_capture {
                                 let import: InventoryImport = serde_json::from_value(value)
                                     .map_err(|error| error.to_string())?;
                                 handle_import(&app, import).map_err(|error| error.to_string())?;
+                                counts.imports += 1;
                             }
                         }
                     }

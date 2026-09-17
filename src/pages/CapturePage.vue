@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import DirectReadPanel from "@/features/capture/DirectReadPanel.vue";
-import OcrPanel from "@/features/capture/OcrPanel.vue";
-import ScreenshotCropOverlay from "@/features/capture/ScreenshotCropOverlay.vue";
+import DirectReadLogPanel from "@/features/capture/DirectReadLogPanel.vue";
 import { useDirectRead } from "@/features/capture/useDirectRead";
-import { useScreenshotCrop } from "@/features/capture/useScreenshotCrop";
 import InventorySyncPanel from "@/features/inventory/InventorySyncPanel.vue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 
@@ -15,7 +13,6 @@ const feedback = {
   setNotice: (message: string) => (notice.value = message),
 };
 const directRead = useDirectRead({ ...feedback, direct, summary });
-const crop = useScreenshotCrop(feedback);
 </script>
 
 <template>
@@ -35,21 +32,7 @@ const crop = useScreenshotCrop(feedback);
         @error="error = $event"
         @notice="notice = $event"
       />
-      <OcrPanel :result="crop.ocrResult.value" :busy="busy" @capture="crop.runOcrScreenshot" />
+      <DirectReadLogPanel :direct="direct" :running="directRead.running.value" />
     </div>
   </section>
-  <ScreenshotCropOverlay
-    v-if="crop.screenshotPreviewUrl.value"
-    v-model:surface="crop.cropSurface.value"
-    :preview-url="crop.screenshotPreviewUrl.value"
-    :busy="busy"
-    :crop-box="crop.cropBox.value"
-    :has-selection="crop.hasCropSelection.value"
-    @close="crop.closeCropPicker()"
-    @start="crop.startCropSelection"
-    @update="crop.updateCropSelection"
-    @end="crop.endCropSelection"
-    @recognize="crop.recognizeCrop"
-    @reset="crop.resetCropSelection"
-  />
 </template>

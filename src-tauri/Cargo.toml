@@ -53,8 +53,8 @@ futures = "0.3.31"
 image = { version = "0.25", default-features = false, features = ["png"] }
 pktmon = { version = "0.6.2", features = ["tokio"] }
 protobuf = "=3.7.1"
-reliquary = { git = "https://github.com/IceDynamix/reliquary", tag = "v22.0.0", features = ["proto-rqa"] }
-reliquary-archiver = { git = "https://github.com/IceDynamix/reliquary-archiver", tag = "v0.17.1", default-features = false }
+reliquary = { git = "https://github.com/IceDynamix/reliquary", tag = "v23.0.0", features = ["proto-rqa"] }
+reliquary-archiver = { git = "https://github.com/IceDynamix/reliquary-archiver", tag = "v0.18.0", default-features = false }
 windows = { version = "0.62", features = [
   "Graphics_Capture",
   "Graphics_DirectX",
@@ -70,7 +70,7 @@ windows = { version = "0.62", features = [
 ] }
 
 [patch."https://github.com/IceDynamix/reliquary-archiver"]
-# reliquary-archiver v0.17.1 (and earlier) unconditionally compiles a VERSION + ICON
+# Upstream reliquary-archiver v0.18.0 still unconditionally compiles a VERSION + ICON
 # Win32 resource in its build.rs via `winres`, even when consumed as a library.
 # The resulting `resource.lib` is propagated transitively to downstream binaries
 # and collides with the VERSION/ICON resource tauri-build emits from

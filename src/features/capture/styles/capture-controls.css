@@ -103,38 +103,222 @@
 .capture-counts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin: 12px 0;
-  border-block: 1px solid var(--line);
+  gap: 10px;
+  margin: 14px 0;
 }
 
-.capture-counts div {
+.count-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 12px 9px;
+  border: 1px solid rgba(48, 75, 117, 0.16);
+  border-radius: var(--control-radius);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88) 0%, rgba(244, 248, 254, 0.94) 100%);
+  box-shadow: 0 4px 12px rgba(23, 40, 71, 0.04);
+  overflow: hidden;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.count-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  opacity: 0.45;
+  transition: opacity 180ms ease;
+}
+
+.count-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(48, 75, 117, 0.32);
+  box-shadow: 0 8px 20px rgba(23, 40, 71, 0.09);
+}
+
+.count-card:hover::before {
+  opacity: 1;
+}
+
+.count-relics::before {
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+.count-lightcones::before {
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+}
+
+.count-characters::before {
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+}
+
+.count-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count-card-icon {
   display: grid;
-  gap: 3px;
-  padding: 12px 13px;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: background-color 180ms ease;
 }
 
-.capture-counts div + div {
-  border-left: 1px solid var(--line);
+.count-relics .count-card-icon {
+  color: #c79638;
+  background: rgba(199, 150, 56, 0.09);
+  border-color: rgba(199, 150, 56, 0.22);
 }
 
-.capture-counts span {
+.count-relics:hover .count-card-icon {
+  background: rgba(199, 150, 56, 0.16);
+}
+
+.count-lightcones .count-card-icon {
+  color: #0284c7;
+  background: rgba(2, 132, 199, 0.09);
+  border-color: rgba(2, 132, 199, 0.22);
+}
+
+.count-lightcones:hover .count-card-icon {
+  background: rgba(2, 132, 199, 0.16);
+}
+
+.count-characters .count-card-icon {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.09);
+  border-color: rgba(99, 102, 241, 0.22);
+}
+
+.count-characters:hover .count-card-icon {
+  background: rgba(99, 102, 241, 0.16);
+}
+
+.count-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.count-card-title span {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.count-card-title small {
+  color: #8794a8;
+  font:
+    600 7.5px/1 "Bahnschrift",
+    sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.count-card-body {
+  margin-top: 6px;
+}
+
+.count-card-body b {
+  color: var(--blue-deep);
+  font:
+    600 24px/1 "Bahnschrift",
+    sans-serif;
+  letter-spacing: -0.02em;
+  transition: color 180ms ease;
+}
+
+.count-relics:hover .count-card-body b {
+  color: #b45309;
+}
+
+.count-lightcones:hover .count-card-body b {
+  color: #0369a1;
+}
+
+.count-characters:hover .count-card-body b {
+  color: #4f46e5;
+}
+
+.direct-log-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid rgba(36, 86, 166, 0.14);
   color: var(--ink-soft);
-  font-size: 9px;
+  background: var(--blue-soft);
+  font-size: 11px;
 }
 
-.capture-counts b {
-  color: var(--blue);
+.direct-log-state.active {
+  color: #247b67;
+  border-color: rgba(42, 168, 121, 0.24);
+  background: rgba(42, 168, 121, 0.08);
+}
+
+.direct-log-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #9aa8b9;
+}
+
+.direct-log-state.active .direct-log-indicator {
+  background: #2aa879;
+  box-shadow: 0 0 0 4px rgba(42, 168, 121, 0.12);
+}
+
+.direct-log-lines {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 14px;
+  border: 1px solid rgba(75, 106, 153, 0.26);
+  background: #f5f8fd;
+  scrollbar-width: thin;
+  scrollbar-color: #becbda transparent;
+}
+
+.direct-log-line {
+  display: flex;
+  gap: 10px;
+  margin: 7px 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.direct-log-line time {
+  flex: 0 0 auto;
+  color: #8392a7;
   font:
-    500 25px/1 "Bahnschrift",
+    11px/1.6 "Bahnschrift",
     sans-serif;
 }
 
-.capture-counts small {
-  color: #a1acb9;
-  font:
-    600 7px/1 "Bahnschrift",
-    sans-serif;
-  letter-spacing: 0.13em;
+.direct-log-warn span {
+  color: #a46d21;
+}
+.direct-log-error span {
+  color: #ad4b48;
+}
+.direct-log-empty {
+  margin: 6px 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .account-warning {

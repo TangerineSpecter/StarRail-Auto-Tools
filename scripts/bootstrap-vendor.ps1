@@ -2,11 +2,11 @@
 #
 # Resolution order (first hit wins):
 #   1. Already present at src-tauri/vendor/reliquary-archiver/Cargo.toml → skip.
-#   2. Local cached zip at vendor-cache/reliquary-archiver-v0.17.1-patched.zip
+#   2. Local cached zip at vendor-cache/reliquary-archiver-v0.18.0-patched.zip
 #      → Expand-Archive it.  This is the preferred, reproducible, offline-safe
 #      source of truth.  The cached zip ships inside the git repo so it does
 #      not depend on the upstream GitHub repo staying available.
-#   3. Fallback: clone the exact upstream tag (v0.17.1) from GitHub and apply
+#   3. Fallback: clone the exact upstream tag (v0.18.0) from GitHub and apply
 #      the two local patches that gate Win32 VERSION/ICON resource embedding
 #      behind a never-enabled Cargo feature.  Used only when the cached zip
 #      is missing (e.g. developer deleted it manually, or a fresh checkout
@@ -22,16 +22,20 @@ $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot\..
 
 $repoUrl    = 'https://github.com/IceDynamix/reliquary-archiver.git'
-$repoTag    = 'v0.17.1'
+$repoTag    = 'v0.18.0'
 $vendorDir  = 'src-tauri\vendor\reliquary-archiver'
 $markerFile = Join-Path $vendorDir 'Cargo.toml'
-$cacheZip   = 'vendor-cache\reliquary-archiver-v0.17.1-patched.zip'
-$tmpDir     = Join-Path $env:TEMP "reliquary-archiver-v0.17.1-$([guid]::NewGuid().ToString('N'))"
+$cacheZip   = 'vendor-cache\reliquary-archiver-v0.18.0-patched.zip'
+$tmpDir     = Join-Path $env:TEMP "reliquary-archiver-v0.18.0-$([guid]::NewGuid().ToString('N'))"
 
 # ---------------------------------------------------------------------------
 # 1. Already present → nothing to do
 # ---------------------------------------------------------------------------
 if (Test-Path $markerFile) {
+    $existingManifest = Get-Content -Raw $markerFile
+    if (-not $existingManifest.Contains('tag = "v23.0.0"') -or -not $existingManifest.Contains('embed-winres')) {
+        throw "Existing $vendorDir is stale; move it aside and rerun bootstrap to use v0.18.0 / reliquary v23."
+    }
     Write-Verbose "vendor/reliquary-archiver already present; skipping bootstrap."
     exit 0
 }
@@ -160,4 +164,4 @@ if (Test-Path $vendorDir) {
 }
 
 Write-Host 'vendor/reliquary-archiver bootstrap complete (from GitHub fallback).' -ForegroundColor Green
-Write-Host "  (hint: you can regenerate the offline cache with: cd src-tauri\vendor; Compress-Archive -Path reliquary-archiver -DestinationPath ..\..\vendor-cache\reliquary-archiver-v0.17.1-patched.zip -Force)"
+Write-Host "  (hint: you can regenerate the offline cache with: cd src-tauri\vendor; Compress-Archive -Path reliquary-archiver -DestinationPath ..\..\vendor-cache\reliquary-archiver-v0.18.0-patched.zip -Force)"

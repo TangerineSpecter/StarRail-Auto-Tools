@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { DirectReadSnapshot, InventorySummary } from "@/types";
 
-const protocolVersion = "reliquary-v22.0.0 / HSR-4.4";
+const protocolVersion = "reliquary-v23.0.0 / HSR-4.5";
 
 export const emptyDirectSnapshot: DirectReadSnapshot = {
   phase: "unsupported",

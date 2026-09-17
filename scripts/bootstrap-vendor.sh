@@ -3,11 +3,11 @@
 #
 # Resolution order (first hit wins):
 #   1. Already present at src-tauri/vendor/reliquary-archiver/Cargo.toml → skip.
-#   2. Local cached zip at vendor-cache/reliquary-archiver-v0.17.1-patched.zip
+#   2. Local cached zip at vendor-cache/reliquary-archiver-v0.18.0-patched.zip
 #      → unpack it.  This is the preferred, reproducible, offline-safe source
 #      of truth.  The cached zip ships inside the git repo so it does not
 #      depend on the upstream GitHub repo staying available.
-#   3. Fallback: clone the exact upstream tag (v0.17.1) from GitHub and apply
+#   3. Fallback: clone the exact upstream tag (v0.18.0) from GitHub and apply
 #      the two local patches that gate Win32 VERSION/ICON resource embedding
 #      behind a never-enabled Cargo feature.  Used only when the cached zip
 #      is missing (e.g. developer deleted it manually, or a fresh checkout
@@ -22,17 +22,21 @@ project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_dir"
 
 repo_url="https://github.com/IceDynamix/reliquary-archiver.git"
-repo_tag="v0.17.1"
+repo_tag="v0.18.0"
 vendor_dir="src-tauri/vendor/reliquary-archiver"
 marker_file="$vendor_dir/Cargo.toml"
-cache_zip="vendor-cache/reliquary-archiver-v0.17.1-patched.zip"
-tmp_dir="$(mktemp -d -t reliquary-archiver-v0.17.1.XXXXXX)"
+cache_zip="vendor-cache/reliquary-archiver-v0.18.0-patched.zip"
+tmp_dir="$(mktemp -d -t reliquary-archiver-v0.18.0.XXXXXX)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
 # ---------------------------------------------------------------------------
 # 1. Already present → nothing to do
 # ---------------------------------------------------------------------------
 if [ -f "$marker_file" ]; then
+    if ! grep -q 'tag = "v23.0.0"' "$marker_file" || ! grep -q 'embed-winres' "$marker_file"; then
+        echo "error: existing $vendor_dir is stale; move it aside and rerun bootstrap to use v0.18.0 / reliquary v23." >&2
+        exit 1
+    fi
     if [ "${VERBOSE:-0}" = "1" ]; then
         echo "vendor/reliquary-archiver already present; skipping bootstrap."
     fi
@@ -133,4 +137,4 @@ else
 fi
 
 echo "vendor/reliquary-archiver bootstrap complete (from GitHub fallback)."
-echo "  (hint: you can regenerate the offline cache with: cd src-tauri/vendor && zip -qr ../../vendor-cache/reliquary-archiver-v0.17.1-patched.zip reliquary-archiver)"
+echo "  (hint: you can regenerate the offline cache with: cd src-tauri/vendor && zip -qr ../../vendor-cache/reliquary-archiver-v0.18.0-patched.zip reliquary-archiver)"

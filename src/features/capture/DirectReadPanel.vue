@@ -57,20 +57,91 @@ const emit = defineEmits<{ toggle: []; "switch-account": [] }>();
     </div>
 
     <div class="capture-counts">
-      <div>
-        <span>遗器</span><b>{{ direct.relics }}</b
-        ><small>RELICS</small>
+      <div class="count-card count-relics">
+        <div class="count-card-header">
+          <div class="count-card-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+              />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+          </div>
+          <div class="count-card-title">
+            <span>遗器</span>
+            <small>RELICS</small>
+          </div>
+        </div>
+        <div class="count-card-body">
+          <b>{{ direct.relics.toLocaleString() }}</b>
+        </div>
       </div>
-      <div>
-        <span>光锥</span><b>{{ direct.lightCones }}</b
-        ><small>LIGHT CONES</small>
+
+      <div class="count-card count-lightcones">
+        <div class="count-card-header">
+          <div class="count-card-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+              <line x1="12" y1="18" x2="12.01" y2="18" />
+              <path d="M8 7h8M8 11h8" />
+            </svg>
+          </div>
+          <div class="count-card-title">
+            <span>光锥</span>
+            <small>LIGHT CONES</small>
+          </div>
+        </div>
+        <div class="count-card-body">
+          <b>{{ direct.lightCones.toLocaleString() }}</b>
+        </div>
       </div>
-      <div>
-        <span>角色</span><b>{{ direct.characters }}</b
-        ><small>CHARACTERS</small>
+
+      <div class="count-card count-characters">
+        <div class="count-card-header">
+          <div class="count-card-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <div class="count-card-title">
+            <span>角色</span>
+            <small>CHARACTERS</small>
+          </div>
+        </div>
+        <div class="count-card-body">
+          <b>{{ direct.characters.toLocaleString() }}</b>
+        </div>
       </div>
     </div>
-
     <div v-if="direct.requiresAccountSwitch" class="account-warning">
       <div>
         <strong>检测到不同账号</strong>
