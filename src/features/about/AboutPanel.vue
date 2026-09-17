@@ -127,13 +127,14 @@ async function exportDiagnostics() {
 .about-workspace {
   position: relative;
   display: grid;
-  align-content: center;
+  align-content: safe center;
   width: 100%;
   min-width: 0;
   min-height: 0;
   padding: 46px;
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior-y: none;
   scrollbar-width: none;
   isolation: isolate;
 }
@@ -417,6 +418,11 @@ h2 {
   line-height: 1.4;
   text-align: right;
   overflow-wrap: anywhere;
+}
+@media (max-height: 850px) {
+  .about-workspace {
+    padding-block: 16px;
+  }
 }
 @media (max-width: 900px) {
   .about-workspace {
