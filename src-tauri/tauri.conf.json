@@ -31,10 +31,14 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "icon": ["../public/logo/android-chrome-512x512.png"],
+    "icon": ["../public/logo/android-chrome-512x512.png", "icons/icon.ico"],
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico"
       }
     }
   }

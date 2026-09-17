@@ -24,7 +24,9 @@ fn main() {
   </trustInfo>
 </assembly>
 "#;
-        let windows = tauri_build::WindowsAttributes::new().app_manifest(manifest);
+        let windows = tauri_build::WindowsAttributes::new()
+            .window_icon_path("icons/icon.ico")
+            .app_manifest(manifest);
         let attributes = tauri_build::Attributes::new().windows_attributes(windows);
         tauri_build::try_build(attributes).expect("failed to build Tauri application");
     }

@@ -100,24 +100,38 @@ jobs:
           VERSION: ${{ steps.version.outputs.value }}
           TAG: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           $installer = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter '*.exe' |
             Select-Object -First 1
           if ($null -eq $installer) { throw 'NSIS installer was not created.' }
-          $signaturePath = "$($installer.FullName).sig"
-          if (-not (Test-Path $signaturePath)) { throw "Updater signature missing: $signaturePath" }
+          if ([string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY)) {
+            throw 'Missing GitHub Actions secret TAURI_SIGNING_PRIVATE_KEY. See docs/Windows发布.md.'
+          }
 
           New-Item -ItemType Directory -Force release | Out-Null
-          Copy-Item $installer.FullName release/
-          Copy-Item $signaturePath release/
-          $signature = (Get-Content -Raw $signaturePath).Trim()
+          $publishedInstallerName = "StarRailAutoTools_{0}_x64-setup.exe" -f $env:VERSION
+          $publishedInstallerPath = Join-Path $PWD "release\$publishedInstallerName"
+          $publishedSignaturePath = "$publishedInstallerPath.sig"
+
+          # Keep the user-facing product name inside NSIS, but use an ASCII asset
+          # name so GitHub's download name and updater URL remain deterministic.
+          Copy-Item -LiteralPath $installer.FullName -Destination $publishedInstallerPath
+          npm run tauri -- signer sign "$publishedInstallerPath"
+          if (-not (Test-Path -LiteralPath $publishedSignaturePath)) {
+            throw "Updater signature missing: $publishedSignaturePath"
+          }
+
+          $publishedInstallerUrlName = [Uri]::EscapeDataString($publishedInstallerName)
+          $signature = (Get-Content -Raw -LiteralPath $publishedSignaturePath).Trim()
           $manifest = @{
             version = $env:VERSION
             notes = "查看 GitHub Release 中的更新说明。"
             pub_date = (Get-Date).ToUniversalTime().ToString('o')
             platforms = @{
               'windows-x86_64' = @{
-                url = "https://github.com/$($env:REPOSITORY)/releases/download/$($env:TAG)/$($installer.Name)"
+                url = "https://github.com/$($env:REPOSITORY)/releases/download/$($env:TAG)/$publishedInstallerUrlName"
                 signature = $signature
               }
             }
