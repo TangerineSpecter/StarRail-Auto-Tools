@@ -143,6 +143,26 @@ if [ ! -d node_modules ]; then
   npm ci
 fi
 
+# ---------------------------------------------------------------------------
+# Keep Cargo's local debug cache bounded.
+# A clean first development build currently occupies about 4.7 GiB in
+# src-tauri/target/debug, so use an 8 GiB threshold instead of cleaning on
+# every launch. The release profile is intentionally excluded: dev.sh only
+# uses the debug target, while GitHub packaging runs in a separate CI checkout.
+# Override with STARRAIL_DEV_CACHE_LIMIT_MB when a different limit is needed.
+# ---------------------------------------------------------------------------
+dev_target_dir="$project_dir/src-tauri/target/debug"
+dev_cache_limit_mb="${STARRAIL_DEV_CACHE_LIMIT_MB:-8192}"
+if [ -d "$dev_target_dir" ]; then
+  dev_cache_size_mb="$(du -sm "$dev_target_dir" | awk '{print $1}')"
+  if [ "$dev_cache_size_mb" -ge "$dev_cache_limit_mb" ]; then
+    echo -e "${YELLOW}Rust Debug 缓存 ${dev_cache_size_mb}MB 已达到上限 ${dev_cache_limit_mb}MB，正在清理...${NC}"
+    cargo clean --manifest-path "$project_dir/src-tauri/Cargo.toml" --profile dev
+  else
+    echo -e "${DIM}Rust Debug 缓存：${dev_cache_size_mb}MB / ${dev_cache_limit_mb}MB${NC}"
+  fi
+fi
+
 if [ ! -f models/text_detection.onnx ] || \
    [ ! -f models/text_recognition.onnx ] || \
    [ ! -f models/character_dict.txt ]; then
