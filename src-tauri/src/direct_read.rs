@@ -2,6 +2,8 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc, Mutex,
 };
+#[cfg(any(windows, test))]
+use std::time::Duration;
 
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
@@ -53,6 +55,13 @@ pub struct DirectReadLog {
 }
 
 const MAX_DIRECT_READ_LOGS: usize = 80;
+#[cfg(any(windows, test))]
+const DIRECT_READ_PROGRESS_INTERVAL: Duration = Duration::from_secs(10);
+
+#[cfg(any(windows, test))]
+fn should_report_progress(game_running: bool, elapsed: Duration) -> bool {
+    game_running && elapsed >= DIRECT_READ_PROGRESS_INTERVAL
+}
 
 fn append_log(snapshot: &mut DirectReadSnapshot) -> bool {
     let at = now_millis();
@@ -415,6 +424,13 @@ mod tests {
         assert_eq!(snapshot.logs.first().unwrap().message, "进度 20");
         assert_eq!(snapshot.logs.last().unwrap().message, "进度 99");
     }
+
+    #[test]
+    fn progress_requires_game_to_be_running() {
+        assert!(!should_report_progress(false, Duration::from_secs(30)));
+        assert!(!should_report_progress(true, Duration::from_secs(9)));
+        assert!(should_report_progress(true, DIRECT_READ_PROGRESS_INTERVAL));
+    }
 }
 
 #[cfg(windows)]
@@ -501,8 +517,8 @@ mod windows_capture {
         let mut sniffer = GameSniffer::new();
         let mut exporters: HashMap<u32, OptimizerExporter> = HashMap::new();
         let mut counts = CaptureCounts::default();
-        let capture_started = Instant::now();
         let mut last_progress = Instant::now();
+        let mut game_started_at = None;
 
         loop {
             let packet = tokio::select! {
@@ -511,8 +527,17 @@ mod windows_capture {
                     if cancel.load(Ordering::Relaxed) {
                         return Ok(());
                     }
-                    if last_progress.elapsed() >= Duration::from_secs(10) {
-                        let message = progress_message(&counts, capture_started.elapsed().as_secs());
+                    let progress_elapsed = last_progress.elapsed();
+                    if progress_elapsed >= DIRECT_READ_PROGRESS_INTERVAL {
+                        let game_running = crate::game_launch::windows::game_is_running();
+                        if !should_report_progress(game_running, progress_elapsed) {
+                            game_started_at = None;
+                            last_progress = Instant::now();
+                            continue;
+                        }
+                        let game_started_at =
+                            game_started_at.get_or_insert_with(Instant::now);
+                        let message = progress_message(&counts, game_started_at.elapsed().as_secs());
                         let _ = state.update(&app, |snapshot| {
                             if matches!(snapshot.phase, DirectReadPhase::WaitingForLogin | DirectReadPhase::Connected | DirectReadPhase::Syncing) {
                                 snapshot.message = message;
