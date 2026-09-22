@@ -3,10 +3,11 @@ import { ref } from "vue";
 import DataSyncSettingsPanel from "@/features/settings/DataSyncSettingsPanel.vue";
 import McpSettingsPanel from "@/features/mcp/McpSettingsPanel.vue";
 import GameLaunchSettingsPanel from "@/features/settings/GameLaunchSettingsPanel.vue";
+import ModelProviderSettingsPanel from "@/features/settings/ModelProviderSettingsPanel.vue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 
 const { busy, error, notice } = useRuntimeContext();
-const section = ref<"sync" | "game" | "mcp">("sync");
+const section = ref<"sync" | "game" | "mcp" | "model">("sync");
 </script>
 
 <template>
@@ -42,6 +43,16 @@ const section = ref<"sync" | "game" | "mcp">("sync");
       >
         游戏启动与采集
       </button>
+      <button
+        type="button"
+        class="settings-section"
+        :class="{ active: section === 'model' }"
+        :disabled="busy"
+        :aria-pressed="section === 'model'"
+        @click="section = 'model'"
+      >
+        大模型配置
+      </button>
     </nav>
     <DataSyncSettingsPanel
       v-if="section === 'sync'"
@@ -52,6 +63,13 @@ const section = ref<"sync" | "game" | "mcp">("sync");
     />
     <GameLaunchSettingsPanel
       v-else-if="section === 'game'"
+      :busy="busy"
+      @busy="busy = $event"
+      @error="error = $event"
+      @notice="notice = $event"
+    />
+    <ModelProviderSettingsPanel
+      v-else-if="section === 'model'"
       :busy="busy"
       @busy="busy = $event"
       @error="error = $event"

@@ -1,3 +1,4 @@
+mod advisor;
 mod commands;
 mod diagnostics;
 mod direct_read;
@@ -6,6 +7,7 @@ mod error;
 mod game_launch;
 mod inventory;
 mod mcp;
+mod model_provider;
 #[cfg(feature = "ocr")]
 mod ocr;
 mod ocr_model;
@@ -70,6 +72,7 @@ pub fn run() {
             app.manage(ocr_models);
             app.manage(relic_cleanup);
             app.manage(sync_store);
+            app.manage(model_provider::ModelProviderStore::new(data_dir.clone()));
             app.manage(mcp_runtime.clone());
             app.manage(game_launch_runtime);
             app.manage(DirectReadState::default());
@@ -155,6 +158,9 @@ pub fn run() {
             commands::save_mcp_settings,
             commands::get_mcp_status,
             commands::regenerate_mcp_token,
+            commands::get_model_provider_settings,
+            commands::save_model_provider_settings,
+            commands::advise_character_build,
             commands::get_game_launch_settings,
             commands::save_game_launch_settings,
             commands::detect_game_launcher,

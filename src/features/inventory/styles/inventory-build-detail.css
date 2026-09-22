@@ -1,7 +1,15 @@
 /* Build planning needs room for three numeric targets; override the compact record drawer. */
+.detail-backdrop.build-backdrop {
+  display: block;
+}
+.build-backdrop-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) min(680px, 52vw);
+  height: 100%;
+}
 .detail-drawer.build-drawer {
-  width: min(680px, 88vw);
-  max-width: 88vw;
+  width: min(680px, 52vw);
+  max-width: none;
 }
 
 .build-scroll {
@@ -353,9 +361,13 @@
 }
 
 @media (max-width: 980px) {
+  .build-backdrop-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(220px, 36vh) minmax(0, 1fr);
+  }
   .detail-drawer.build-drawer {
-    width: 92vw;
-    max-width: 92vw;
+    width: 100%;
+    max-width: none;
   }
   .build-drawer > header {
     margin: 0 18px;
@@ -2391,4 +2403,88 @@ button.score-piece.is-weak-slot.is-open {
 }
 .weight-row :deep(.p-inputnumber-button) {
   width: 1.6rem;
+}
+
+.character-advisor .advisor-actions {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.character-advisor .advisor-query {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #173d7a;
+  border-radius: 3px;
+  color: #fff;
+  background: #173d7a;
+  font: 700 12px/1 var(--font-ui);
+  cursor: pointer;
+}
+.character-advisor .advisor-query:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+.character-advisor .advisor-summary {
+  margin: 10px 0 8px;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.character-advisor .advisor-error,
+.character-advisor .advisor-warning {
+  margin: 8px 0 0;
+  color: #9a4b1f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.character-advisor .advisor-replacements {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.character-advisor .advisor-replacements li {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.character-advisor .advisor-replacements strong {
+  color: var(--ink);
+}
+.character-advisor .advisor-replacements em {
+  color: var(--blue);
+  font-style: normal;
+  font-weight: 700;
+}
+.character-advisor .advisor-replacements li[data-action="replace"] em {
+  color: #9a4b1f;
+}
+.character-advisor .advisor-replacements li[data-action="keep"] em {
+  color: #2f6b46;
+}
+.character-advisor .advisor-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+}
+.character-advisor .advisor-source-link {
+  border: 0;
+  padding: 0;
+  color: var(--blue);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
 }

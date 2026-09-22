@@ -10,6 +10,9 @@ const api = vi.hoisted(() => ({
 }));
 
 vi.mock("@/shared/api/build-plan", () => ({ buildPlanApi: api }));
+vi.mock("@/shared/api/advisor", () => ({
+  advisorApi: { adviseCharacter: vi.fn() },
+}));
 
 describe("BuildPlanDrawer", () => {
   beforeEach(() => {
@@ -61,6 +64,8 @@ describe("BuildPlanDrawer", () => {
 
     await flushPromises();
 
+    expect(wrapper.text()).toContain("查询当前版本配装");
+    expect(wrapper.text()).toContain("AI 推荐对照");
     expect(wrapper.text()).toContain("说明");
     expect(wrapper.text()).toContain("全局优化选项");
     expect(wrapper.text()).toContain("同时计算散件对照");

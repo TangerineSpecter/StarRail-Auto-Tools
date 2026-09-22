@@ -1,6 +1,7 @@
 use tauri::{AppHandle, Emitter, State};
 
 use crate::{
+    advisor::{self, AdviseCharacterRequest, CharacterBuildAdvice},
     diagnostics::{BackendDiagnostics, DiagnosticExportRequest},
     direct_read::{self, DirectReadSnapshot, DirectReadState},
     domain::{OcrImageResult, ScanSnapshot, StartScanRequest, SystemCapabilities},
@@ -17,6 +18,7 @@ use crate::{
         TeamFilter, TeamInput,
     },
     mcp::{McpRuntime, McpSettings, McpStatus},
+    model_provider::{ModelProviderSettings, ModelProviderStore},
     ocr_model::{OcrModelManager, OcrModelStatus},
     relic_cleanup::{CleanupCapabilities, RelicCleanupRuntime},
     scanner::ScannerState,
@@ -484,6 +486,37 @@ pub fn get_game_launch_settings(
     runtime: State<'_, GameLaunchRuntime>,
 ) -> Result<GameLaunchSettings, AppError> {
     runtime.settings()
+}
+
+#[tauri::command]
+pub fn get_model_provider_settings(
+    store: State<'_, ModelProviderStore>,
+) -> Result<ModelProviderSettings, AppError> {
+    store.load()
+}
+
+#[tauri::command]
+pub fn save_model_provider_settings(
+    settings: ModelProviderSettings,
+    store: State<'_, ModelProviderStore>,
+) -> Result<ModelProviderSettings, AppError> {
+    store.save(settings)
+}
+
+#[tauri::command]
+pub async fn advise_character_build(
+    request: AdviseCharacterRequest,
+    store: State<'_, InventoryStore>,
+    model: State<'_, ModelProviderStore>,
+) -> Result<CharacterBuildAdvice, AppError> {
+    let settings = model.load()?;
+    settings.require_ready()?;
+    let store = store.inner().clone();
+    let snapshot =
+        tauri::async_runtime::spawn_blocking(move || advisor::character_snapshot(&store, &request))
+            .await
+            .map_err(|error| AppError::Advisor(format!("读取角色数据失败：{error}")))??;
+    advisor::advise_character_build(settings, snapshot).await
 }
 
 #[tauri::command]

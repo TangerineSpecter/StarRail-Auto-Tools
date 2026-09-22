@@ -43,6 +43,10 @@ pub enum AppError {
     OcrModel(String),
     #[error("遗器清理失败：{0}")]
     RelicCleanup(String),
+    #[error("大模型配置失败：{0}")]
+    ModelProvider(String),
+    #[error("配装建议失败：{0}")]
+    Advisor(String),
 }
 
 impl Serialize for AppError {

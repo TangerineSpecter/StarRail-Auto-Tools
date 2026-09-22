@@ -148,6 +148,56 @@ export interface GameLaunchDetection {
   source: string | null;
 }
 
+export type DeepSeekModel = "deepseek-flash" | "deepseek-v4-pro";
+export type SearchProvider = "duckduckgo" | "bocha";
+
+/** Local configuration for the currently supported OpenAI-compatible model provider. */
+export interface ModelProviderSettings {
+  provider: "deepseek";
+  apiKey: string;
+  baseUrl: string;
+  model: DeepSeekModel;
+  searchProvider: SearchProvider;
+  searchApiKey: string;
+}
+
+export interface AdviseCharacterRequest {
+  characterId: number;
+  slug?: string;
+  element?: string;
+  currentPlan?: CharacterBuildPlan | null;
+}
+
+export interface AdviceSource {
+  title: string;
+  url: string;
+}
+
+/** Model-proposed graduation plan, already snapped to form constraints. */
+export interface AdvicePlanDraft {
+  cavernMode: "fourPiece" | "twoPlusTwo";
+  cavernSetA: number;
+  cavernSetB: number | null;
+  planarSetId: number;
+  mainStats: Record<string, string[]>;
+  targets: BuildTarget[];
+  effectiveSubstats: string[];
+  substatWeights: Record<string, number>;
+  minPotentialPct: number;
+  spdTarget: number;
+  note: string;
+}
+
+export interface CharacterBuildAdvice {
+  characterId: number;
+  displayName: string;
+  summary: string;
+  plan: AdvicePlanDraft;
+  sources: AdviceSource[];
+  warnings: string[];
+  searchedAt: number;
+}
+
 export type InventoryKind = "relic" | "lightCone" | "character";
 
 /** Data-management sidebar mode: inventory kinds plus local team compositions. */

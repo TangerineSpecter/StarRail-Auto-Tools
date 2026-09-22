@@ -630,6 +630,11 @@
   width: 104px;
   justify-content: center;
 }
+.build-actions .build-advice-query {
+  width: auto;
+  min-width: 104px;
+  padding: 0 12px;
+}
 .include-equipped {
   color: var(--ink-soft);
   font-size: 8px;
