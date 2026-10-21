@@ -5543,8 +5543,8 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "reliquary"
-version = "23.0.0"
-source = "git+https://github.com/IceDynamix/reliquary?tag=v23.0.0#d5cf3b7e7e66470d2d8efff6676aa18762b21d3b"
+version = "24.0.0"
+source = "git+https://github.com/IceDynamix/reliquary?tag=v24.0.0#0b8c1d4f8eb5ae9722b5c3273e36a464b7188a38"
 dependencies = [
  "base64 0.22.1",
  "etherparse",
@@ -5561,7 +5561,7 @@ dependencies = [
 
 [[package]]
 name = "reliquary-archiver"
-version = "0.17.1"
+version = "0.18.0"
 dependencies = [
  "async-stream",
  "base64 0.22.1",
@@ -5589,7 +5589,7 @@ dependencies = [
 [[package]]
 name = "reliquary-proc-macro"
 version = "0.1.1"
-source = "git+https://github.com/IceDynamix/reliquary?tag=v23.0.0#d5cf3b7e7e66470d2d8efff6676aa18762b21d3b"
+source = "git+https://github.com/IceDynamix/reliquary?tag=v24.0.0#0b8c1d4f8eb5ae9722b5c3273e36a464b7188a38"
 dependencies = [
  "quote",
  "syn 2.0.119",
@@ -6765,7 +6765,7 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
 name = "starrail-auto-tools"
-version = "1.0.10"
+version = "1.0.11"
 dependencies = [
  "axum",
  "calamine",

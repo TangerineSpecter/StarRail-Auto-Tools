@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/relics",
-    "syncedAt": "2026-09-02T01:58:54.895Z"
+    "syncedAt": "2026-10-21T02:51:40.165Z"
   },
   "sets": [
     {
@@ -903,6 +903,62 @@
       ]
     },
     {
+      "id": 133,
+      "name": "戏梦点星的伶人",
+      "kind": "cavern",
+      "effects": {
+        "twoPiece": "速度提高 6 % 。",
+        "fourPiece": "当装备者对我方其他单体目标施放战技或终结技时，使技能目标的欢愉度提高 16 % ，持续 3 回合，若装备者持有的好活当赏大于等于 10 点，则额外使我方全体目标的暴击伤害提高 12 % ，持续 3 回合。"
+      },
+      "image": "/relic-sets/133.webp",
+      "pieces": [
+        {
+          "slot": "Head",
+          "image": "/relic-pieces/133-1.webp"
+        },
+        {
+          "slot": "Hands",
+          "image": "/relic-pieces/133-2.webp"
+        },
+        {
+          "slot": "Body",
+          "image": "/relic-pieces/133-3.webp"
+        },
+        {
+          "slot": "Feet",
+          "image": "/relic-pieces/133-4.webp"
+        }
+      ]
+    },
+    {
+      "id": 134,
+      "name": "贪噬禁果的异端",
+      "kind": "cavern",
+      "effects": {
+        "twoPiece": "暴击伤害提高 16 % 。",
+        "fourPiece": "使装备者普攻造成的伤害提高 36 % 。当装备者施放普攻时，使装备者的攻击力提高 20 % ，持续 2 回合。"
+      },
+      "image": "/relic-sets/134.webp",
+      "pieces": [
+        {
+          "slot": "Head",
+          "image": "/relic-pieces/134-1.webp"
+        },
+        {
+          "slot": "Hands",
+          "image": "/relic-pieces/134-2.webp"
+        },
+        {
+          "slot": "Body",
+          "image": "/relic-pieces/134-3.webp"
+        },
+        {
+          "slot": "Feet",
+          "image": "/relic-pieces/134-4.webp"
+        }
+      ]
+    },
+    {
       "id": 301,
       "name": "太空封印站",
       "kind": "planar",
@@ -987,7 +1043,7 @@
       "name": "星体差分机",
       "kind": "planar",
       "effects": {
-        "twoPiece": "使装备者的暴击伤害提高 16 % 。当装备者的暴击伤害大于等于 120 % 时，进入战斗后\u0000装备者的暴击率提高 60 % ，持续到施放首次攻击后结束。",
+        "twoPiece": "使装备者的暴击伤害提高 16 % 。当装备者的暴击伤害大于等于 120 % 时，进入战斗后装备者的暴击率提高 60 % ，持续到施放首次攻击后结束。",
         "fourPiece": ""
       },
       "image": "/relic-sets/305.webp",
@@ -1127,7 +1183,7 @@
       "name": "梦想之地匹诺康尼",
       "kind": "planar",
       "effects": {
-        "twoPiece": "使装备者的能量恢复效率提高 5 % 。使队伍中与装备者属性相同的我方其他角色造成的\u0000\u0000伤害提高 10 % 。",
+        "twoPiece": "使装备者的能量恢复效率提高 5 % 。使队伍中与装备者属性相同的我方其他角色造成的伤害提高 10 % 。",
         "fourPiece": ""
       },
       "image": "/relic-sets/312.webp",

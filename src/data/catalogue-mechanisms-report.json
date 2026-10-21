@@ -1,7 +1,7 @@
 {
   "compilerVersion": "station-clauses-v2",
-  "dataVersion": "520786ef1b7bd5ef6f74717a3a4e0e58651c5718f5942fdc40e7c981feef6633",
-  "abilities": 2967,
+  "dataVersion": "8b85088764e06875f799ef7fb5e0c641af85eea8af9f3f9c250ad822a07ac83f",
+  "abilities": 3000,
   "missingDescriptions": [
     "character:1220:skills:784534",
     "character:1308:skills:154711",
@@ -41,9 +41,9 @@
     "summon:8008:servant:servant-traces:15862105",
     "summon:8008:servant:servant-traces:16146253"
   ],
-  "clauses": 4298,
-  "executableClauses": 149,
-  "executableAbilities": 142,
+  "clauses": 4357,
+  "executableClauses": 150,
+  "executableAbilities": 143,
   "primaryAbilitiesWithoutExecution": [
     "character:1003:skills:481496",
     "character:1004:skills:796398",
@@ -222,6 +222,11 @@
     "character:1502:skills:1832749",
     "character:1502:skills:1864357",
     "character:1502:skills:1889946",
+    "character:1503:skills:1085039",
+    "character:1503:skills:1284812",
+    "character:1503:skills:1333369",
+    "character:1503:skills:1406146",
+    "character:1503:skills:18205246",
     "character:1504:skills:606356",
     "character:1504:skills:881258",
     "character:1505:skills:301520",
@@ -398,12 +403,16 @@
         {
           "sourceRef": "character:1001:skills:441021",
           "clauseId": "character:1001:skills:441021:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1001:skills:524962",
           "clauseId": "character:1001:skills:524962:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1001:skills:524962",
@@ -415,7 +424,9 @@
         {
           "sourceRef": "character:1001:skills:641607",
           "clauseId": "character:1001:skills:641607:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1001:skills:641607",
@@ -625,7 +636,9 @@
         {
           "sourceRef": "character:1002:skills:402936",
           "clauseId": "character:1002:skills:402936:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1002:skills:402936",
@@ -637,7 +650,9 @@
         {
           "sourceRef": "character:1002:skills:486877",
           "clauseId": "character:1002:skills:486877:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1002:skills:486877",
@@ -649,7 +664,9 @@
         {
           "sourceRef": "character:1002:skills:603522",
           "clauseId": "character:1002:skills:603522:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1002:traces:1002101",
@@ -859,12 +876,16 @@
         {
           "sourceRef": "character:1003:skills:565437",
           "clauseId": "character:1003:skills:565437:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1003:skills:766023",
           "clauseId": "character:1003:skills:766023:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1003:skills:80324",
@@ -1088,7 +1109,9 @@
         {
           "sourceRef": "character:1004:skills:628516",
           "clauseId": "character:1004:skills:628516:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1004:skills:796398",
@@ -1114,12 +1137,16 @@
         {
           "sourceRef": "character:1004:skills:913043",
           "clauseId": "character:1004:skills:913043:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1004:skills:913043",
           "clauseId": "character:1004:skills:913043:clause:1",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1004:skills:913043",
@@ -1420,7 +1447,9 @@
         {
           "sourceRef": "character:1005:skills:791017",
           "clauseId": "character:1005:skills:791017:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1005:skills:874958",
@@ -1791,7 +1820,9 @@
         {
           "sourceRef": "character:1006:skills:953518",
           "clauseId": "character:1006:skills:953518:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1006:traces:1006101",
@@ -2092,7 +2123,9 @@
         {
           "sourceRef": "character:1008:skills:578528",
           "clauseId": "character:1008:skills:578528:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1008:skills:779114",
@@ -2316,17 +2349,23 @@
         {
           "sourceRef": "character:1009:skills:741029",
           "clauseId": "character:1009:skills:741029:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1009:skills:824970",
           "clauseId": "character:1009:skills:824970:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1009:skills:824970",
           "clauseId": "character:1009:skills:824970:clause:1",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1009:skills:941615",
@@ -2515,7 +2554,9 @@
         {
           "sourceRef": "character:1013:skills:481593",
           "clauseId": "character:1013:skills:481593:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1013:skills:481593",
@@ -2527,12 +2568,16 @@
         {
           "sourceRef": "character:1013:skills:565534",
           "clauseId": "character:1013:skills:565534:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1013:skills:766120",
           "clauseId": "character:1013:skills:766120:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1013:skills:80421",
@@ -2742,7 +2787,9 @@
         {
           "sourceRef": "character:1014:skills:668789",
           "clauseId": "character:1014:skills:668789:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1014:skills:668789",
@@ -2782,12 +2829,16 @@
         {
           "sourceRef": "character:1014:skills:942665",
           "clauseId": "character:1014:skills:942665:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1014:skills:942665",
           "clauseId": "character:1014:skills:942665:clause:1",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1014:skills:942665",
@@ -2799,7 +2850,9 @@
         {
           "sourceRef": "character:1014:skills:968292",
           "clauseId": "character:1014:skills:968292:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1014:traces:1014101",
@@ -2995,7 +3048,9 @@
         {
           "sourceRef": "character:1015:skills:1038264",
           "clauseId": "character:1015:skills:1038264:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1015:skills:542726",
@@ -3254,7 +3309,9 @@
         {
           "sourceRef": "character:1101:skills:635672",
           "clauseId": "character:1101:skills:635672:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1101:skills:836258",
@@ -3506,7 +3563,9 @@
         {
           "sourceRef": "character:1102:skills:874343",
           "clauseId": "character:1102:skills:874343:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1102:traces:1102101",
@@ -3807,7 +3866,9 @@
         {
           "sourceRef": "character:1103:skills:960674",
           "clauseId": "character:1103:skills:960674:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1103:traces:1103101",
@@ -3996,12 +4057,16 @@
         {
           "sourceRef": "character:1104:skills:67219",
           "clauseId": "character:1104:skills:67219:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1104:skills:866633",
           "clauseId": "character:1104:skills:866633:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1104:skills:983278",
@@ -4183,7 +4248,9 @@
         {
           "sourceRef": "character:1105:skills:186254",
           "clauseId": "character:1105:skills:186254:clause:0",
-          "reasons": ["尚未识别该条款的行为类型；需要声明式操作配置。"]
+          "reasons": [
+            "尚未识别该条款的行为类型；需要声明式操作配置。"
+          ]
         },
         {
           "sourceRef": "character:1105:skills:270195",
@@ -4223,7 +4290,9 @@
         {
           "sourceRef": "character:1105:skills:985668",
           "clauseId": "character:1105:skills:985668:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1105:traces:1105101",
@@ -4384,7 +4453,9 @@
         {
           "sourceRef": "character:1106:skills:191635",
           "clauseId": "character:1106:skills:191635:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1106:skills:23753",
@@ -4622,7 +4693,9 @@
         {
           "sourceRef": "character:1107:skills:226729",
           "clauseId": "character:1107:skills:226729:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1107:skills:226729",
@@ -4634,7 +4707,9 @@
         {
           "sourceRef": "character:1107:skills:310670",
           "clauseId": "character:1107:skills:310670:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1107:skills:511256",
@@ -4872,12 +4947,16 @@
         {
           "sourceRef": "character:1108:skills:849349",
           "clauseId": "character:1108:skills:849349:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1108:skills:933290",
           "clauseId": "character:1108:skills:933290:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1108:traces:1108101",
@@ -5038,7 +5117,9 @@
         {
           "sourceRef": "character:1109:skills:136266",
           "clauseId": "character:1109:skills:136266:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1109:skills:136266",
@@ -5113,7 +5194,9 @@
         {
           "sourceRef": "character:1109:skills:935680",
           "clauseId": "character:1109:skills:935680:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1109:traces:1109101",
@@ -5288,7 +5371,9 @@
         {
           "sourceRef": "character:1110:skills:549438",
           "clauseId": "character:1110:skills:549438:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1110:skills:633379",
@@ -5547,7 +5632,9 @@
         {
           "sourceRef": "character:1111:skills:635769",
           "clauseId": "character:1111:skills:635769:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1111:skills:836355",
@@ -5862,7 +5949,9 @@
         {
           "sourceRef": "character:1112:skills:874440",
           "clauseId": "character:1112:skills:874440:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1112:traces:1112101",
@@ -6037,7 +6126,9 @@
         {
           "sourceRef": "character:1201:skills:30909",
           "clauseId": "character:1201:skills:30909:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1201:skills:545796",
@@ -6077,7 +6168,9 @@
         {
           "sourceRef": "character:1201:skills:917194",
           "clauseId": "character:1201:skills:917194:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1201:skills:917194",
@@ -6315,12 +6408,16 @@
         {
           "sourceRef": "character:1202:skills:743992",
           "clauseId": "character:1202:skills:743992:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1202:skills:944578",
           "clauseId": "character:1202:skills:944578:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:1202:traces:1202101",
@@ -6537,7 +6634,9 @@
         {
           "sourceRef": "character:1203:skills:906493",
           "clauseId": "character:1203:skills:906493:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1203:skills:990434",
@@ -6726,7 +6825,9 @@
         {
           "sourceRef": "character:1204:skills:218404",
           "clauseId": "character:1204:skills:218404:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1204:skills:218404",
@@ -6745,7 +6846,9 @@
         {
           "sourceRef": "character:1204:skills:418990",
           "clauseId": "character:1204:skills:418990:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1204:skills:619576",
@@ -7039,7 +7142,9 @@
         {
           "sourceRef": "character:1205:skills:581491",
           "clauseId": "character:1205:skills:581491:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1205:skills:665432",
@@ -7340,7 +7445,9 @@
         {
           "sourceRef": "character:1206:skills:261870",
           "clauseId": "character:1206:skills:261870:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1206:skills:261870",
@@ -7359,7 +7466,9 @@
         {
           "sourceRef": "character:1206:skills:378515",
           "clauseId": "character:1206:skills:378515:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1206:skills:378515",
@@ -7399,7 +7508,9 @@
         {
           "sourceRef": "character:1206:skills:93988",
           "clauseId": "character:1206:skills:93988:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1206:traces:1206101",
@@ -7567,7 +7678,9 @@
         {
           "sourceRef": "character:1207:skills:256489",
           "clauseId": "character:1207:skills:256489:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1207:skills:340430",
@@ -7847,7 +7960,9 @@
         {
           "sourceRef": "character:1208:skills:369002",
           "clauseId": "character:1208:skills:369002:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1208:skills:799948",
@@ -8078,7 +8193,9 @@
         {
           "sourceRef": "character:1209:skills:246976",
           "clauseId": "character:1209:skills:246976:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1209:skills:363621",
@@ -8125,7 +8242,9 @@
         {
           "sourceRef": "character:1209:skills:531503",
           "clauseId": "character:1209:skills:531503:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1209:skills:878508",
@@ -8314,7 +8433,9 @@
         {
           "sourceRef": "character:1210:skills:69091",
           "clauseId": "character:1210:skills:69091:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1210:skills:784564",
@@ -8503,12 +8624,16 @@
         {
           "sourceRef": "character:1211:skills:231592",
           "clauseId": "character:1211:skills:231592:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1211:skills:31006",
           "clauseId": "character:1211:skills:31006:clause:0",
-          "reasons": ["尚未识别该条款的行为类型；需要声明式操作配置。"]
+          "reasons": [
+            "尚未识别该条款的行为类型；需要声明式操作配置。"
+          ]
         },
         {
           "sourceRef": "character:1211:skills:31006",
@@ -8562,7 +8687,9 @@
         {
           "sourceRef": "character:1211:skills:947065",
           "clauseId": "character:1211:skills:947065:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1211:traces:1211101",
@@ -8737,7 +8864,9 @@
         {
           "sourceRef": "character:1212:skills:28616",
           "clauseId": "character:1212:skills:28616:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1212:skills:459562",
@@ -8777,7 +8906,9 @@
         {
           "sourceRef": "character:1212:skills:513729",
           "clauseId": "character:1212:skills:513729:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1212:skills:513729",
@@ -8831,12 +8962,16 @@
         {
           "sourceRef": "character:1212:skills:744089",
           "clauseId": "character:1212:skills:744089:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1212:skills:944675",
           "clauseId": "character:1212:skills:944675:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1212:skills:944675",
@@ -9412,7 +9547,9 @@
         {
           "sourceRef": "character:1214:skills:218501",
           "clauseId": "character:1214:skills:218501:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1214:skills:218501",
@@ -9438,7 +9575,9 @@
         {
           "sourceRef": "character:1214:skills:419087",
           "clauseId": "character:1214:skills:419087:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1214:skills:619673",
@@ -9648,7 +9787,9 @@
         {
           "sourceRef": "character:1215:skills:297061",
           "clauseId": "character:1215:skills:297061:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1215:skills:297061",
@@ -9674,7 +9815,9 @@
         {
           "sourceRef": "character:1215:skills:581588",
           "clauseId": "character:1215:skills:581588:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1215:skills:665529",
@@ -9863,7 +10006,9 @@
         {
           "sourceRef": "character:1217:skills:256586",
           "clauseId": "character:1217:skills:256586:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1217:skills:340527",
@@ -10241,7 +10386,9 @@
         {
           "sourceRef": "character:1218:skills:369099",
           "clauseId": "character:1218:skills:369099:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1218:skills:800045",
@@ -10507,7 +10654,9 @@
         {
           "sourceRef": "character:1220:skills:69060",
           "clauseId": "character:1220:skills:69060:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1220:skills:784533",
@@ -10780,7 +10929,9 @@
         {
           "sourceRef": "character:1221:skills:231561",
           "clauseId": "character:1221:skills:231561:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1221:skills:30975",
@@ -11095,7 +11246,9 @@
         {
           "sourceRef": "character:1222:skills:744058",
           "clauseId": "character:1222:skills:744058:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1222:skills:944644",
@@ -11277,7 +11430,9 @@
         {
           "sourceRef": "character:1223:skills:107145",
           "clauseId": "character:1223:skills:107145:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1223:skills:107145",
@@ -11338,7 +11493,9 @@
         {
           "sourceRef": "character:1223:skills:906559",
           "clauseId": "character:1223:skills:906559:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1223:skills:990500",
@@ -11541,7 +11698,9 @@
         {
           "sourceRef": "character:1224:skills:218470",
           "clauseId": "character:1224:skills:218470:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1224:skills:218470",
@@ -11849,7 +12008,9 @@
         {
           "sourceRef": "character:1225:skills:234552",
           "clauseId": "character:1225:skills:234552:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1225:skills:297030",
@@ -11889,7 +12050,9 @@
         {
           "sourceRef": "character:1225:skills:581557",
           "clauseId": "character:1225:skills:581557:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1225:skills:665498",
@@ -12106,7 +12269,9 @@
         {
           "sourceRef": "character:1301:skills:312431",
           "clauseId": "character:1301:skills:312431:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1301:skills:312431",
@@ -12118,12 +12283,16 @@
         {
           "sourceRef": "character:1301:skills:342205",
           "clauseId": "character:1301:skills:342205:clause:0",
-          "reasons": ["尚未识别该条款的行为类型；需要声明式操作配置。"]
+          "reasons": [
+            "尚未识别该条款的行为类型；需要声明式操作配置。"
+          ]
         },
         {
           "sourceRef": "character:1301:skills:426146",
           "clauseId": "character:1301:skills:426146:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1301:skills:857092",
@@ -12298,7 +12467,9 @@
         {
           "sourceRef": "character:1302:skills:14813",
           "clauseId": "character:1302:skills:14813:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1302:skills:182695",
@@ -12345,7 +12516,9 @@
         {
           "sourceRef": "character:1302:skills:98754",
           "clauseId": "character:1302:skills:98754:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1302:traces:1302101",
@@ -12513,7 +12686,9 @@
         {
           "sourceRef": "character:1303:skills:101144",
           "clauseId": "character:1303:skills:101144:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1303:skills:17203",
@@ -12772,7 +12947,9 @@
         {
           "sourceRef": "character:1304:skills:372580",
           "clauseId": "character:1304:skills:372580:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1304:skills:372580",
@@ -12798,7 +12975,9 @@
         {
           "sourceRef": "character:1304:skills:689811",
           "clauseId": "character:1304:skills:689811:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1304:skills:773752",
@@ -13071,7 +13250,9 @@
         {
           "sourceRef": "character:1305:skills:575556",
           "clauseId": "character:1305:skills:575556:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1305:skills:575556",
@@ -13104,12 +13285,16 @@
         {
           "sourceRef": "character:1305:skills:692201",
           "clauseId": "character:1305:skills:692201:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1305:skills:776142",
           "clauseId": "character:1305:skills:776142:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1305:skills:976728",
@@ -13291,7 +13476,9 @@
         {
           "sourceRef": "character:1306:skills:364809",
           "clauseId": "character:1306:skills:364809:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1306:skills:448750",
@@ -13310,7 +13497,9 @@
         {
           "sourceRef": "character:1306:skills:532691",
           "clauseId": "character:1306:skills:532691:clause:0",
-          "reasons": ["尚未识别该条款的行为类型；需要声明式操作配置。"]
+          "reasons": [
+            "尚未识别该条款的行为类型；需要声明式操作配置。"
+          ]
         },
         {
           "sourceRef": "character:1306:skills:532691",
@@ -14103,7 +14292,9 @@
         {
           "sourceRef": "character:1308:skills:639823",
           "clauseId": "character:1308:skills:639823:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1308:skills:70769",
@@ -14390,7 +14581,9 @@
         {
           "sourceRef": "character:1309:skills:758858",
           "clauseId": "character:1309:skills:758858:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1309:traces:1309101",
@@ -14628,7 +14821,9 @@
         {
           "sourceRef": "character:1310:skills:339912",
           "clauseId": "character:1310:skills:339912:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1310:skills:55385",
@@ -14964,7 +15159,9 @@
         {
           "sourceRef": "character:1312:skills:14910",
           "clauseId": "character:1312:skills:14910:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1312:skills:182792",
@@ -15244,7 +15441,9 @@
         {
           "sourceRef": "character:1313:skills:101241",
           "clauseId": "character:1313:skills:101241:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1313:skills:17300",
@@ -15256,7 +15455,9 @@
         {
           "sourceRef": "character:1313:skills:301827",
           "clauseId": "character:1313:skills:301827:clause:0",
-          "reasons": ["尚未编译该属性、资源或状态变化的统计键和生命周期。"]
+          "reasons": [
+            "尚未编译该属性、资源或状态变化的统计键和生命周期。"
+          ]
         },
         {
           "sourceRef": "character:1313:skills:301827",
@@ -15501,7 +15702,9 @@
         {
           "sourceRef": "character:1314:skills:489322",
           "clauseId": "character:1314:skills:489322:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1314:skills:489322",
@@ -15788,7 +15991,9 @@
         {
           "sourceRef": "character:1315:skills:575653",
           "clauseId": "character:1315:skills:575653:clause:0",
-          "reasons": ["尚未识别该条款的行为类型；需要声明式操作配置。"]
+          "reasons": [
+            "尚未识别该条款的行为类型；需要声明式操作配置。"
+          ]
         },
         {
           "sourceRef": "character:1315:skills:575653",
@@ -15807,7 +16012,9 @@
         {
           "sourceRef": "character:1315:skills:629820",
           "clauseId": "character:1315:skills:629820:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1315:skills:629820",
@@ -15861,7 +16068,9 @@
         {
           "sourceRef": "character:1315:skills:776239",
           "clauseId": "character:1315:skills:776239:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1315:skills:976825",
@@ -16092,7 +16301,9 @@
         {
           "sourceRef": "character:1317:skills:451237",
           "clauseId": "character:1317:skills:451237:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1317:skills:651823",
@@ -16111,7 +16322,9 @@
         {
           "sourceRef": "character:1317:skills:735764",
           "clauseId": "character:1317:skills:735764:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1317:skills:936350",
@@ -16447,7 +16660,9 @@
         {
           "sourceRef": "character:1321:skills:9880199",
           "clauseId": "character:1321:skills:9880199:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1321:traces:1321101",
@@ -16671,7 +16886,9 @@
         {
           "sourceRef": "character:1401:skills:14751013",
           "clauseId": "character:1401:skills:14751013:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1401:skills:14810818",
@@ -16704,7 +16921,9 @@
         {
           "sourceRef": "character:1401:skills:15018196",
           "clauseId": "character:1401:skills:15018196:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1401:skills:15018196",
@@ -16991,7 +17210,9 @@
         {
           "sourceRef": "character:1402:skills:14386037",
           "clauseId": "character:1402:skills:14386037:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1402:skills:14591440",
@@ -17250,7 +17471,9 @@
         {
           "sourceRef": "character:1403:skills:14214208",
           "clauseId": "character:1403:skills:14214208:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1403:skills:14282806",
@@ -17558,7 +17781,9 @@
         {
           "sourceRef": "character:1404:skills:15652427",
           "clauseId": "character:1404:skills:15652427:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1404:skills:15681016",
@@ -17873,7 +18098,9 @@
         {
           "sourceRef": "character:1405:skills:15408783",
           "clauseId": "character:1405:skills:15408783:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1405:skills:15430359",
@@ -17899,12 +18126,16 @@
         {
           "sourceRef": "character:1405:skills:15674531",
           "clauseId": "character:1405:skills:15674531:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1405:skills:15674531",
           "clauseId": "character:1405:skills:15674531:clause:1",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1405:skills:15674531",
@@ -18107,12 +18338,16 @@
         {
           "sourceRef": "character:1406:skills:12165206",
           "clauseId": "character:1406:skills:12165206:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1406:skills:12192945",
           "clauseId": "character:1406:skills:12192945:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1406:skills:12192945",
@@ -18378,7 +18613,9 @@
         {
           "sourceRef": "character:1407:skills:12091651",
           "clauseId": "character:1407:skills:12091651:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1407:skills:12262238",
@@ -18756,7 +18993,9 @@
         {
           "sourceRef": "character:1408:skills:13957315",
           "clauseId": "character:1408:skills:13957315:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1408:skills:14051421",
@@ -19162,7 +19401,9 @@
         {
           "sourceRef": "character:1409:skills:13891606",
           "clauseId": "character:1409:skills:13891606:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1409:skills:13900842",
@@ -19407,7 +19648,9 @@
         {
           "sourceRef": "character:1410:skills:22370072",
           "clauseId": "character:1410:skills:22370072:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1410:skills:22427790",
@@ -19701,7 +19944,9 @@
         {
           "sourceRef": "character:1412:skills:21650915",
           "clauseId": "character:1412:skills:21650915:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1412:skills:21841754",
@@ -20044,7 +20289,9 @@
         {
           "sourceRef": "character:1413:skills:21686950",
           "clauseId": "character:1413:skills:21686950:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1413:skills:21880368",
@@ -20282,12 +20529,16 @@
         {
           "sourceRef": "character:1414:skills:21672717",
           "clauseId": "character:1414:skills:21672717:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1414:skills:21688106",
           "clauseId": "character:1414:skills:21688106:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1414:skills:21688106",
@@ -20912,12 +21163,16 @@
         {
           "sourceRef": "character:1501:skills:1120286",
           "clauseId": "character:1501:skills:1120286:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:1501:skills:1120286",
           "clauseId": "character:1501:skills:1120286:clause:1",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:1501:skills:1120286",
@@ -20950,7 +21205,9 @@
         {
           "sourceRef": "character:1501:skills:1237570",
           "clauseId": "character:1501:skills:1237570:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1501:skills:1249756",
@@ -21440,6 +21697,379 @@
       ]
     },
     {
+      "ownerId": "character:1503",
+      "sourceKind": "character",
+      "abilities": 28,
+      "clauses": 52,
+      "executableClauses": 1,
+      "limitations": [
+        {
+          "sourceRef": "character:1503:ranks:1",
+          "clauseId": "character:1503:ranks:1:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:1",
+          "clauseId": "character:1503:ranks:1:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:1",
+          "clauseId": "character:1503:ranks:1:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:2",
+          "clauseId": "character:1503:ranks:2:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:2",
+          "clauseId": "character:1503:ranks:2:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:3",
+          "clauseId": "character:1503:ranks:3:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:3",
+          "clauseId": "character:1503:ranks:3:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:3",
+          "clauseId": "character:1503:ranks:3:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:4",
+          "clauseId": "character:1503:ranks:4:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:5",
+          "clauseId": "character:1503:ranks:5:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:5",
+          "clauseId": "character:1503:ranks:5:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:5",
+          "clauseId": "character:1503:ranks:5:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:6",
+          "clauseId": "character:1503:ranks:6:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:ranks:6",
+          "clauseId": "character:1503:ranks:6:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1059400",
+          "clauseId": "character:1503:skills:1059400:clause:0",
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:3",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:4",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:5",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:6",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "clauseId": "character:1503:skills:1085039:clause:7",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1132254",
+          "clauseId": "character:1503:skills:1132254:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1132254",
+          "clauseId": "character:1503:skills:1132254:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1132254",
+          "clauseId": "character:1503:skills:1132254:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1284812",
+          "clauseId": "character:1503:skills:1284812:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1333369",
+          "clauseId": "character:1503:skills:1333369:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1358853",
+          "clauseId": "character:1503:skills:1358853:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1358853",
+          "clauseId": "character:1503:skills:1358853:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1358853",
+          "clauseId": "character:1503:skills:1358853:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1380386",
+          "clauseId": "character:1503:skills:1380386:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1406146",
+          "clauseId": "character:1503:skills:1406146:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1406146",
+          "clauseId": "character:1503:skills:1406146:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:18205246",
+          "clauseId": "character:1503:skills:18205246:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503101",
+          "clauseId": "character:1503:traces:1503101:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503101",
+          "clauseId": "character:1503:traces:1503101:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503102",
+          "clauseId": "character:1503:traces:1503102:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503102",
+          "clauseId": "character:1503:traces:1503102:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503102",
+          "clauseId": "character:1503:traces:1503102:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503103",
+          "clauseId": "character:1503:traces:1503103:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503103",
+          "clauseId": "character:1503:traces:1503103:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503201",
+          "clauseId": "character:1503:traces:1503201:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503202",
+          "clauseId": "character:1503:traces:1503202:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503203",
+          "clauseId": "character:1503:traces:1503203:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503204",
+          "clauseId": "character:1503:traces:1503204:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503205",
+          "clauseId": "character:1503:traces:1503205:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503206",
+          "clauseId": "character:1503:traces:1503206:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503207",
+          "clauseId": "character:1503:traces:1503207:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503208",
+          "clauseId": "character:1503:traces:1503208:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503209",
+          "clauseId": "character:1503:traces:1503209:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:traces:1503210",
+          "clauseId": "character:1503:traces:1503210:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
       "ownerId": "character:1504",
       "sourceKind": "character",
       "abilities": 25,
@@ -21533,7 +22163,9 @@
         {
           "sourceRef": "character:1504:skills:597116",
           "clauseId": "character:1504:skills:597116:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1504:skills:606356",
@@ -21869,7 +22501,9 @@
         {
           "sourceRef": "character:1505:skills:320937",
           "clauseId": "character:1505:skills:320937:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1505:skills:380959",
@@ -21895,7 +22529,9 @@
         {
           "sourceRef": "character:1505:skills:52167",
           "clauseId": "character:1505:skills:52167:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1505:skills:524",
@@ -22105,7 +22741,9 @@
         {
           "sourceRef": "character:1506:skills:655255",
           "clauseId": "character:1506:skills:655255:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:1506:skills:655255",
@@ -22173,7 +22811,9 @@
         {
           "sourceRef": "character:1506:skills:681526",
           "clauseId": "character:1506:skills:681526:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1506:skills:749984",
@@ -22276,7 +22916,9 @@
         {
           "sourceRef": "character:1506:skills:993210",
           "clauseId": "character:1506:skills:993210:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1506:skills:993210",
@@ -22493,17 +23135,23 @@
         {
           "sourceRef": "character:1507:skills:1014356",
           "clauseId": "character:1507:skills:1014356:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1507:skills:17303583",
           "clauseId": "character:1507:skills:17303583:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1507:skills:638163",
           "clauseId": "character:1507:skills:638163:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1507:skills:655610",
@@ -22783,7 +23431,9 @@
         {
           "sourceRef": "character:1508:skills:33056465",
           "clauseId": "character:1508:skills:33056465:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1508:skills:33246388",
@@ -22795,7 +23445,9 @@
         {
           "sourceRef": "character:1508:skills:33264869",
           "clauseId": "character:1508:skills:33264869:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1508:skills:33286284",
@@ -22821,7 +23473,9 @@
         {
           "sourceRef": "character:1508:skills:33478499",
           "clauseId": "character:1508:skills:33478499:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1508:skills:33478499",
@@ -23129,17 +23783,23 @@
         {
           "sourceRef": "character:1509:skills:33352084",
           "clauseId": "character:1509:skills:33352084:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1509:skills:33493579",
           "clauseId": "character:1509:skills:33493579:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1509:skills:33493579",
           "clauseId": "character:1509:skills:33493579:clause:1",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1509:skills:33535591",
@@ -23517,7 +24177,9 @@
         {
           "sourceRef": "character:1510:skills:3998171",
           "clauseId": "character:1510:skills:3998171:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:1510:skills:3998171",
@@ -23543,7 +24205,9 @@
         {
           "sourceRef": "character:1510:skills:4017966",
           "clauseId": "character:1510:skills:4017966:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1510:skills:4071812",
@@ -23604,7 +24268,9 @@
         {
           "sourceRef": "character:1510:skills:4165025",
           "clauseId": "character:1510:skills:4165025:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1510:traces:1510101",
@@ -23891,7 +24557,9 @@
         {
           "sourceRef": "character:1512:skills:4087223",
           "clauseId": "character:1512:skills:4087223:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1512:traces:1512101",
@@ -24094,7 +24762,9 @@
         {
           "sourceRef": "character:1513:skills:3763671",
           "clauseId": "character:1513:skills:3763671:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:1513:skills:3763671",
@@ -24106,7 +24776,9 @@
         {
           "sourceRef": "character:1513:skills:3770131",
           "clauseId": "character:1513:skills:3770131:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1513:skills:3817314",
@@ -24146,12 +24818,16 @@
         {
           "sourceRef": "character:1513:skills:3981092",
           "clauseId": "character:1513:skills:3981092:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:1513:skills:4043071",
           "clauseId": "character:1513:skills:4043071:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1513:skills:4043071",
@@ -24163,7 +24839,9 @@
         {
           "sourceRef": "character:1513:skills:4052226",
           "clauseId": "character:1513:skills:4052226:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:1513:skills:4122996",
@@ -24366,7 +25044,9 @@
         {
           "sourceRef": "character:8001:skills:101705",
           "clauseId": "character:8001:skills:101705:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8001:skills:164183",
@@ -24392,12 +25072,16 @@
         {
           "sourceRef": "character:8001:skills:448710",
           "clauseId": "character:8001:skills:448710:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8001:skills:532651",
           "clauseId": "character:8001:skills:532651:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8001:skills:649296",
@@ -24635,17 +25319,23 @@
         {
           "sourceRef": "character:8002:skills:464792",
           "clauseId": "character:8002:skills:464792:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8002:skills:494566",
           "clauseId": "character:8002:skills:494566:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8002:skills:611211",
           "clauseId": "character:8002:skills:611211:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8002:traces:8002101",
@@ -24862,7 +25552,9 @@
         {
           "sourceRef": "character:8003:skills:573126",
           "clauseId": "character:8003:skills:573126:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:8003:skills:573126",
@@ -24874,7 +25566,9 @@
         {
           "sourceRef": "character:8003:skills:773712",
           "clauseId": "character:8003:skills:773712:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8003:skills:88013",
@@ -25077,12 +25771,16 @@
         {
           "sourceRef": "character:8004:skills:636205",
           "clauseId": "character:8004:skills:636205:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8004:skills:804087",
           "clauseId": "character:8004:skills:804087:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "character:8004:skills:804087",
@@ -25292,7 +25990,9 @@
         {
           "sourceRef": "character:8005:skills:798706",
           "clauseId": "character:8005:skills:798706:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8005:skills:83233",
@@ -25304,12 +26004,16 @@
         {
           "sourceRef": "character:8005:skills:882647",
           "clauseId": "character:8005:skills:882647:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8005:skills:882647",
           "clauseId": "character:8005:skills:882647:clause:1",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8005:skills:966588",
@@ -25519,17 +26223,23 @@
         {
           "sourceRef": "character:8006:skills:844562",
           "clauseId": "character:8006:skills:844562:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8006:skills:844562",
           "clauseId": "character:8006:skills:844562:clause:1",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8006:skills:961207",
           "clauseId": "character:8006:skills:961207:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8006:traces:8006101",
@@ -25746,7 +26456,9 @@
         {
           "sourceRef": "character:8007:skills:22077079",
           "clauseId": "character:8007:skills:22077079:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8007:skills:22274785",
@@ -26061,7 +26773,9 @@
         {
           "sourceRef": "character:8008:skills:20145460",
           "clauseId": "character:8008:skills:20145460:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8008:skills:20216226",
@@ -26320,7 +27034,9 @@
         {
           "sourceRef": "character:8009:skills:19007018",
           "clauseId": "character:8009:skills:19007018:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8009:skills:19047026",
@@ -26346,7 +27062,9 @@
         {
           "sourceRef": "character:8009:skills:19116954",
           "clauseId": "character:8009:skills:19116954:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:8009:skills:19116954",
@@ -26563,7 +27281,9 @@
         {
           "sourceRef": "character:8010:skills:7895828",
           "clauseId": "character:8010:skills:7895828:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "character:8010:skills:7895828",
@@ -26596,7 +27316,9 @@
         {
           "sourceRef": "character:8010:skills:7984724",
           "clauseId": "character:8010:skills:7984724:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "character:8010:skills:8060414",
@@ -30421,6 +31143,29 @@
       ]
     },
     {
+      "ownerId": "lightcone:23055",
+      "sourceKind": "lightCone",
+      "abilities": 1,
+      "clauses": 2,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "lightcone:23055:skill:23055",
+          "clauseId": "lightcone:23055:skill:23055:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "lightcone:23055:skill:23055",
+          "clauseId": "lightcone:23055:skill:23055:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
       "ownerId": "lightcone:23056",
       "sourceKind": "lightCone",
       "abilities": 1,
@@ -31693,6 +32438,59 @@
       ]
     },
     {
+      "ownerId": "relic:133",
+      "sourceKind": "relic",
+      "abilities": 2,
+      "clauses": 2,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "relic:133:set:2",
+          "clauseId": "relic:133:set:2:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "relic:133:set:4",
+          "clauseId": "relic:133:set:4:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
+      "ownerId": "relic:134",
+      "sourceKind": "relic",
+      "abilities": 2,
+      "clauses": 3,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "relic:134:set:2",
+          "clauseId": "relic:134:set:2:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "relic:134:set:4",
+          "clauseId": "relic:134:set:4:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "relic:134:set:4",
+          "clauseId": "relic:134:set:4:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
       "ownerId": "relic:301",
       "sourceKind": "relic",
       "abilities": 1,
@@ -32325,7 +33123,9 @@
         {
           "sourceRef": "summon:1402:servant:servant-skills:8647019",
           "clauseId": "summon:1402:servant:servant-skills:8647019:clause:0",
-          "reasons": ["该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"]
+          "reasons": [
+            "该条款含多个倍率；尚需拆分目标、分段命中或额外乘区，避免仅执行首个倍率。"
+          ]
         },
         {
           "sourceRef": "summon:1402:servant:servant-skills:8842377",
@@ -32381,7 +33181,9 @@
         {
           "sourceRef": "summon:1407:servant:servant-skills:21319318",
           "clauseId": "summon:1407:servant:servant-skills:21319318:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "summon:1407:servant:servant-skills:21359282",
@@ -32437,7 +33239,9 @@
         {
           "sourceRef": "summon:1409:servant:servant-skills:20758544",
           "clauseId": "summon:1409:servant:servant-skills:20758544:clause:0",
-          "reasons": ["未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"]
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
         },
         {
           "sourceRef": "summon:1409:servant:servant-skills:20814318",
@@ -32551,7 +33355,9 @@
         {
           "sourceRef": "summon:1415:servant:servant-skills:11555265",
           "clauseId": "summon:1415:servant:servant-skills:11555265:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "summon:1415:servant:servant-skills:11599013",
@@ -32661,7 +33467,9 @@
         {
           "sourceRef": "summon:1415:servant:servant-skills:12027884",
           "clauseId": "summon:1415:servant:servant-skills:12027884:clause:0",
-          "reasons": ["尚未识别该条款的行为类型；需要声明式操作配置。"]
+          "reasons": [
+            "尚未识别该条款的行为类型；需要声明式操作配置。"
+          ]
         },
         {
           "sourceRef": "summon:1415:servant:servant-skills:12027884",
@@ -32871,7 +33679,9 @@
         {
           "sourceRef": "summon:1512:servant:servant-skills:10076134",
           "clauseId": "summon:1512:servant:servant-skills:10076134:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "summon:1512:servant:servant-skills:10262787",
@@ -32927,7 +33737,9 @@
         {
           "sourceRef": "summon:8007:servant:servant-skills:30261178",
           "clauseId": "summon:8007:servant:servant-skills:30261178:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "summon:8007:servant:servant-skills:30261178",
@@ -33004,7 +33816,9 @@
         {
           "sourceRef": "summon:8008:servant:servant-skills:30261178",
           "clauseId": "summon:8008:servant:servant-skills:30261178:clause:0",
-          "reasons": ["仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"]
+          "reasons": [
+            "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
         },
         {
           "sourceRef": "summon:8008:servant:servant-skills:30261178",

@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/characters",
-    "syncedAt": "2026-09-02T01:59:01.741Z"
+    "syncedAt": "2026-10-21T02:52:06.346Z"
   },
   "characters": [
     {
@@ -11165,6 +11165,126 @@
       "backgroundImage": "/character-backgrounds/drratio.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
       "pathIcon": "/character-icons/paths/巡猎.webp"
+    },
+    {
+      "slug": "pearl",
+      "name": "真珠",
+      "element": "冰",
+      "path": "欢愉",
+      "rarity": 5,
+      "baseStats": {
+        "hp": 1203.048,
+        "attack": 465.696,
+        "defense": 727.65,
+        "speed": 99,
+        "taunt": 100
+      },
+      "traceStats": [
+        {
+          "id": 1503203,
+          "name": "效果抵抗强化",
+          "stats": [
+            {
+              "key": "效果抵抗",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1503204,
+          "name": "欢愉度强化",
+          "stats": [
+            {
+              "key": "欢愉度",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1503205,
+          "name": "防御强化",
+          "stats": [
+            {
+              "key": "防御力",
+              "value": 0.075
+            }
+          ]
+        },
+        {
+          "id": 1503206,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": 1503207,
+          "name": "效果抵抗强化",
+          "stats": [
+            {
+              "key": "效果抵抗",
+              "value": 0.06
+            }
+          ]
+        },
+        {
+          "id": 1503208,
+          "name": "欢愉度强化",
+          "stats": [
+            {
+              "key": "欢愉度",
+              "value": 0.06
+            }
+          ]
+        },
+        {
+          "id": 1503209,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": 1503210,
+          "name": "防御强化",
+          "stats": [
+            {
+              "key": "防御力",
+              "value": 0.1
+            }
+          ]
+        },
+        {
+          "id": 1503201,
+          "name": "防御强化",
+          "stats": [
+            {
+              "key": "防御力",
+              "value": 0.05
+            }
+          ]
+        },
+        {
+          "id": 1503202,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 2
+            }
+          ]
+        }
+      ],
+      "image": "/characters/pearl.webp",
+      "backgroundImage": "/character-backgrounds/pearl.webp",
+      "elementIcon": "/character-icons/elements/冰.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
     },
     {
       "slug": "robin",
