@@ -7,7 +7,7 @@ describe("bundled complete source catalogue", () => {
     const owners = mechanicCatalogue.owners ?? [];
     const ids = new Set(owners.map((owner) => owner.id));
     expect(ids.size).toBe(owners.length);
-    expect(owners.filter((owner) => owner.sourceKind === "character")).toHaveLength(97);
+    expect(owners.filter((owner) => owner.sourceKind === "character")).toHaveLength(98);
     for (const ability of mechanicCatalogue.abilities) {
       expect(ids.has(ability.ownerId), ability.id).toBe(true);
       expect(ability.sourceNodeId, ability.id).toBeTruthy();

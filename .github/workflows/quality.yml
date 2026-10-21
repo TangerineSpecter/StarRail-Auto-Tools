@@ -20,7 +20,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-        with: { components: rustfmt, clippy }
+        with:
+          components: rustfmt,clippy
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
       - run: bash scripts/bootstrap-vendor.sh
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
       - run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings

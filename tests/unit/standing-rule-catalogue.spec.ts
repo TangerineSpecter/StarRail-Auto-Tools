@@ -8,8 +8,8 @@ import { calculateStandingStats } from "@/shared/utils/standing-stats";
 
 describe("reviewed standing ID reader", () => {
   it("approves all reviewed equipment IDs with exact protected provenance", () => {
-    expect(Object.keys(definitions.lightCones)).toHaveLength(169);
-    expect(Object.keys(definitions.relics)).toHaveLength(60);
+    expect(Object.keys(definitions.lightCones)).toHaveLength(170);
+    expect(Object.keys(definitions.relics)).toHaveLength(62);
     let bindingCount = Object.keys(bindings.lightCones).length;
     for (const cone of lightCones.lightCones) {
       const result = reviewedStandingRules({
@@ -39,7 +39,7 @@ describe("reviewed standing ID reader", () => {
           sourceHash: item.sourceHash,
         });
     }
-    expect(bindingCount).toBe(261);
+    expect(bindingCount).toBe(266);
   });
 
   it("accepts normalized matching paths and excludes mismatched or unknown equipped paths", () => {

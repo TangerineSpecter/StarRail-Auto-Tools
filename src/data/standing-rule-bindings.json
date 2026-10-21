@@ -613,6 +613,10 @@
       "sourceRef": "lightcone:23054:skill:23054",
       "sourceHash": "9cd1225f5f3857d377cd0a4044b47ac8a47c2b53cb4a1ff4c82366a70e21cfa3"
     },
+    "23055": {
+      "sourceRef": "lightcone:23055:skill:23055",
+      "sourceHash": "12763ebfb66461477abbaa6fc25843ec768909ca79239f164b71580bd83ef5c1"
+    },
     "23056": {
       "sourceRef": "lightcone:23056:skill:23056",
       "sourceHash": "0c58a9f905c36108f3e2ba7a35f8f182b9e4dd55d284f71c3fbd34b88871d23a"
@@ -643,7 +647,7 @@
     },
     "23063": {
       "sourceRef": "lightcone:23063:skill:23063",
-      "sourceHash": "cb939059db5346ac211ed94794540c0fa4f8c7a3c8984d4606087ee48cb7a5f3"
+      "sourceHash": "97ff7fd2e9571cb8d4647befa77e6e2781961d9b3701df766effa033cb865f43"
     },
     "23064": {
       "sourceRef": "lightcone:23064:skill:23064",
@@ -997,6 +1001,26 @@
       "fourPiece": {
         "sourceRef": "relic:132:set:4",
         "sourceHash": "111cba7a13da9980a99944506e4a488e5a64cf1e707d377afdd3e88c14d669e1"
+      }
+    },
+    "133": {
+      "twoPiece": {
+        "sourceRef": "relic:133:set:2",
+        "sourceHash": "2f3e1cfda9d902adb64299a7752e057459fd151e948f6988c18c8b026b34a770"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:133:set:4",
+        "sourceHash": "f1588c3644fa62f08c823436416e3add947d9d316868d8b598a466bfd47e4ffb"
+      }
+    },
+    "134": {
+      "twoPiece": {
+        "sourceRef": "relic:134:set:2",
+        "sourceHash": "1316b64f056e77f0cd183aa50abce071ba05db724010a586be97e93df25848b8"
+      },
+      "fourPiece": {
+        "sourceRef": "relic:134:set:4",
+        "sourceHash": "3a5261985da78a8ca2193cb779808395ea4788de0943dedca944509bcbbd34e7"
       }
     },
     "301": {

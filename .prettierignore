@@ -2,6 +2,11 @@
 # New feature styles live beside their components and remain covered by Prettier.
 src/styles.css
 
+# Generated catalogue JSON keeps the sync scripts' stable serialization format.
+src/data/catalogue-mechanics.json
+src/data/catalogue-mechanisms.json
+src/data/catalogue-mechanisms-report.json
+
 dist/
 node_modules/
 src-tauri/target/
