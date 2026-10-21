@@ -1,3 +1,4 @@
+#[cfg(any(target_os = "macos", windows))]
 use std::{
     fs,
     process::Command,
@@ -6,6 +7,7 @@ use std::{
 
 use crate::error::AppError;
 
+#[cfg(any(target_os = "macos", windows))]
 fn temporary_path() -> std::path::PathBuf {
     std::env::temp_dir().join(format!(
         "starrail-auto-tools-screen-{}-{}.png",
