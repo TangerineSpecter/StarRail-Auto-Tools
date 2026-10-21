@@ -155,6 +155,7 @@ fn character_names() -> &'static std::collections::HashMap<u32, &'static str> {
             (1415, "昔涟"),
             (1501, "火花"),
             (1502, "爻光"),
+            (1503, "真珠"),
             (1505, "绯英"),
             (1506, "银狼LV. 999"),
             (1508, "远坂凛"),
