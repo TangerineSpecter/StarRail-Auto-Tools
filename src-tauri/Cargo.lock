@@ -5573,7 +5573,6 @@ dependencies = [
  "open",
  "protobuf",
  "reliquary",
- "rfd",
  "self_update",
  "serde",
  "serde_json",
@@ -6864,8 +6863,6 @@ dependencies = [
 [[package]]
 name = "swift-rs"
 version = "1.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4057c98e2e852d51fdcfca832aac7b571f6b351ad159f9eda5db1655f8d0c4d7"
 dependencies = [
  "base64 0.21.7",
  "serde",
@@ -7244,8 +7241,6 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "2.11.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e6fac707727b7a2f48e4ded90976324267371073edbb415ffb73bb0458d203f"
 dependencies = [
  "gtk",
  "http",

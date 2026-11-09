@@ -130,6 +130,9 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
+!.env.*.example
 .venv
 env/
 venv/
@@ -180,6 +183,15 @@ dist/
 src-tauri/target/
 src-tauri/tauri.updater.conf.json
 src-tauri/gen/
+# Xcode user state and Apple signing material are local to each developer.
+xcuserdata/
+*.xcuserstate
+*.p8
+*.p12
+*.mobileprovision
+*.provisionprofile
+# Swift Package Manager build output.
+.build/
 # Vendored Rust crates are bootstrapped automatically by scripts/bootstrap-vendor.*
 # on first run (dev.sh / dev.ps1 / build-windows.ps1).  Do not commit them.
 src-tauri/vendor/

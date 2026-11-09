@@ -10,3 +10,5 @@ src/data/catalogue-mechanisms-report.json
 dist/
 node_modules/
 src-tauri/target/
+# Vendored Rust crates retain upstream formatting.
+src-tauri/compat/

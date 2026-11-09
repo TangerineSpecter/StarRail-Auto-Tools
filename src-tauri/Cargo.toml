@@ -24,7 +24,6 @@ oar-ocr = { version = "0.8.1", optional = true }
 # oar-ocr 0.8.1 still uses the rc.12 execution-provider API. Cargo otherwise
 # considers newer release candidates compatible and currently selects rc.13.
 ort = { version = "=2.0.0-rc.12", optional = true }
-rfd = "0.17.2"
 rust_xlsxwriter = "0.84"
 rusqlite = { version = "0.37", features = ["bundled"] }
 axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "json"] }
@@ -47,6 +46,9 @@ tauri-plugin-updater = "2.11.0"
 thiserror = "2"
 tokio = { version = "1.44.2", features = ["rt", "sync", "time", "net", "io-util", "macros", "fs"] }
 tokio-util = "0.7"
+
+[target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
+rfd = "0.17.2"
 
 [target.'cfg(windows)'.dependencies]
 futures = "0.3.31"
@@ -78,6 +80,12 @@ windows = { version = "0.62", features = [
 # gates that Win32 resource embedding behind a never-enabled Cargo feature so
 # tauri-build remains the sole owner of the final executable's resources.
 reliquary-archiver = { path = "vendor/reliquary-archiver" }
+
+[patch.crates-io]
+# SwiftPM in Xcode 27 needs the iOS triple and uses a different product directory.
+swift-rs = { path = "compat/swift-rs" }
+# Avoid the WebKit bundle-version probe that crashes on the iOS 27 simulator.
+tauri-runtime-wry = { path = "compat/tauri-runtime-wry" }
 
 [profile.dev]
 # HoYoverse's KCP implementation uses a timestamp-like field differently from

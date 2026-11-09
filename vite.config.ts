@@ -4,8 +4,19 @@ import vue from "@vitejs/plugin-vue";
 
 const host = process.env.TAURI_DEV_HOST;
 
-export default defineConfig({
-  plugins: [vue()],
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    vue(),
+    {
+      name: "mobile-entry",
+      transformIndexHtml: {
+        order: "pre",
+        handler(html) {
+          return mode === "mobile" ? html.replace("/src/main.ts", "/src/mobile/main.ts") : html;
+        },
+      },
+    },
+  ],
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   clearScreen: false,
   server: {
@@ -17,4 +28,4 @@ export default defineConfig({
       ignored: ["**/src-tauri/**"],
     },
   },
-});
+}));

@@ -39,6 +39,7 @@ where
         .map_err(|error| AppError::RelicCleanup(format!("清理任务线程失败：{error}")))?
 }
 
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn export_diagnostic_log(
     request: DiagnosticExportRequest,
@@ -532,6 +533,7 @@ pub fn detect_game_launcher(runtime: State<'_, GameLaunchRuntime>) -> GameLaunch
     runtime.detect_launcher()
 }
 
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn pick_game_launcher() -> Result<Option<String>, AppError> {
     Ok(rfd::AsyncFileDialog::new()
@@ -703,6 +705,7 @@ pub fn delete_character_build_plan(
     store.delete_build_plan(character_id)
 }
 
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn export_character_build_plans_excel(
     store: State<'_, InventoryStore>,
@@ -720,6 +723,7 @@ pub async fn export_character_build_plans_excel(
     Ok(Some(file.path().to_string_lossy().into_owned()))
 }
 
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn import_character_build_plans_excel(
     store: State<'_, InventoryStore>,
@@ -835,6 +839,7 @@ pub fn clear_inventory(
     Ok(summary)
 }
 
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn export_inventory(
     store: State<'_, InventoryStore>,
@@ -853,6 +858,7 @@ pub async fn export_inventory(
     Ok(Some(path.to_string_lossy().into_owned()))
 }
 
+#[cfg(desktop)]
 #[tauri::command]
 pub async fn import_inventory(
     app: AppHandle,

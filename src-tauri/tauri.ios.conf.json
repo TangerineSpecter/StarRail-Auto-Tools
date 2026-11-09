@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "build": {
+    "beforeDevCommand": "node scripts/prepare-ios.mjs && npm run dev -- --mode mobile",
+    "beforeBuildCommand": "node scripts/prepare-ios.mjs && npm run build:mobile"
+  },
+  "bundle": {
+    "iOS": { "minimumSystemVersion": "15.0" }
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "星穹数据",
+        "width": 390,
+        "height": 844,
+        "minWidth": null,
+        "minHeight": null,
+        "decorations": true
+      }
+    ]
+  }
+}

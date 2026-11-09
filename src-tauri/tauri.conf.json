@@ -32,6 +32,9 @@
     "active": true,
     "targets": ["nsis"],
     "icon": ["../public/logo/android-chrome-512x512.png", "icons/icon.ico"],
+    "iOS": {
+      "minimumSystemVersion": "15.0"
+    },
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"

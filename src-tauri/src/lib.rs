@@ -18,12 +18,15 @@ mod sync;
 
 use direct_read::DirectReadState;
 use inventory::InventoryStore;
+#[cfg(not(mobile))]
 use ocr_model::OcrModelManager;
+#[cfg(not(mobile))]
 use relic_cleanup::RelicCleanupRuntime;
+#[cfg(not(mobile))]
 use scanner::ScannerState;
 use tauri::Manager;
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg(not(mobile))]
 pub fn run() {
     let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init());
 
@@ -169,4 +172,35 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("failed to run StarRail-Auto-Tools");
+}
+
+#[cfg(mobile)]
+#[tauri::mobile_entry_point]
+pub fn run() {
+    tauri::Builder::default()
+        .setup(|app| {
+            let data_dir = app.path().app_data_dir()?;
+            std::fs::create_dir_all(&data_dir)?;
+            let store = InventoryStore::initialize(data_dir.join("inventory.sqlite3"))
+                .map_err(|error| std::io::Error::other(error.to_string()))?;
+            app.manage(store);
+            app.manage(sync::SyncStore::new(data_dir));
+            // Snapshot restoration updates this state; no capture task is started on mobile.
+            app.manage(DirectReadState::default());
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            commands::get_inventory_summary,
+            commands::list_relics,
+            commands::list_light_cones,
+            commands::list_characters,
+            commands::get_inventory_detail,
+            commands::get_build_dashboard,
+            commands::list_teams,
+            commands::get_sync_settings,
+            commands::save_sync_settings,
+            commands::download_sync_snapshot,
+        ])
+        .run(tauri::generate_context!())
+        .expect("failed to run StarRail-Auto-Tools mobile");
 }
