@@ -33,4 +33,4 @@ npm run tauri -- ios build --debug --target aarch64-sim --no-sign
 
 ## iPhone Duo 适配规范
 
-关于针对 iPhone Duo 双屏折叠设备的交互设计、Shared Bar Area 侧边栏布局、避让灵动岛展开、WebKit `viewport-fit=cover` 与踩坑总结，详见专门文档：[iPhone-Duo适配与开发经验.md](file:///Users/zhouliangjun/Desktop/py_code/StarRail-Auto-Tools/docs/iPhone-Duo适配与开发经验.md)。
+修改菜单、边距、姿态识别或 WebView 配置前，阅读 [iPhone Duo 适配与开发经验](iPhone-Duo适配与开发经验.md)。该文档包含用户已确认的位置基线、实际模拟器截图、菜单多次被推入正文的原因和回归验收标准。展开横屏菜单需要与时间、Wi-Fi 共用同一侧栏；仅检查“不遮挡”不足以验收，还要确认没有额外占用一列正文空间。

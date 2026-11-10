@@ -1,4 +1,18 @@
 :root {
+  /* Posture is chosen once by device-posture.ts. Content and navigation share these dimensions. */
+  --mobile-frame-width: 1000px;
+  --mobile-frame-offset: max(0px, calc((100vw - var(--mobile-frame-width)) / 2));
+  --mobile-nav-width: 44px;
+  --mobile-nav-inset: 28px;
+  --mobile-nav-gap: 14px;
+  --mobile-nav-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  --mobile-content-left: max(18px, env(safe-area-inset-left, 0px));
+  --mobile-right-rail: max(
+    env(safe-area-inset-right, 0px),
+    calc(var(--mobile-nav-inset) + var(--mobile-nav-width) + var(--mobile-nav-gap))
+  );
+  --mobile-content-right: var(--mobile-right-rail);
+  --mobile-content-bottom: max(24px, env(safe-area-inset-bottom, 0px));
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
   color: #202830;
   background: #f4f6f8;
@@ -19,11 +33,11 @@ button {
   cursor: pointer;
 }
 .mobile-shell {
-  max-width: 760px;
+  max-width: var(--mobile-frame-width);
   margin: 0 auto;
   min-height: 100dvh;
-  padding: max(20px, env(safe-area-inset-top)) calc(14px + max(56px, env(safe-area-inset-right)))
-    max(24px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  padding: max(20px, env(safe-area-inset-top, 0px)) var(--mobile-content-right)
+    var(--mobile-content-bottom) var(--mobile-content-left);
   position: relative;
 }
 .mobile-header {
@@ -188,9 +202,13 @@ input {
 }
 .mobile-nav {
   position: fixed;
-  right: 29px;
-  width: 42px;
-  top: max(240px, calc(50% - 130px));
+  right: calc(var(--mobile-frame-offset) + var(--mobile-nav-inset));
+  left: auto;
+  width: var(--mobile-nav-width);
+  top: auto;
+  bottom: var(--mobile-nav-bottom);
+  max-height: calc(100dvh - var(--mobile-nav-bottom) - max(20px, env(safe-area-inset-top, 0px)));
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -203,17 +221,13 @@ input {
   user-select: none;
   -webkit-user-select: none;
 }
-@media (min-width: 820px) {
-  .mobile-nav {
-    right: calc((100vw - 760px) / 2 + 29px);
-  }
-}
 .mobile-nav button {
   border: 0;
   background: transparent;
   color: #626e78;
-  width: 42px;
-  min-height: 42px;
+  width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
   padding: 4px 2px;
   border-radius: 10px;
   display: flex;
@@ -246,56 +260,79 @@ input {
 .mobile-nav button.active svg {
   stroke: #ffffff;
 }
-@media (orientation: landscape), (max-height: 560px) {
-  .mobile-shell {
-    padding-left: calc(14px + max(64px, env(safe-area-inset-left)));
-    padding-right: max(18px, env(safe-area-inset-right));
-  }
-  .mobile-nav {
-    top: auto;
-    left: 29px;
-    right: auto;
-    bottom: max(16px, env(safe-area-inset-bottom));
-    gap: 6px;
-  }
-  .mobile-nav button {
-    width: 42px;
-    min-height: 38px;
-    height: 38px;
-    padding: 3px 2px;
-    gap: 1px;
-    font-size: 10px;
-  }
-  .mobile-nav button svg {
-    width: 15px;
-    height: 15px;
-  }
+/* Outer-screen menus occupy the shared side rail, aligned 50px from the frame edge.
+   Keep content clear of both the rail and hardware insets; the rail is not added twice. */
+[data-posture="landscape-hinge-top"] {
+  --mobile-nav-bottom: max(60px, calc(env(safe-area-inset-bottom, 0px) + 38px));
 }
-[data-posture="portrait"] .mobile-nav {
-  left: auto;
-  right: 29px;
-  top: max(240px, calc(50% - 130px));
-  bottom: auto;
-}
-[data-posture="landscape-hinge-top"] .mobile-shell {
-  padding-left: max(18px, env(safe-area-inset-left));
-  padding-right: calc(14px + max(56px, env(safe-area-inset-right)));
-}
-[data-posture="landscape-hinge-top"] .mobile-nav {
-  left: auto;
-  right: 29px;
-  bottom: max(60px, calc(env(safe-area-inset-bottom) + 38px));
-  top: auto;
-}
-[data-posture="landscape-hinge-bottom"] .mobile-shell {
-  padding-left: calc(14px + max(64px, env(safe-area-inset-left)));
-  padding-right: max(18px, env(safe-area-inset-right));
+[data-posture="landscape-hinge-bottom"] {
+  --mobile-content-left: max(
+    env(safe-area-inset-left, 0px),
+    calc(var(--mobile-nav-inset) + var(--mobile-nav-width) + var(--mobile-nav-gap))
+  );
+  --mobile-content-right: max(18px, env(safe-area-inset-right, 0px));
 }
 [data-posture="landscape-hinge-bottom"] .mobile-nav {
-  left: 29px;
+  left: calc(var(--mobile-frame-offset) + var(--mobile-nav-inset));
   right: auto;
-  bottom: max(16px, env(safe-area-inset-bottom));
-  top: auto;
+}
+[data-posture="landscape-hinge-top"] .mobile-nav,
+[data-posture="landscape-hinge-bottom"] .mobile-nav {
+  gap: 6px;
+}
+
+/* Expanded portrait retains its bottom bar; no independent media-query fallback. */
+[data-posture="unfolded-portrait"] {
+  --mobile-frame-width: 900px;
+  --mobile-content-left: max(24px, env(safe-area-inset-left, 0px));
+  --mobile-content-right: max(24px, env(safe-area-inset-right, 0px));
+  --mobile-content-bottom: calc(84px + var(--mobile-nav-bottom));
+}
+[data-posture="unfolded-portrait"] .mobile-nav {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+  flex-direction: row;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+[data-posture="unfolded-portrait"] .mobile-nav button {
+  width: auto;
+  min-width: 58px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+/* The expanded menu shares the viewport-edge rail with the system status UI.
+   safe-area-inset-right marks the content boundary, not the menu's right offset. */
+[data-posture="unfolded-landscape"] {
+  --mobile-frame-width: 1100px;
+  --mobile-nav-width: 56px;
+  --mobile-nav-inset: 22px;
+  --mobile-nav-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  --mobile-content-left: max(24px, env(safe-area-inset-left, 0px));
+  --mobile-content-right: max(24px, calc(var(--mobile-right-rail) - var(--mobile-frame-offset)));
+}
+[data-posture="unfolded-landscape"] .mobile-nav {
+  right: var(--mobile-nav-inset);
+  gap: 6px;
+  padding: 8px 5px;
+  border-radius: 24px;
+}
+[data-posture="unfolded-portrait"] .mobile-nav,
+[data-posture="unfolded-landscape"] .mobile-nav {
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 32px rgba(15, 30, 50, 0.15);
+  z-index: 95;
+}
+[data-posture="unfolded-landscape"] .mobile-nav button {
+  border-radius: 12px;
 }
 .build-target {
   display: flex;
@@ -318,7 +355,6 @@ body {
   background: var(--paper);
 }
 .mobile-shell {
-  max-width: 1000px;
   color: var(--ink);
 }
 .mobile-brand {

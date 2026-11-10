@@ -1,12 +1,27 @@
-export type DevicePosture = "portrait" | "landscape-hinge-top" | "landscape-hinge-bottom";
+export type DevicePosture =
+  | "portrait"
+  | "landscape-hinge-top"
+  | "landscape-hinge-bottom"
+  | "unfolded-portrait"
+  | "unfolded-landscape";
 
 export function detectDevicePosture(): DevicePosture {
   if (typeof window === "undefined") return "portrait";
 
-  const isLandscape =
-    window.innerWidth > window.innerHeight ||
-    Boolean(window.matchMedia?.("(orientation: landscape)").matches);
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const isLandscape = w > h || Boolean(window.matchMedia?.("(orientation: landscape)").matches);
+
+  // Layout-size heuristic, not a hardware fold-state API. CSS consumes only data-posture.
+  const isUnfolded = (w >= 800 && h >= 560) || (w >= 580 && h >= 800);
+  if (isUnfolded) {
+    return isLandscape ? "unfolded-landscape" : "unfolded-portrait";
+  }
+
+  // 2. Outer Screen: Portrait
   if (!isLandscape) return "portrait";
+
+  // 3. Outer Screen: Landscape orientation checks
 
   // 1. WebKit window.orientation
   // -90deg / 270deg (clockwise rotation) -> camera at bottom-right -> hinge at top
@@ -70,17 +85,16 @@ export function initDevicePostureWatcher(): () => void {
 
   update();
 
-  if (typeof requestAnimationFrame !== "undefined") {
-    requestAnimationFrame(update);
-  }
-  setTimeout(update, 50);
-  setTimeout(update, 200);
+  const frame = window.requestAnimationFrame?.(update);
+  const timers = [window.setTimeout(update, 50), window.setTimeout(update, 200)];
 
   window.addEventListener("resize", update, { passive: true });
   window.addEventListener("orientationchange", update, { passive: true });
   window.screen?.orientation?.addEventListener("change", update);
 
   return () => {
+    if (frame !== undefined) window.cancelAnimationFrame(frame);
+    timers.forEach((timer) => window.clearTimeout(timer));
     window.removeEventListener("resize", update);
     window.removeEventListener("orientationchange", update);
     window.screen?.orientation?.removeEventListener("change", update);

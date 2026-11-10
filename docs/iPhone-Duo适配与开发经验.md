@@ -1,226 +1,132 @@
 # iPhone Duo 适配与开发经验
 
-本文档记录本项目针对 Apple 首款折叠屏设备 **iPhone Duo**（搭载 iOS 27+）在移动端视图下的适配规范、调试踩坑复盘与实现细节，用于固化团队开发经验，避免在后续姿态迭代中重复踩坑。
+本文记录移动端菜单的布局约定、反复偏移的原因和验收方法。修改 `src/mobile/mobile.css`、`device-posture.ts`、移动入口或 iOS WebView 配置前，应先阅读本文。
 
----
+## 一、当前已确认的基线（2026-11-10）
 
-## 一、 设备背景与当前适配状态
+用户已确认当前各姿态的菜单位置正确。后续调整以此为基线，不能将“菜单不遮挡正文”作为唯一验收条件：**菜单还必须位于目标侧栏，正文不能因为菜单放错位置而额外损失一列空间。**
 
-- **目标设备**：Apple iPhone Duo（外屏 5.4 英寸 + 内屏 7.6 英寸超视网膜 XDR 屏）。
-- **当前完成姿态**：
-  1. **外屏闭合竖屏态（Closed / Portrait，Compact Width）**。
-  2. **外屏闭合横屏态（Closed / Landscape，Compact Height，转轴置顶模式）**。
-- **其他姿态状态**：展开大屏态、桌面悬停态等目前待后续逐步推进，当前已确保外屏双姿态达到像素级原生标准。
+- 普通竖屏：菜单在右下方，便于拇指点击，不回到页面中部。
+- 外屏横屏：两个旋转方向分别使用右下、左下侧栏，保留相应摄像头净空。
+- 展开竖屏：保留底部水平菜单。
+- 展开横屏：菜单在屏幕右侧，与时间、Wi-Fi 同列，位于状态信息下方；不能停在这一列的左边、正文区域里面。
 
----
+下面是 Xcode 27.2 / iOS 27.2 Duo 模拟器内屏的实际截图，作为展开横屏的位置基线。图片保存在仓库中，不依赖临时目录。重点检查右上状态信息与右下菜单的横向对齐，以及卡片右边缘。
 
-## 二、 Apple HIG 官方核心设计原则
+![展开横屏：菜单与时间、Wi-Fi 位于同一列，正文没有额外为菜单空出第二列](images/iphone-duo/shared-rail-2026-11-10.png)
 
-1. **共享栏区域（Shared Bar Area / Trailing Edge）**
-   - 由于 iPhone Duo 外屏比例较宽较矮，若继续沿用传统顶部+底部横向栏，会严重压缩正文纵向阅读高度。
-   - 系统在闭合态下将**状态栏（灵动岛/时间/网络信号）、工具栏以及标签页栏（Tab Bar）**统一重构为单列，垂直停靠在屏幕的侧边（默认 Trailing Edge，即右手侧）。
-2. **垂直层级次序**
-   - 侧边栏由上至下严格依序为：`摄像头 / 灵动岛` → `精简状态栏（时间、WiFi 信号）` → `标签页栏（Tab Bar）`。
-3. **内容避让与尺寸分类**
-   - 外屏呈现紧凑宽度（Compact Width），内屏呈现常规宽度（Regular Width）。
-   - 严禁写死设备宽度，正文容器必须依据安全区（Safe Area Insets）进行单侧弹性避让。
+确认范围需要区分：用户确认了当前菜单位置；上述模拟器截图直接验证了展开横屏。物理设备、半折叠、分屏及动态系统遮挡仍需单独验收，不能由这张截图推断全部通过。
 
----
+## 二、为什么菜单多次被放到正文里面
 
-## 三、 关键踩坑复盘与教训（避坑指南）
+### 1. 将正文安全区当成菜单的定位边界
 
-在本次适配外屏姿态的过程中，经历了四个典型误区，必须牢记其成因与解决逻辑：
-
-### 坑 1：误将侧边栏做成“浮动胶囊卡片（Floating Pill）”
-
-- **错误表现**：给导航栏添加了白色背景框、边框与投影，并使用 `right: max(10px, env(safe-area-inset-right))`，导致整个菜单浮在内容卡片上方，遮挡了下拉框和按钮。
-- **根本原因**：把系统级侧边栏误解成了应用内的浮动操作按钮（FAB）。在 HIG 规范中，右侧一列本身就是与系统共用的侧边栏专属区域，应当是半透明或透明的原生侧边列，与左侧内容区域互不重叠。
-- **纠正**：移除浮动外壳与阴影，将菜单贴紧右侧专属栏内；主内容容器（`.mobile-shell`）留出对应右侧安全边距。
-
-### 坑 2：未启用 `viewport-fit=cover` 导致 WebKit 视口被安全区拦截
-
-- **错误表现**：CSS 中写了 `position: fixed; right: 0;`，但导航栏死死卡在距离屏幕右边缘还有约 130px 宽的地方（x≈580），死活进不去右侧侧边栏（x≈667）。
-- **根本原因**：iOS WebKit 的安全区保护机制。若 `<meta name="viewport">` 中未显式包含 `viewport-fit=cover`，WebKit 默认会将整个网页视口限制在安全区内（`viewport-fit: auto`）。此时 `right: 0` 只是安全区左边界，且 CSS 中的 `env(safe-area-inset-*)` 全部被置为 `0px`。
-- **纠正**：在 `index.html` 和 `mobile-viewport.ts` 中强制注入 `viewport-fit=cover`，解锁全屏边缘渲染。
-
-### 坑 3：忽略灵动岛（Dynamic Island）在侧边的展开高度
-
-- **错误表现**：为了让菜单挨着状态栏，将 `top` 设为紧贴静态 WiFi 图标下方（136px ~ 168px），导致灵动岛展开时顶部按钮被遮盖。
-- **根本原因**：灵动岛不仅有静态指示器，在后台有通话、音乐播放、计时器、打车或外卖等实时活动（Live Activities）时，会沿着右侧栏纵向向下动态展开，展开态高度可达 **180pt ~ 220pt**。
-- **纠正**：设置 `top: max(240px, calc(50% - 130px));`，为灵动岛保留至少 240px 的安全净空；同时正好将导航栏带入屏幕垂直中段（右手拇指自然微屈的热区），提升单手盲操体验。
-
-### 坑 4：CSS 绝对定位中的坐标方向反向混淆
-
-- **错误表现**：肉眼发现按钮偏右需要向左微调时，误将 `right` 从 29px 减小至 11px，导致按钮反而更加贴紧右侧边框。
-- **根本原因**：在 `position: fixed; right: ...` 中，`right` 是**距屏幕右边缘的距离**。数值越小越靠近右侧；要让元素向左移动，必须**增大** `right` 偏移量。
-- **纠正**：精确测量摄像头与右边框的像素差，通过 `29px (边距) + 21px (按钮半宽) = 50px (中轴)` 准确锁定同轴线。
-
-### 坑 5：横屏双向旋转后硬件摄像头翻转与固定高度挤压截断
-
-- **错误表现**：
-  1. **转轴在顶（顺时针 90°）**：导航栏固定在 `top: 240px`，下半部分的“配队”、“同步”按钮撞上翻转至右下角的物理摄像头，并溢出到底部黑边外；
-  2. **转轴在底（逆时针 90°）**：硬件摄像头转至左上角，右侧虽然无摄像头，但导航栏依然从 `top: 240px` 起步，导致最下方的“同步”按钮被屏幕底边硬生生截断一半。
-- **根本原因**：
-  1. 竖屏时设置 `top: max(240px, ...)` 是为了躲避右上角灵动岛向下延伸的展开区；
-  2. 无论是向哪个方向横转，屏幕垂直可用高度都会从 700pt+ 剧烈压缩至仅 **390pt ~ 420pt**；
-  3. 在如此矮的视口中，任何大于 200px 的 `top` 偏移都会导致总高约 250px 的导航栏直接触底甚至溢出。
-- **纠正**：
-  1. 通过 `@media (orientation: landscape), (max-height: 560px)` 自动识别横屏紧凑高度姿态，采用 **JS 动态姿态监听器 (`detectDevicePosture`)** 为 `<html>` 注入精确的 `data-posture` 属性；
-  2. **姿态 A（顺时针 90°，转轴在顶，摄像头在右下角）**：
-     - 设置 `top: auto; bottom: max(60px, calc(env(safe-area-inset-bottom) + 38px));`，摄像头顶部距离屏幕底边约为 52.5pt，保留 7.5pt 黄金间隙紧贴吸附于摄像头正上方；
-     - 保持 `right: 29px` 与右侧摄像头同轴。
-  3. **姿态 B（逆时针 90°，转轴在底，摄像头在左上角）**：
-     - 摄像头在左上，距离左边框中轴 50px（与竖屏右侧同理）；右侧为平边。
-     - 响应“挪到左边，和顶部原点对齐，位置在下面，不用贴着原点”：
-       - **水平同轴对齐**：设置 `left: 29px; right: auto;`，按钮半宽 21px，中轴线精确锁定在 X = 50px，与左上角物理摄像头圆点垂直严格同轴；
-       - **垂直底部沉底**：设置 `top: auto; bottom: max(16px, env(safe-area-inset-bottom));`，停靠在左下角，不贴着原点；
-       - **内容避让互换**：`.mobile-shell` 改为左避让 `padding-left: calc(14px + max(64px, env(safe-area-inset-left)))`，右侧释放为 `padding-right: max(18px, env(safe-area-inset-right))`，卡片自然铺展至右侧平边。
-
----
-
-## 四、 当前姿态（外屏折叠态）最终技术落地
-
-### 1. 视口全屏配置
-
-- **文件**：`index.html` 与 `src/shared/utils/mobile-viewport.ts`
-- **配置**：
-  ```html
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-  />
-  ```
-
-### 2. 侧边栏与主布局样式 (`src/mobile/mobile.css`)
+反复出现的错误写法是：
 
 ```css
-/* 1. 主容器避让右侧侧边栏，正文列表畅通滑到底部 */
-.mobile-shell {
-  max-width: 760px;
-  margin: 0 auto;
-  min-height: 100dvh;
-  padding: max(20px, env(safe-area-inset-top)) calc(14px + max(56px, env(safe-area-inset-right)))
-    max(24px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
-  position: relative;
-}
-
-/* 2. 侧边栏精准中轴对齐与避让灵动岛展开 */
-.mobile-nav {
-  position: fixed;
-  right: 29px; /* 29px 边距 + 21px 按钮半宽 = 50px 绝对中轴，与上方摄像头、时间、WiFi 100% 同轴 */
-  width: 42px;
-  top: max(240px, calc(50% - 130px)); /* 留出 240px 避让展开态灵动岛，同时落位大拇指操作区 */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 4px 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  z-index: 90;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-@media (min-width: 820px) {
-  .mobile-nav {
-    right: calc((100vw - 760px) / 2 + 29px);
-  }
-}
-
-/* 3. 紧凑型按钮项（图标 17px + 标签 10.5px） */
-.mobile-nav button {
-  border: 0;
-  background: transparent;
-  color: #626e78;
-  width: 42px;
-  min-height: 42px;
-  padding: 4px 2px;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  font-size: 10.5px;
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  transition: all 0.15s ease-out;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.mobile-nav button.active {
-  color: #ffffff;
-  background: #1c3547;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(28, 53, 71, 0.2);
-}
-
-/* 4. 横屏/紧凑高度通用紧凑样式（默认停靠左下角，与左上角摄像头同轴） */
-@media (orientation: landscape), (max-height: 560px) {
-  .mobile-shell {
-    padding-left: calc(14px + max(64px, env(safe-area-inset-left)));
-    padding-right: max(18px, env(safe-area-inset-right));
-  }
-  .mobile-nav {
-    top: auto;
-    left: 29px; /* 与左上角摄像头圆点 100% 同轴对齐 */
-    right: auto;
-    bottom: max(16px, env(safe-area-inset-bottom)); /* 沉底吸附在左下方 */
-    gap: 6px;
-  }
-  .mobile-nav button {
-    width: 42px;
-    min-height: 38px;
-    height: 38px;
-    padding: 3px 2px;
-    gap: 1px;
-    font-size: 10px;
-  }
-  .mobile-nav button svg {
-    width: 15px;
-    height: 15px;
-  }
-}
-
-/* 姿态 A：外屏横屏（顺时针 90°，转轴置顶，摄像头右下） */
-[data-posture="landscape-hinge-top"] .mobile-shell {
-  padding-left: max(18px, env(safe-area-inset-left));
-  padding-right: calc(14px + max(56px, env(safe-area-inset-right)));
-}
-[data-posture="landscape-hinge-top"] .mobile-nav {
-  left: auto;
-  right: 29px;
-  bottom: max(60px, calc(env(safe-area-inset-bottom) + 38px)); /* 紧贴右下角摄像头上方 */
-  top: auto;
-}
-
-/* 姿态 B：外屏横屏（逆时针 90°，转轴置底，摄像头左上） */
-[data-posture="landscape-hinge-bottom"] .mobile-shell {
-  padding-left: calc(14px + max(64px, env(safe-area-inset-left)));
-  padding-right: max(18px, env(safe-area-inset-right));
-}
-[data-posture="landscape-hinge-bottom"] .mobile-nav {
-  left: 29px; /* 与顶部左上角摄像头原点对齐 */
-  right: auto;
-  bottom: max(16px, env(safe-area-inset-bottom)); /* 沉底吸附于左下角底边，不贴着原点 */
-  top: auto;
-}
+/* 错误：把菜单推到系统侧栏的左边，而不是放进侧栏。 */
+right: max(10px, env(safe-area-inset-right));
 ```
 
----
+`safe-area-inset-right` 表示正文需要避让的右侧范围，不表示自定义菜单必须离屏幕右边缘这么远。`right` 越大，菜单越向左。当右侧安全区较宽时，上述写法会让菜单停在时间、Wi-Fi 所在列的左侧。
 
-## 五、 后续待适配姿态规划清单（逐步演进）
+本项目展开横屏使用完整视口中的共享侧栏：菜单宽 56 CSS px，距视口右边缘 22 CSS px，中轴距右边缘 50 CSS px。**定位基准是视口右边缘，不是安全区左边界，也不是居中正文容器的右边缘。** 这些数值是当前实现与截图确认的布局参数，不是所有 Apple 设备通用的硬件常量。
 
-当前仅完成外屏闭合姿态。以下姿态在后续阶段逐步跟进，切忌直接套用外屏硬编码：
+### 2. 只修复重叠，却额外占用一列正文
 
-1. **完全展开姿态（Unfolded / 7.6 英寸内屏，Regular Width）**
-   - 尺寸类别转变为 Regular Width。
-   - 视图应由单列列表自动升级为“双栏/主从视图（Master-Detail）”或网格，充分发挥大屏密度。
-   - 严格规避中间铰链与折痕保留区（Reserved Regions），核心操作不可横跨中轴。
-2. **半折叠桌面 / 笔记本姿态（Tabletop / Laptop Mode）**
-   - 设备弯折约 90 度平放时，上屏为内容/数据/详情看板，下屏自适应为控制器、筛选器或表单。
-3. **开合状态连续性（Continuity）**
-   - 用户在翻开与合上屏幕的瞬间，保持当前选中的 Tab、滚动位置（Scroll Position）、已筛选状态与抽屉展开状态不丢失。
+曾出现两轮错误处理：
+
+| 写法或处理                                               | 结果                                             |
+| -------------------------------------------------------- | ------------------------------------------------ |
+| 菜单在安全区左边，正文预留 `16px + max(56px, safe-area)` | 右安全区为 80px 时，菜单覆盖正文 40px            |
+| 保持菜单原位置，改为预留“安全区 + 菜单宽度 + 间隔”       | 不再重叠，但菜单仍没进入共享侧栏，正文又少了一列 |
+
+第二种处理只是消除了遮挡，没有满足目标位置，不能算修复完成。
+
+当前菜单与系统状态信息共用一列，因此右侧所需空间取安全区与菜单占用范围的较大值，不能把两列相加。展开横屏的计算关系为：
+
+```text
+菜单占用范围 = 22px 偏移 + 56px 宽度 + 14px 间隔 = 92px
+右侧避让范围 = max(右安全区, 92px)
+容器右侧外部留白 = max(0px, (视口宽度 - 正文最大宽度) / 2)
+正文右内边距 = max(24px, 右侧避让范围 - 容器右侧外部留白)
+```
+
+例如，视口宽 951px、右安全区 80px 时：正文右边缘应为 859px，菜单左边缘为 873px，间隔 14px。错误的第二轮处理让正文止于 801px，白白损失了 58px 宽度。
+
+### 3. 将固定导航绑到居中正文容器
+
+正文可以使用 `max-width` 居中，但展开横屏的菜单要与系统状态栏同列。若给菜单的 `right` 再加 `(100vw - 正文最大宽度) / 2`，窗口变宽后菜单会向左漂移。
+
+当前展开横屏显式使用 `right: var(--mobile-nav-inset)`；正文计算自己的内边距时扣除容器已经存在的外部留白。外屏沿用其当前容器偏移约定，不应为了修复展开横屏而一并改动已确认的其他姿态。
+
+### 4. JS 与 CSS 同时决定菜单姿态
+
+曾经 JS 要求“宽度至少 580px 且高度至少 800px”才进入展开竖屏，而 CSS 只检查“宽度至少 580px 且竖屏”。在 700 × 790 的窗口中，两者产生混合布局：菜单横向排列，却保留普通竖屏的顶部偏移和定位。
+
+现在由 `device-posture.ts` 唯一设置 `html[data-posture]`，菜单只根据该属性选择布局。不要重新增加另一套媒体查询来覆盖菜单的位置、方向或内容避让。尺寸判断仍是布局启发式，不是硬件折叠状态 API。
+
+## 三、当前实现约定
+
+布局源码以 `src/mobile/mobile.css` 为准；此处只记录需要保持的行为与关键参数，不复制整份样式。
+
+| `data-posture`           | 菜单位置                   | 关键约定                                                   |
+| ------------------------ | -------------------------- | ---------------------------------------------------------- |
+| `portrait`               | 右下，无浮动外壳           | 44px 宽，距容器侧边 28px，底部避让至少 16px                |
+| `landscape-hinge-top`    | 右下，无浮动外壳           | 保留摄像头上方净空，底部取 `max(60px, safe-bottom + 38px)` |
+| `landscape-hinge-bottom` | 左下，无浮动外壳           | 与左侧硬件列对齐，正文改为向左避让                         |
+| `unfolded-portrait`      | 底部水平胶囊               | 水平居中，正文底部预留菜单高度与安全区                     |
+| `unfolded-landscape`     | 右下垂直胶囊，与状态栏共列 | 56px 宽，距视口右边 22px；不叠加右安全区或容器居中偏移     |
+
+- `--mobile-nav-width`、`--mobile-nav-inset`、`--mobile-nav-gap` 同时参与菜单和正文计算，避免维护两套互不相关的数值。
+- `--mobile-right-rail` 表示共享列所需范围；共享同一列时取 `max`，不是将安全区和菜单宽度相加。
+- 按钮点击区域至少为 44 × 44 CSS px。菜单保持底部锚定，普通竖屏不能恢复为 `top: max(240px, ...)`。
+- 外屏早期使用的“29px 偏移 + 21px 半宽”属于历史参数；当前是“28px 偏移 + 22px 半宽”，两者中轴均为 50px，不要恢复旧尺寸。
+- 姿态监听只在移动入口初始化一次，卸载时清理事件监听、定时器与动画帧。
+- 保持移动入口的 `viewport-fit=cover`。它允许网页使用完整视口，但不会自动把 HTML 菜单安排进原生导航栏。
+
+浮动胶囊本身并不是本次位置错误的原因：展开态当前保留胶囊，外屏当前使用无外壳侧栏。不要用“加大正文边距”或“去掉胶囊外观”代替修正菜单坐标。
+
+## 四、以后怎么排查和验收
+
+### 修改前先确定坐标与姿态
+
+1. 保留一张实际模拟器或设备的修改前截图，记录当前姿态。
+2. 在运行中的 WebView 检查 `innerWidth/innerHeight`、`visualViewport`、`html[data-posture]`、四边 `env(safe-area-inset-*)` 的实际值，以及菜单、正文的 `getBoundingClientRect()` 和计算样式。
+3. 先核对移动入口、`viewport-fit=cover`、菜单最终命中的选择器和 `right/left`。`position: relative` 不会自动让子元素的 `position: fixed` 改按父容器定位。
+4. 如果 `right: 0` 仍无法接近目标边缘，再检查原生 WebView 的 frame、bounds 与滚动内容自动 inset。区分“网页自己算错”和“WebView 没覆盖该区域”，不要只凭空白区域就断定平台不支持。本次已经通过 CSS 热更新证明，无需修改原生 WebView 就能进入目标侧栏。
+
+### 验收必须同时满足三个结果
+
+- **位置正确**：展开横屏菜单与时间、Wi-Fi 同列，位于状态信息下方；不能只是与正文隔开、却停在共享侧栏左侧。
+- **正文空间正确**：卡片没有被菜单覆盖，也没有额外为错位菜单空出第二列。
+- **交互正确**：五个入口都可点击，“同步”完整可见；滚动列表、切换 Tab、旋转往返后位置与页面状态保持稳定。
+
+浏览器回归至少覆盖：普通竖屏、外屏两个横屏方向、展开竖屏/横屏、700 × 790 断点场景、右安全区 0/80/120px，以及 1200px 宽窗口。安全区模拟只用于验证计算，不能替代原生画面与系统遮挡的检查。
+
+展开横屏还必须检查以下位置断言，避免再次出现“检查都通过了，但菜单仍在正文里”：
+
+```text
+菜单右边缘 = 视口宽度 - 22px
+菜单中轴   = 视口宽度 - 50px
+951 × 669、右安全区 80px：正文右边缘 = 859px
+```
+
+允许浏览器的小数舍入误差。单测通过、Chrome 截图无重叠，都不能独立证明菜单已经进入目标侧栏；最终必须对照第一节的实际基线图。未来如需改变这些位置，应明确记录需求变化，并重新取得位置确认。
+
+### 已有验证记录
+
+2026-11-10：前端检查通过（84 个测试文件、428 个测试）、移动端构建通过、Rust 检查通过（124 个测试）。最终 CSS 修正后，重跑前端检查、移动端构建及 14 组浏览器布局回归，五个导航入口均通过浏览器鼠标事件点击。
+
+实际 iOS 27.2 Duo 模拟器内屏截图确认了菜单由状态栏左边移至同一列，卡片同步向右扩展。用户随后明确确认：“现在菜单的位置都是对的”。上述记录不等于物理设备、原生触摸、分屏或动态系统区域的完整验收。
+
+## 五、官方资料与适用边界
+
+- [Raise the bar with iPhone Duo](https://developer.apple.com/videos/play/tech-talks/111462/)：侧边共享栏的排列原则，以及原生导航容器的自动适配方式。
+- [Prepare your app for iPhone Duo](https://developer.apple.com/videos/play/tech-talks/111461/)：SDK 对全屏使用范围的影响、非对称安全区，以及自定义布局利用 reserved regions 的方式。
+- [Strike a pose with adaptive layouts on iPhone Duo](https://developer.apple.com/videos/play/tech-talks/111463/)：折痕与摄像头等 reserved regions 的查询和适配。
+- [WebKit：Designing Websites for iPhone X](https://webkit.org/blog/7929/designing-websites-for-iphone-x/)：`viewport-fit=cover`、安全区环境变量与内容边距。
+
+原生 TabView / UITabBarController 的自动适配规则不能直接当作 HTML 菜单已经具备的能力；本项目需要自己计算 CSS 位置。反过来，也不能因为 HTML 不自动适配，就认为共享侧栏不可使用。
+
+后续增加半折叠、分屏、动态遮挡等适配时，应取得实际区域数据再实现。历史调试中的屏幕尺寸、摄像头高度与灵动岛展开高度不作为通用硬件常量。继续验证开合连续性、当前 Tab、滚动位置、筛选与抽屉状态；不要通过重挂载整个应用来掩盖布局问题。

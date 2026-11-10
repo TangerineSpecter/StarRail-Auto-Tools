@@ -8,11 +8,12 @@ import "./mobile.css";
 import { initDevicePostureWatcher } from "./device-posture";
 
 document.documentElement.classList.add("mobile-view");
-initDevicePostureWatcher();
+const stopDevicePostureWatcher = initDevicePostureWatcher();
 
-createApp(MobileApp)
+const app = createApp(MobileApp)
   .use(createPinia())
   .use(PrimeVue, {
     theme: { preset: StarRailPreset, options: { darkModeSelector: false, cssLayer: true } },
-  })
-  .mount("#app");
+  });
+app.onUnmount(stopDevicePostureWatcher);
+app.mount("#app");

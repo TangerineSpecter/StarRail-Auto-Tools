@@ -5,7 +5,6 @@ import { useRuntimeStore } from "@/app/stores/runtime";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import { readOnlyViewKey } from "@/shared/contracts/view-mode";
 import { inventoryApi } from "@/shared/api/inventory";
-import { initDevicePostureWatcher } from "./device-posture";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import MobileSync from "./MobileSync.vue";
 import MobileTeams from "./MobileTeams.vue";
@@ -43,7 +42,6 @@ async function synced() {
 }
 onMounted(() => {
   synced();
-  initDevicePostureWatcher();
 });
 </script>
 <template>
