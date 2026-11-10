@@ -30,3 +30,7 @@ npm run tauri -- ios build --debug --target aarch64-sim --no-sign
 电脑端先在“数据同步站”上传本地数据；手机端填写同一 WebDAV 服务器和目录，点击“下载最新数据”。下载会覆盖手机的同步数据；当现有同步机制检测到本地修改冲突时，手机端停止下载。
 
 目前沿用桌面端的同步设置存储实现：密码保存在应用私有数据目录的本地 JSON 配置中，尚未接入 iOS 钥匙串。
+
+## iPhone Duo 适配规范
+
+关于针对 iPhone Duo 双屏折叠设备的交互设计、Shared Bar Area 侧边栏布局、避让灵动岛展开、WebKit `viewport-fit=cover` 与踩坑总结，详见专门文档：[iPhone-Duo适配与开发经验.md](file:///Users/zhouliangjun/Desktop/py_code/StarRail-Auto-Tools/docs/iPhone-Duo适配与开发经验.md)。
