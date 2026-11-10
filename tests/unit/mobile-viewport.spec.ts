@@ -8,6 +8,7 @@ describe("mobile entry viewport", () => {
     const html = mobileEntryHtml(desktop);
     expect(html.match(/name="viewport"/g)).toHaveLength(1);
     expect(html).toContain("minimum-scale=1.0, maximum-scale=1.0, user-scalable=no");
+    expect(html).toContain("viewport-fit=cover");
     expect(html).toContain("/src/mobile/main.ts");
     expect(desktop).not.toContain("user-scalable");
   });
