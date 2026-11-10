@@ -1,3 +1,4 @@
+import { readOnlyViewKey } from "@/shared/contracts/view-mode";
 import { flushPromises, mount } from "@vue/test-utils";
 import { ref } from "vue";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -200,4 +201,25 @@ describe("BuildDashboard", () => {
 
     wrapper.unmount();
   });
+});
+
+it("shows graduation evidence without mutation controls in a read-only viewer", async () => {
+  dashboard.mockResolvedValue([entry]);
+  const wrapper = mount(BuildDashboard, {
+    global: {
+      provide: {
+        [readOnlyViewKey as symbol]: true,
+        [runtimeContextKey as symbol]: { notice: ref("") },
+      },
+      stubs: { InputText: true, Select: true },
+    },
+  });
+  await flushPromises();
+  expect(wrapper.find(".build-target-edit").exists()).toBe(false);
+  expect(wrapper.find(".build-plan-transfer-actions").exists()).toBe(false);
+  expect(wrapper.find(".build-drag-handle").exists()).toBe(false);
+  expect(wrapper.find(".build-pin-inline").exists()).toBe(false);
+  expect(wrapper.get(".equipped-light-cone").text()).toContain("银河铁道之夜");
+  expect(reorderDashboard).not.toHaveBeenCalled();
+  wrapper.unmount();
 });

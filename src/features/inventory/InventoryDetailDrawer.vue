@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useReadOnlyView } from "@/shared/contracts/view-mode";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import CharacterDetail from "./CharacterDetail.vue";
 import LightConeDetail from "./LightConeDetail.vue";
@@ -7,6 +8,7 @@ import { buildPlanApi } from "@/shared/api/build-plan";
 import type { CharacterBuildPlan, InventoryDetail } from "@/types";
 import type { CharacterDetailData, LightConeDetailData, RelicDetailData } from "./detail-types";
 
+const readOnly = useReadOnlyView();
 const props = defineProps<{ detail: InventoryDetail | null; loading: boolean }>();
 const emit = defineEmits<{ close: [] }>();
 const asRelic = () => props.detail?.data as unknown as RelicDetailData;
@@ -79,19 +81,31 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         },
       ]"
     >
-      <header v-if="detail?.kind !== 'character'">
+      <header v-if="readOnly || detail?.kind !== 'character'">
         <div>
           <p class="eyebrow">
-            {{ detail?.kind === "relic" ? "RELIC ANALYSIS" : "LIGHT CONE DATA" }}
+            {{
+              detail?.kind === "character"
+                ? "CHARACTER DATA"
+                : detail?.kind === "relic"
+                  ? "RELIC ANALYSIS"
+                  : "LIGHT CONE DATA"
+            }}
           </p>
           <h2>
-            {{ detail?.kind === "relic" ? "遗器档案详情" : "光锥档案详情" }}
+            {{
+              detail?.kind === "character"
+                ? "角色档案详情"
+                : detail?.kind === "relic"
+                  ? "遗器档案详情"
+                  : "光锥档案详情"
+            }}
           </h2>
         </div>
         <button type="button" aria-label="关闭详情" @click="emit('close')">×</button>
       </header>
       <div class="detail-drawer-content">
-        <div v-if="loading" class="detail-loading">正在读取 SQLite 记录…</div>
+        <div v-if="loading" class="detail-loading">正在加载详情…</div>
         <RelicDetail
           v-else-if="detail?.kind === 'relic'"
           :detail="asRelic()"

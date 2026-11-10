@@ -152,3 +152,21 @@ describe("InventoryList", () => {
     expect(cards[1]!.get(".character-card-avatar").attributes("src")).toContain("playerboy2");
   });
 });
+
+it("keeps detail access but removes editing and selection in the mobile viewer", async () => {
+  const props = {
+    kind: "character" as const,
+    items: [character],
+    selectedIds: new Set<number>(),
+    allSelected: false,
+    appending: false,
+    busy: false,
+    readOnly: true,
+  };
+  const wrapper = mount(InventoryList, { props });
+  expect(wrapper.find(".character-build-action").exists()).toBe(false);
+  await wrapper.get(".character-card").trigger("click");
+  expect(wrapper.emitted("detail")).toEqual([["character", 1001]]);
+  const relicWrapper = mount(InventoryList, { props: { ...props, kind: "relic", items: [relic] } });
+  expect(relicWrapper.find(".check-cell").exists()).toBe(false);
+});

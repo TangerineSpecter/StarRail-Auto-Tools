@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { mobileEntryHtml } from "./src/shared/utils/mobile-viewport";
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -12,7 +13,7 @@ export default defineConfig(({ mode }) => ({
       transformIndexHtml: {
         order: "pre",
         handler(html) {
-          return mode === "mobile" ? html.replace("/src/main.ts", "/src/mobile/main.ts") : html;
+          return mode === "mobile" ? mobileEntryHtml(html) : html;
         },
       },
     },

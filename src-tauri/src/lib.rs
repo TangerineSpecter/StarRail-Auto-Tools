@@ -7,6 +7,8 @@ mod error;
 mod game_launch;
 mod inventory;
 mod mcp;
+#[cfg(target_os = "ios")]
+mod mobile_webview;
 mod model_provider;
 #[cfg(feature = "ocr")]
 mod ocr;
@@ -28,6 +30,9 @@ use tauri::Manager;
 
 #[cfg(not(mobile))]
 pub fn run() {
+    // Tauri's debug client uses reqwest with rustls-no-provider. Select the
+    // provider before any network client is constructed; an existing one wins.
+    let _ = rustls::crypto::ring::default_provider().install_default();
     let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init());
 
     #[cfg(not(debug_assertions))]
@@ -177,7 +182,15 @@ pub fn run() {
 #[cfg(mobile)]
 #[tauri::mobile_entry_point]
 pub fn run() {
-    tauri::Builder::default()
+    let _ = rustls::crypto::ring::default_provider().install_default();
+    let builder = tauri::Builder::default();
+    #[cfg(target_os = "ios")]
+    let builder = builder.on_page_load(|webview, payload| {
+        if payload.event() == tauri::webview::PageLoadEvent::Finished {
+            let _ = mobile_webview::disable_page_zoom(webview);
+        }
+    });
+    builder
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
@@ -191,6 +204,13 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_inventory_summary,
+            commands::get_inventory_equipment_counts,
+            commands::get_character_build_plan,
+            commands::list_relic_set_recommended_characters,
+            commands::list_relic_set_target_counts,
+            commands::list_relic_set_farming_profiles,
+            commands::get_relic_optimizer_context,
+            commands::list_character_build_scores,
             commands::list_relics,
             commands::list_light_cones,
             commands::list_characters,

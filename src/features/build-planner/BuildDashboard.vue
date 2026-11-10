@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useReadOnlyView } from "@/shared/contracts/view-mode";
+const readOnly = useReadOnlyView();
 import { computed, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
@@ -133,7 +135,7 @@ function dashboardState(entry: BuildDashboardEntry) {
   };
 }
 
-const canDrag = computed(() => !search.value.trim() && !loading.value && !error.value);
+const canDrag = computed(() => !readOnly && !search.value.trim() && !loading.value && !error.value);
 const standingWarnings = computed(() =>
   entries.value.flatMap((entry) => {
     const state = dashboardState(entry);
@@ -276,6 +278,7 @@ function orderedEntryIdsForDrag(preferred: number[]) {
 }
 
 async function reorderDraggedCard(sourceId: number, targetId: number, visibleOrderIds: number[]) {
+  if (readOnly) return;
   const source = entries.value.find((entry) => entry.character.characterId === sourceId);
   const target = entries.value.find((entry) => entry.character.characterId === targetId);
   if (!source || !target || source.pinned !== target.pinned) {
@@ -313,6 +316,7 @@ const { draggedCharacterId, dragOverCharacterId, pointerDragStart } = useDashboa
 });
 
 async function togglePinned(card: (typeof cards.value)[number]) {
+  if (readOnly) return;
   actionCharacterId.value = card.character.characterId;
   try {
     await buildPlanApi.setDashboardPinned(card.character.characterId, !card.entry.pinned);
@@ -373,7 +377,7 @@ defineExpose({ reload: loadDashboard });
         <p>追踪已配置角色的当前站街属性与毕业目标。</p>
       </div>
       <div class="build-dashboard-tools">
-        <div class="build-plan-transfer-actions" aria-label="角色目标 Excel 操作">
+        <div v-if="!readOnly" class="build-plan-transfer-actions" aria-label="角色目标 Excel 操作">
           <button type="button" class="build-plan-transfer export" @click="exportExcel">
             <span class="build-plan-transfer-icon" aria-hidden="true">↓</span>
             <span>导出 Excel</span>
@@ -393,7 +397,7 @@ defineExpose({ reload: loadDashboard });
           option-label="label"
           option-value="value"
         />
-        <small class="build-sort-hint">
+        <small v-if="!readOnly" class="build-sort-hint">
           {{ search.trim() ? "清除搜索后可拖拽排序" : "拖动左侧手柄调整顺序" }}
         </small>
       </div>
@@ -428,6 +432,7 @@ defineExpose({ reload: loadDashboard });
         <header class="build-card-header">
           <div class="build-card-identity">
             <button
+              v-if="!readOnly"
               type="button"
               class="build-drag-handle"
               :disabled="!canDrag || actionCharacterId !== null"
@@ -450,6 +455,7 @@ defineExpose({ reload: loadDashboard });
               <div class="build-character-title">
                 <p>{{ card.character.name }}</p>
                 <button
+                  v-if="!readOnly"
                   type="button"
                   :class="['build-pin-inline', { pinned: card.entry.pinned }]"
                   :disabled="actionCharacterId !== null"
@@ -485,6 +491,7 @@ defineExpose({ reload: loadDashboard });
               <div class="build-character-actions">
                 <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
                 <button
+                  v-if="!readOnly"
                   type="button"
                   class="build-target-edit"
                   :aria-label="`编辑${card.character.name}的毕业目标`"

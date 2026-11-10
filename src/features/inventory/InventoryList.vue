@@ -31,6 +31,7 @@ const props = defineProps<{
   allSelected: boolean;
   appending: boolean;
   busy: boolean;
+  readOnly?: boolean;
 }>();
 const emit = defineEmits<{
   "toggle-all": [];
@@ -93,7 +94,7 @@ function avatarColor(name: string): string {
   <div class="table-shell" @scroll="emit('scroll', $event)">
     <table v-if="kind !== 'character'" :class="['inventory-table', `inventory-table--${kind}`]">
       <colgroup>
-        <col class="inventory-col-select" />
+        <col v-if="!readOnly" class="inventory-col-select" />
         <col class="inventory-col-name" />
         <col class="inventory-col-level" />
         <col class="inventory-col-primary" />
@@ -103,7 +104,7 @@ function avatarColor(name: string): string {
       </colgroup>
       <thead>
         <tr>
-          <th class="check-cell">
+          <th v-if="!readOnly" class="check-cell">
             <Checkbox binary :model-value="allSelected" @update:model-value="emit('toggle-all')" />
           </th>
           <th>名称</th>
@@ -124,7 +125,7 @@ function avatarColor(name: string): string {
       <tbody>
         <template v-if="kind === 'relic'">
           <tr v-for="item in relics()" :key="item.itemId">
-            <td class="check-cell">
+            <td v-if="!readOnly" class="check-cell">
               <Checkbox
                 binary
                 :model-value="selectedIds.has(item.itemId)"
@@ -198,7 +199,7 @@ function avatarColor(name: string): string {
         </template>
         <template v-else>
           <tr v-for="item in lightCones()" :key="item.itemId">
-            <td class="check-cell">
+            <td v-if="!readOnly" class="check-cell">
               <Checkbox
                 binary
                 :model-value="selectedIds.has(item.itemId)"
@@ -259,7 +260,11 @@ function avatarColor(name: string): string {
         <tr v-if="!items.length">
           <td :colspan="kind === 'lightCone' ? 6 : 7" class="table-empty">
             <span>◇</span><strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong
-            ><small>启动游戏数据直读并重新登录后，档案会自动出现</small>
+            ><small>{{
+              readOnly
+                ? "请在同步页面下载电脑端上传的数据"
+                : "启动游戏数据直读并重新登录后，档案会自动出现"
+            }}</small>
           </td>
         </tr>
       </tbody>
@@ -319,7 +324,7 @@ function avatarColor(name: string): string {
             >
           </div>
         </div>
-        <div class="character-card-actions">
+        <div v-if="!readOnly" class="character-card-actions">
           <button
             :class="['character-build-action', { 'has-build-plan': item.hasBuildPlan }]"
             type="button"
@@ -331,7 +336,11 @@ function avatarColor(name: string): string {
       </div>
       <div v-if="!items.length" class="table-empty">
         <span>◇</span><strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong
-        ><small>启动游戏数据直读并重新登录后，档案会自动出现</small>
+        ><small>{{
+          readOnly
+            ? "请在同步页面下载电脑端上传的数据"
+            : "启动游戏数据直读并重新登录后，档案会自动出现"
+        }}</small>
       </div>
     </div>
     <div v-if="appending" class="loading-more">

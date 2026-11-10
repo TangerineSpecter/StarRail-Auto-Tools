@@ -218,3 +218,331 @@ input {
   font-size: 13px;
   color: #626e78;
 }
+/* Desktop visual tokens and domain components, arranged for a touch viewport. */
+html,
+body,
+#app {
+  min-width: 0;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+body {
+  background: var(--paper);
+}
+.mobile-shell {
+  max-width: 1000px;
+  color: var(--ink);
+}
+.mobile-brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.mobile-brand img {
+  width: 38px;
+  height: 38px;
+}
+.mobile-header h1 {
+  font-size: 21px;
+  letter-spacing: 0;
+}
+.mobile-header small {
+  font-size: 10px;
+}
+.mobile-offline {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mobile-segments {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.mobile-segments button {
+  flex: 1;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+}
+.mobile-segments .active {
+  color: white;
+  background: var(--blue);
+}
+.mobile-archive .archive-heading {
+  display: block;
+  padding: 0;
+}
+.mobile-archive .archive-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.mobile-archive .quick-search {
+  width: 100%;
+  flex: auto;
+}
+.mobile-archive .quick-search input {
+  min-width: 0;
+  width: 100%;
+}
+.mobile-archive .table-shell {
+  overflow: visible;
+  height: auto;
+}
+.mobile-archive .inventory-table,
+.mobile-archive .inventory-table tbody {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.mobile-archive .inventory-table thead,
+.mobile-archive .inventory-table colgroup {
+  display: none;
+}
+.mobile-archive .inventory-table tr {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  gap: 10px;
+}
+.mobile-archive .inventory-table td {
+  display: block;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  white-space: normal;
+}
+.mobile-archive .inventory-table td:first-child {
+  width: calc(100% - 60px);
+}
+.mobile-archive .inventory-table--relic td:nth-child(3),
+.mobile-archive .inventory-table--relic td:nth-child(4) {
+  width: 100%;
+}
+.mobile-archive .inventory-table .relic-name-cell {
+  min-width: 0;
+}
+.mobile-archive .character-card-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0;
+  gap: 12px;
+}
+.mobile-more {
+  margin: 16px 0;
+  width: 100%;
+  min-height: 44px;
+  background: var(--blue);
+  color: white;
+  border-radius: 4px;
+}
+.mobile-team {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.mobile-team-members {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.mobile-team-members > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+  font-size: 13px;
+}
+.mobile-team-members img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+html.mobile-view .mobile-shell .catalogue-workspace {
+  padding: 0;
+  overflow: visible;
+}
+html.mobile-view .mobile-shell .catalogue-heading {
+  display: block;
+}
+html.mobile-view .mobile-shell .catalogue-heading h2 {
+  font-size: 20px;
+}
+html.mobile-view .mobile-shell .catalogue-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
+}
+html.mobile-view .mobile-shell .catalogue-tab-btn {
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px;
+}
+html.mobile-view .mobile-shell .catalogue-grid,
+html.mobile-view .mobile-shell .lightcone-catalogue-grid,
+html.mobile-view .mobile-shell .character-catalogue-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+html.mobile-view .mobile-shell .build-dashboard {
+  padding: 0;
+  overflow: visible;
+}
+html.mobile-view .mobile-shell .build-dashboard-heading {
+  display: block;
+}
+html.mobile-view .mobile-shell .build-dashboard-tools {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+html.mobile-view .mobile-shell .build-progress-row {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+html.mobile-view .mobile-shell .build-card-header {
+  width: 100%;
+  min-width: 0;
+}
+html.mobile-view .mobile-shell .build-target-table {
+  min-width: 0;
+}
+html.mobile-view .mobile-shell .build-targets-grid {
+  grid-template-columns: 1fr;
+}
+.mobile-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mobile-nav button {
+  flex: 1;
+  max-width: 180px;
+  min-height: 54px;
+}
+/* Detail and filter overlays teleport outside the shell. These overrides apply only in the mobile entry. */
+.detail-backdrop {
+  padding: 0;
+  z-index: 100;
+}
+.detail-drawer,
+.detail-drawer.character-detail-drawer,
+.detail-drawer.relic-detail-drawer,
+.detail-drawer.lightcone-detail-drawer {
+  width: 100%;
+  max-width: 100%;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.detail-drawer-content {
+  padding: 16px;
+  overflow-x: hidden;
+}
+.detail-drawer .character-detail-layout,
+.detail-drawer .character-detail-columns {
+  display: flex;
+  flex-direction: column;
+}
+.detail-drawer .character-detail-card {
+  min-width: 0;
+}
+.detail-drawer .character-standing-stats,
+.detail-drawer .character-skill-grid {
+  grid-template-columns: 1fr;
+}
+.p-drawer {
+  max-width: 100vw !important;
+}
+@media (max-width: 380px) {
+  .mobile-archive .character-card-grid,
+  html.mobile-view .mobile-shell .catalogue-grid,
+  html.mobile-view .mobile-shell .lightcone-catalogue-grid,
+  html.mobile-view .mobile-shell .character-catalogue-grid {
+    grid-template-columns: 1fr;
+  }
+}
+html.mobile-view .mobile-shell .build-card-body,
+html.mobile-view .mobile-shell .build-card-main,
+html.mobile-view .mobile-shell .build-card-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+}
+html.mobile-view .mobile-shell .build-progress-table {
+  min-width: 0;
+  width: 100%;
+}
+.detail-drawer .standing-stat-grid,
+.detail-drawer .character-data-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.detail-drawer .character-banner-image-wrapper {
+  width: 90px;
+}
+.detail-drawer .score-metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.detail-drawer .score-piece-grid {
+  grid-template-columns: 1fr;
+}
+.detail-drawer .trace-node-grid {
+  grid-template-columns: 1fr;
+}
+.detail-drawer.character-detail-drawer > header {
+  display: flex;
+  padding: 12px 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+@media (max-width: 600px) {
+  html.mobile-view .mobile-shell .catalogue-grid,
+  html.mobile-view .mobile-shell .lightcone-catalogue-grid,
+  html.mobile-view .mobile-shell .character-catalogue-grid {
+    grid-template-columns: 1fr;
+  }
+  html.mobile-view .mobile-shell .build-card-equipment,
+  html.mobile-view .mobile-shell .build-target-grid {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+  html.mobile-view .mobile-shell .build-card-note {
+    min-width: 0;
+    width: 100%;
+  }
+}
+.mobile-archive .score-toolbar-controls,
+.mobile-archive .score-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mobile-archive .score-toolbar-controls label {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+.mobile-archive .score-toolbar-controls select {
+  width: 100%;
+  min-height: 44px;
+}
+.mobile-archive .score-action {
+  min-height: 44px;
+}
+/* Keep touch scrolling while excluding browser page-zoom gestures. */
+html.mobile-view body {
+  touch-action: pan-x pan-y;
+}
+html.mobile-view input,
+html.mobile-view textarea,
+html.mobile-view select {
+  font-size: 16px;
+}

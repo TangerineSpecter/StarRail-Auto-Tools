@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useReadOnlyView } from "@/shared/contracts/view-mode";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import InputNumber from "primevue/inputnumber";
 import { inventoryApi } from "@/shared/api/inventory";
@@ -189,6 +190,7 @@ const completion = computed(() =>
   }),
 );
 
+const readOnly = useReadOnlyView();
 const runtime = useRuntimeStore();
 let persistRequestId = 0;
 
@@ -211,6 +213,7 @@ watch(
       runtime.inventoryRevision,
     ] as const,
   async () => {
+    if (readOnly) return;
     const requestId = ++persistRequestId;
     const characterId = props.detail.characterId;
     const startRevision = runtime.inventoryRevision;
