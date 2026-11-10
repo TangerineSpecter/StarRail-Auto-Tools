@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdaptiveDisclosure from "@/shared/ui/AdaptiveDisclosure.vue";
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
 const readOnly = useReadOnlyView();
 import { computed, onMounted, ref } from "vue";
@@ -543,156 +544,162 @@ defineExpose({ reload: loadDashboard });
           </div>
         </header>
 
-        <div class="build-card-body">
-          <div class="build-card-main">
-            <div class="build-card-equipment">
-              <div class="build-card-section light-cone-section">
-                <h4 class="section-title">当前光锥</h4>
-                <div
-                  v-if="card.equippedLightCone"
-                  class="equipped-light-cone"
-                  :aria-label="`${card.equippedLightCone.name} Lv.${card.equippedLightCone.level} 叠影${card.equippedLightCone.superimposition}`"
-                >
-                  <img
-                    v-if="card.equippedLightCone.image"
-                    :src="card.equippedLightCone.image"
-                    :alt="card.equippedLightCone.name"
-                  />
-                  <span v-else class="equipped-light-cone-fallback">光</span>
-                  <p>
-                    <b>{{ card.equippedLightCone.name }}</b>
-                    <em
-                      >Lv.{{ card.equippedLightCone.level }} · 叠影
-                      {{ card.equippedLightCone.superimposition }}</em
-                    >
-                  </p>
-                </div>
-                <p v-else class="equipped-light-cone empty muted">未装备光锥</p>
-              </div>
-
-              <div class="build-card-section sets-section">
-                <h4 class="section-title">遗器套装状态</h4>
-                <div
-                  v-for="item in card.recommendedSets"
-                  :key="item.set.id"
-                  class="recommended-set"
-                >
-                  <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
-                  <span v-else class="recommended-set-fallback">遗</span>
-                  <p>
-                    {{ item.set.name }}
-                    <b>{{ item.pieces }}件</b>
-                  </p>
-                  <span
-                    :class="['recommended-set-status', { matched: item.matched }]"
-                    role="img"
-                    :aria-label="
-                      item.matched
-                        ? `${item.set.name}已装备${item.pieces}件`
-                        : `${item.set.name}未装备${item.pieces}件`
-                    "
-                    >{{ item.matched ? "✓" : "×" }}</span
+        <AdaptiveDisclosure title="培养详情" summary="装备 · 目标 · 词条潜力">
+          <div class="build-card-body">
+            <div class="build-card-main">
+              <div class="build-card-equipment">
+                <div class="build-card-section light-cone-section">
+                  <h4 class="section-title">当前光锥</h4>
+                  <div
+                    v-if="card.equippedLightCone"
+                    class="equipped-light-cone"
+                    :aria-label="`${card.equippedLightCone.name} Lv.${card.equippedLightCone.level} 叠影${card.equippedLightCone.superimposition}`"
                   >
+                    <img
+                      v-if="card.equippedLightCone.image"
+                      :src="card.equippedLightCone.image"
+                      :alt="card.equippedLightCone.name"
+                    />
+                    <span v-else class="equipped-light-cone-fallback">光</span>
+                    <p>
+                      <b>{{ card.equippedLightCone.name }}</b>
+                      <em
+                        >Lv.{{ card.equippedLightCone.level }} · 叠影
+                        {{ card.equippedLightCone.superimposition }}</em
+                      >
+                    </p>
+                  </div>
+                  <p v-else class="equipped-light-cone empty muted">未装备光锥</p>
                 </div>
-              </div>
-            </div>
 
-            <div class="build-card-section progress-section">
-              <h4 class="section-title">属性目标进度</h4>
-              <div
-                v-for="target in card.targets"
-                :key="target.statKey"
-                :class="['target-progress-row', getProgressClass(target.percent)]"
-              >
-                <div class="target-progress-label">
-                  <b>{{ statLabel(target.statKey) }}</b>
-                  <span v-if="target.percent !== null"
-                    >{{ formatBuildProgressValue(target.statKey, target.current ?? 0) }} /
-                    {{ target.target }}</span
+                <div class="build-card-section sets-section">
+                  <h4 class="section-title">遗器套装状态</h4>
+                  <div
+                    v-for="item in card.recommendedSets"
+                    :key="item.set.id"
+                    class="recommended-set"
                   >
-                  <span v-else>不可映射</span>
+                    <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
+                    <span v-else class="recommended-set-fallback">遗</span>
+                    <p>
+                      {{ item.set.name }}
+                      <b>{{ item.pieces }}件</b>
+                    </p>
+                    <span
+                      :class="['recommended-set-status', { matched: item.matched }]"
+                      role="img"
+                      :aria-label="
+                        item.matched
+                          ? `${item.set.name}已装备${item.pieces}件`
+                          : `${item.set.name}未装备${item.pieces}件`
+                      "
+                      >{{ item.matched ? "✓" : "×" }}</span
+                    >
+                  </div>
                 </div>
-                <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
-                <small>
-                  {{
-                    (target.percent ?? 0) >= 100 ? "达标" : `${target.percent?.toFixed(0) ?? "--"}%`
-                  }}
-                </small>
+              </div>
+
+              <div class="build-card-section progress-section">
+                <h4 class="section-title">属性目标进度</h4>
+                <div
+                  v-for="target in card.targets"
+                  :key="target.statKey"
+                  :class="['target-progress-row', getProgressClass(target.percent)]"
+                >
+                  <div class="target-progress-label">
+                    <b>{{ statLabel(target.statKey) }}</b>
+                    <span v-if="target.percent !== null"
+                      >{{ formatBuildProgressValue(target.statKey, target.current ?? 0) }} /
+                      {{ target.target }}</span
+                    >
+                    <span v-else>不可映射</span>
+                  </div>
+                  <i><em :style="{ width: `${Math.min(target.percent ?? 0, 100)}%` }" /></i>
+                  <small>
+                    {{
+                      (target.percent ?? 0) >= 100
+                        ? "达标"
+                        : `${target.percent?.toFixed(0) ?? "--"}%`
+                    }}
+                  </small>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="build-card-side">
-            <div class="build-card-section quality-section">
-              <h4 class="section-title">部位合格状况</h4>
-              <div class="quality-visuals">
-                <BuildHoverTip title="主属性" :text="qualityMainStatTip()">
-                  <div class="quality-row">
-                    <span class="quality-label has-tip">主属性</span>
-                    <div
-                      class="quality-segments"
-                      :aria-label="`主属性正确 ${card.quality.mainStatCorrectCount} / ${card.quality.mainStatTotal}`"
-                    >
-                      <i
-                        v-for="n in card.quality.mainStatTotal"
-                        :key="'main' + n"
-                        :class="{ active: n <= card.quality.mainStatCorrectCount }"
-                      ></i>
+            <div class="build-card-side">
+              <div class="build-card-section quality-section">
+                <h4 class="section-title">部位合格状况</h4>
+                <div class="quality-visuals">
+                  <BuildHoverTip title="主属性" :text="qualityMainStatTip()">
+                    <div class="quality-row">
+                      <span class="quality-label has-tip">主属性</span>
+                      <div
+                        class="quality-segments"
+                        :aria-label="`主属性正确 ${card.quality.mainStatCorrectCount} / ${card.quality.mainStatTotal}`"
+                      >
+                        <i
+                          v-for="n in card.quality.mainStatTotal"
+                          :key="'main' + n"
+                          :class="{ active: n <= card.quality.mainStatCorrectCount }"
+                        ></i>
+                      </div>
+                      <span class="quality-count"
+                        >{{ card.quality.mainStatCorrectCount }}/{{
+                          card.quality.mainStatTotal
+                        }}</span
+                      >
                     </div>
-                    <span class="quality-count"
-                      >{{ card.quality.mainStatCorrectCount }}/{{
-                        card.quality.mainStatTotal
-                      }}</span
-                    >
-                  </div>
-                </BuildHoverTip>
-                <BuildHoverTip title="及格件数" :text="qualityPassCountTip(card.minPotentialPct)">
-                  <div class="quality-row">
-                    <span class="quality-label has-tip">及格件数</span>
-                    <div
-                      class="quality-segments"
-                      :aria-label="`质量达标 ${card.quality.qualityPassCount} / ${card.quality.qualityTotal}`"
-                    >
-                      <i
-                        v-for="n in card.quality.qualityTotal"
-                        :key="'qual' + n"
-                        :class="{ active: n <= card.quality.qualityPassCount }"
-                      ></i>
+                  </BuildHoverTip>
+                  <BuildHoverTip title="及格件数" :text="qualityPassCountTip(card.minPotentialPct)">
+                    <div class="quality-row">
+                      <span class="quality-label has-tip">及格件数</span>
+                      <div
+                        class="quality-segments"
+                        :aria-label="`质量达标 ${card.quality.qualityPassCount} / ${card.quality.qualityTotal}`"
+                      >
+                        <i
+                          v-for="n in card.quality.qualityTotal"
+                          :key="'qual' + n"
+                          :class="{ active: n <= card.quality.qualityPassCount }"
+                        ></i>
+                      </div>
+                      <span class="quality-count"
+                        >{{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
+                      >
                     </div>
-                    <span class="quality-count"
-                      >{{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</span
-                    >
-                  </div>
-                </BuildHoverTip>
+                  </BuildHoverTip>
+                </div>
+              </div>
+
+              <div class="build-card-section affix-section">
+                <h4 class="section-title">有效词条分布</h4>
+                <div class="affix-tags">
+                  <template v-if="card.effective.length">
+                    <div v-for="item in card.effective" :key="item.key" class="affix-tag">
+                      <span class="affix-name">{{
+                        statLabel(item.key).replace("百分比", "%")
+                      }}</span>
+                      <span class="affix-val">{{ item.count }}</span>
+                    </div>
+                  </template>
+                  <span v-else class="muted">暂无命中词条</span>
+                </div>
               </div>
             </div>
 
-            <div class="build-card-section affix-section">
-              <h4 class="section-title">有效词条分布</h4>
-              <div class="affix-tags">
-                <template v-if="card.effective.length">
-                  <div v-for="item in card.effective" :key="item.key" class="affix-tag">
-                    <span class="affix-name">{{ statLabel(item.key).replace("百分比", "%") }}</span>
-                    <span class="affix-val">{{ item.count }}</span>
-                  </div>
-                </template>
-                <span v-else class="muted">暂无命中词条</span>
+            <div class="build-card-radar-panel">
+              <div class="build-card-section radar-section">
+                <h4 class="section-title">六件词条潜力</h4>
+                <RelicPotentialRadar
+                  :pieces="card.pieces"
+                  :weak-slot="card.weakSlot"
+                  :average-potential-pct="card.averagePotentialPct"
+                  :min-potential-pct="card.minPotentialPct"
+                />
               </div>
             </div>
           </div>
-
-          <div class="build-card-radar-panel">
-            <div class="build-card-section radar-section">
-              <h4 class="section-title">六件词条潜力</h4>
-              <RelicPotentialRadar
-                :pieces="card.pieces"
-                :weak-slot="card.weakSlot"
-                :average-potential-pct="card.averagePotentialPct"
-                :min-potential-pct="card.minPotentialPct"
-              />
-            </div>
-          </div>
-        </div>
+        </AdaptiveDisclosure>
       </article>
     </div>
   </section>

@@ -3,11 +3,15 @@ import { computed, defineAsyncComponent, onMounted, provide, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
+import { mobileViewKey } from "@/shared/contracts/mobile-view";
 import { readOnlyViewKey } from "@/shared/contracts/view-mode";
 import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import MobileSync from "./MobileSync.vue";
 import MobileTeams from "./MobileTeams.vue";
+const MobileDevDataSwitch = import.meta.env.DEV
+  ? defineAsyncComponent(() => import("./MobileDevDataSwitch.vue"))
+  : null;
 const CataloguePage = defineAsyncComponent(() => import("@/pages/CataloguePage.vue"));
 const BuildDashboard = defineAsyncComponent(
   () => import("@/features/build-planner/BuildDashboard.vue"),
@@ -16,6 +20,7 @@ const runtime = useRuntimeStore();
 const refs = storeToRefs(runtime);
 provide(runtimeContextKey, refs);
 provide(readOnlyViewKey, true);
+provide(mobileViewKey, true);
 const tab = ref("inventory");
 const tabs = [
   { id: "inventory", name: "背包" },
@@ -50,11 +55,12 @@ onMounted(() => {
       <div class="mobile-brand">
         <img src="/logo/android-chrome-192x192.png" alt="" />
         <div>
-          <small>STARRAIL · AUTO TOOLS</small>
-          <h1>星穹数据航站</h1>
+          <small>星穹数据航站</small>
+          <h1>{{ tabs.find((item) => item.id === tab)?.name }}</h1>
         </div>
       </div>
-      <span class="mobile-offline">本地档案</span>
+      <MobileDevDataSwitch v-if="MobileDevDataSwitch" />
+      <span v-else class="mobile-offline">本地档案</span>
     </header>
     <p v-if="runtime.error" class="feedback error" role="alert">
       {{ runtime.error }}<button @click="runtime.error = ''">关闭</button>
@@ -62,12 +68,14 @@ onMounted(() => {
     <p v-if="runtime.notice" class="feedback" role="status">
       {{ runtime.notice }}<button @click="runtime.notice = ''">关闭</button>
     </p>
-    <KeepAlive
-      ><component
-        :is="currentPage"
-        :key="tab === 'build' ? `build-${runtime.inventoryRevision}` : tab"
-        @synced="synced"
-    /></KeepAlive>
+    <div class="mobile-content">
+      <KeepAlive
+        ><component
+          :is="currentPage"
+          :key="tab === 'build' ? `build-${runtime.inventoryRevision}` : tab"
+          @synced="synced"
+      /></KeepAlive>
+    </div>
     <nav class="mobile-nav" aria-label="主导航">
       <button
         v-for="item in tabs"

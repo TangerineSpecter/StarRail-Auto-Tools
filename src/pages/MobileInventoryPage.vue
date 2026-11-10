@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, onDeactivated, ref } from "vue";
 import RelicQualityToolbar from "@/features/inventory/RelicQualityToolbar.vue";
+import MobileInventoryControls from "@/features/inventory/MobileInventoryControls.vue";
 import InventoryList from "@/features/inventory/InventoryList.vue";
-import InventoryToolbar from "@/features/inventory/InventoryToolbar.vue";
+import AdaptiveDisclosure from "@/shared/ui/AdaptiveDisclosure.vue";
 import InventoryFilterDrawer from "@/features/inventory/InventoryFilterDrawer.vue";
 import InventoryDetailDrawer from "@/features/inventory/InventoryDetailDrawer.vue";
 import { useInventoryArchive } from "@/features/inventory/useInventoryArchive";
 import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
-import type { InventoryKind, RelicListItem } from "@/types";
+import type { RelicListItem } from "@/types";
 
 defineOptions({ name: "MobileInventoryPage" });
 const runtime = useRuntimeContext();
@@ -19,11 +20,6 @@ const archive = useInventoryArchive({
   setNotice: (value) => (runtime.notice.value = value),
 });
 const detail = useInventoryDetail((value) => (runtime.error.value = value));
-const kinds: { id: InventoryKind; name: string }[] = [
-  { id: "relic", name: "遗器" },
-  { id: "lightCone", name: "光锥" },
-  { id: "character", name: "角色" },
-];
 const scoredItems = ref<RelicListItem[] | null>(null);
 const listItems = computed(() =>
   archive.kind.value === "relic" && scoredItems.value
@@ -34,22 +30,13 @@ onDeactivated(detail.close);
 </script>
 <template>
   <section class="mobile-archive">
-    <nav class="mobile-segments" aria-label="背包分类">
-      <button
-        v-for="item in kinds"
-        :key="item.id"
-        :class="{ active: archive.kind.value === item.id }"
-        @click="archive.switchKind(item.id)"
-      >
-        {{ item.name }}
-      </button>
-    </nav>
-    <InventoryToolbar
-      v-model:filters="archive.filters.value"
+    <MobileInventoryControls
+      v-model:search="archive.filters.value.search"
       :kind="archive.kind.value"
       :total="archive.result.value.total"
       :active-filter-count="archive.activeFilterCount.value"
       :has-filters="archive.hasActiveSearchOrFilters.value"
+      @category="archive.switchKind"
       @search="archive.applyFilters"
       @filter="archive.filterOpen.value = true"
       @reset="archive.resetFilters"
@@ -62,13 +49,14 @@ onDeactivated(detail.close);
       @apply="archive.applyFilters"
       @reset="archive.resetFilters"
     />
-    <RelicQualityToolbar
-      v-if="archive.kind.value === 'relic'"
-      :items="archive.result.value.items as RelicListItem[]"
-      @update:display-items="scoredItems = $event"
-      @error="runtime.error.value = $event"
-      @notice="runtime.notice.value = $event"
-    />
+    <AdaptiveDisclosure v-if="archive.kind.value === 'relic'" title="评分与排序" summary="当前页">
+      <RelicQualityToolbar
+        :items="archive.result.value.items as RelicListItem[]"
+        @update:display-items="scoredItems = $event"
+        @error="runtime.error.value = $event"
+        @notice="runtime.notice.value = $event"
+      />
+    </AdaptiveDisclosure>
     <InventoryList
       :kind="archive.kind.value"
       :items="listItems"

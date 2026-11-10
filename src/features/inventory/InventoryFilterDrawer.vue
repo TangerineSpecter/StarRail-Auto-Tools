@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import { computed } from "vue";
 import Button from "primevue/button";
 import Drawer from "primevue/drawer";
@@ -8,6 +9,7 @@ import type { InventoryFilterForm } from "./filter";
 import { relicMainStats, relicSlots, relicSubStats, statLabel } from "./options";
 import FilterCheckIcon from "./FilterCheckIcon.vue";
 
+const mobile = useMobileView();
 defineProps<{ kind: InventoryKind; busy: boolean }>();
 const filters = defineModel<InventoryFilterForm>("filters", { required: true });
 const visible = defineModel<boolean>({ required: true });
@@ -50,6 +52,15 @@ const substatCountOptions = [
       <header class="filter-drawer-heading">
         <div class="filter-drawer-title-row">
           <h2>筛选条件</h2>
+          <Button
+            v-if="mobile"
+            class="mobile-filter-close"
+            type="button"
+            text
+            aria-label="关闭筛选"
+            @click="visible = false"
+            >关闭</Button
+          >
           <Button class="filter-reset-btn" type="button" text @click="emit('reset')">
             <svg
               viewBox="0 0 24 24"

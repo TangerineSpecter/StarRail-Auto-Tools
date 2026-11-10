@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useMobileView } from "@/shared/contracts/mobile-view";
+import MobileFarmingList from "./MobileFarmingList.vue";
 import { computed, onActivated, onMounted, onUnmounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import type { RelicSetCatalogueEntry, RelicSetFarmingProfile, RelicSetTargetCount } from "@/types";
@@ -21,6 +23,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry] }>();
 
+const mobile = useMobileView();
 const viewMode = ref<"cards" | "chart" | "farmingScore">("cards");
 const animKey = ref(0);
 const triggerAnimation = () => {
@@ -185,70 +188,76 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
     </div>
 
     <!-- 结合目标人数与当前穿戴质量的刷取优先分柱状图 -->
-    <div
-      v-else-if="viewMode === 'farmingScore'"
-      class="relic-farming-chart"
-      role="region"
-      :aria-label="`${setKindLabel}刷取评分`"
-    >
-      <div class="relic-target-chart-heading relic-farming-chart-heading">
-        <div>
-          <p class="eyebrow">FARMING PRIORITY</p>
-          <h3>{{ setKindLabel }} · 刷取优先分</h3>
+    <template v-else-if="viewMode === 'farmingScore'">
+      <MobileFarmingList
+        v-if="mobile"
+        :items="farmingItems"
+        :kind-label="setKindLabel"
+        :loading="farmingLoading"
+        :error="farmingError"
+        @select="emit('select', $event)"
+        @retry="loadFarmingProfiles"
+      />
+      <div v-else class="relic-farming-chart" role="region" :aria-label="`${setKindLabel}刷取评分`">
+        <div class="relic-target-chart-heading relic-farming-chart-heading">
+          <div>
+            <p class="eyebrow">FARMING PRIORITY</p>
+            <h3>{{ setKindLabel }} · 刷取优先分</h3>
+          </div>
+          <small>低分优先 · 共 {{ farmingItems.length }} 套</small>
         </div>
-        <small>低分优先 · 共 {{ farmingItems.length }} 套</small>
+        <p class="relic-farming-chart-note">
+          低分表示目标角色更多、当前套装质量更低，优先提升收益更高；柱长代表收益机会。
+        </p>
+        <p v-if="farmingLoading" class="relic-target-chart-state">正在评估当前穿戴质量…</p>
+        <p v-else-if="farmingError" class="relic-target-chart-state error">{{ farmingError }}</p>
+        <p v-else-if="!farmingItems.length" class="relic-target-chart-state">
+          当前分类暂无套装数据。
+        </p>
+        <div v-else class="relic-target-chart-list">
+          <button
+            v-for="(item, index) in farmingItems"
+            :key="item.set.id"
+            type="button"
+            :class="[
+              'relic-target-bar-row',
+              'relic-farming-bar-row',
+              `priority-${farmingPriorityClass(item.priorityScore)}`,
+            ]"
+            :style="{ '--bar-i': index }"
+            :aria-label="`查看${item.set.name}，刷取优先分${formatFarmingPriority(item)}，${item.targetCount}名目标角色，当前质量${formatFarmingQuality(item)}`"
+            @click="emit('select', item.set)"
+          >
+            <span class="relic-target-bar-rank">{{ String(index + 1).padStart(2, "0") }}</span>
+            <span class="relic-target-bar-icon">
+              <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
+              <span v-else>◇</span>
+            </span>
+            <span class="relic-target-bar-name relic-farming-bar-name" :title="item.set.name">
+              <b>{{ item.set.name }}</b>
+            </span>
+            <span class="relic-target-bar-track">
+              <i :style="{ width: `${item.opportunityPct}%` }" />
+            </span>
+            <span class="relic-farming-bar-metrics">
+              <em
+                ><b>{{ item.targetCount }}</b> 名目标</em
+              >
+              <em
+                >质量 <b>{{ formatFarmingQuality(item) }}</b></em
+              >
+              <em
+                >覆盖 <b>{{ formatFarmingCoverage(item) }}</b> 件</em
+              >
+            </span>
+            <b class="relic-target-bar-count relic-farming-bar-score">
+              {{ formatFarmingPriority(item) }}<small>分</small>
+            </b>
+            <span class="relic-target-bar-arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
       </div>
-      <p class="relic-farming-chart-note">
-        低分表示目标角色更多、当前套装质量更低，优先提升收益更高；柱长代表收益机会。
-      </p>
-      <p v-if="farmingLoading" class="relic-target-chart-state">正在评估当前穿戴质量…</p>
-      <p v-else-if="farmingError" class="relic-target-chart-state error">{{ farmingError }}</p>
-      <p v-else-if="!farmingItems.length" class="relic-target-chart-state">
-        当前分类暂无套装数据。
-      </p>
-      <div v-else class="relic-target-chart-list">
-        <button
-          v-for="(item, index) in farmingItems"
-          :key="item.set.id"
-          type="button"
-          :class="[
-            'relic-target-bar-row',
-            'relic-farming-bar-row',
-            `priority-${farmingPriorityClass(item.priorityScore)}`,
-          ]"
-          :style="{ '--bar-i': index }"
-          :aria-label="`查看${item.set.name}，刷取优先分${formatFarmingPriority(item)}，${item.targetCount}名目标角色，当前质量${formatFarmingQuality(item)}`"
-          @click="emit('select', item.set)"
-        >
-          <span class="relic-target-bar-rank">{{ String(index + 1).padStart(2, "0") }}</span>
-          <span class="relic-target-bar-icon">
-            <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
-            <span v-else>◇</span>
-          </span>
-          <span class="relic-target-bar-name relic-farming-bar-name" :title="item.set.name">
-            <b>{{ item.set.name }}</b>
-          </span>
-          <span class="relic-target-bar-track">
-            <i :style="{ width: `${item.opportunityPct}%` }" />
-          </span>
-          <span class="relic-farming-bar-metrics">
-            <em
-              ><b>{{ item.targetCount }}</b> 名目标</em
-            >
-            <em
-              >质量 <b>{{ formatFarmingQuality(item) }}</b></em
-            >
-            <em
-              >覆盖 <b>{{ formatFarmingCoverage(item) }}</b> 件</em
-            >
-          </span>
-          <b class="relic-target-bar-count relic-farming-bar-score">
-            {{ formatFarmingPriority(item) }}<small>分</small>
-          </b>
-          <span class="relic-target-bar-arrow" aria-hidden="true">→</span>
-        </button>
-      </div>
-    </div>
+    </template>
 
     <!-- 现代星铁质感遗器网格 -->
     <div v-else :key="animKey" class="catalogue-grid">

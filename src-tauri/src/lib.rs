@@ -7,6 +7,8 @@ mod error;
 mod game_launch;
 mod inventory;
 mod mcp;
+#[cfg(mobile)]
+mod mobile_layout;
 #[cfg(target_os = "ios")]
 mod mobile_webview;
 mod model_provider;
@@ -203,6 +205,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            mobile_layout::get_mobile_layout_regions,
             commands::get_inventory_summary,
             commands::get_inventory_equipment_counts,
             commands::get_character_build_plan,

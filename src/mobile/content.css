@@ -1,0 +1,1398 @@
+/* Mobile entry only. Navigation geometry remains in mobile.css. Container widths
+   describe usable content, so a side rail never turns two cards into narrow slivers. */
+html.mobile-view {
+  --muted: #626e80;
+  --control-height: 44px;
+  --font-ui: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  --font-display: var(--font-ui);
+}
+html.mobile-view,
+html.mobile-view body,
+html.mobile-view #app {
+  min-width: 0;
+  min-height: 100%;
+  height: auto;
+  overflow: visible;
+}
+html.mobile-view body {
+  background: #f5f6f8;
+  touch-action: pan-x pan-y;
+}
+.mobile-shell {
+  color: var(--ink);
+}
+.mobile-content {
+  container: mobile-content / inline-size;
+  min-width: 0;
+}
+.mobile-content > * {
+  min-width: 0;
+}
+.mobile-header {
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.mobile-brand img {
+  width: 36px;
+  height: 36px;
+}
+.mobile-header small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mobile-header h1 {
+  font: 700 24px/1.25 var(--font-ui);
+  margin-top: 2px;
+}
+.mobile-offline {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.mobile-content :is(button, [role="button"], .p-select, select) {
+  min-height: 44px;
+}
+.mobile-content :is(input, textarea, select),
+html.mobile-view :is(.p-drawer, .detail-drawer) :is(input, textarea, select) {
+  font-size: 16px;
+}
+.mobile-content :is(button, [role="button"]):active {
+  opacity: 0.72;
+}
+.mobile-content :is(button, input, select, summary):focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+.mobile-content .eyebrow {
+  display: none;
+}
+.mobile-content h2 {
+  font-size: 20px;
+  line-height: 1.3;
+}
+.mobile-content h3 {
+  font-size: 16px;
+}
+.mobile-content :is(.state, .dashboard-state, .empty-row) {
+  font-size: 14px;
+  padding: 24px 16px;
+  background: white;
+  border-radius: 12px;
+}
+.mobile-segments {
+  display: flex;
+  padding: 3px;
+  gap: 3px;
+  background: #e9edf1;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.mobile-segments button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mobile-segments button.active {
+  background: white;
+  color: var(--ink);
+}
+.mobile-list-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mobile-search {
+  min-width: 0;
+  flex: 1;
+}
+.mobile-search input {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d7dee6;
+  background: white;
+  border-radius: 10px;
+}
+.mobile-tool-button {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border: 1px solid #d7dee6;
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  font-size: 14px;
+}
+.mobile-list-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.mobile-list-meta .text-button {
+  font-size: 12px;
+  color: var(--blue);
+}
+.mobile-content .mobile-disclosure {
+  margin: 0 0 14px;
+  border: 1px solid #dce2e9;
+  border-radius: 12px;
+  background: white;
+  overflow: hidden;
+}
+.mobile-content .mobile-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 12px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.mobile-content .mobile-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.mobile-content .mobile-disclosure > summary small {
+  min-width: 0;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mobile-disclosure-chevron {
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.mobile-disclosure[open] > summary .mobile-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.mobile-disclosure-body {
+  padding: 0 12px 12px;
+}
+.mobile-archive .score-toolbar {
+  border: 0;
+  padding: 0;
+  background: white;
+  box-shadow: none;
+  margin: 0;
+}
+.mobile-archive .score-toolbar-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.mobile-archive .score-toolbar-fields label {
+  min-width: 0;
+  width: auto;
+  font-size: 12px;
+}
+.mobile-archive .score-toolbar-fields select {
+  width: 100%;
+  min-height: 44px;
+  font-size: 16px;
+}
+.mobile-archive .score-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.mobile-archive .score-action {
+  min-height: 44px;
+  font-size: 12px;
+  white-space: normal;
+  padding: 8px 12px;
+}
+.mobile-archive .score-toolbar-hint {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mobile-archive .table-shell {
+  overflow: visible;
+  height: auto;
+}
+.mobile-archive :is(.inventory-table, .inventory-table tbody) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.mobile-archive :is(.inventory-table thead, .inventory-table colgroup) {
+  display: none;
+}
+.mobile-archive .inventory-table tr {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px;
+  margin: 0 0 10px;
+  border: 1px solid #e0e5eb;
+  border-radius: 12px;
+  background: white;
+}
+.mobile-archive .inventory-table td {
+  display: block;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  white-space: normal;
+  font-size: 14px;
+}
+.mobile-archive .inventory-table td:first-child {
+  flex: 1 1 calc(100% - 65px);
+}
+.mobile-archive .inventory-table--relic :is(td:nth-child(3), td:nth-child(4)) {
+  width: 100%;
+}
+.mobile-archive .relic-name-cell {
+  min-width: 0;
+}
+.mobile-archive .character-card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  padding: 0;
+  gap: 12px;
+}
+.mobile-more {
+  width: 100%;
+  min-height: 44px;
+  margin: 12px 0;
+  border: 1px solid #d7dee6;
+  background: white;
+  color: var(--ink);
+  border-radius: 10px;
+}
+html.mobile-view .mobile-content .catalogue-workspace {
+  padding: 0;
+  overflow: visible;
+}
+html.mobile-view .mobile-content .catalogue-heading {
+  display: block;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+}
+html.mobile-view .mobile-content .catalogue-heading h2 {
+  display: none;
+}
+html.mobile-view .mobile-content .catalogue-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 4px;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 12px;
+  background: #e9edf1;
+  scrollbar-width: none;
+}
+html.mobile-view .mobile-content .catalogue-tab-btn {
+  display: flex;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  gap: 5px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  color: var(--ink-soft);
+  box-shadow: none;
+}
+html.mobile-view .mobile-content .catalogue-tab-btn.active {
+  background: white;
+  color: var(--ink);
+}
+html.mobile-view .mobile-content .catalogue-tab-btn span {
+  font-size: 14px;
+}
+html.mobile-view .mobile-content .catalogue-tab-btn b {
+  font-size: 12px;
+  font-weight: 400;
+}
+html.mobile-view .mobile-content .catalogue-tab-btn small {
+  display: none;
+}
+html.mobile-view .mobile-content .catalogue-groups {
+  padding: 0;
+  border: 0;
+}
+html.mobile-view .mobile-content .catalogue-filter-bar {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: white;
+  box-shadow: none;
+}
+html.mobile-view .mobile-content :is(.catalogue-filter-group, .catalogue-filter-subgroup) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+html.mobile-view .mobile-content .catalogue-filter-right {
+  display: grid;
+  gap: 12px;
+}
+html.mobile-view .mobile-content .catalogue-filter-pill {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+html.mobile-view .mobile-content .catalogue-search-box {
+  width: 100%;
+}
+html.mobile-view .mobile-content .catalogue-search-input {
+  width: 100%;
+  min-width: 0;
+  font-size: 16px;
+}
+html.mobile-view
+  .mobile-content
+  :is(.catalogue-grid, .lightcone-catalogue-grid, .character-catalogue-grid) {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+html.mobile-view .mobile-content :is(.lightcone-catalogue-card, .character-catalogue-card) {
+  min-width: 0;
+}
+html.mobile-view .mobile-content .catalogue-card {
+  min-width: 0;
+  background: white;
+  border: 1px solid #e0e5eb;
+  border-radius: 12px;
+  box-shadow: none;
+  transform: none;
+  animation: none;
+}
+html.mobile-view .mobile-content .catalogue-card {
+  padding: 14px;
+}
+html.mobile-view .mobile-content .catalogue-card-media {
+  gap: 10px;
+}
+html.mobile-view .mobile-content .catalogue-title-wrap {
+  min-width: 0;
+}
+html.mobile-view .mobile-content .catalogue-title-wrap h4 {
+  font-size: 15px;
+  white-space: normal;
+  line-height: 1.4;
+}
+html.mobile-view .mobile-content .catalogue-media-box {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+}
+html.mobile-view .mobile-content .relic-effect-desc {
+  font-size: 13px;
+  line-height: 1.6;
+}
+html.mobile-view .mobile-content .relic-effect-row {
+  align-items: start;
+  gap: 8px;
+}
+html.mobile-view .mobile-content .relic-catalogue-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 0;
+  margin-bottom: 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html.mobile-view .mobile-content .relic-catalogue-kicker {
+  display: none;
+}
+html.mobile-view .mobile-content .relic-catalogue-toolbar strong {
+  font-size: 15px;
+  line-height: 1.4;
+}
+html.mobile-view .mobile-content .relic-catalogue-toolbar small {
+  font-size: 12px;
+}
+html.mobile-view .mobile-content .relic-view-switch {
+  display: flex;
+  width: min(100%, 360px);
+  max-width: 100%;
+  gap: 16px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+html.mobile-view .mobile-content .relic-view-switch button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  white-space: nowrap;
+}
+html.mobile-view .mobile-content .relic-view-switch button.active {
+  border-bottom-color: var(--blue);
+  background: transparent;
+  box-shadow: none;
+  color: var(--blue);
+}
+html.mobile-view .mobile-content .relic-view-switch button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -3px;
+}
+html.mobile-view .mobile-content .character-catalogue-card {
+  min-height: 108px;
+}
+html.mobile-view .mobile-content .character-catalogue-card h4 {
+  font-size: 16px;
+  white-space: normal;
+}
+html.mobile-view .mobile-content :is(.character-card-top-row, .lightcone-card-top-row) {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+html.mobile-view .mobile-content .lightcone-catalogue-card h4 {
+  font-size: 15px;
+  white-space: normal;
+}
+html.mobile-view .mobile-content .build-dashboard {
+  padding: 0;
+  overflow: visible;
+}
+html.mobile-view .mobile-content .build-dashboard-heading {
+  display: block;
+  margin-bottom: 16px;
+}
+html.mobile-view .mobile-content .build-dashboard-heading h2 {
+  display: none;
+}
+html.mobile-view .mobile-content .build-dashboard-heading p {
+  font-size: 14px;
+}
+html.mobile-view .mobile-content .build-dashboard-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: start;
+}
+html.mobile-view .mobile-content .build-dashboard-tools .p-inputtext {
+  flex: 1 1 120px;
+  min-width: 0;
+  width: 120px;
+  height: 44px;
+}
+html.mobile-view .mobile-content .build-dashboard-tools .p-select {
+  flex: 1 1 120px;
+  min-width: 0;
+  width: 120px;
+  height: 44px;
+}
+html.mobile-view .mobile-content .build-card-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+html.mobile-view .mobile-content .build-progress-row {
+  display: block;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #e0e5eb;
+  border-radius: 12px;
+  background: white;
+  box-shadow: none;
+}
+html.mobile-view .mobile-content .build-card-header {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0;
+}
+html.mobile-view .mobile-content .build-card-identity {
+  min-width: 0;
+  flex: 1 1 160px;
+}
+html.mobile-view .mobile-content .build-card-note {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  order: 3;
+}
+html.mobile-view .mobile-content .build-card-metrics {
+  width: 100%;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+html.mobile-view .mobile-content .build-progress-row .mobile-disclosure {
+  margin: 12px 0 0;
+  background: #f5f6f8;
+  border: 0;
+}
+html.mobile-view .mobile-content :is(.build-card-body, .build-card-main) {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  gap: 16px;
+}
+html.mobile-view .mobile-content :is(.build-card-side, .build-card-radar-panel) {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  padding: 0;
+}
+html.mobile-view .mobile-content .build-card-equipment {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-width: 0;
+}
+html.mobile-view .mobile-content :is(.build-target-table, .build-progress-table) {
+  width: 100%;
+  min-width: 0;
+}
+html.mobile-view .mobile-content .target-progress-label {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.mobile-teams-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.mobile-teams-heading p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+.mobile-team-list {
+  display: grid;
+  gap: 14px;
+}
+.mobile-team {
+  margin: 0;
+  border: 1px solid #e0e5eb;
+  border-radius: 12px;
+  padding: 16px;
+  background: white;
+  min-width: 0;
+}
+.mobile-team h2 {
+  font-size: 17px;
+  margin: 0;
+}
+.mobile-team-members {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 8px;
+  margin: 16px 0 0;
+}
+.mobile-team-members > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  font-size: 13px;
+}
+.mobile-team-members img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+.mobile-team-members small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mobile-team-note {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #edf0f2;
+  color: var(--ink-soft);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.mobile-sync {
+  display: grid;
+  gap: 16px;
+}
+.mobile-sync-intro p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+.mobile-sync-status {
+  padding: 16px;
+  background: white;
+  border: 1px solid #e0e5eb;
+  border-radius: 12px;
+}
+.mobile-sync-status h2 {
+  margin-bottom: 8px;
+}
+.mobile-sync-status .primary {
+  width: 100%;
+  margin-top: 12px;
+}
+.mobile-sync .settings-panel {
+  padding: 16px;
+  border: 1px solid #e0e5eb;
+  border-radius: 12px;
+}
+.mobile-sync .settings-panel form {
+  margin: 0;
+  gap: 14px;
+}
+.mobile-sync .settings-panel input {
+  min-width: 0;
+}
+.mobile-sync .settings-panel h3 {
+  margin: 0 0 14px;
+}
+/* Teleported overlays: opaque sheets, safe-area padding, independently scrolling body. */
+html.mobile-view .detail-backdrop {
+  padding: 0;
+  z-index: 100;
+}
+html.mobile-view .detail-drawer,
+html.mobile-view
+  .detail-drawer:is(.character-detail-drawer, .relic-detail-drawer, .lightcone-detail-drawer) {
+  width: min(720px, 100%);
+  max-width: 100%;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: white;
+}
+html.mobile-view .detail-drawer-content {
+  padding: 16px;
+  overflow-x: hidden;
+}
+html.mobile-view .detail-drawer :is(.character-detail-layout, .character-detail-columns) {
+  display: flex;
+  flex-direction: column;
+}
+html.mobile-view .detail-drawer .character-detail-card {
+  min-width: 0;
+}
+html.mobile-view
+  .detail-drawer
+  :is(.character-standing-stats, .character-skill-grid, .score-piece-grid, .trace-node-grid) {
+  grid-template-columns: 1fr;
+}
+html.mobile-view .detail-drawer :is(.standing-stat-grid, .character-data-grid, .score-metric-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html.mobile-view .detail-drawer .character-banner-image-wrapper {
+  width: 90px;
+}
+html.mobile-view .detail-drawer > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+}
+html.mobile-view .detail-drawer :is(button, [role="button"]) {
+  min-height: 44px;
+}
+html.mobile-view .filter-drawer.p-drawer {
+  width: min(540px, 100vw);
+  max-width: 100vw;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  background: white;
+}
+html.mobile-view .filter-drawer .filter-scroll {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 16px;
+  gap: 16px 12px;
+}
+html.mobile-view .filter-drawer :is(button, .filter-chip span, .p-select) {
+  min-height: 44px;
+}
+html.mobile-view .filter-drawer .filter-chip span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+html.mobile-view .filter-drawer .filter-drawer-heading {
+  padding: 16px;
+}
+html.mobile-view .filter-drawer .filter-drawer-heading small {
+  font-size: 12px;
+}
+@container mobile-content (min-width: 440px) {
+  .mobile-archive .character-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  html.mobile-view .mobile-content :is(.character-catalogue-grid, .lightcone-catalogue-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mobile-team-members {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .mobile-archive .score-toolbar-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container mobile-content (min-width: 680px) {
+  html.mobile-view .mobile-content .catalogue-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  html.mobile-view .mobile-content :is(.character-catalogue-grid, .lightcone-catalogue-grid),
+  .mobile-archive .character-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .mobile-team-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .mobile-team-members {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mobile-sync {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
+  }
+  .mobile-sync > .feedback {
+    grid-column: 1 / -1;
+  }
+  html.mobile-view .mobile-content .build-card-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  }
+  html.mobile-view .mobile-content .build-card-radar-panel {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-content *,
+  .mobile-content *::before,
+  .mobile-content *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* Real active division regions, supplied by UIKit. Scrollable feeds continue
+   naturally in tabletop pose; interactive sheets stay wholly below the fold. */
+html.mobile-view[data-content-fold="book"]
+  .mobile-content
+  :is(
+    .catalogue-grid,
+    .lightcone-catalogue-grid,
+    .character-catalogue-grid,
+    .character-card-grid,
+    .build-card-list,
+    .mobile-team-list,
+    .inventory-table tbody,
+    .mobile-sync
+  ) {
+  display: grid;
+  grid-template-columns: minmax(0, var(--content-fold-left)) minmax(0, var(--content-fold-right));
+  column-gap: var(--content-fold-gap);
+  align-items: start;
+}
+html.mobile-view[data-content-fold="book"]
+  .mobile-content
+  :is(
+    .catalogue-heading,
+    .relic-catalogue-toolbar,
+    .mobile-segments,
+    .mobile-list-tools,
+    .mobile-list-meta,
+    .mobile-archive > .mobile-disclosure,
+    .character-catalogue-section > .mobile-disclosure,
+    .lightcone-catalogue-section > .mobile-disclosure,
+    .build-dashboard-heading,
+    .mobile-teams-heading
+  ) {
+  max-width: var(--content-fold-left);
+}
+html.mobile-view[data-content-fold="book"] .mobile-content .build-card-body {
+  display: flex;
+  flex-direction: column;
+}
+html.mobile-view[data-content-fold="book"] .mobile-team-members {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"])
+  :is(.detail-drawer, .filter-drawer.p-drawer) {
+  position: fixed;
+  left: var(--content-sheet-left);
+  top: var(--content-sheet-top);
+  width: var(--content-sheet-width);
+  max-width: var(--content-sheet-width);
+  height: var(--content-sheet-height);
+  max-height: var(--content-sheet-height);
+}
+@media (max-height: 500px) {
+  .mobile-header {
+    margin-bottom: 12px;
+  }
+  .mobile-content .mobile-disclosure > summary {
+    min-height: 44px;
+  }
+}
+html.mobile-view .mobile-content .catalogue-tabs {
+  flex-wrap: nowrap;
+}
+html.mobile-view .mobile-content .catalogue-tab-btn {
+  flex: 1 0 auto;
+}
+html.mobile-view .mobile-content .table-empty {
+  min-height: 0;
+  padding: 32px 16px;
+  font-size: 14px;
+}
+.mobile-teams > .mobile-list-tools {
+  margin-bottom: 14px;
+}
+/* Catalogue dialogs use a different portal from inventory drawers. */
+html.mobile-view .catalogue-character-modal-backdrop {
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  z-index: 110;
+}
+html.mobile-view
+  :is(.catalogue-character-modal, .lightcone-catalogue-modal, .set-recommendation-modal) {
+  width: min(720px, 100%);
+  min-width: 0;
+  max-height: calc(
+    100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom))
+  );
+  overflow-y: auto;
+  border-radius: 16px;
+  background: white;
+}
+html.mobile-view .catalogue-character-modal-close {
+  position: sticky;
+  top: 8px;
+  margin: 8px 8px 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  z-index: 5;
+  font-size: 16px;
+}
+html.mobile-view
+  :is(.catalogue-character-modal-body, .lightcone-catalogue-modal-body, .set-recommendation-body) {
+  padding: 16px;
+}
+html.mobile-view :is(.base-stat-grid, .lightcone-base-stat-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html.mobile-view :is(.equipment-layout, .equipment-relic-grid, .set-recommendation-grid) {
+  grid-template-columns: 1fr;
+}
+html.mobile-view .catalogue-character-modal-title h3 {
+  font-size: 24px;
+  white-space: normal;
+}
+html.mobile-view :is(.lightcone-catalogue-modal-header, .set-recommendation-header) {
+  padding: 12px 16px;
+}
+html.mobile-view :is(.lightcone-catalogue-modal-header, .set-recommendation-header) h3 {
+  font-size: 20px;
+}
+html.mobile-view .catalogue-character-modal-backdrop :is(button, [role="button"]) {
+  min-height: 44px;
+}
+html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"])
+  :is(.catalogue-character-modal, .lightcone-catalogue-modal, .set-recommendation-modal) {
+  position: fixed;
+  left: var(--content-sheet-left);
+  top: var(--content-sheet-top);
+  width: var(--content-sheet-width);
+  max-width: var(--content-sheet-width);
+  max-height: var(--content-sheet-height);
+}
+html.mobile-view .mobile-content .catalogue-tabs {
+  justify-content: flex-start;
+}
+html.mobile-view .mobile-content .inventory-table .relic-substats-grid {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html.mobile-view .mobile-content .relic-substat-item {
+  min-width: 0;
+  display: flex;
+  gap: 4px;
+}
+html.mobile-view .mobile-content .relic-substat-item .substat-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html.mobile-view .mobile-content .relic-substat-item .substat-value {
+  flex-shrink: 0;
+}
+@container mobile-content (max-width: 439px) {
+  html.mobile-view .mobile-content .catalogue-tab-btn b {
+    display: none;
+  }
+}
+html.mobile-view .filter-drawer .mobile-filter-close {
+  margin-left: auto;
+  margin-right: 8px;
+  min-width: 44px;
+  font-size: 14px;
+}
+html.mobile-view .catalogue-character-modal-close {
+  margin-bottom: -44px;
+}
+html.mobile-view .catalogue-character-modal-body {
+  max-height: none;
+  overflow: visible;
+}
+html.mobile-view .base-stat-grid > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+html.mobile-view[data-content-fold="tabletop"] .catalogue-character-modal-hero {
+  height: 130px;
+}
+html.mobile-view[data-content-fold="tabletop"] .catalogue-character-modal-title {
+  bottom: 14px;
+}
+html.mobile-view[data-content-fold="tabletop"] .catalogue-character-modal-title .eyebrow {
+  display: none;
+}
+.mobile-content {
+  font-variant-numeric: tabular-nums;
+}
+.mobile-archive * {
+  text-shadow: none !important;
+}
+html.mobile-view
+  .mobile-content
+  :is(.item-name, .stat-name, .stat-value, .substat-name, .substat-value, .relic-subtitle) {
+  font-size: 13px;
+}
+html.mobile-view .mobile-content .table-empty {
+  height: auto;
+}
+html.mobile-view .mobile-content .table-empty strong {
+  font-size: 14px;
+}
+html.mobile-view .mobile-content .table-empty small {
+  font-size: 12px;
+}
+html.mobile-view .mobile-content .table-shell {
+  border: 0;
+  background: transparent;
+}
+@container mobile-content (min-width: 680px) {
+  html.mobile-view .mobile-content .inventory-table tbody,
+  html.mobile-view .mobile-content .build-card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+  html.mobile-view .mobile-content .inventory-table tr {
+    margin: 0;
+  }
+  html.mobile-view .mobile-content .build-card-body {
+    display: flex;
+    flex-direction: column;
+  }
+}
+/* The real fold lanes take precedence over optional expanded-width columns. */
+html.mobile-view[data-content-fold="book"]
+  .mobile-content
+  :is(.inventory-table tbody, .build-card-list) {
+  grid-template-columns: minmax(0, var(--content-fold-left)) minmax(0, var(--content-fold-right));
+  column-gap: var(--content-fold-gap);
+}
+html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"])
+  :is(.catalogue-character-modal, .lightcone-catalogue-modal, .set-recommendation-modal) {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+html.mobile-view[data-content-fold="tabletop"]
+  :is(.catalogue-character-modal, .lightcone-catalogue-modal, .set-recommendation-modal) {
+  padding-top: 0;
+}
+html.mobile-view :is(.set-recommendation-header, .lightcone-catalogue-modal-header) {
+  background: #edf2f7;
+  color: var(--ink);
+}
+html.mobile-view :is(.set-recommendation-header, .lightcone-catalogue-modal-header) :is(h2, h3, p) {
+  color: var(--ink);
+}
+html.mobile-view
+  :is(.set-recommendation-header, .lightcone-catalogue-modal-header)
+  :is(p, small, span) {
+  color: var(--ink-soft);
+}
+html.mobile-view .catalogue-character-modal-close {
+  color: var(--ink);
+  background: #e9edf1;
+}
+html.mobile-view .detail-drawer {
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+html.mobile-view .detail-drawer > header button {
+  min-width: 44px;
+}
+html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"]) .detail-drawer {
+  padding-left: 0;
+  padding-right: 0;
+}
+html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"])
+  .filter-drawer.p-drawer {
+  padding-left: 0;
+  padding-right: 0;
+}
+html.mobile-view[data-content-fold="tabletop"] :is(.detail-drawer, .filter-drawer.p-drawer) {
+  padding-top: 0;
+}
+.mobile-content :is(button, [role="button"]),
+html.mobile-view .filter-drawer button {
+  min-width: 44px;
+}
+html.mobile-view .mobile-content .catalogue-title-wrap {
+  display: block;
+}
+html.mobile-view .mobile-content .catalogue-kind-badge {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+html.mobile-view .lightcone-base-stat-grid > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+html.mobile-view .detail-drawer .eyebrow {
+  display: none;
+}
+html.mobile-view .detail-drawer-content small {
+  font-size: 12px;
+}
+/* Inventory's phone controls: direct search and one integrated filter affordance. */
+.mobile-inventory-controls {
+  margin-bottom: 2px;
+}
+.mobile-inventory-categories {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin: -4px 0 12px;
+}
+.mobile-inventory-categories button {
+  position: relative;
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.mobile-inventory-categories button.active {
+  color: var(--ink);
+  font-weight: 700;
+}
+.mobile-inventory-categories button.active::after {
+  content: "";
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--blue);
+  transform: translateX(-50%);
+}
+.mobile-inventory-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 50px;
+  padding: 3px 4px 3px 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: #e9edf2;
+}
+.mobile-inventory-search:focus-within {
+  background: white;
+  border-color: var(--blue);
+}
+.mobile-inventory-search-icon {
+  flex: 0 0 19px;
+  width: 19px;
+  height: 19px;
+  color: var(--ink-soft);
+}
+.mobile-inventory-search input {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  outline: none;
+  box-shadow: none;
+}
+.mobile-inventory-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+.mobile-inventory-search :is(.mobile-inventory-filter, .mobile-inventory-search-clear) {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--ink-soft);
+}
+.mobile-inventory-search button svg {
+  width: 21px;
+  height: 21px;
+}
+.mobile-inventory-search .mobile-inventory-filter {
+  background: white;
+  color: var(--ink);
+}
+.mobile-inventory-search .mobile-inventory-filter.is-active {
+  background: var(--blue);
+  color: white;
+}
+.mobile-inventory-filter b {
+  position: absolute;
+  top: -2px;
+  right: -1px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: white;
+  font-size: 11px;
+  line-height: 1;
+}
+.mobile-inventory-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.mobile-inventory-status p {
+  margin: 0;
+}
+.mobile-inventory-status button {
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-size: 13px;
+}
+html.mobile-view[data-content-fold="book"] .mobile-inventory-controls {
+  max-width: var(--content-fold-left);
+}
+.mobile-content .mobile-inventory-search input:focus-visible {
+  outline: none;
+}
+html.mobile-view[data-content-fold="book"] .mobile-content .mobile-farming-list {
+  grid-template-columns: minmax(0, var(--content-fold-left)) minmax(0, var(--content-fold-right));
+  column-gap: var(--content-fold-gap);
+}
+html.mobile-view[data-content-fold="book"]
+  .mobile-content
+  :is(.mobile-farming-heading, .mobile-farming-help) {
+  max-width: var(--content-fold-left);
+}
+/* Detail values are supporting data, not dashboard KPIs. */
+html.mobile-view :is(.base-stat-grid, .lightcone-base-stat-grid) {
+  gap: 0 20px;
+  padding: 2px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #f3f5f8;
+}
+html.mobile-view :is(.base-stat-grid > div, .lightcone-stat-item) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html.mobile-view :is(.base-stat-grid span, .lightcone-stat-item .stat-label) {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+html.mobile-view :is(.base-stat-grid b, .lightcone-stat-item .stat-value) {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+html.mobile-view :is(.base-stat-grid small, .lightcone-stat-item .stat-abbr) {
+  display: none;
+}
+/* Keep a 44px hit area while removing oversized round button surfaces. */
+html.mobile-view .catalogue-character-modal .skill-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+html.mobile-view .catalogue-character-modal .catalogue-level-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+html.mobile-view .catalogue-character-modal .level-control-label {
+  display: none;
+}
+html.mobile-view .catalogue-character-modal .level-slider-container {
+  display: grid;
+  grid-template-columns: 44px minmax(44px, 1fr) 44px;
+  align-items: center;
+  gap: 0;
+  height: 44px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+html.mobile-view .catalogue-character-modal .level-step-btn {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--blue);
+  font-size: 18px;
+}
+html.mobile-view .catalogue-character-modal .level-step-btn:hover:not(:disabled) {
+  background: #eaf0f7;
+  color: var(--blue);
+}
+html.mobile-view .catalogue-character-modal .level-track-wrapper {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+}
+html.mobile-view .catalogue-character-modal .level-range-input {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  touch-action: pan-y;
+}
+html.mobile-view .catalogue-character-modal .level-range-input::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+  margin-top: -5px;
+}
+html.mobile-view .catalogue-character-modal .level-range-input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+html.mobile-view .catalogue-character-modal .level-range-input:focus-visible {
+  outline: none;
+}
+html.mobile-view .catalogue-character-modal .level-range-input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+html.mobile-view .catalogue-character-modal .level-badge-trigger {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: #eaf0f7;
+}
+html.mobile-view .catalogue-character-modal .level-val-text {
+  font-size: 13px;
+}
+html.mobile-view .catalogue-character-modal .level-hidden-select {
+  min-height: 44px;
+  padding: 0;
+}
+html.mobile-view .catalogue-character-modal .level-badge-trigger {
+  padding: 0;
+  background: transparent;
+}
+html.mobile-view .catalogue-character-modal .level-val-text {
+  padding: 4px 6px;
+  border-radius: 5px;
+  background: #eaf0f7;
+}
+html.mobile-view .catalogue-character-modal .level-range-input:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}

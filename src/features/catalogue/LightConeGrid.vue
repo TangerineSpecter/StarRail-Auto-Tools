@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdaptiveDisclosure from "@/shared/ui/AdaptiveDisclosure.vue";
 import { computed, onActivated, onMounted, ref, watch } from "vue";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { LightConeCatalogueEntry } from "@/types";
@@ -64,108 +65,131 @@ const filteredLightCones = computed(() => {
 <template>
   <div class="lightcone-catalogue-section">
     <!-- 极简单行紧凑过滤工具栏 -->
-    <div class="catalogue-filter-bar compact-toolbar">
-      <div class="catalogue-filter-group">
-        <div
-          role="button"
-          tabindex="0"
-          :class="['catalogue-filter-pill', { active: selectedPath === 'all' }]"
-          @click="selectedPath = 'all'"
-          @keydown.enter.prevent="selectedPath = 'all'"
-          @keydown.space.prevent="selectedPath = 'all'"
-        >
-          全部命途
+    <AdaptiveDisclosure
+      title="筛选与搜索"
+      :summary="
+        [
+          selectedPath !== 'all' ? selectedPath : '',
+          selectedRarity !== 'all' ? selectedRarity + '星' : '',
+          selectedOwned === 'owned' ? '已持有' : selectedOwned === 'unowned' ? '未持有' : '',
+          searchQuery,
+        ]
+          .filter(Boolean)
+          .join(' · ') || '全部光锥'
+      "
+    >
+      <div class="catalogue-filter-bar compact-toolbar">
+        <div class="catalogue-filter-group">
+          <div
+            role="button"
+            tabindex="0"
+            :class="['catalogue-filter-pill', { active: selectedPath === 'all' }]"
+            @click="selectedPath = 'all'"
+            @keydown.enter.prevent="selectedPath = 'all'"
+            @keydown.space.prevent="selectedPath = 'all'"
+          >
+            全部命途
+          </div>
+          <div
+            v-for="path in availablePaths"
+            :key="path"
+            role="button"
+            tabindex="0"
+            :class="['catalogue-filter-pill', { active: selectedPath === path }]"
+            @click="selectedPath = selectedPath === path ? 'all' : path"
+            @keydown.enter.prevent="selectedPath = selectedPath === path ? 'all' : path"
+            @keydown.space.prevent="selectedPath = selectedPath === path ? 'all' : path"
+          >
+            <img
+              v-if="pathIconSrc(path)"
+              :src="pathIconSrc(path)"
+              alt=""
+              class="filter-path-icon"
+            />
+            <span>{{ path }}</span>
+          </div>
         </div>
-        <div
-          v-for="path in availablePaths"
-          :key="path"
-          role="button"
-          tabindex="0"
-          :class="['catalogue-filter-pill', { active: selectedPath === path }]"
-          @click="selectedPath = selectedPath === path ? 'all' : path"
-          @keydown.enter.prevent="selectedPath = selectedPath === path ? 'all' : path"
-          @keydown.space.prevent="selectedPath = selectedPath === path ? 'all' : path"
-        >
-          <img v-if="pathIconSrc(path)" :src="pathIconSrc(path)" alt="" class="filter-path-icon" />
-          <span>{{ path }}</span>
+
+        <div class="catalogue-filter-group catalogue-filter-right">
+          <div class="catalogue-filter-subgroup">
+            <div
+              role="button"
+              tabindex="0"
+              :class="['catalogue-filter-pill', { active: selectedRarity === 'all' }]"
+              @click="selectedRarity = 'all'"
+              @keydown.enter.prevent="selectedRarity = 'all'"
+              @keydown.space.prevent="selectedRarity = 'all'"
+            >
+              全部星级
+            </div>
+            <div
+              v-for="rarity in [5, 4, 3]"
+              :key="rarity"
+              role="button"
+              tabindex="0"
+              :class="[
+                'catalogue-filter-pill',
+                `rarity-pill-${rarity}`,
+                { active: selectedRarity === rarity },
+              ]"
+              @click="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
+              @keydown.enter.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
+              @keydown.space.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
+            >
+              {{ rarity }}★
+            </div>
+          </div>
+
+          <div class="catalogue-filter-subgroup">
+            <div
+              role="button"
+              tabindex="0"
+              :class="['catalogue-filter-pill', { active: selectedOwned === 'all' }]"
+              @click="selectedOwned = 'all'"
+              @keydown.enter.prevent="selectedOwned = 'all'"
+              @keydown.space.prevent="selectedOwned = 'all'"
+            >
+              全部
+            </div>
+            <div
+              role="button"
+              tabindex="0"
+              :class="['catalogue-filter-pill', { active: selectedOwned === 'owned' }]"
+              @click="selectedOwned = selectedOwned === 'owned' ? 'all' : 'owned'"
+              @keydown.enter.prevent="selectedOwned = selectedOwned === 'owned' ? 'all' : 'owned'"
+              @keydown.space.prevent="selectedOwned = selectedOwned === 'owned' ? 'all' : 'owned'"
+            >
+              已持有
+            </div>
+            <div
+              role="button"
+              tabindex="0"
+              :class="['catalogue-filter-pill', { active: selectedOwned === 'unowned' }]"
+              @click="selectedOwned = selectedOwned === 'unowned' ? 'all' : 'unowned'"
+              @keydown.enter.prevent="
+                selectedOwned = selectedOwned === 'unowned' ? 'all' : 'unowned'
+              "
+              @keydown.space.prevent="
+                selectedOwned = selectedOwned === 'unowned' ? 'all' : 'unowned'
+              "
+            >
+              未持有
+            </div>
+          </div>
+
+          <div class="catalogue-search-box">
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="搜索光锥..."
+              class="catalogue-search-input"
+            />
+          </div>
         </div>
       </div>
 
-      <div class="catalogue-filter-group catalogue-filter-right">
-        <div class="catalogue-filter-subgroup">
-          <div
-            role="button"
-            tabindex="0"
-            :class="['catalogue-filter-pill', { active: selectedRarity === 'all' }]"
-            @click="selectedRarity = 'all'"
-            @keydown.enter.prevent="selectedRarity = 'all'"
-            @keydown.space.prevent="selectedRarity = 'all'"
-          >
-            全部星级
-          </div>
-          <div
-            v-for="rarity in [5, 4, 3]"
-            :key="rarity"
-            role="button"
-            tabindex="0"
-            :class="[
-              'catalogue-filter-pill',
-              `rarity-pill-${rarity}`,
-              { active: selectedRarity === rarity },
-            ]"
-            @click="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
-            @keydown.enter.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
-            @keydown.space.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
-          >
-            {{ rarity }}★
-          </div>
-        </div>
-
-        <div class="catalogue-filter-subgroup">
-          <div
-            role="button"
-            tabindex="0"
-            :class="['catalogue-filter-pill', { active: selectedOwned === 'all' }]"
-            @click="selectedOwned = 'all'"
-            @keydown.enter.prevent="selectedOwned = 'all'"
-            @keydown.space.prevent="selectedOwned = 'all'"
-          >
-            全部
-          </div>
-          <div
-            role="button"
-            tabindex="0"
-            :class="['catalogue-filter-pill', { active: selectedOwned === 'owned' }]"
-            @click="selectedOwned = selectedOwned === 'owned' ? 'all' : 'owned'"
-            @keydown.enter.prevent="selectedOwned = selectedOwned === 'owned' ? 'all' : 'owned'"
-            @keydown.space.prevent="selectedOwned = selectedOwned === 'owned' ? 'all' : 'owned'"
-          >
-            已持有
-          </div>
-          <div
-            role="button"
-            tabindex="0"
-            :class="['catalogue-filter-pill', { active: selectedOwned === 'unowned' }]"
-            @click="selectedOwned = selectedOwned === 'unowned' ? 'all' : 'unowned'"
-            @keydown.enter.prevent="selectedOwned = selectedOwned === 'unowned' ? 'all' : 'unowned'"
-            @keydown.space.prevent="selectedOwned = selectedOwned === 'unowned' ? 'all' : 'unowned'"
-          >
-            未持有
-          </div>
-        </div>
-
-        <div class="catalogue-search-box">
-          <input
-            v-model="searchQuery"
-            type="search"
-            placeholder="搜索光锥..."
-            class="catalogue-search-input"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- 超紧凑左右布局光锥网格 -->
+      <!-- 超紧凑左右布局光锥网格 -->
+    </AdaptiveDisclosure>
     <div v-if="filteredLightCones.length > 0" :key="animKey" class="lightcone-catalogue-grid">
       <button
         v-for="(item, index) in filteredLightCones"

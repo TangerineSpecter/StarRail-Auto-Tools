@@ -88,6 +88,7 @@ onBeforeUnmount(removeEscapeListener);
           v-for="item in tabs"
           :key="item.key"
           :class="['catalogue-tab-btn', { active: tab === item.key }]"
+          :aria-pressed="tab === item.key"
           @click="tab = item.key"
         >
           <span

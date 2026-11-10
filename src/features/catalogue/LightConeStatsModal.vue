@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import { formatBaseStat } from "@/shared/utils/display";
 import { lightConeSkillEffect } from "@/shared/utils/standing-stats";
 import type { LightConeCatalogueEntry } from "@/types";
@@ -10,6 +11,7 @@ const props = defineProps<{
   lightCone: LightConeCatalogueEntry;
   ownedCount: number;
 }>();
+const mobile = useMobileView();
 const emit = defineEmits<{ close: [] }>();
 useCloseOnEscape(() => emit("close"));
 
@@ -21,6 +23,7 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
   <div class="catalogue-character-modal-backdrop" @click.self="emit('close')">
     <section
       class="lightcone-catalogue-modal"
+      :class="{ 'lightcone-modal-mobile': mobile }"
       role="dialog"
       aria-modal="true"
       :aria-label="`${lightCone.name}的图鉴信息`"
@@ -54,17 +57,17 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
             <div class="lightcone-stat-item">
               <span class="stat-label">生命值</span>
               <b class="stat-value">{{ formatBaseStat(lightCone.baseStats.hp) }}</b>
-              <small class="stat-abbr">HP</small>
+              <small v-if="!mobile" class="stat-abbr">HP</small>
             </div>
             <div class="lightcone-stat-item">
               <span class="stat-label">攻击力</span>
               <b class="stat-value">{{ formatBaseStat(lightCone.baseStats.attack) }}</b>
-              <small class="stat-abbr">ATK</small>
+              <small v-if="!mobile" class="stat-abbr">ATK</small>
             </div>
             <div class="lightcone-stat-item">
               <span class="stat-label">防御力</span>
               <b class="stat-value">{{ formatBaseStat(lightCone.baseStats.defense) }}</b>
-              <small class="stat-abbr">DEF</small>
+              <small v-if="!mobile" class="stat-abbr">DEF</small>
             </div>
           </div>
           <p v-else class="lightcone-stat-empty">该光锥的基础属性尚未同步。</p>
@@ -261,5 +264,41 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
   width: 48px;
   color: var(--blue);
   font-weight: 700;
+}
+/* The mobile detail owns its compact strip; lazy-loaded desktop styles cannot
+   turn it back into the two-row card grid. */
+.lightcone-modal-mobile .lightcone-base-stat-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 10px;
+  background: #f3f5f8;
+}
+.lightcone-modal-mobile .lightcone-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+.lightcone-modal-mobile .lightcone-base-stat-grid > :last-child:nth-child(odd) {
+  grid-column: auto;
+  border-right: 0;
+}
+.lightcone-modal-mobile .lightcone-stat-item .stat-label {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.lightcone-modal-mobile .lightcone-stat-item .stat-value {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.3;
 }
 </style>
