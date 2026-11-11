@@ -1,6 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import InventoryList from "@/features/inventory/InventoryList.vue";
+import { relics as demoRelics } from "@/shared/dev/mobile-fixtures";
 import type { CharacterListItem, RelicListItem } from "@/types";
 
 const relic: RelicListItem = {
@@ -36,6 +37,31 @@ const character: CharacterListItem = {
 };
 
 describe("InventoryList", () => {
+  it("shows +3, +4 and MAX highlights on the first three mobile demo cards", () => {
+    const items = demoRelics.slice(0, 3);
+    const wrapper = mount(InventoryList, {
+      props: {
+        kind: "relic",
+        items,
+        selectedIds: new Set<number>(),
+        allSelected: false,
+        appending: false,
+        busy: false,
+        readOnly: true,
+      },
+    });
+
+    for (const [index, hits] of [3, 4, 5].entries()) {
+      const item = items[index]!;
+      expect(item.substats.reduce((sum, stat) => sum + stat.count, 0)).toBe(9);
+      expect(item.substats.every((stat) => stat.key !== item.mainStat)).toBe(true);
+      const card = wrapper.findAll(".inventory-relic-row")[index]!;
+      expect(card.get(`.hit-${hits} .hit-count-badge`).text()).toBe(
+        hits === 5 ? "MAX" : `+${hits}`,
+      );
+    }
+  });
+
   it("renders relics with the compact inventory table contract", async () => {
     const wrapper = mount(InventoryList, {
       props: {
@@ -167,6 +193,39 @@ it("keeps detail access but removes editing and selection in the mobile viewer",
   expect(wrapper.find(".character-build-action").exists()).toBe(false);
   await wrapper.get(".character-card").trigger("click");
   expect(wrapper.emitted("detail")).toEqual([["character", 1001]]);
-  const relicWrapper = mount(InventoryList, { props: { ...props, kind: "relic", items: [relic] } });
+  const relicWrapper = mount(InventoryList, {
+    props: {
+      ...props,
+      kind: "relic",
+      items: [
+        {
+          ...relic,
+          slot: "Head",
+          name: "云无留迹的过客·头部",
+          locked: true,
+          location: "开拓者",
+          equippedCharacterId: 8006,
+        },
+      ],
+    },
+  });
   expect(relicWrapper.find(".check-cell").exists()).toBe(false);
+  expect(relicWrapper.get(".relic-icon-box").classes()).toContain("rarity-5");
+  expect(relicWrapper.get(".item-name").text()).toBe("云无留迹的过客");
+  expect(relicWrapper.get(".relic-slot-tag").text()).toBe("头部");
+  expect(relicWrapper.find(".relic-set-subtitle").exists()).toBe(false);
+  expect(relicWrapper.get(".relic-rarity-stars").text()).toBe("★★★★★");
+  expect(relicWrapper.get(".relic-state-tag.is-locked").text()).toBe("已锁定");
+  expect(relicWrapper.find(".relic-cell-equip").exists()).toBe(false);
+  expect(relicWrapper.find(".relic-cell-action").exists()).toBe(false);
+
+  await relicWrapper.get("tr.inventory-relic-row").trigger("click");
+  expect(relicWrapper.emitted("detail")).toEqual([["relic", 7]]);
+  await relicWrapper.get("tr.inventory-relic-row").trigger("keydown.enter");
+  await relicWrapper.get("tr.inventory-relic-row").trigger("keydown.space");
+  expect(relicWrapper.emitted("detail")).toEqual([
+    ["relic", 7],
+    ["relic", 7],
+    ["relic", 7],
+  ]);
 });

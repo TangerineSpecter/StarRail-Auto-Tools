@@ -190,8 +190,30 @@ td {
   color: var(--ink);
 }
 .relic-subtitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   color: var(--muted);
+}
+.relic-rarity-stars {
+  color: var(--gold);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+.relic-state-tag {
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.relic-state-tag.is-locked {
+  background: #e8f0fb;
+  color: var(--blue);
+}
+.relic-state-tag.is-discard {
+  background: #fdeeed;
+  color: #b83b2a;
 }
 .relic-level-badge {
   display: inline-block;
@@ -346,12 +368,21 @@ td {
   }
 }
 .relic-equip-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+}
+.relic-equip-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 .relic-equip-tag.unequipped {
   background: #f0f2f5;

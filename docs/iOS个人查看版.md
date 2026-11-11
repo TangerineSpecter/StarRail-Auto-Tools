@@ -15,6 +15,20 @@ npm run tauri -- ios init --ci --skip-targets-install --config src-tauri/tauri.i
 
 Xcode 工程生成在 `src-tauri/gen/apple/`，该目录被 Git 忽略，可重新生成。若已有旧工程的 `project.yml` 中 `deploymentTarget.iOS` 仍为 `14.0`，请改为 `15.0` 后运行 `xcodegen generate --spec src-tauri/gen/apple/project.yml` 重新生成工程。
 
+## 启动已安装的模拟器开发版
+
+在项目目录运行：
+
+```sh
+./dev-ios.sh
+```
+
+脚本会选择已启动的 iPhone 模拟器（优先 iPhone Duo），没有正在运行的模拟器时会选择唯一可用的 iPhone Duo 或 iPhone 并启动。接着它会启动移动端 Vite 服务并打开已安装的应用。保持终端运行；按 `Ctrl+C` 可停止脚本启动的服务。如果本项目的移动端服务已经运行，脚本会复用它并退出，服务仍由原来的进程管理。
+
+该脚本适用于已安装、指向 `http://127.0.0.1:1432` 的 iOS 开发版；它不构建或安装原生应用。若开发版使用其他本机端口，可用 `STARRAIL_IOS_DEV_PORT=端口号 ./dev-ios.sh` 指定相同端口。多个模拟器无法自动区分时，可通过 `STARRAIL_IOS_SIMULATOR_UDID=设备ID` 指定。前端代码可通过开发服务更新；Rust 或原生代码变更需要重新构建应用。
+
+## 构建模拟器应用
+
 构建时使用 Tauri 命令提供 Xcode 脚本所需的上下文。模拟器构建命令：
 
 ```sh

@@ -69,6 +69,8 @@ Microsoft Store 安装/更新 **App Installer**。也可以直接使用 `npm run
 
 `dev.sh` 会在检测到 nvm 时自动执行 `nvm use 22`，避免 IDE 或非交互终端误用系统 Node。Windows 脚本在检测到 nvm-windows 时也会切换至 22。
 
+已安装 iOS 开发版的模拟器可在项目目录运行 `./dev-ios.sh` 启动，具体条件和端口说明见 [iOS 个人查看版](docs/iOS个人查看版.md)。
+
 在 macOS/Linux 上可以开发界面和测试图片 OCR；游戏窗口采集计划在 Windows 上启用，目前适配器仍在开发中。
 
 ## 游戏数据直读

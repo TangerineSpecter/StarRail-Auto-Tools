@@ -78,8 +78,32 @@ const characterLabel = (item: Pick<CharacterListItem, "characterId" | "name" | "
   });
 const characterElement = (name: string, characterId?: number | null) =>
   resolveCharacterCatalogue({ characterId, name })?.element ?? null;
+const equippedCharacterAvatar = (name: string, characterId?: number | null) =>
+  resolveCharacterCatalogue({ characterId, name })?.image ?? undefined;
 const lightConeImage = (item: LightConeListItem) =>
   lightConeById.get(item.templateId)?.image ?? undefined;
+
+function normalizeRelicLabel(value: string): string {
+  return value.replace(/[\s·•・]/g, "");
+}
+
+function isRedundantRelicName(item: Pick<RelicListItem, "name" | "setName" | "slot">): boolean {
+  const name = normalizeRelicLabel(item.name);
+  const set = normalizeRelicLabel(item.setName);
+  const slot = normalizeRelicLabel(slotLabel(item.slot));
+  return !name || name === set || name === `${set}${slot}`;
+}
+
+function relicDisplayTitle(item: Pick<RelicListItem, "name" | "setName" | "slot">): string {
+  if (isRedundantRelicName(item)) {
+    return item.setName || item.name;
+  }
+  return item.name;
+}
+
+function relicShowSetSubtitle(item: Pick<RelicListItem, "name" | "setName" | "slot">): boolean {
+  return Boolean(item.setName) && !isRedundantRelicName(item);
+}
 
 function avatarColor(name: string): string {
   let hash = 0;
@@ -124,7 +148,15 @@ function avatarColor(name: string): string {
       </thead>
       <tbody>
         <template v-if="kind === 'relic'">
-          <tr v-for="item in relics()" :key="item.itemId">
+          <tr
+            v-for="item in relics()"
+            :key="item.itemId"
+            class="inventory-relic-row"
+            :tabindex="readOnly ? 0 : undefined"
+            @click="readOnly && emit('detail', 'relic', item.itemId)"
+            @keydown.enter="readOnly && emit('detail', 'relic', item.itemId)"
+            @keydown.space.prevent="readOnly && emit('detail', 'relic', item.itemId)"
+          >
             <td v-if="!readOnly" class="check-cell">
               <Checkbox
                 binary
@@ -132,9 +164,9 @@ function avatarColor(name: string): string {
                 @update:model-value="emit('toggle-selected', item.itemId)"
               />
             </td>
-            <td>
+            <td class="relic-cell-identity">
               <div class="relic-name-cell">
-                <div class="relic-icon-box">
+                <div :class="['relic-icon-box', `rarity-${item.rarity}`]">
                   <img
                     v-if="relicImage(item.setId, item.slot)"
                     :src="relicImage(item.setId, item.slot)"
@@ -143,19 +175,30 @@ function avatarColor(name: string): string {
                   /><span v-else class="relic-icon-star">☆</span>
                 </div>
                 <div class="relic-name-info">
-                  <strong class="item-name">{{ item.name }}</strong>
-                  <small class="relic-subtitle"
-                    >{{ item.setName }} · {{ slotLabel(item.slot) }}</small
-                  >
+                  <strong class="item-name">{{ relicDisplayTitle(item) }}</strong>
+                  <small class="relic-subtitle">
+                    <span class="relic-slot-tag">{{ slotLabel(item.slot) }}</span>
+                    <span v-if="relicShowSetSubtitle(item)" class="relic-set-subtitle">{{
+                      item.setName
+                    }}</span>
+                    <span
+                      v-if="item.rarity > 0"
+                      class="relic-rarity-stars"
+                      :aria-label="`${item.rarity} 星`"
+                      >{{ "★".repeat(item.rarity) }}</span
+                    >
+                    <span v-if="item.locked" class="relic-state-tag is-locked">已锁定</span>
+                    <span v-else-if="item.discard" class="relic-state-tag is-discard">弃置</span>
+                  </small>
                 </div>
               </div>
             </td>
-            <td>
+            <td class="relic-cell-level">
               <span :class="['relic-level-badge', { 'is-max': item.level === 15 }]"
                 >+{{ item.level }}</span
               >
             </td>
-            <td>
+            <td class="relic-cell-main">
               <div class="relic-main-stat">
                 <span class="stat-name">{{ statLabel(item.mainStat) }}</span
                 ><strong class="stat-value">{{
@@ -163,7 +206,7 @@ function avatarColor(name: string): string {
                 }}</strong>
               </div>
             </td>
-            <td>
+            <td class="relic-cell-subs">
               <div class="relic-substats-grid">
                 <span
                   v-for="row in relicSubstatRows(item)"
@@ -176,29 +219,42 @@ function avatarColor(name: string): string {
                 </span>
               </div>
             </td>
-            <td>
+            <td v-if="!readOnly" class="relic-cell-equip">
               <span
                 v-if="item.location"
                 :class="[
                   'relic-equip-tag',
                   `element-${characterElement(item.location, item.equippedCharacterId)}`,
                 ]"
-                >{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
+                ><img
+                  v-if="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
+                  :src="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
+                  alt=""
+                  class="relic-equip-avatar"
+                />{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
               ><span v-else class="relic-equip-tag unequipped">未装备</span>
             </td>
-            <td class="detail-cell">
+            <td v-if="!readOnly" class="detail-cell relic-cell-action">
               <Button
                 class="row-action"
                 type="button"
                 text
-                @click="emit('detail', 'relic', item.itemId)"
+                @click.stop="emit('detail', 'relic', item.itemId)"
                 >查看</Button
               >
             </td>
           </tr>
         </template>
         <template v-else>
-          <tr v-for="item in lightCones()" :key="item.itemId">
+          <tr
+            v-for="item in lightCones()"
+            :key="item.itemId"
+            class="inventory-lightcone-row"
+            :tabindex="readOnly ? 0 : undefined"
+            @click="readOnly && emit('detail', 'lightCone', item.itemId)"
+            @keydown.enter="readOnly && emit('detail', 'lightCone', item.itemId)"
+            @keydown.space.prevent="readOnly && emit('detail', 'lightCone', item.itemId)"
+          >
             <td v-if="!readOnly" class="check-cell">
               <Checkbox
                 binary
@@ -206,7 +262,7 @@ function avatarColor(name: string): string {
                 @update:model-value="emit('toggle-selected', item.itemId)"
               />
             </td>
-            <td>
+            <td class="lightcone-cell-identity">
               <div class="relic-name-cell">
                 <div class="relic-icon-box">
                   <img
@@ -221,10 +277,10 @@ function avatarColor(name: string): string {
                 </div>
               </div>
             </td>
-            <td>
+            <td class="lightcone-cell-level">
               <b>Lv.{{ item.level }}</b>
             </td>
-            <td>
+            <td class="lightcone-cell-super">
               <span
                 :class="[
                   'relic-substat-item',
@@ -236,22 +292,27 @@ function avatarColor(name: string): string {
                 ><strong class="substat-value">{{ item.superimposition }}</strong>
               </span>
             </td>
-            <td>
+            <td class="lightcone-cell-equip">
               <span
                 v-if="item.location"
                 :class="[
                   'relic-equip-tag',
                   `element-${characterElement(item.location, item.equippedCharacterId)}`,
                 ]"
-                >{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
+                ><img
+                  v-if="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
+                  :src="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
+                  alt=""
+                  class="relic-equip-avatar"
+                />{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
               ><span v-else class="relic-equip-tag unequipped">未装备</span>
             </td>
-            <td class="detail-cell">
+            <td class="detail-cell lightcone-cell-action">
               <Button
                 class="row-action"
                 type="button"
                 text
-                @click="emit('detail', 'lightCone', item.itemId)"
+                @click.stop="emit('detail', 'lightCone', item.itemId)"
                 >查看</Button
               >
             </td>

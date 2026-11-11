@@ -54,6 +54,28 @@ const slotLabels = ["头部", "手部", "躯干", "脚部", "位面球", "连结
 const slots = ["Head", "Hands", "Body", "Feet", "PlanarSphere", "LinkRope"];
 const mains = ["HP", "ATK", "CRIT Rate", "SPD", "ATK%", "ATK%"];
 const values = [705.6, 352.8, 32.4, 25.032, 43.2, 43.2];
+// First three cards demonstrate +3, +4 and MAX. Counts include the initial
+// roll; each +15 piece has nine total rolls, with values matching their rolls.
+const highlightedSubstats: RelicListItem["substats"][] = [
+  [
+    { kind: "normal", position: 0, key: "CRIT Rate", value: 12.96, count: 4, step: 8 },
+    { kind: "normal", position: 1, key: "CRIT DMG", value: 12.96, count: 2, step: 4 },
+    { kind: "normal", position: 2, key: "SPD", value: 4, count: 2, step: 0 },
+    { kind: "normal", position: 3, key: "ATK%", value: 4.32, count: 1, step: 2 },
+  ],
+  [
+    { kind: "normal", position: 0, key: "CRIT Rate", value: 3.24, count: 1, step: 2 },
+    { kind: "normal", position: 1, key: "CRIT DMG", value: 32.4, count: 5, step: 10 },
+    { kind: "normal", position: 2, key: "SPD", value: 4, count: 2, step: 0 },
+    { kind: "normal", position: 3, key: "ATK%", value: 4.32, count: 1, step: 2 },
+  ],
+  [
+    { kind: "normal", position: 0, key: "HP", value: 42.3375, count: 1, step: 2 },
+    { kind: "normal", position: 1, key: "CRIT DMG", value: 38.88, count: 6, step: 12 },
+    { kind: "normal", position: 2, key: "SPD", value: 2, count: 1, step: 0 },
+    { kind: "normal", position: 3, key: "ATK%", value: 4.32, count: 1, step: 2 },
+  ],
+];
 export const relics: RelicListItem[] = characters.slice(0, 10).flatMap((c, i) =>
   slots.map((slot, j) => {
     const set = j < 4 ? cavern[i % cavern.length]! : planar[i % planar.length]!;
@@ -73,7 +95,7 @@ export const relics: RelicListItem[] = characters.slice(0, 10).flatMap((c, i) =>
       discard: i === 9,
       source: "mobile-demo",
       updatedAt,
-      substats: [
+      substats: (i === 0 ? highlightedSubstats[j] : undefined) ?? [
         { kind: "normal", position: 0, key: "CRIT Rate", value: 5.832 + i, count: 2, step: 0 },
         { kind: "normal", position: 1, key: "CRIT DMG", value: 12.96 + i, count: 2, step: 0 },
         { kind: "normal", position: 2, key: "SPD", value: 4 + (i % 4), count: 2, step: 0 },
