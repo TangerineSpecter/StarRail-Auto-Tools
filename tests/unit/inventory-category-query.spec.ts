@@ -17,9 +17,10 @@ beforeEach(() => {
   api.listLightCones.mockResolvedValue(page(lightCones));
   api.listCharacters.mockResolvedValue(page(characters));
 });
-function fixture() {
+function fixture(cachePrepared = false) {
   let state!: ReturnType<typeof useInventoryArchive>;
   const error = vi.fn();
+  const revision = ref(0);
   const wrapper = mount(
     defineComponent({
       setup() {
@@ -27,7 +28,8 @@ function fixture() {
           summary: ref({ relics: 60, lightCones: 16, characters: 20 }),
           direct: ref({} as never),
           busy: ref(false),
-          revision: ref(0),
+          revision,
+          cachePrepared,
           setError: error,
           setNotice: vi.fn(),
         });
@@ -35,9 +37,29 @@ function fixture() {
       },
     }),
   );
-  return { state, wrapper, error };
+  return { state, wrapper, error, revision };
 }
 describe("prepared inventory categories", () => {
+  it("reuses a first-page mobile result only for the same filters and inventory revision", async () => {
+    const { state, wrapper, revision } = fixture(true);
+    await state.load();
+    state.result.value.page = 2;
+    (await state.prepareKind("lightCone"))!();
+    (await state.prepareKind("relic"))!();
+    expect(api.listRelics).toHaveBeenCalledOnce();
+    expect(state.result.value.page).toBe(1);
+    state.filters.value.search = "新筛选";
+    (await state.prepareKind("lightCone"))!();
+    (await state.prepareKind("relic"))!();
+    expect(api.listRelics).toHaveBeenCalledTimes(2);
+    expect(api.listRelics).toHaveBeenLastCalledWith(expect.objectContaining({ search: "新筛选" }));
+    const prepared = await state.prepareKind("lightCone");
+    revision.value += 1;
+    expect(prepared!()).toBe(false);
+    (await state.prepareKind("lightCone"))!();
+    expect(api.listLightCones).toHaveBeenCalledTimes(2);
+    wrapper.unmount();
+  });
   it("ignores a late loading error after the pending category is cancelled", async () => {
     const { state, wrapper, error } = fixture();
     await state.load();

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
+import { useMobileView } from "@/shared/contracts/mobile-view";
+import { useHorizontalSwipe } from "@/shared/ui/useHorizontalSwipe";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import CharacterDetail from "./CharacterDetail.vue";
 import LightConeDetail from "./LightConeDetail.vue";
@@ -9,8 +11,20 @@ import type { CharacterBuildPlan, InventoryDetail } from "@/types";
 import type { CharacterDetailData, LightConeDetailData, RelicDetailData } from "./detail-types";
 
 const readOnly = useReadOnlyView();
+const mobile = useMobileView();
 const props = defineProps<{ detail: InventoryDetail | null; loading: boolean; inline?: boolean }>();
 const emit = defineEmits<{ close: [] }>();
+const panel = ref<HTMLElement | null>(null);
+useHorizontalSwipe({
+  surface: panel,
+  enabled: computed(() => mobile),
+  allowScreenEdge: true,
+  onSwipe(direction) {
+    if (direction !== "right") return;
+    if (props.inline && document.querySelector('[aria-modal="true"]')) return;
+    emit("close");
+  },
+});
 const asRelic = () => props.detail?.data as unknown as RelicDetailData;
 const asCharacter = () => props.detail?.data as unknown as CharacterDetailData;
 const asLightCone = () => props.detail?.data as unknown as LightConeDetailData;
@@ -76,6 +90,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     @click.self="!inline && emit('close')"
   >
     <aside
+      ref="panel"
       :class="[
         'detail-drawer',
         {

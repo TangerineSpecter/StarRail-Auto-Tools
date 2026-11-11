@@ -32,9 +32,11 @@ describe("inventory filter drawer", () => {
       await wrapper.get(".filter-reset").trigger("click");
       expect(wrapper.emitted("reset")).toHaveLength(1);
       if (mobile) {
+        expect(wrapper.find(".filter-drawer-heading .filter-reset-btn").exists()).toBe(false);
         await wrapper.get('[aria-label="关闭筛选"]').trigger("click");
         expect(wrapper.emitted("update:modelValue")).toEqual([[false]]);
       } else {
+        expect(wrapper.find(".filter-drawer-heading .filter-reset-btn").exists()).toBe(true);
         expect(wrapper.find('[aria-label="关闭筛选"]').exists()).toBe(false);
       }
     },

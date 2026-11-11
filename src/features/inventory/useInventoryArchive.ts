@@ -20,6 +20,7 @@ interface ArchiveOptions {
   revision: Ref<number>;
   setError: (message: string) => void;
   setNotice: (message: string) => void;
+  cachePrepared?: boolean;
 }
 
 const emptyResult = (): PagedResult<InventoryListItem> => ({
@@ -78,9 +79,33 @@ export function useInventoryArchive(options: ArchiveOptions) {
   let preparedRequestId: number | null = null;
   let loadedRevision = -1;
   let active = false;
+  const preparedCache = new Map<
+    InventoryKind,
+    {
+      revision: number;
+      query: string;
+      result: PagedResult<InventoryListItem>;
+    }
+  >();
+  function cachePage(
+    category: InventoryKind,
+    query: unknown,
+    page: PagedResult<InventoryListItem>,
+    dataRevision: number,
+  ) {
+    if (options.cachePrepared && page.page === 1) {
+      preparedCache.set(category, {
+        revision: dataRevision,
+        query: JSON.stringify(query),
+        result: { ...page },
+      });
+    }
+  }
 
   async function load(append = false) {
     const currentRequest = ++requestId;
+    const dataRevision = revision.value;
+    const category = kind.value;
     busy.value = true;
     appending.value = append;
     if (!append) setError("");
@@ -98,6 +123,7 @@ export function useInventoryArchive(options: ArchiveOptions) {
             ? await inventoryApi.listLightCones(query as LightConeFilter)
             : await inventoryApi.listCharacters(query as CharacterFilter);
       if (currentRequest !== requestId) return;
+      if (!append) cachePage(category, query, next, dataRevision);
       result.value = append ? { ...next, items: [...result.value.items, ...next.items] } : next;
       if (!append) selectedIds.value = new Set();
       loadedRevision = revision.value;
@@ -123,17 +149,22 @@ export function useInventoryArchive(options: ArchiveOptions) {
     setError("");
     try {
       const query = buildInventoryFilter(nextKind, filtersByKind[nextKind], 1, 50);
+      const dataRevision = revision.value;
+      const cached = preparedCache.get(nextKind);
       const next =
-        nextKind === "relic"
-          ? await inventoryApi.listRelics(query as RelicFilter)
-          : nextKind === "lightCone"
-            ? await inventoryApi.listLightCones(query as LightConeFilter)
-            : await inventoryApi.listCharacters(query as CharacterFilter);
+        cached?.revision === dataRevision && cached.query === JSON.stringify(query)
+          ? cached.result
+          : nextKind === "relic"
+            ? await inventoryApi.listRelics(query as RelicFilter)
+            : nextKind === "lightCone"
+              ? await inventoryApi.listLightCones(query as LightConeFilter)
+              : await inventoryApi.listCharacters(query as CharacterFilter);
       if (currentRequest !== requestId) return null;
+      cachePage(nextKind, query, next, dataRevision);
       return () => {
-        if (currentRequest !== requestId) return false;
+        if (currentRequest !== requestId || dataRevision !== revision.value) return false;
         kind.value = nextKind;
-        result.value = next;
+        result.value = { ...next };
         selectedIds.value = new Set();
         loadedRevision = revision.value;
         return true;

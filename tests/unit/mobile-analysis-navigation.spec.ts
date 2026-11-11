@@ -13,18 +13,27 @@ describe("mobile analysis navigation", () => {
       global: {
         plugins: [createPinia()],
         stubs: {
-          MobileInventoryPage: { template: '<div class="inventory-stub" />' },
+          MobileInventoryPage: {
+            template:
+              '<div class="inventory-stub"><div class="mobile-inventory-toolbar"><slot name="toolbar-actions" /></div></div>',
+          },
           MobileAnalysisPage: {
             template: '<div class="analysis-stub">主属性扫描 · 替换推荐扫描</div>',
           },
           CataloguePage: { template: '<div class="catalogue-stub" />' },
           BuildDashboard: { template: '<div class="build-stub" />' },
           MobileSync: { template: '<div class="sync-stub" />' },
-          MobileDevDataSwitch: true,
+          MobileDevDataSwitch: {
+            template: '<button class="mobile-dev-data-switch">示例数据</button>',
+          },
         },
       },
     });
     await flushPromises();
+    expect(wrapper.find(".mobile-header").exists()).toBe(false);
+    expect(wrapper.get(".mobile-page-title").text()).toBe("背包");
+    expect(wrapper.get(".mobile-nav-brand img").attributes("alt")).toBe("星穹数据航站");
+    expect(wrapper.find(".mobile-inventory-toolbar .mobile-dev-data-switch").exists()).toBe(true);
     const buttons = wrapper.findAll(".mobile-nav button");
     expect(buttons.map((button) => button.text())).toEqual([
       "背包",

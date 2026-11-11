@@ -61,12 +61,12 @@ const substatCountOptions = [
             v-if="mobile"
             class="mobile-filter-close"
             type="button"
-            text
+            outlined
             aria-label="关闭筛选"
             @click="visible = false"
             >关闭</Button
           >
-          <Button class="filter-reset-btn" type="button" text @click="emit('reset')">
+          <Button v-if="!mobile" class="filter-reset-btn" type="button" text @click="emit('reset')">
             <svg
               viewBox="0 0 24 24"
               width="1.2em"

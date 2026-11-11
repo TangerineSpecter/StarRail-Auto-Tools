@@ -12,6 +12,8 @@ import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useInventorySplitView } from "@/features/inventory/useInventorySplitView";
 import { useInventoryDetailTransition } from "@/features/inventory/useInventoryDetailTransition";
 import { useInventoryCategoryTransition } from "@/features/inventory/useInventoryCategoryTransition";
+import { useInventoryCategorySwipe } from "@/features/inventory/useInventoryCategorySwipe";
+import { useMobileInventoryWindow } from "@/features/inventory/useMobileInventoryWindow";
 import { useMobileRelicQuality } from "@/features/inventory/useMobileRelicQuality";
 import { createInventoryFilterForm } from "@/features/inventory/filter";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
@@ -24,6 +26,7 @@ const archive = useInventoryArchive({
   revision: runtime.inventoryRevision,
   setError: (value) => (runtime.error.value = value),
   setNotice: (value) => (runtime.notice.value = value),
+  cachePrepared: true,
 });
 const detail = useInventoryDetail((value) => (runtime.error.value = value));
 const master = ref<HTMLElement | null>(null);
@@ -40,6 +43,17 @@ const categoryTransition = useInventoryCategoryTransition({
   onCommit: detail.close,
   cancelDetail: transitionDetail.cancel,
   cancelPrepare: archive.cancelPreparedKind,
+});
+useInventoryCategorySwipe({
+  surface: master,
+  kind: categoryTransition.selectedKind,
+  enabled: computed(
+    () =>
+      !categoryTransition.pending.value &&
+      !archive.filterOpen.value &&
+      (!detailOpen.value || splitView.value),
+  ),
+  switchTo: switchKind,
 });
 const filterDraft = ref(createInventoryFilterForm());
 const quality = useMobileRelicQuality(
@@ -89,15 +103,24 @@ watch(detailOpen, (open) => {
 const listItems = computed(() =>
   archive.kind.value === "relic" ? quality.displayItems.value : archive.result.value.items,
 );
+const listWindow = useMobileInventoryWindow({
+  items: listItems,
+  kind: archive.kind,
+  pending: categoryTransition.pending,
+  master,
+});
 onDeactivated(detail.close);
 </script>
 <template>
   <section :class="['mobile-archive', { 'is-split': splitView }]">
     <div ref="master" class="mobile-inventory-master">
-      <MobileInventoryCategoryTabs
-        :kind="categoryTransition.selectedKind.value"
-        @category="switchKind"
-      />
+      <div class="mobile-inventory-toolbar">
+        <MobileInventoryCategoryTabs
+          :kind="categoryTransition.selectedKind.value"
+          @category="switchKind"
+        />
+        <slot name="toolbar-actions" />
+      </div>
       <div
         ref="categoryBody"
         class="mobile-inventory-category-content"
@@ -140,7 +163,7 @@ onDeactivated(detail.close);
         </InventoryFilterDrawer>
         <InventoryList
           :kind="archive.kind.value"
-          :items="listItems"
+          :items="listWindow.visibleItems.value"
           :selected-ids="archive.selectedIds.value"
           :all-selected="false"
           :appending="archive.appending.value"
@@ -149,8 +172,14 @@ onDeactivated(detail.close);
           :active-detail-id="activeDetailId"
           @detail="openDetail"
         />
+        <div
+          v-if="listWindow.hasMore.value"
+          :ref="(element) => (listWindow.sentinel.value = element as HTMLElement | null)"
+          class="mobile-inventory-render-sentinel"
+          aria-hidden="true"
+        />
         <button
-          v-if="archive.result.value.page > 1"
+          v-if="!listWindow.hasMore.value && archive.result.value.page > 1"
           class="mobile-more"
           :disabled="runtime.busy.value"
           @click="archive.goPage(archive.result.value.page - 1)"
@@ -158,7 +187,7 @@ onDeactivated(detail.close);
           上一页
         </button>
         <button
-          v-if="archive.result.value.page < archive.pageCount.value"
+          v-if="!listWindow.hasMore.value && archive.result.value.page < archive.pageCount.value"
           class="mobile-more"
           :disabled="runtime.busy.value"
           @click="archive.goPage(archive.result.value.page + 1)"
