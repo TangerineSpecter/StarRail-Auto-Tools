@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import Button from "primevue/button";
+import ScannerFilterButton from "./ScannerFilterButton.vue";
+import MainStatReviewCards from "./MainStatReviewCards.vue";
+import type { ScanReviewFilters } from "./scan-review";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
 import { scanUpgradeRecommendations } from "@/shared/utils/relic-score";
@@ -10,6 +14,8 @@ import type { BuildDashboardEntry, RelicListItem, RelicMainStatGroupedResult } f
 
 const props = defineProps<{ imageFor: (relic: RelicListItem) => string | undefined }>();
 const emit = defineEmits<{ "open-relic": [relic: RelicListItem] }>();
+const mobile = useMobileView();
+let disposed = false;
 const planCount = ref<number | null>(null);
 const loading = ref(false);
 const usefulnessLoading = ref(false);
@@ -40,7 +46,8 @@ const USEFULNESS_PAGE_SIZE = 200;
 let usefulnessRequestId = 0;
 
 const canAnalyze = computed(
-  () => planCount.value !== null && planCount.value > 0 && !loading.value,
+  () =>
+    planCount.value !== null && planCount.value > 0 && !loading.value && !usefulnessLoading.value,
 );
 
 const gradeClass = (grade: string | null) => {
@@ -50,6 +57,7 @@ const gradeClass = (grade: string | null) => {
 
 async function analyze() {
   if (!canAnalyze.value) return;
+  const requestId = ++usefulnessRequestId;
   error.value = "";
   usefulnessRows.value = [];
   usefulnessScanned.value = 0;
@@ -57,16 +65,19 @@ async function analyze() {
   loading.value = true;
   try {
     const grouped = await inventoryApi.scanRelicsByMainStatGrouped();
+    if (requestId !== usefulnessRequestId) return;
     planCount.value = grouped.planCount;
     result.value = grouped;
   } catch (cause) {
+    if (requestId !== usefulnessRequestId) return;
     error.value = String(cause);
   } finally {
-    loading.value = false;
+    if (requestId === usefulnessRequestId) loading.value = false;
   }
 }
 
 async function analyzeUsefulness() {
+  if (!canAnalyze.value) return;
   const requestId = ++usefulnessRequestId;
   usefulnessLoading.value = true;
   error.value = "";
@@ -168,7 +179,13 @@ async function analyzeUsefulness() {
   }
 }
 
-// Added state & computeds for main stat scanning review dashboard
+function applyReviewFilters(filters: ScanReviewFilters) {
+  categoryFilter.value = filters.category;
+  slotFilter.value = filters.slot;
+  searchQuery.value = filters.search;
+}
+
+// Main stat scanning review filters.
 const searchQuery = ref("");
 const slotFilter = ref("all");
 const categoryFilter = ref("all");
@@ -347,12 +364,20 @@ function getStatThemeClass(mainStat: string) {
 
 onMounted(async () => {
   try {
-    planCount.value = await inventoryApi.relicMainStatScanPlanCount();
-    plans.value = await buildPlanApi.dashboard();
-    planCount.value = Math.max(planCount.value ?? 0, plans.value.length);
+    const [count, dashboard] = await Promise.all([
+      inventoryApi.relicMainStatScanPlanCount(),
+      buildPlanApi.dashboard(),
+    ]);
+    if (disposed) return;
+    plans.value = dashboard;
+    planCount.value = Math.max(count ?? 0, dashboard.length);
   } catch (cause) {
-    error.value = String(cause);
+    if (!disposed) error.value = String(cause);
   }
+});
+onBeforeUnmount(() => {
+  disposed = true;
+  usefulnessRequestId += 1;
 });
 </script>
 
@@ -363,7 +388,7 @@ onMounted(async () => {
         <p class="eyebrow">INVENTORY // REVIEW PROTOCOL</p>
         <div class="scanner-title-line">
           <span class="scanner-sigil" aria-hidden="true">◇</span>
-          <h2>背包扫描</h2>
+          <h2>{{ mobile ? "遗器分析" : "背包扫描" }}</h2>
         </div>
         <p>比对已保存的培养方案，定位无去向闲置件，或优于当前穿戴的替换候选。</p>
       </div>
@@ -382,6 +407,15 @@ onMounted(async () => {
           >
         </div>
       </div>
+      <ScannerFilterButton
+        v-if="mobile"
+        :filters="{ category: categoryFilter, slot: slotFilter, search: searchQuery }"
+        :total="result?.total ?? 0"
+        :cavern-count="summaryStats?.cavernCount ?? 0"
+        :planar-count="summaryStats?.planarCount ?? 0"
+        :disabled="!result?.groups.length || loading || usefulnessLoading"
+        @apply="applyReviewFilters"
+      />
     </header>
 
     <div v-if="usefulnessRows.length" class="scanner-usefulness">
@@ -407,6 +441,7 @@ onMounted(async () => {
           tabindex="0"
           @click="emit('open-relic', row.item)"
           @keydown.enter="emit('open-relic', row.item)"
+          @keydown.space.prevent="emit('open-relic', row.item)"
         >
           <!-- Top Bar Header -->
           <div class="upgrade-card-header">
@@ -515,7 +550,11 @@ onMounted(async () => {
     <p v-else-if="error" class="scanner-state error">{{ error }}</p>
     <div v-else-if="planCount === null" class="scanner-state">正在读取培养方案…</div>
     <div v-else-if="planCount === 0" class="scanner-state">
-      请先在数据管理的角色档案中保存至少一个“培养方案 / 毕业目标”。
+      {{
+        mobile
+          ? "请先在电脑端保存培养方案 / 毕业目标，再同步到手机。"
+          : "请先在数据管理的角色档案中保存至少一个“培养方案 / 毕业目标”。"
+      }}
     </div>
     <div v-else-if="!result" class="scanner-intro">
       <div class="scanner-radar" aria-hidden="true"><i /><b>◈</b></div>
@@ -544,7 +583,7 @@ onMounted(async () => {
           </div>
 
           <!-- Quick Category Filters -->
-          <div class="category-tabs-group">
+          <div v-if="!mobile" class="category-tabs-group">
             <button
               :class="['cat-tab-btn', { active: categoryFilter === 'all' }]"
               @click="categoryFilter = 'all'"
@@ -568,7 +607,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="compact-right">
+        <div v-if="!mobile" class="compact-right">
           <!-- Slot Segment Filter -->
           <div class="slot-filter-select-wrapper">
             <select v-model="slotFilter" class="slot-filter-select">
@@ -611,175 +650,182 @@ onMounted(async () => {
       <div v-if="!filteredGroups.length" class="scanner-state">没有匹配当前条件的待复核遗器。</div>
 
       <!-- MATRIX BOARD (二维矩阵热力看板) -->
-      <div v-else class="matrix-board-container">
-        <div class="matrix-table-wrapper">
-          <table class="modern-matrix-table" role="grid" aria-label="待复核遗器二维矩阵">
-            <thead>
-              <tr>
-                <th class="col-set-info">套装名称 / 类型</th>
-                <th
-                  v-for="s in allSlots.filter((s) => slotFilter === 'all' || slotFilter === s.key)"
-                  :key="s.key"
-                  class="col-slot-header"
-                >
-                  <span class="slot-header-icon">
-                    <svg
-                      v-if="s.key === 'Body'"
-                      class="slot-svg-icon"
-                      viewBox="0 0 24 24"
-                      width="14"
-                      height="14"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M6 3h12l3 6-3 12H6L3 9z" />
-                      <path d="M12 3v18" />
-                      <path d="M8 9h8" />
-                    </svg>
-                    <svg
-                      v-else-if="s.key === 'Feet'"
-                      class="slot-svg-icon"
-                      viewBox="0 0 24 24"
-                      width="14"
-                      height="14"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M4 16v-6a3 3 0 0 1 3-3h3l3 4h7a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4z" />
-                      <circle cx="8" cy="16" r="1" />
-                    </svg>
-                    <svg
-                      v-else-if="s.key === 'PlanarSphere'"
-                      class="slot-svg-icon"
-                      viewBox="0 0 24 24"
-                      width="14"
-                      height="14"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="7" />
-                      <path d="M4.5 14.5c4.5 3 10.5 3 15 0" />
-                      <path d="M4.5 9.5c4.5-3 10.5-3 15 0" />
-                    </svg>
-                    <svg
-                      v-else-if="s.key === 'LinkRope'"
-                      class="slot-svg-icon"
-                      viewBox="0 0 24 24"
-                      width="14"
-                      height="14"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M10 14l-2 2a3 3 0 1 1-4.24-4.24l2-2a3 3 0 0 1 4.24 0" />
-                      <path d="M14 10l2-2a3 3 0 1 1 4.24 4.24l-2 2a3 3 0 0 1-4.24 0" />
-                      <line x1="8" y1="16" x2="16" y2="8" />
-                    </svg>
-                    <svg
-                      v-else-if="s.key === 'Head'"
-                      class="slot-svg-icon"
-                      viewBox="0 0 24 24"
-                      width="14"
-                      height="14"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path
-                        d="M12 4a8 8 0 0 0-8 8v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3a8 8 0 0 0-8-8z"
-                      />
-                      <path d="M4 14h16" />
-                    </svg>
-                    <svg
-                      v-else-if="s.key === 'Hands'"
-                      class="slot-svg-icon"
-                      viewBox="0 0 24 24"
-                      width="14"
-                      height="14"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5" />
-                      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6" />
-                      <path
-                        d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-3.5"
-                      />
-                    </svg>
-                  </span>
-                  <span class="slot-header-name">{{ s.label }}</span>
-                </th>
-                <th class="col-total">待复核件数</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="setGroup in filteredGroups" :key="setGroup.setId" class="matrix-row">
-                <!-- 套装列 -->
-                <td class="cell-set-info">
-                  <div class="matrix-set-cell">
-                    <img
-                      :src="getSetHeaderIcon(setGroup)"
-                      :alt="setGroup.setName"
-                      class="matrix-set-icon"
-                    />
-                    <div class="matrix-set-meta">
-                      <span class="matrix-set-name">{{ setGroup.setName }}</span>
-                      <span :class="['set-type-tag', setGroup.isPlanar ? 'planar' : 'cavern']">
-                        {{ setGroup.isPlanar ? "2件套" : "4件套" }}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-
-                <!-- 部位交叉单元格 -->
-                <td
-                  v-for="s in allSlots.filter((s) => slotFilter === 'all' || slotFilter === s.key)"
-                  :key="s.key"
-                  class="cell-slot-data"
-                >
-                  <template v-if="setGroup.parts.find((p) => p.slot === s.key)">
-                    <div class="matrix-chip-list">
-                      <div
-                        v-for="stat in setGroup.parts.find((p) => p.slot === s.key)!.stats"
-                        :key="stat.mainStat"
-                        :class="[
-                          'modern-stat-chip',
-                          'matrix-chip',
-                          getStatThemeClass(stat.mainStat),
-                        ]"
+      <div v-else class="scanner-review-results">
+        <MainStatReviewCards v-if="mobile" :groups="filteredGroups" />
+        <div class="matrix-board-container">
+          <div class="matrix-table-wrapper">
+            <table class="modern-matrix-table" role="grid" aria-label="待复核遗器二维矩阵">
+              <thead>
+                <tr>
+                  <th class="col-set-info">套装名称 / 类型</th>
+                  <th
+                    v-for="s in allSlots.filter(
+                      (s) => slotFilter === 'all' || slotFilter === s.key,
+                    )"
+                    :key="s.key"
+                    class="col-slot-header"
+                  >
+                    <span class="slot-header-icon">
+                      <svg
+                        v-if="s.key === 'Body'"
+                        class="slot-svg-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
                       >
-                        <span class="chip-stat-label">{{ statLabel(stat.mainStat) }}</span>
-                        <span class="chip-count-pill">{{ stat.count }} 件</span>
+                        <path d="M6 3h12l3 6-3 12H6L3 9z" />
+                        <path d="M12 3v18" />
+                        <path d="M8 9h8" />
+                      </svg>
+                      <svg
+                        v-else-if="s.key === 'Feet'"
+                        class="slot-svg-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M4 16v-6a3 3 0 0 1 3-3h3l3 4h7a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4z" />
+                        <circle cx="8" cy="16" r="1" />
+                      </svg>
+                      <svg
+                        v-else-if="s.key === 'PlanarSphere'"
+                        class="slot-svg-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="7" />
+                        <path d="M4.5 14.5c4.5 3 10.5 3 15 0" />
+                        <path d="M4.5 9.5c4.5-3 10.5-3 15 0" />
+                      </svg>
+                      <svg
+                        v-else-if="s.key === 'LinkRope'"
+                        class="slot-svg-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M10 14l-2 2a3 3 0 1 1-4.24-4.24l2-2a3 3 0 0 1 4.24 0" />
+                        <path d="M14 10l2-2a3 3 0 1 1 4.24 4.24l-2 2a3 3 0 0 1-4.24 0" />
+                        <line x1="8" y1="16" x2="16" y2="8" />
+                      </svg>
+                      <svg
+                        v-else-if="s.key === 'Head'"
+                        class="slot-svg-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M12 4a8 8 0 0 0-8 8v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3a8 8 0 0 0-8-8z"
+                        />
+                        <path d="M4 14h16" />
+                      </svg>
+                      <svg
+                        v-else-if="s.key === 'Hands'"
+                        class="slot-svg-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5" />
+                        <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6" />
+                        <path
+                          d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-3.5"
+                        />
+                      </svg>
+                    </span>
+                    <span class="slot-header-name">{{ s.label }}</span>
+                  </th>
+                  <th class="col-total">待复核件数</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="setGroup in filteredGroups" :key="setGroup.setId" class="matrix-row">
+                  <!-- 套装列 -->
+                  <td class="cell-set-info">
+                    <div class="matrix-set-cell">
+                      <img
+                        :src="getSetHeaderIcon(setGroup)"
+                        :alt="setGroup.setName"
+                        class="matrix-set-icon"
+                      />
+                      <div class="matrix-set-meta">
+                        <span class="matrix-set-name">{{ setGroup.setName }}</span>
+                        <span :class="['set-type-tag', setGroup.isPlanar ? 'planar' : 'cavern']">
+                          {{ setGroup.isPlanar ? "2件套" : "4件套" }}
+                        </span>
                       </div>
                     </div>
-                  </template>
-                  <span v-else class="cell-empty">—</span>
-                </td>
+                  </td>
 
-                <!-- 总计列 -->
-                <td class="cell-total">
-                  <div class="set-total-badge matrix-badge">
-                    <b>{{ setGroup.groupTotal }}</b> <small>件</small>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <!-- 部位交叉单元格 -->
+                  <td
+                    v-for="s in allSlots.filter(
+                      (s) => slotFilter === 'all' || slotFilter === s.key,
+                    )"
+                    :key="s.key"
+                    class="cell-slot-data"
+                  >
+                    <template v-if="setGroup.parts.find((p) => p.slot === s.key)">
+                      <div class="matrix-chip-list">
+                        <div
+                          v-for="stat in setGroup.parts.find((p) => p.slot === s.key)!.stats"
+                          :key="stat.mainStat"
+                          :class="[
+                            'modern-stat-chip',
+                            'matrix-chip',
+                            getStatThemeClass(stat.mainStat),
+                          ]"
+                        >
+                          <span class="chip-stat-label">{{ statLabel(stat.mainStat) }}</span>
+                          <span class="chip-count-pill">{{ stat.count }} 件</span>
+                        </div>
+                      </div>
+                    </template>
+                    <span v-else class="cell-empty">—</span>
+                  </td>
+
+                  <!-- 总计列 -->
+                  <td class="cell-total">
+                    <div class="set-total-badge matrix-badge">
+                      <b>{{ setGroup.groupTotal }}</b> <small>件</small>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </template>
@@ -2135,6 +2181,12 @@ onMounted(async () => {
 }
 
 /* 1. DISPLAY VIEW: MATRIX BOARD (二维矩阵热力看板) */
+.scanner-review-results {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
 .matrix-board-container {
   flex: 1;
   min-height: 0;

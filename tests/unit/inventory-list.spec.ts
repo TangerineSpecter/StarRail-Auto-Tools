@@ -1,7 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import InventoryList from "@/features/inventory/InventoryList.vue";
-import { relics as demoRelics } from "@/shared/dev/mobile-fixtures";
+import { lightCones as demoLightCones, relics as demoRelics } from "@/shared/dev/mobile-fixtures";
 import type { CharacterListItem, RelicListItem } from "@/types";
 
 const relic: RelicListItem = {
@@ -37,6 +37,79 @@ const character: CharacterListItem = {
 };
 
 describe("InventoryList", () => {
+  it("opens mobile light cone cards directly and preserves distinct equipped path variants", async () => {
+    const items = [
+      { ...demoLightCones[0]!, itemId: 11, location: "三月七", equippedCharacterId: 1224 },
+      { ...demoLightCones[1]!, itemId: 12, location: "开拓者", equippedCharacterId: 8006 },
+      {
+        ...demoLightCones[2]!,
+        itemId: 13,
+        templateId: -1,
+        location: "",
+        equippedCharacterId: null,
+        superimposition: 5,
+      },
+    ];
+    const wrapper = mount(InventoryList, {
+      props: {
+        kind: "lightCone",
+        items,
+        selectedIds: new Set<number>(),
+        allSelected: false,
+        appending: false,
+        busy: false,
+        readOnly: true,
+        activeDetailId: 12,
+      },
+    });
+    expect(wrapper.find(".lightcone-cell-action").exists()).toBe(false);
+    expect(wrapper.find(".check-cell").exists()).toBe(false);
+    const cards = wrapper.findAll(".inventory-lightcone-row");
+    expect(cards[0]!.attributes("role")).toBe("button");
+    expect(cards[1]!.attributes("aria-current")).toBe("true");
+    expect(cards[0]!.get(".lightcone-card-owner").text()).toBe("三月七·巡猎");
+    expect(cards[1]!.get(".lightcone-card-owner").text()).toBe("开拓者·同谐");
+    expect(cards[0]!.get(".lightcone-card-path").text()).toBe("智识");
+    expect(cards[0]!.get(".lightcone-card-stars").text()).toBe("★★★★★");
+    expect(cards[0]!.get(".lightcone-card-cover img").attributes("src")).toContain("23000");
+    expect(cards[2]!.get(".lightcone-card-cover-fallback").text()).toBe("光锥");
+    expect(cards[2]!.get(".lightcone-card-unequipped").text()).toBe("未装备");
+    expect(cards[2]!.get(".lightcone-card-rank").classes()).toContain("is-max");
+    await cards[0]!.trigger("click");
+    await cards[1]!.trigger("keydown.enter");
+    await cards[2]!.trigger("keydown.space");
+    expect(wrapper.emitted("detail")).toEqual([
+      ["lightCone", 11],
+      ["lightCone", 12],
+      ["lightCone", 13],
+    ]);
+    wrapper.unmount();
+  });
+
+  it("retains the desktop light cone table and its detail button", async () => {
+    const wrapper = mount(InventoryList, {
+      props: {
+        kind: "lightCone",
+        items: [demoLightCones[0]!],
+        selectedIds: new Set<number>(),
+        allSelected: false,
+        appending: false,
+        busy: false,
+      },
+      global: {
+        stubs: {
+          Checkbox: { template: '<input type="checkbox" />' },
+          Button: { template: "<button><slot /></button>" },
+        },
+      },
+    });
+    expect(wrapper.find(".inventory-lightcone-card").exists()).toBe(false);
+    expect(wrapper.find(".check-cell").exists()).toBe(true);
+    await wrapper.get(".lightcone-cell-action button").trigger("click");
+    expect(wrapper.emitted("detail")).toEqual([["lightCone", demoLightCones[0]!.itemId]]);
+    wrapper.unmount();
+  });
+
   it("shows +3, +4 and MAX highlights on the first three mobile demo cards", () => {
     const items = demoRelics.slice(0, 3);
     const wrapper = mount(InventoryList, {

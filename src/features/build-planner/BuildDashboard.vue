@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import AdaptiveDisclosure from "@/shared/ui/AdaptiveDisclosure.vue";
+import BuildCardDetails from "./BuildCardDetails.vue";
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
 const readOnly = useReadOnlyView();
-import { computed, onMounted, ref } from "vue";
+const mobile = useMobileView();
+import { computed, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { buildPlanApi } from "@/shared/api/build-plan";
@@ -33,7 +35,7 @@ import { qualityMainStatTip, qualityPassCountTip } from "./quality-tips";
 import { useDashboardDrag } from "./useDashboardDrag";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
-import { resolveCharacterCatalogue } from "@/shared/catalogue";
+import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
 import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import type { BuildDashboardEntry, LightConeCatalogue, RelicSetCatalogue } from "@/types";
 
@@ -51,6 +53,23 @@ const dashboardElement = ref<HTMLElement | null>(null);
 const lightCones = lightConeCatalogueJson as LightConeCatalogue;
 const relicSets = relicCatalogueJson as RelicSetCatalogue;
 const disabledTraceNodes = loadDisabledTraceNodes();
+const selectedCharacterId = ref<number | null>(null);
+let dashboardRequestId = 0;
+function openDetails(characterId: number, event?: KeyboardEvent) {
+  if (!mobile || event?.isComposing) return;
+  event?.preventDefault();
+  selectedCharacterId.value = characterId;
+}
+function setDetailsVisible(characterId: number, visible: boolean) {
+  if (visible) selectedCharacterId.value = characterId;
+  else if (selectedCharacterId.value === characterId) selectedCharacterId.value = null;
+}
+onDeactivated(() => {
+  selectedCharacterId.value = null;
+});
+onBeforeUnmount(() => {
+  dashboardRequestId += 1;
+});
 
 function characterInitial(name: string) {
   return name.slice(0, 1);
@@ -331,14 +350,16 @@ async function togglePinned(card: (typeof cards.value)[number]) {
 }
 
 async function loadDashboard() {
+  const requestId = ++dashboardRequestId;
   loading.value = true;
   error.value = "";
   try {
-    entries.value = await buildPlanApi.dashboard();
+    const next = await buildPlanApi.dashboard();
+    if (requestId === dashboardRequestId) entries.value = next;
   } catch (cause) {
-    error.value = String(cause);
+    if (requestId === dashboardRequestId) error.value = String(cause);
   } finally {
-    loading.value = false;
+    if (requestId === dashboardRequestId) loading.value = false;
   }
 }
 
@@ -428,7 +449,14 @@ defineExpose({ reload: loadDashboard });
           { 'drag-over': dragOverCharacterId === card.character.characterId },
         ]"
         :data-character-id="card.character.characterId"
-        role="article"
+        :role="mobile ? 'button' : 'article'"
+        :tabindex="mobile ? 0 : undefined"
+        :aria-label="mobile ? `查看${characterDisplayName(card.character)}培养详情` : undefined"
+        :aria-expanded="mobile ? selectedCharacterId === card.character.characterId : undefined"
+        :aria-haspopup="mobile ? 'dialog' : undefined"
+        @click="openDetails(card.character.characterId)"
+        @keydown.enter="openDetails(card.character.characterId, $event)"
+        @keydown.space="openDetails(card.character.characterId, $event)"
       >
         <header class="build-card-header">
           <div class="build-card-identity">
@@ -454,7 +482,7 @@ defineExpose({ reload: loadDashboard });
             </div>
             <div class="build-character-info">
               <div class="build-character-title">
-                <p>{{ card.character.name }}</p>
+                <p>{{ mobile ? characterDisplayName(card.character) : card.character.name }}</p>
                 <button
                   v-if="!readOnly"
                   type="button"
@@ -544,7 +572,11 @@ defineExpose({ reload: loadDashboard });
           </div>
         </header>
 
-        <AdaptiveDisclosure title="培养详情" summary="装备 · 目标 · 词条潜力">
+        <BuildCardDetails
+          :model-value="selectedCharacterId === card.character.characterId"
+          :title="characterDisplayName(card.character)"
+          @update:model-value="setDetailsVisible(card.character.characterId, $event)"
+        >
           <div class="build-card-body">
             <div class="build-card-main">
               <div class="build-card-equipment">
@@ -699,7 +731,7 @@ defineExpose({ reload: loadDashboard });
               </div>
             </div>
           </div>
-        </AdaptiveDisclosure>
+        </BuildCardDetails>
       </article>
     </div>
   </section>

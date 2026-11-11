@@ -8,6 +8,19 @@ const create = (search = "") =>
   });
 afterEach(() => vi.useRealTimers());
 describe("mobile inventory direct search", () => {
+  it("moves one persistent indicator to the selected category", async () => {
+    const wrapper = create();
+    const indicator = wrapper.get(".mobile-inventory-category-indicator").element;
+    expect(wrapper.get("nav").attributes("style")).toContain("--inventory-category-index: 0");
+    await wrapper.setProps({ kind: "character" });
+    expect(wrapper.get("nav").attributes("style")).toContain("--inventory-category-index: 2");
+    expect(wrapper.get(".mobile-inventory-category-indicator").element).toBe(indicator);
+    await wrapper.setProps({ hideCategories: true });
+    expect(wrapper.find("nav").exists()).toBe(false);
+    expect(wrapper.find('input[type="search"]').exists()).toBe(true);
+    wrapper.unmount();
+  });
+
   it("coalesces typing and lets the keyboard submit immediately", async () => {
     vi.useFakeTimers();
     const wrapper = create();

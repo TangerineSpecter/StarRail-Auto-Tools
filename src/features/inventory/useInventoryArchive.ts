@@ -75,6 +75,7 @@ export function useInventoryArchive(options: ArchiveOptions) {
     () => filters.value.search.trim().length > 0 || activeFilterCount.value > 0,
   );
   let requestId = 0;
+  let preparedRequestId: number | null = null;
   let loadedRevision = -1;
   let active = false;
 
@@ -113,6 +114,43 @@ export function useInventoryArchive(options: ArchiveOptions) {
     result.value = emptyResult();
     selectedIds.value = new Set();
     void load();
+  }
+  /** Prepare a category without clearing the visible page; commit only the latest request. */
+  async function prepareKind(nextKind: InventoryKind): Promise<(() => boolean) | null> {
+    const currentRequest = ++requestId;
+    preparedRequestId = currentRequest;
+    busy.value = true;
+    setError("");
+    try {
+      const query = buildInventoryFilter(nextKind, filtersByKind[nextKind], 1, 50);
+      const next =
+        nextKind === "relic"
+          ? await inventoryApi.listRelics(query as RelicFilter)
+          : nextKind === "lightCone"
+            ? await inventoryApi.listLightCones(query as LightConeFilter)
+            : await inventoryApi.listCharacters(query as CharacterFilter);
+      if (currentRequest !== requestId) return null;
+      return () => {
+        if (currentRequest !== requestId) return false;
+        kind.value = nextKind;
+        result.value = next;
+        selectedIds.value = new Set();
+        loadedRevision = revision.value;
+        return true;
+      };
+    } catch (cause) {
+      if (currentRequest === requestId) setError(String(cause));
+      return null;
+    } finally {
+      if (currentRequest === requestId) busy.value = false;
+      if (preparedRequestId === currentRequest) preparedRequestId = null;
+    }
+  }
+  function cancelPreparedKind() {
+    if (preparedRequestId === null || preparedRequestId !== requestId) return;
+    requestId += 1;
+    preparedRequestId = null;
+    busy.value = false;
   }
   function resetFilters() {
     Object.assign(filters.value, createInventoryFilterForm());
@@ -263,6 +301,8 @@ export function useInventoryArchive(options: ArchiveOptions) {
     hasActiveSearchOrFilters,
     load,
     switchKind,
+    prepareKind,
+    cancelPreparedKind,
     resetFilters,
     applyFilters,
     toggleSelected,

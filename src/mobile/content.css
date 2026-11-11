@@ -188,44 +188,6 @@ html.mobile-view :is(.p-drawer, .detail-drawer) :is(input, textarea, select) {
 .mobile-disclosure-body {
   padding: 0 12px 12px;
 }
-.mobile-archive .score-toolbar {
-  border: 0;
-  padding: 0;
-  background: white;
-  box-shadow: none;
-  margin: 0;
-}
-.mobile-archive .score-toolbar-fields {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-.mobile-archive .score-toolbar-fields label {
-  min-width: 0;
-  width: auto;
-  font-size: 12px;
-}
-.mobile-archive .score-toolbar-fields select {
-  width: 100%;
-  min-height: 44px;
-  font-size: 16px;
-}
-.mobile-archive .score-toolbar-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-.mobile-archive .score-action {
-  min-height: 44px;
-  font-size: 12px;
-  white-space: normal;
-  padding: 8px 12px;
-}
-.mobile-archive .score-toolbar-hint {
-  font-size: 12px;
-  line-height: 1.5;
-}
 .mobile-archive .table-shell {
   overflow: visible;
   height: auto;
@@ -299,11 +261,112 @@ html.mobile-view :is(.p-drawer, .detail-drawer) :is(input, textarea, select) {
 .mobile-archive .relic-name-cell {
   min-width: 0;
 }
+.mobile-archive .inventory-table .inventory-lightcone-row .mobile-lightcone-cell {
+  flex: 1 1 100%;
+  width: 100%;
+}
+.mobile-archive .inventory-lightcone-row {
+  cursor: pointer;
+}
+.mobile-archive .inventory-lightcone-row:active {
+  background: #f9fbfe;
+}
 .mobile-archive .character-card-grid {
   display: grid;
   grid-template-columns: 1fr;
   padding: 0;
   gap: 12px;
+}
+.mobile-archive .character-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(246, 250, 255, 0.96) 0%,
+      rgba(246, 250, 255, 0.88) 42%,
+      rgba(246, 250, 255, 0.54) 100%
+    ),
+    var(--character-card-backdrop, none) right center / auto 145% no-repeat,
+    linear-gradient(120deg, rgba(232, 240, 251, 0.9), rgba(255, 255, 255, 0.55));
+}
+.mobile-archive .character-card-header {
+  min-width: 0;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: 10px;
+  padding: 14px 12px;
+  background: none;
+}
+.mobile-archive :is(.character-card-avatar, .character-card-avatar-fallback) {
+  width: 56px;
+  height: 56px;
+}
+.mobile-archive .character-name {
+  font-size: 15px;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.mobile-archive .character-card-stats {
+  grid-template-columns: 1fr;
+  align-content: center;
+  gap: 10px;
+  padding: 14px 12px 14px 0;
+  border-top: 0;
+  text-align: right;
+}
+.mobile-archive .character-card-stats .stat-col {
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+  border-left: 0;
+}
+.mobile-archive .character-card-stats .stat-label {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+.mobile-archive .character-card-stats .stat-val {
+  min-width: 40px;
+  font-size: 14px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.mobile-archive .character-card-stats .stat-val.is-active {
+  color: #9b6500;
+}
+.mobile-inventory-master {
+  min-width: 0;
+}
+html.mobile-view .mobile-shell:has(.mobile-archive.is-split) {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+html.mobile-view .mobile-shell:has(.mobile-archive.is-split) > .mobile-header {
+  flex-shrink: 0;
+}
+html.mobile-view .mobile-content:has(.mobile-archive.is-split) {
+  flex: 1;
+  min-height: 0;
+}
+html.mobile-view .mobile-archive.is-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+html.mobile-view .mobile-archive.is-split > .mobile-inventory-master {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b5c3d5 transparent;
 }
 .mobile-more {
   width: 100%;
@@ -588,11 +651,6 @@ html.mobile-view .mobile-content .build-card-metrics {
   justify-content: space-between;
   padding: 12px 0;
 }
-html.mobile-view .mobile-content .build-progress-row .mobile-disclosure {
-  margin: 12px 0 0;
-  background: #f5f6f8;
-  border: 0;
-}
 html.mobile-view .mobile-content :is(.build-card-body, .build-card-main) {
   display: flex;
   flex-direction: column;
@@ -764,16 +822,68 @@ html.mobile-view .detail-drawer :is(button, [role="button"]) {
   min-height: 44px;
 }
 html.mobile-view .filter-drawer.p-drawer {
-  width: min(540px, 100vw);
+  width: min(640px, 100vw);
   max-width: 100vw;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+  height: min(760px, 82dvh);
+  max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
+  padding: 0 0 env(safe-area-inset-bottom);
+  border: 0;
+  border-radius: 20px 20px 0 0;
   background: white;
+  box-shadow: 0 -12px 40px rgba(30, 49, 79, 0.16);
+  overflow: hidden;
 }
 html.mobile-view .filter-drawer .filter-scroll {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 16px;
   gap: 16px 12px;
+}
+html.mobile-view .filter-drawer .relic-quality-filter-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+html.mobile-view .filter-drawer .relic-quality-filter-fields > label {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+html.mobile-view .filter-drawer .relic-quality-filter-fields > label:first-child {
+  grid-column: 1 / -1;
+}
+html.mobile-view .filter-drawer .relic-quality-filter-fields .p-select {
+  min-width: 0;
+  width: 100%;
+}
+html.mobile-view .filter-drawer .relic-quality-preview > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+html.mobile-view .filter-drawer .relic-quality-preview .score-toolbar {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+}
+html.mobile-view .filter-drawer .relic-quality-preview .score-action {
+  padding: 8px 12px;
+  font-size: 12px;
+  white-space: normal;
+}
+html.mobile-view .filter-drawer .relic-quality-preview .score-toolbar-hint {
+  font-size: 12px;
+  line-height: 1.5;
+}
+html.mobile-view .filter-drawer .relic-quality-filter-hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 html.mobile-view .filter-drawer :is(button, .filter-chip span, .p-select) {
   min-height: 44px;
@@ -787,6 +897,27 @@ html.mobile-view .filter-drawer .filter-chip span {
 html.mobile-view .filter-drawer .filter-drawer-heading {
   padding: 16px;
 }
+html.mobile-view .filter-drawer .filter-drawer-title-row {
+  padding-left: max(0px, calc(env(safe-area-inset-left) - 16px));
+  padding-right: max(0px, calc(env(safe-area-inset-right) - 16px));
+}
+html.mobile-view .filter-drawer .filter-drawer-heading::before {
+  content: "";
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  margin: -6px 0 12px;
+  border-radius: 2px;
+  background: #cbd3dc;
+}
+html.mobile-view .filter-drawer .filter-actions {
+  padding: 12px 16px;
+  gap: 12px;
+}
+html.mobile-view .filter-drawer .filter-actions button {
+  flex: 1;
+  font-size: 14px;
+}
 html.mobile-view .filter-drawer .filter-drawer-heading small {
   font-size: 12px;
 }
@@ -799,9 +930,6 @@ html.mobile-view .filter-drawer .filter-drawer-heading small {
   }
   .mobile-team-members {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .mobile-archive .score-toolbar-fields {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 @container mobile-content (min-width: 680px) {
@@ -869,7 +997,7 @@ html.mobile-view[data-content-fold="book"]
     .mobile-segments,
     .mobile-list-tools,
     .mobile-list-meta,
-    .mobile-archive > .mobile-disclosure,
+    .mobile-inventory-master > .mobile-disclosure,
     .character-catalogue-section > .mobile-disclosure,
     .lightcone-catalogue-section > .mobile-disclosure,
     .build-dashboard-heading,
@@ -884,14 +1012,24 @@ html.mobile-view[data-content-fold="book"] .mobile-content .build-card-body {
 html.mobile-view[data-content-fold="book"] .mobile-team-members {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"])
-  :is(.detail-drawer, .filter-drawer.p-drawer) {
+html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"]) .detail-drawer {
   position: fixed;
   left: var(--content-sheet-left);
   top: var(--content-sheet-top);
   width: var(--content-sheet-width);
   max-width: var(--content-sheet-width);
   height: var(--content-sheet-height);
+  max-height: var(--content-sheet-height);
+}
+html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"])
+  .filter-drawer.p-drawer {
+  position: fixed;
+  left: var(--content-sheet-left);
+  top: auto;
+  bottom: calc(100dvh - var(--content-sheet-top) - var(--content-sheet-height));
+  width: var(--content-sheet-width);
+  max-width: var(--content-sheet-width);
+  height: min(760px, 82dvh, var(--content-sheet-height));
   max-height: var(--content-sheet-height);
 }
 @media (max-height: 500px) {
@@ -1017,13 +1155,27 @@ html.mobile-view .mobile-content .relic-substat-item .substat-value {
   font-variant-numeric: tabular-nums;
 }
 html.mobile-view .mobile-content .relic-substat-item .hit-count-badge {
-  position: static;
-  flex-shrink: 0;
-  padding: 1px 5px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.3;
+  position: absolute;
+  top: 4px;
+  right: -14px;
+  bottom: auto;
+  width: 48px;
+  height: 12px;
+  padding: 0;
+  border-radius: 0;
+  transform: rotate(45deg);
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+html.mobile-view
+  .mobile-content
+  .inventory-table--relic
+  .relic-substat-item:is(.hit-3, .hit-4, .hit-5) {
+  overflow: hidden;
+  padding-right: 32px;
 }
 html.mobile-view .mobile-content .relic-substat-item.hit-3 {
   border-color: rgba(136, 67, 207, 0.24);
@@ -1371,7 +1523,9 @@ html.mobile-view .detail-drawer-content small {
   margin-bottom: 2px;
 }
 .mobile-inventory-categories {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
   align-items: center;
   gap: 24px;
   margin: -4px 0 12px;
@@ -1390,16 +1544,17 @@ html.mobile-view .detail-drawer-content small {
   color: var(--ink);
   font-weight: 700;
 }
-.mobile-inventory-categories button.active::after {
-  content: "";
+.mobile-inventory-category-indicator {
   position: absolute;
   bottom: 1px;
-  left: 50%;
+  left: 13px;
   width: 18px;
   height: 3px;
   border-radius: 2px;
   background: var(--blue);
-  transform: translateX(-50%);
+  transform: translateX(calc(var(--inventory-category-index) * 68px));
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
 }
 .mobile-inventory-search {
   display: flex;
@@ -1655,4 +1810,201 @@ html.mobile-view .catalogue-character-modal .level-val-text {
 html.mobile-view .catalogue-character-modal .level-range-input:focus-visible::-moz-range-thumb {
   outline: 2px solid var(--blue);
   outline-offset: 3px;
+}
+
+/* Expanded inventory details share the content area with a single-column master.
+   Keep these after overlay/fold rules so the inline panel never becomes fixed. */
+html.mobile-view:is([data-posture="unfolded-portrait"], [data-posture="unfolded-landscape"]):not(
+    [data-content-fold="book"]
+  )
+  .mobile-archive:not(.is-split)
+  :is(.inventory-table tbody, .character-card-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+html.mobile-view:is([data-posture="unfolded-portrait"], [data-posture="unfolded-landscape"])
+  .mobile-archive:not(.is-split)
+  .inventory-table
+  tr {
+  margin: 0;
+}
+html.mobile-view .mobile-archive.is-split :is(.inventory-table tbody, .character-card-grid) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+html.mobile-view .mobile-archive.is-split .inventory-table tr {
+  margin: 0;
+}
+html.mobile-view
+  .mobile-archive.is-split
+  .mobile-inventory-master
+  :is(tr, .character-card)[aria-current="true"] {
+  border-color: #658bc2;
+  box-shadow: inset 0 0 0 1px #658bc2;
+}
+html.mobile-view[data-content-fold="book"] .mobile-archive.is-split {
+  grid-template-columns: minmax(0, var(--content-fold-left)) minmax(0, var(--content-fold-right));
+  column-gap: var(--content-fold-gap);
+}
+html.mobile-view .mobile-archive.is-split .inventory-detail-inline {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+}
+html.mobile-view .mobile-archive.is-split .inventory-detail-inline > .detail-drawer {
+  position: static;
+  inset: auto;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid #dde4ed;
+  border-radius: 16px;
+  box-shadow: none;
+  animation: none;
+}
+html.mobile-view .mobile-archive.is-split .detail-drawer > header h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+/* Shared card snapshots explain the list reflow; the detail opens from the divider. */
+html.inventory-detail-transition {
+  view-transition-name: none;
+}
+html.inventory-detail-transition .mobile-inventory-categories {
+  view-transition-name: inventory-controls;
+}
+html.inventory-detail-transition .mobile-inventory-search {
+  view-transition-name: inventory-search;
+}
+html.inventory-detail-transition .inventory-detail-inline {
+  view-transition-name: inventory-detail;
+}
+html.inventory-detail-transition::view-transition {
+  pointer-events: none;
+}
+html.inventory-detail-transition::view-transition-group(*) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.inventory-detail-transition.inventory-detail-closing::view-transition-group(*) {
+  animation-duration: 200ms;
+}
+html.inventory-detail-transition::view-transition-old(*),
+html.inventory-detail-transition::view-transition-new(*) {
+  animation-duration: 180ms;
+  mix-blend-mode: normal;
+}
+html.inventory-detail-transition::view-transition-new(inventory-detail):only-child {
+  animation: inventory-detail-reveal 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+html.inventory-detail-transition::view-transition-old(inventory-detail):only-child {
+  animation: inventory-detail-reveal 180ms ease-in reverse both;
+}
+@keyframes inventory-detail-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 85% 0 0 round 16px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 16px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.mobile-view.inventory-detail-fallback
+    .mobile-archive.is-split
+    .inventory-detail-inline
+    > .detail-drawer {
+    animation: inventory-detail-reveal 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.inventory-detail-transition::view-transition-group(*),
+  html.inventory-detail-transition::view-transition-old(*),
+  html.inventory-detail-transition::view-transition-new(*) {
+    animation-duration: 1ms !important;
+  }
+}
+
+.mobile-inventory-category-content {
+  min-width: 0;
+}
+html:is(.inventory-category-transition, .inventory-category-fallback)
+  .mobile-inventory-category-content {
+  height: var(--inventory-category-height);
+  overflow: clip;
+  background: #f5f6f8;
+}
+html.inventory-category-transition {
+  view-transition-name: none;
+}
+html.inventory-category-transition .mobile-inventory-category-content {
+  view-transition-name: inventory-category;
+}
+html.inventory-category-transition::view-transition {
+  pointer-events: none;
+}
+html.inventory-category-transition::view-transition-group(inventory-category) {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+html.inventory-category-transition::view-transition-image-pair(inventory-category) {
+  overflow: clip;
+  isolation: isolate;
+}
+html.inventory-category-transition::view-transition-old(inventory-category) {
+  animation: inventory-category-out-left 300ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  mix-blend-mode: normal;
+}
+html.inventory-category-transition::view-transition-new(inventory-category) {
+  animation: inventory-category-in-right 300ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  mix-blend-mode: normal;
+}
+html.inventory-category-transition.inventory-category-back::view-transition-old(
+    inventory-category
+  ) {
+  animation-name: inventory-category-out-right;
+}
+html.inventory-category-transition.inventory-category-back::view-transition-new(
+    inventory-category
+  ) {
+  animation-name: inventory-category-in-left;
+}
+@keyframes inventory-category-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes inventory-category-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes inventory-category-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes inventory-category-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.inventory-category-transition::view-transition-group(inventory-category),
+  html.inventory-category-transition::view-transition-old(inventory-category),
+  html.inventory-category-transition::view-transition-new(inventory-category) {
+    animation-duration: 1ms !important;
+  }
 }

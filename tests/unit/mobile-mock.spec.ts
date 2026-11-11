@@ -3,11 +3,49 @@ import { demoEnabled, mobileMock } from "@/shared/dev/mobile-mock";
 import { characters, dashboard, relics } from "@/shared/dev/mobile-fixtures";
 import { invoke, setDevelopmentInvokeHandler } from "@/shared/api/invoke";
 import type { PagedResult, RelicListItem } from "@/types";
+import type { RelicMainStatGroupedResult } from "@/types";
+import { scanUpgradeRecommendations } from "@/shared/utils/relic-score";
 
 const { native } = vi.hoisted(() => ({ native: vi.fn().mockResolvedValue(null) }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke: native }));
 
 describe("mobile development sample data", () => {
+  it("supplies actual main-stat and upgrade analysis examples without changing inventory size", () => {
+    expect(mobileMock("get_relic_main_stat_scan_plan_count")!.value).toBe(dashboard.length);
+    const scan = mobileMock("scan_relics_by_main_stat_grouped")!
+      .value as RelicMainStatGroupedResult;
+    expect(scan.total).toBe(3);
+    expect(scan.groups).toHaveLength(3);
+    expect(scan.groups.flatMap((group) => group.parts.map((part) => part.slot))).toEqual([
+      "Body",
+      "PlanarSphere",
+      "LinkRope",
+    ]);
+    expect(scan.allowedMainStats.Head).toEqual(["HP"]);
+    expect(scan.allowedMainStats.Hands).toEqual(["ATK"]);
+    expect(scan.groups[0]!.parts).toEqual([
+      { slot: "Body", stats: [{ mainStat: "DEF%", count: 1 }] },
+    ]);
+    const upgrades = scanUpgradeRecommendations(
+      relics.filter((item) => item.equippedCharacterId === null),
+      dashboard.map((entry) => ({
+        ...entry.plan,
+        equippedRelics: entry.character.equippedRelics ?? [],
+      })),
+    );
+    expect(upgrades).toContainEqual(
+      expect.objectContaining({
+        relic: expect.objectContaining({ itemId: 1051 }),
+        characterId: dashboard[0]!.character.characterId,
+        deltaWeightedRolls: expect.any(Number),
+      }),
+    );
+    expect(upgrades.find((row) => row.relic.itemId === 1051)!.deltaWeightedRolls).toBeGreaterThan(
+      0,
+    );
+    expect(relics).toHaveLength(60);
+  });
+
   it("starts with demo data unless real data was explicitly selected", () => {
     expect(demoEnabled({ getItem: () => null })).toBe(true);
     expect(demoEnabled({ getItem: () => "real" })).toBe(false);

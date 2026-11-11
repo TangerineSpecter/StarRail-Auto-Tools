@@ -7,6 +7,7 @@ import {
   teams,
 } from "./mobile-fixtures";
 import { characterById, lightConeById } from "@/shared/catalogue";
+import { mobileMainStatScan } from "./mobile-scan-fixtures";
 import type { SyncSettings } from "@/types";
 
 export const mobileDemoStorageKey = "starrail-mobile-demo";
@@ -97,6 +98,12 @@ export function mobileMock(command: string, args: Row = {}): { value: unknown } 
   switch (command) {
     case "get_mobile_layout_regions":
       return undefined;
+    case "get_relic_main_stat_scan_plan_count":
+      value = dashboard.length;
+      break;
+    case "scan_relics_by_main_stat_grouped":
+      value = mobileMainStatScan();
+      break;
     case "get_inventory_summary":
       value = {
         relics: relics.length,

@@ -9,7 +9,7 @@ import type { CharacterBuildPlan, InventoryDetail } from "@/types";
 import type { CharacterDetailData, LightConeDetailData, RelicDetailData } from "./detail-types";
 
 const readOnly = useReadOnlyView();
-const props = defineProps<{ detail: InventoryDetail | null; loading: boolean }>();
+const props = defineProps<{ detail: InventoryDetail | null; loading: boolean; inline?: boolean }>();
 const emit = defineEmits<{ close: [] }>();
 const asRelic = () => props.detail?.data as unknown as RelicDetailData;
 const asCharacter = () => props.detail?.data as unknown as CharacterDetailData;
@@ -64,13 +64,17 @@ watch(
 );
 
 function closeOnEscape(event: KeyboardEvent) {
+  if (props.inline && document.querySelector('[aria-modal="true"]')) return;
   if (event.key === "Escape" && !event.isComposing) emit("close");
 }
 onMounted(() => window.addEventListener("keydown", closeOnEscape));
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 <template>
-  <div class="detail-backdrop" @click.self="emit('close')">
+  <div
+    :class="['detail-backdrop', { 'inventory-detail-inline': inline }]"
+    @click.self="!inline && emit('close')"
+  >
     <aside
       :class="[
         'detail-drawer',
@@ -80,6 +84,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
           'lightcone-detail-drawer': detail?.kind === 'lightCone',
         },
       ]"
+      :role="inline ? 'region' : 'dialog'"
+      :aria-modal="inline ? undefined : true"
+      aria-label="档案详情"
     >
       <header v-if="readOnly || detail?.kind !== 'character'">
         <div>

@@ -3,11 +3,18 @@ import { computed, onMounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { qualityTagFromScore, resolvePlanWeights, scoreRelic } from "@/shared/utils/relic-score";
 import type { BuildDashboardEntry, CharacterBuildPlan, RelicListItem } from "@/types";
+import {
+  filterRelicQuality,
+  relicQualityGradeOptions as gradeOptions,
+  relicQualitySortOptions as sortOptions,
+} from "./relic-quality-filter";
 
 const props = defineProps<{
   items: RelicListItem[];
   selectedCount?: number;
   cleanupBusy?: boolean;
+  actionsOnly?: boolean;
+  previewPlan?: CharacterBuildPlan | null;
 }>();
 
 const emit = defineEmits<{
@@ -34,50 +41,12 @@ const planOptions = computed(() =>
 );
 
 const activePlan = computed<CharacterBuildPlan | null>(() => {
+  if (props.actionsOnly) return props.previewPlan ?? null;
   const found = plans.value.find(
     (entry) => entry.character.characterId === selectedCharacterId.value,
   );
   return found?.plan ?? null;
 });
-
-const gradeOrder = [
-  "AEON",
-  "WTF+",
-  "WTF",
-  "SSS+",
-  "SSS",
-  "SS+",
-  "SS",
-  "S+",
-  "S",
-  "A+",
-  "A",
-  "B+",
-  "B",
-  "C+",
-  "C",
-  "D+",
-  "D",
-  "F+",
-  "F",
-];
-
-const gradeOptions = [
-  { label: "不限等级", value: "" },
-  ...gradeOrder.map((grade) => ({ label: `≥ ${grade}`, value: grade })),
-];
-
-const sortOptions = [
-  { label: "默认顺序", value: "default" },
-  { label: "加权分从高到低", value: "score-desc" },
-  { label: "加权分从低到高", value: "score-asc" },
-];
-
-function gradeRank(grade: string | null): number {
-  if (!grade) return gradeOrder.length;
-  const index = gradeOrder.indexOf(grade);
-  return index === -1 ? gradeOrder.length : index;
-}
 
 function scoreItem(item: RelicListItem) {
   const weights = resolvePlanWeights({
@@ -97,22 +66,21 @@ function scoreItem(item: RelicListItem) {
   );
 }
 
-const displayItems = computed(() => {
-  let list = [...props.items];
-  const min = minGrade.value;
-  if (min) {
-    const threshold = gradeRank(min);
-    list = list.filter((item) => gradeRank(scoreItem(item).letterGrade) <= threshold);
-  }
-  if (sortMode.value === "score-desc") {
-    list.sort((a, b) => scoreItem(b).weightedRolls - scoreItem(a).weightedRolls);
-  } else if (sortMode.value === "score-asc") {
-    list.sort((a, b) => scoreItem(a).weightedRolls - scoreItem(b).weightedRolls);
-  }
-  return list;
-});
+const displayItems = computed(() =>
+  filterRelicQuality(
+    props.items,
+    { sortMode: sortMode.value, minGrade: minGrade.value },
+    activePlan.value,
+  ),
+);
 
-watch(displayItems, (items) => emit("update:display-items", items), { immediate: true });
+watch(
+  displayItems,
+  (items) => {
+    if (!props.actionsOnly) emit("update:display-items", items);
+  },
+  { immediate: true },
+);
 
 async function loadPlans() {
   try {
@@ -174,13 +142,13 @@ function applyConfirmed() {
 }
 
 onMounted(() => {
-  void loadPlans();
+  if (!props.actionsOnly) void loadPlans();
 });
 </script>
 
 <template>
   <section class="score-toolbar" aria-label="词条质量排序与标签">
-    <div class="score-toolbar-fields">
+    <div v-if="!actionsOnly" class="score-toolbar-fields">
       <label>
         <span>评分方案</span>
         <select v-model="selectedCharacterId">
@@ -236,10 +204,11 @@ onMounted(() => {
         加入清理管理（{{ selectedCount }}）
       </button>
     </div>
-    <p class="score-toolbar-hint">
+    <p v-if="!actionsOnly" class="score-toolbar-hint">
       排序 / 筛选仅作用于<strong>当前已加载列表页</strong>（滚动加载后会重新计算，不是全库 SQL
       排序）。标签不会自动改锁定或弃置，需二次确认。
     </p>
+    <p v-else class="score-toolbar-hint">标签不会自动改锁定或弃置，需二次确认。</p>
     <div v-if="confirmAction" class="score-toolbar-confirm">
       <p>
         {{

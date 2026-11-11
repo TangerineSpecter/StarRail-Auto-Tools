@@ -2,9 +2,9 @@
   /* Posture is chosen once by device-posture.ts. Content and navigation share these dimensions. */
   --mobile-frame-width: 1000px;
   --mobile-frame-offset: max(0px, calc((100vw - var(--mobile-frame-width)) / 2));
-  --mobile-nav-width: 44px;
-  --mobile-nav-inset: 28px;
-  --mobile-nav-gap: 14px;
+  --mobile-nav-width: 56px;
+  --mobile-nav-inset: 22px;
+  --mobile-nav-gap: 8px;
   --mobile-nav-bottom: max(16px, env(safe-area-inset-bottom, 0px));
   --mobile-content-left: max(18px, env(safe-area-inset-left, 0px));
   --mobile-right-rail: max(
@@ -212,12 +212,15 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 4px 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  z-index: 90;
+  gap: 6px;
+  padding: 8px 5px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 32px rgba(15, 30, 50, 0.15);
+  z-index: 95;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -229,7 +232,7 @@ input {
   min-height: 44px;
   flex-shrink: 0;
   padding: 4px 2px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -312,6 +315,7 @@ input {
   --mobile-frame-width: 1100px;
   --mobile-nav-width: 56px;
   --mobile-nav-inset: 22px;
+  --mobile-nav-gap: 14px;
   --mobile-nav-bottom: max(20px, env(safe-area-inset-bottom, 0px));
   --mobile-content-left: max(24px, env(safe-area-inset-left, 0px));
   --mobile-content-right: max(24px, calc(var(--mobile-right-rail) - var(--mobile-frame-offset)));
@@ -321,18 +325,6 @@ input {
   gap: 6px;
   padding: 8px 5px;
   border-radius: 24px;
-}
-[data-posture="unfolded-portrait"] .mobile-nav,
-[data-posture="unfolded-landscape"] .mobile-nav {
-  background: rgba(255, 255, 255, 0.85);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 10px 32px rgba(15, 30, 50, 0.15);
-  z-index: 95;
-}
-[data-posture="unfolded-landscape"] .mobile-nav button {
-  border-radius: 12px;
 }
 .build-target {
   display: flex;

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onDeactivated, ref, watch } from "vue";
 import type { InventoryKind } from "@/types";
+import MobileInventoryCategoryTabs from "./MobileInventoryCategoryTabs.vue";
 
 const props = defineProps<{
   kind: InventoryKind;
   total: number;
   activeFilterCount: number;
   hasFilters: boolean;
+  hideCategories?: boolean;
 }>();
 const search = defineModel<string>("search", { required: true });
 const emit = defineEmits<{
@@ -15,11 +17,6 @@ const emit = defineEmits<{
   filter: [];
   reset: [];
 }>();
-const categories: { id: InventoryKind; name: string }[] = [
-  { id: "relic", name: "遗器" },
-  { id: "lightCone", name: "光锥" },
-  { id: "character", name: "角色" },
-];
 const composing = ref(false);
 let timer: ReturnType<typeof setTimeout> | undefined;
 function cancelSearch() {
@@ -52,24 +49,18 @@ onDeactivated(() => {
   cancelSearch();
 });
 onBeforeUnmount(cancelSearch);
+defineExpose({ cancelSearch });
 </script>
 <template>
   <div class="mobile-inventory-controls">
-    <nav class="mobile-inventory-categories" aria-label="背包分类">
-      <button
-        v-for="item in categories"
-        :key="item.id"
-        type="button"
-        :class="{ active: kind === item.id }"
-        :aria-pressed="kind === item.id"
-        @click="
-          cancelSearch();
-          emit('category', item.id);
-        "
-      >
-        {{ item.name }}
-      </button>
-    </nav>
+    <MobileInventoryCategoryTabs
+      v-if="!hideCategories"
+      :kind="kind"
+      @category="
+        cancelSearch();
+        emit('category', $event);
+      "
+    />
     <form class="mobile-inventory-search" role="search" @submit.prevent="submit">
       <svg
         class="mobile-inventory-search-icon"

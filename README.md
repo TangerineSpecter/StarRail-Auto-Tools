@@ -71,6 +71,8 @@ Microsoft Store 安装/更新 **App Installer**。也可以直接使用 `npm run
 
 已安装 iOS 开发版的模拟器可在项目目录运行 `./dev-ios.sh` 启动，具体条件和端口说明见 [iOS 个人查看版](docs/iOS个人查看版.md)。
 
+安装到自己的 iPhone：在 Mac 上双击项目根目录的 [`build-ios.command`](./build-ios.command)，或运行 `npm run build:ios`。脚本准备构建版并打开 Xcode，选择自己的手机后按 `⌘R` 安装；详细签名和信任步骤见 [iOS 个人查看版](docs/iOS个人查看版.md#安装到自己的-iphone)。
+
 在 macOS/Linux 上可以开发界面和测试图片 OCR；游戏窗口采集计划在 Windows 上启用，目前适配器仍在开发中。
 
 ## 游戏数据直读

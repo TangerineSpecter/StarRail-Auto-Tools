@@ -1,6 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import InventoryDetailDrawer from "@/features/inventory/InventoryDetailDrawer.vue";
+import { readOnlyViewKey } from "@/shared/contracts/view-mode";
 
 const getPlan = vi.hoisted(() => vi.fn());
 
@@ -9,6 +10,27 @@ vi.mock("@/shared/api/build-plan", () => ({
 }));
 
 describe("InventoryDetailDrawer", () => {
+  it("keeps inline details open on background clicks and while another modal handles Escape", async () => {
+    getPlan.mockResolvedValue(null);
+    const wrapper = mount(InventoryDetailDrawer, {
+      props: { detail: null, loading: true, inline: true },
+      global: { provide: { [readOnlyViewKey as symbol]: true } },
+    });
+    expect(wrapper.get("aside").attributes("role")).toBe("region");
+    expect(wrapper.get("aside").attributes("aria-modal")).toBeUndefined();
+    await wrapper.get(".inventory-detail-inline").trigger("click");
+    expect(wrapper.emitted("close")).toBeUndefined();
+    const modal = document.createElement("div");
+    modal.setAttribute("aria-modal", "true");
+    document.body.append(modal);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(wrapper.emitted("close")).toBeUndefined();
+    modal.remove();
+    await wrapper.get('[aria-label="关闭详情"]').trigger("click");
+    expect(wrapper.emitted("close")).toHaveLength(1);
+    wrapper.unmount();
+  });
+
   it("closes on Escape and ignores Escape used by an IME composition", async () => {
     getPlan.mockResolvedValue(null);
     const close = vi.fn();

@@ -16,6 +16,7 @@ import {
 } from "@/shared/utils/relic-score";
 import { formatStatValue, pathLabel, slotLabel, statLabel } from "./options";
 import { inventoryItemId } from "./useInventoryArchive";
+import MobileLightConeCard from "./MobileLightConeCard.vue";
 import type {
   CharacterListItem,
   InventoryKind,
@@ -32,6 +33,7 @@ const props = defineProps<{
   appending: boolean;
   busy: boolean;
   readOnly?: boolean;
+  activeDetailId?: number | null;
 }>();
 const emit = defineEmits<{
   "toggle-all": [];
@@ -152,6 +154,7 @@ function avatarColor(name: string): string {
             v-for="item in relics()"
             :key="item.itemId"
             class="inventory-relic-row"
+            :aria-current="activeDetailId === item.itemId ? 'true' : undefined"
             :tabindex="readOnly ? 0 : undefined"
             @click="readOnly && emit('detail', 'relic', item.itemId)"
             @keydown.enter="readOnly && emit('detail', 'relic', item.itemId)"
@@ -250,72 +253,80 @@ function avatarColor(name: string): string {
             v-for="item in lightCones()"
             :key="item.itemId"
             class="inventory-lightcone-row"
+            :role="readOnly ? 'button' : undefined"
+            :aria-label="readOnly ? `查看${item.name}` : undefined"
+            :aria-current="activeDetailId === item.itemId ? 'true' : undefined"
             :tabindex="readOnly ? 0 : undefined"
             @click="readOnly && emit('detail', 'lightCone', item.itemId)"
             @keydown.enter="readOnly && emit('detail', 'lightCone', item.itemId)"
             @keydown.space.prevent="readOnly && emit('detail', 'lightCone', item.itemId)"
           >
-            <td v-if="!readOnly" class="check-cell">
-              <Checkbox
-                binary
-                :model-value="selectedIds.has(item.itemId)"
-                @update:model-value="emit('toggle-selected', item.itemId)"
-              />
+            <td v-if="readOnly" colspan="5" class="mobile-lightcone-cell">
+              <MobileLightConeCard :item="item" />
             </td>
-            <td class="lightcone-cell-identity">
-              <div class="relic-name-cell">
-                <div class="relic-icon-box">
-                  <img
-                    v-if="lightConeImage(item)"
-                    :src="lightConeImage(item)"
-                    :alt="item.name"
-                    class="light-cone-image"
-                  /><span v-else class="relic-icon-star">☆</span>
+            <template v-else>
+              <td v-if="!readOnly" class="check-cell">
+                <Checkbox
+                  binary
+                  :model-value="selectedIds.has(item.itemId)"
+                  @update:model-value="emit('toggle-selected', item.itemId)"
+                />
+              </td>
+              <td class="lightcone-cell-identity">
+                <div class="relic-name-cell">
+                  <div class="relic-icon-box">
+                    <img
+                      v-if="lightConeImage(item)"
+                      :src="lightConeImage(item)"
+                      :alt="item.name"
+                      class="light-cone-image"
+                    /><span v-else class="relic-icon-star">☆</span>
+                  </div>
+                  <div class="relic-name-info">
+                    <strong class="item-name">{{ item.name }}</strong>
+                  </div>
                 </div>
-                <div class="relic-name-info">
-                  <strong class="item-name">{{ item.name }}</strong>
-                </div>
-              </div>
-            </td>
-            <td class="lightcone-cell-level">
-              <b>Lv.{{ item.level }}</b>
-            </td>
-            <td class="lightcone-cell-super">
-              <span
-                :class="[
-                  'relic-substat-item',
-                  'light-cone-superimposition',
-                  `hit-${item.superimposition}`,
-                ]"
-              >
-                <span class="substat-name">叠影</span
-                ><strong class="substat-value">{{ item.superimposition }}</strong>
-              </span>
-            </td>
-            <td class="lightcone-cell-equip">
-              <span
-                v-if="item.location"
-                :class="[
-                  'relic-equip-tag',
-                  `element-${characterElement(item.location, item.equippedCharacterId)}`,
-                ]"
-                ><img
-                  v-if="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
-                  :src="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
-                  alt=""
-                  class="relic-equip-avatar"
-                />{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
-              ><span v-else class="relic-equip-tag unequipped">未装备</span>
-            </td>
-            <td class="detail-cell lightcone-cell-action">
-              <Button
-                class="row-action"
-                type="button"
-                text
-                @click.stop="emit('detail', 'lightCone', item.itemId)"
-                >查看</Button
-              >
-            </td>
+              </td>
+              <td class="lightcone-cell-level">
+                <b>Lv.{{ item.level }}</b>
+              </td>
+              <td class="lightcone-cell-super">
+                <span
+                  :class="[
+                    'relic-substat-item',
+                    'light-cone-superimposition',
+                    `hit-${item.superimposition}`,
+                  ]"
+                >
+                  <span class="substat-name">叠影</span
+                  ><strong class="substat-value">{{ item.superimposition }}</strong>
+                </span>
+              </td>
+              <td class="lightcone-cell-equip">
+                <span
+                  v-if="item.location"
+                  :class="[
+                    'relic-equip-tag',
+                    `element-${characterElement(item.location, item.equippedCharacterId)}`,
+                  ]"
+                  ><img
+                    v-if="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
+                    :src="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
+                    alt=""
+                    class="relic-equip-avatar"
+                  />{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
+                ><span v-else class="relic-equip-tag unequipped">未装备</span>
+              </td>
+              <td class="detail-cell lightcone-cell-action">
+                <Button
+                  class="row-action"
+                  type="button"
+                  text
+                  @click.stop="emit('detail', 'lightCone', item.itemId)"
+                  >查看</Button
+                >
+              </td>
+            </template>
           </tr>
         </template>
         <tr v-if="!items.length">
@@ -336,16 +347,15 @@ function avatarColor(name: string): string {
         v-for="item in characters()"
         :key="item.characterId"
         class="character-card"
+        :style="
+          characterBackground(item)
+            ? { '--character-card-backdrop': `url(${characterBackground(item)})` }
+            : undefined
+        "
+        :aria-current="activeDetailId === item.characterId ? 'true' : undefined"
         @click="emit('detail', 'character', item.characterId)"
       >
-        <div
-          class="character-card-header"
-          :style="
-            characterBackground(item)
-              ? { '--character-card-backdrop': `url(${characterBackground(item)})` }
-              : undefined
-          "
-        >
+        <div class="character-card-header">
           <img
             v-if="characterAvatar(item)"
             class="character-card-avatar"

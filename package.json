@@ -26,7 +26,8 @@
     "build:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File ./build-windows.ps1",
     "preview": "vite preview",
     "tauri": "tauri",
-    "build:mobile": "vue-tsc --noEmit && vite build --mode mobile"
+    "build:mobile": "vue-tsc --noEmit && vite build --mode mobile",
+    "build:ios": "bash ./build-ios.sh"
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.2",

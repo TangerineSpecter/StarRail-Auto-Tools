@@ -8,11 +8,11 @@ import { readOnlyViewKey } from "@/shared/contracts/view-mode";
 import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import MobileSync from "./MobileSync.vue";
-import MobileTeams from "./MobileTeams.vue";
 const MobileDevDataSwitch = import.meta.env.DEV
   ? defineAsyncComponent(() => import("./MobileDevDataSwitch.vue"))
   : null;
 const CataloguePage = defineAsyncComponent(() => import("@/pages/CataloguePage.vue"));
+const MobileAnalysisPage = defineAsyncComponent(() => import("@/pages/MobileAnalysisPage.vue"));
 const BuildDashboard = defineAsyncComponent(
   () => import("@/features/build-planner/BuildDashboard.vue"),
 );
@@ -26,14 +26,14 @@ const tabs = [
   { id: "inventory", name: "背包" },
   { id: "catalogue", name: "图鉴" },
   { id: "build", name: "毕业" },
-  { id: "team", name: "配队" },
+  { id: "analysis", name: "分析" },
   { id: "settings", name: "同步" },
 ];
 const pages = {
   inventory: MobileInventoryPage,
   catalogue: CataloguePage,
   build: BuildDashboard,
-  team: MobileTeams,
+  analysis: MobileAnalysisPage,
   settings: MobileSync,
 };
 const currentPage = computed(() => pages[tab.value as keyof typeof pages]);
@@ -129,7 +129,7 @@ onMounted(() => {
           />
         </svg>
         <svg
-          v-else-if="item.id === 'team'"
+          v-else-if="item.id === 'analysis'"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -138,10 +138,8 @@ onMounted(() => {
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          <path d="M4 3v18h17" />
+          <path d="m8 15 4-5 4 3 5-7" />
         </svg>
         <svg
           v-else-if="item.id === 'settings'"

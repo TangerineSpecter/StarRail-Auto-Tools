@@ -1,6 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RelicMainStatScanner from "@/features/relic-scanner/RelicMainStatScanner.vue";
+import { mobileViewKey } from "@/shared/contracts/mobile-view";
 
 const {
   relicMainStatScanPlanCount,
@@ -43,6 +44,21 @@ describe("RelicMainStatScanner", () => {
     dashboard.mockReset();
     dashboard.mockResolvedValue([]);
     listRelics.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 200 });
+  });
+
+  it("directs mobile viewers to sync saved desktop plans when no plans are available", async () => {
+    relicMainStatScanPlanCount.mockResolvedValue(0);
+    const wrapper = mount(RelicMainStatScanner, {
+      props: { imageFor: () => undefined },
+      global: { provide: { [mobileViewKey as symbol]: true }, stubs: { Button: buttonStub } },
+    });
+    await flushPromises();
+    expect(wrapper.text()).toContain("遗器分析");
+    expect(wrapper.text()).toContain("电脑端保存培养方案");
+    expect(
+      wrapper.findAll("button").every((button) => button.attributes("disabled") !== undefined),
+    ).toBe(true);
+    wrapper.unmount();
   });
 
   it("disables analysis when there are no saved build plans", async () => {

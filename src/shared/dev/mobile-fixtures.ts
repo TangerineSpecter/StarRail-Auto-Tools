@@ -76,9 +76,22 @@ const highlightedSubstats: RelicListItem["substats"][] = [
     { kind: "normal", position: 3, key: "ATK%", value: 4.32, count: 1, step: 2 },
   ],
 ];
+// Three unassigned sets allow swipe review; one genuine upgrade previews the second scan mode.
+const upgradeSubstats: RelicListItem["substats"] = [
+  { kind: "normal", position: 0, key: "CRIT Rate", value: 19.44, count: 6, step: 12 },
+  { kind: "normal", position: 1, key: "CRIT DMG", value: 6.48, count: 1, step: 2 },
+  { kind: "normal", position: 2, key: "ATK%", value: 4.32, count: 1, step: 2 },
+  { kind: "normal", position: 3, key: "HP", value: 42.3375, count: 1, step: 2 },
+];
 export const relics: RelicListItem[] = characters.slice(0, 10).flatMap((c, i) =>
   slots.map((slot, j) => {
-    const set = j < 4 ? cavern[i % cavern.length]! : planar[i % planar.length]!;
+    const set =
+      i === 8 && j === 5
+        ? planar[1]!
+        : j < 4
+          ? cavern[i % cavern.length]!
+          : planar[i % planar.length]!;
+    const reviewExample = i === 8 && [2, 4, 5].includes(j);
     return {
       itemId: 1000 + i * 6 + j,
       setId: set.id,
@@ -87,15 +100,19 @@ export const relics: RelicListItem[] = characters.slice(0, 10).flatMap((c, i) =>
       slot,
       rarity: i === 9 ? 4 : 5,
       level: i === 9 ? 9 : 15,
-      mainStat: mains[j]!,
-      mainStatValue: values[j]!,
+      mainStat: reviewExample ? "DEF%" : mains[j]!,
+      mainStatValue: reviewExample ? 54 : values[j]!,
       location: i < 8 ? c.name : "",
       equippedCharacterId: i < 8 ? c.characterId : null,
       locked: i % 2 === 0,
       discard: i === 9,
       source: "mobile-demo",
       updatedAt,
-      substats: (i === 0 ? highlightedSubstats[j] : undefined) ?? [
+      substats: (i === 8 && j === 3
+        ? upgradeSubstats
+        : i === 0
+          ? highlightedSubstats[j]
+          : undefined) ?? [
         { kind: "normal", position: 0, key: "CRIT Rate", value: 5.832 + i, count: 2, step: 0 },
         { kind: "normal", position: 1, key: "CRIT DMG", value: 12.96 + i, count: 2, step: 0 },
         { kind: "normal", position: 2, key: "SPD", value: 4 + (i % 4), count: 2, step: 0 },

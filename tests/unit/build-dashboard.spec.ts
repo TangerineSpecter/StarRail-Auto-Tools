@@ -1,4 +1,5 @@
 import { readOnlyViewKey } from "@/shared/contracts/view-mode";
+import { mobileViewKey } from "@/shared/contracts/mobile-view";
 import { flushPromises, mount } from "@vue/test-utils";
 import { ref } from "vue";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -51,6 +52,49 @@ const entry: BuildDashboardEntry = {
 
 describe("BuildDashboard", () => {
   afterEach(() => vi.clearAllMocks());
+
+  it("opens mobile graduation evidence from the card in a bottom drawer without an accordion", async () => {
+    dashboard.mockResolvedValue([entry]);
+    const wrapper = mount(BuildDashboard, {
+      global: {
+        provide: {
+          [mobileViewKey as symbol]: true,
+          [readOnlyViewKey as symbol]: true,
+          [runtimeContextKey as symbol]: { notice: ref("") },
+        },
+        stubs: {
+          InputText: true,
+          Select: true,
+          Drawer: {
+            props: ["visible", "position"],
+            template:
+              '<section v-if="visible" class="drawer-stub" :data-position="position"><header><slot name="header" /></header><slot /></section>',
+          },
+        },
+      },
+    });
+    await flushPromises();
+    expect(wrapper.find(".mobile-disclosure").exists()).toBe(false);
+    expect(wrapper.find(".build-card-body").exists()).toBe(false);
+    const card = wrapper.get(".build-progress-row");
+    expect(card.attributes("role")).toBe("button");
+    for (const action of ["click", "keydown.enter", "keydown.space"]) {
+      await card.trigger(action);
+      expect(card.attributes("aria-expanded")).toBe("true");
+      expect(wrapper.get(".drawer-stub").attributes("data-position")).toBe("bottom");
+      expect(wrapper.get(".equipped-light-cone").text()).toContain("银河铁道之夜");
+      expect(wrapper.find(".quality-section").exists()).toBe(true);
+      expect(wrapper.find(".affix-section").exists()).toBe(true);
+      expect(wrapper.find(".relic-potential-radar").exists()).toBe(true);
+      await wrapper.get('[aria-label="关闭培养详情"]').trigger("click");
+      expect(wrapper.find(".drawer-stub").exists()).toBe(false);
+      expect(card.attributes("aria-expanded")).toBe("false");
+    }
+    expect(wrapper.emitted("editBuild")).toBeUndefined();
+    expect(reorderDashboard).not.toHaveBeenCalled();
+    expect(setDashboardPinned).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
 
   it("opens the selected character's target editor from the dashboard", async () => {
     dashboard.mockResolvedValue([entry]);

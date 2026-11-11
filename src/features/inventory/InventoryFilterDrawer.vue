@@ -47,7 +47,12 @@ const substatCountOptions = [
 </script>
 
 <template>
-  <Drawer v-model:visible="visible" position="right" class="filter-drawer">
+  <Drawer
+    v-model:visible="visible"
+    :position="mobile ? 'bottom' : 'right'"
+    class="filter-drawer"
+    aria-label="筛选条件"
+  >
     <form @submit.prevent="emit('apply')">
       <header class="filter-drawer-heading">
         <div class="filter-drawer-title-row">
@@ -82,6 +87,7 @@ const substatCountOptions = [
         <small>可多选 · 未选即不限</small>
       </header>
       <div class="filter-scroll">
+        <slot v-if="kind === 'relic'" name="relic-quality" />
         <template v-if="kind === 'relic'">
           <fieldset class="filter-group filter-group-wide">
             <legend>部位 <em>可多选</em></legend>
