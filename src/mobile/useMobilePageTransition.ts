@@ -22,21 +22,20 @@ export function useMobilePageTransition<T extends string>(options: {
     animation = undefined;
     document.documentElement.classList.remove("mobile-page-transition", "mobile-page-back");
   }
-  async function play(frames: Keyframe[], duration: number) {
+  async function play(frames: Keyframe[], config: KeyframeAnimationOptions) {
     let motion: Animation;
     try {
       motion = options.content.value!.animate(frames, {
-        duration,
         easing: "cubic-bezier(0.16, 1, 0.3, 1)",
         fill: "forwards",
+        ...config,
       });
     } catch {
-      return;
+      return undefined;
     }
     animation = motion;
     await motion.finished.catch(() => {});
-    if (animation === motion) animation = undefined;
-    motion.cancel();
+    return motion;
   }
   async function go(next: T) {
     if (next === selected.value && pending.value) return;
@@ -76,11 +75,12 @@ export function useMobilePageTransition<T extends string>(options: {
     };
     try {
       if (animate && document.startViewTransition) {
-        // The root snapshot is viewport-sized even when the live page is a long list.
+        // The content snapshot is bounded to the content area instead of shifting the root frame.
         // Naming the fixed menu separately keeps it stationary above both page images.
         const root = document.documentElement;
         root.classList.add("mobile-page-transition");
         root.classList.toggle("mobile-page-back", direction < 0);
+        void root.offsetWidth;
         try {
           transition = document.startViewTransition(commit);
           void transition.ready.catch(() => {});
@@ -92,25 +92,31 @@ export function useMobilePageTransition<T extends string>(options: {
         return;
       }
       if (animate) {
-        await play(
+        const outMotion = await play(
           [
             { opacity: 1, transform: "translateX(0)" },
-            { opacity: 0, transform: `translateX(${-direction * 20}px)` },
+            { opacity: 0, transform: `translateX(${-direction * 36}px)` },
           ],
-          100,
+          { duration: 140, easing: "ease-out" },
         );
+        if (id !== generation) {
+          outMotion?.cancel();
+          return;
+        }
       }
       if (id !== generation) return;
       await commit();
       if (id !== generation) return;
       if (animate) {
-        await play(
+        animation?.cancel();
+        const inMotion = await play(
           [
-            { opacity: 0, transform: `translateX(${direction * 24}px)` },
+            { opacity: 0, transform: `translateX(${direction * 44}px)` },
             { opacity: 1, transform: "translateX(0)" },
           ],
-          220,
+          { duration: 240, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
         );
+        inMotion?.cancel();
       }
     } finally {
       if (id === generation) {

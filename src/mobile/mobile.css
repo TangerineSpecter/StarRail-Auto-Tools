@@ -372,73 +372,68 @@ input {
   color: #626e78;
 }
 
-/* Viewport-sized page images overlap; the shared system/navigation rail stays fixed. */
+/* Content transition for 5 main menu tabs; system/navigation rail stays fixed. */
 html.mobile-view.mobile-page-transition {
-  view-transition-name: root;
+  view-transition-name: none;
+}
+html.mobile-view.mobile-page-transition .mobile-content {
+  view-transition-name: mobile-page-content;
 }
 html.mobile-view.mobile-page-transition .mobile-nav {
-  view-transition-name: mobile-main-menu;
+  view-transition-name: none;
 }
-html.mobile-page-transition::view-transition {
+::view-transition {
   pointer-events: none;
 }
-html.mobile-page-transition::view-transition-group(root) {
-  animation-duration: 260ms;
+::view-transition-group(mobile-page-content) {
+  animation-duration: 280ms;
 }
-html.mobile-page-transition::view-transition-image-pair(root) {
+::view-transition-image-pair(mobile-page-content) {
   isolation: isolate;
   overflow: clip;
 }
-html.mobile-page-transition::view-transition-old(root) {
-  animation: mobile-page-out-forward 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+::view-transition-old(mobile-page-content) {
+  animation: mobile-page-out-forward 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   mix-blend-mode: normal;
 }
-html.mobile-page-transition::view-transition-new(root) {
-  animation: mobile-page-in-forward 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+::view-transition-new(mobile-page-content) {
+  animation: mobile-page-in-forward 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   mix-blend-mode: normal;
 }
-html.mobile-page-transition.mobile-page-back::view-transition-old(root) {
+:is(html, :root).mobile-page-back::view-transition-old(mobile-page-content) {
   animation-name: mobile-page-out-back;
 }
-html.mobile-page-transition.mobile-page-back::view-transition-new(root) {
+:is(html, :root).mobile-page-back::view-transition-new(mobile-page-content) {
   animation-name: mobile-page-in-back;
-}
-html.mobile-page-transition::view-transition-group(mobile-main-menu),
-html.mobile-page-transition::view-transition-new(mobile-main-menu) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-html.mobile-page-transition::view-transition-old(mobile-main-menu) {
-  display: none;
 }
 @keyframes mobile-page-out-forward {
   to {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(-36px);
   }
 }
 @keyframes mobile-page-in-forward {
   from {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(44px);
   }
 }
 @keyframes mobile-page-out-back {
   to {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(36px);
   }
 }
 @keyframes mobile-page-in-back {
   from {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(-44px);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  html.mobile-page-transition::view-transition-group(root),
-  html.mobile-page-transition::view-transition-old(root),
-  html.mobile-page-transition::view-transition-new(root) {
+  ::view-transition-group(mobile-page-content),
+  ::view-transition-old(mobile-page-content),
+  ::view-transition-new(mobile-page-content) {
     animation-duration: 1ms !important;
   }
 }

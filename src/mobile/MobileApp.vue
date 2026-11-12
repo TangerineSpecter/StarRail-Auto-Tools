@@ -66,6 +66,16 @@ async function synced() {
 }
 onMounted(() => {
   synced();
+  const preloadPages = () => {
+    Object.values(pageLoaders).forEach((loader) => {
+      void loader().catch(() => {});
+    });
+  };
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(preloadPages, { timeout: 2000 });
+  } else {
+    setTimeout(preloadPages, 800);
+  }
 });
 </script>
 <template>

@@ -93,7 +93,7 @@ describe("mobile main menu page transitions", () => {
     expect(f.state.selected.value).toBe("analysis");
     expect(f.animate.mock.calls[0]?.[0]).toEqual([
       { opacity: 1, transform: "translateX(0)" },
-      { opacity: 0, transform: "translateX(-20px)" },
+      { opacity: 0, transform: "translateX(-36px)" },
     ]);
     f.motions[0]!.finish();
     await flushPromises();
@@ -109,7 +109,7 @@ describe("mobile main menu page transitions", () => {
     await flushPromises();
     expect(window.scrollTo).toHaveBeenLastCalledWith(0, 240);
     expect(f.animate.mock.calls[3]?.[0]).toEqual([
-      { opacity: 0, transform: "translateX(-24px)" },
+      { opacity: 0, transform: "translateX(-44px)" },
       { opacity: 1, transform: "translateX(0)" },
     ]);
     f.motions[3]!.finish();
