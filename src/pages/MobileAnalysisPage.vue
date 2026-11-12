@@ -32,6 +32,7 @@ onDeactivated(detail.close);
 <style scoped>
 .mobile-analysis {
   min-width: 0;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 .mobile-analysis :deep(.relic-scanner) {
   height: auto;
@@ -39,65 +40,40 @@ onDeactivated(detail.close);
   overflow: visible;
 }
 .mobile-analysis :deep(.scanner-hero) {
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
-}
-.mobile-analysis :deep(.scanner-title) {
   display: none;
 }
-.mobile-analysis :deep(.scanner-hero::after),
-.mobile-analysis :deep(.scanner-title .eyebrow),
-.mobile-analysis :deep(.scanner-sigil),
-.mobile-analysis :deep(.scanner-command > small),
-.mobile-analysis :deep(.command-marker),
 .mobile-analysis :deep(.cleaning-header-compact .compact-left > small),
 .mobile-analysis :deep(.scanner-result-heading small) {
   display: none;
 }
-.mobile-analysis :deep(.scanner-title h2) {
-  font-size: 18px;
-  letter-spacing: 0;
+.mobile-analysis :deep(.cleaning-header-compact) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
 }
-.mobile-analysis :deep(.scanner-title > p:last-child) {
-  font-size: 13px;
-  line-height: 1.6;
-}
-.mobile-analysis :deep(.scanner-command) {
-  align-items: stretch;
+.mobile-analysis :deep(.compact-left) {
   flex: 1;
   min-width: 0;
 }
-.mobile-analysis :deep(.scanner-command-buttons) {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+.mobile-analysis :deep(.compact-title-row) {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
 }
-.mobile-analysis :deep(.scanner-command .p-button) {
-  min-width: 0;
-  min-height: 44px;
-  padding: 10px 6px;
-  border-radius: 8px;
-  font-size: 13px;
-  box-shadow: none;
-  background: var(--blue);
-}
-.mobile-analysis :deep(.scanner-command .p-button-outlined) {
-  background: white;
-}
-.mobile-analysis :deep(.scanner-command .p-button:not(.p-button-outlined)) {
-  background: var(--blue);
-  border-color: var(--blue);
-  box-shadow: none;
-}
-.mobile-analysis :deep(.scanner-command .p-button.p-button-outlined) {
-  background: white;
-  box-shadow: none;
+.mobile-analysis :deep(.scanner-filter-button) {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  border-radius: 12px;
+  border: 1px solid rgba(220, 230, 242, 0.9);
+  background: #ffffff;
+  box-shadow:
+    0 2px 8px rgba(15, 28, 48, 0.04),
+    0 1px 2px rgba(15, 28, 48, 0.02);
 }
 .mobile-analysis :deep(.scanner-intro) {
   grid-template-columns: minmax(0, 1fr);
