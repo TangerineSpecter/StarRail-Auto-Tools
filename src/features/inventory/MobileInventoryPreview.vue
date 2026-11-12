@@ -49,7 +49,7 @@ const selected = new Set<number>();
   position: absolute;
   left: 0;
   width: 100%;
-  background: #f5f6f8;
+  background: transparent;
   pointer-events: none;
 }
 .mobile-inventory-preview-state {
