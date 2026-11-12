@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, provide, ref } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onMounted,
+  provide,
+  ref,
+  shallowReactive,
+  type Component,
+} from "vue";
 import { storeToRefs } from "pinia";
 import { useRuntimeStore } from "@/app/stores/runtime";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
@@ -8,35 +16,46 @@ import { readOnlyViewKey } from "@/shared/contracts/view-mode";
 import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import MobileSync from "./MobileSync.vue";
+import { useMobilePageTransition } from "./useMobilePageTransition";
 const MobileDevDataSwitch = import.meta.env.DEV
   ? defineAsyncComponent(() => import("./MobileDevDataSwitch.vue"))
   : null;
-const CataloguePage = defineAsyncComponent(() => import("@/pages/CataloguePage.vue"));
-const MobileAnalysisPage = defineAsyncComponent(() => import("@/pages/MobileAnalysisPage.vue"));
-const BuildDashboard = defineAsyncComponent(
-  () => import("@/features/build-planner/BuildDashboard.vue"),
-);
 const runtime = useRuntimeStore();
 const refs = storeToRefs(runtime);
 provide(runtimeContextKey, refs);
 provide(readOnlyViewKey, true);
 provide(mobileViewKey, true);
-const tab = ref("inventory");
 const tabs = [
   { id: "inventory", name: "背包" },
   { id: "catalogue", name: "图鉴" },
   { id: "build", name: "毕业" },
   { id: "analysis", name: "分析" },
   { id: "settings", name: "同步" },
-];
-const pages = {
+] as const;
+type MobilePageId = (typeof tabs)[number]["id"];
+const tab = ref<MobilePageId>("inventory");
+const content = ref<HTMLElement | null>(null);
+const pages = shallowReactive<Partial<Record<MobilePageId, Component>>>({
   inventory: MobileInventoryPage,
-  catalogue: CataloguePage,
-  build: BuildDashboard,
-  analysis: MobileAnalysisPage,
   settings: MobileSync,
+});
+const pageLoaders = {
+  catalogue: () => import("@/pages/CataloguePage.vue"),
+  build: () => import("@/features/build-planner/BuildDashboard.vue"),
+  analysis: () => import("@/pages/MobileAnalysisPage.vue"),
 };
-const currentPage = computed(() => pages[tab.value as keyof typeof pages]);
+const navigation = useMobilePageTransition({
+  page: tab,
+  content,
+  order: tabs.map((item) => item.id),
+  async prepare(next) {
+    if (pages[next]) return;
+    const loader = pageLoaders[next as keyof typeof pageLoaders];
+    pages[next] = (await loader()).default;
+  },
+  onError: (error) => (runtime.error = String(error)),
+});
+const currentPage = computed(() => pages[tab.value]);
 async function synced() {
   try {
     runtime.summary = await inventoryApi.summary();
@@ -58,7 +77,12 @@ onMounted(() => {
     <p v-if="runtime.notice" class="feedback" role="status">
       {{ runtime.notice }}<button @click="runtime.notice = ''">关闭</button>
     </p>
-    <div class="mobile-content">
+    <div
+      ref="content"
+      class="mobile-content"
+      :aria-busy="navigation.pending.value"
+      :inert="navigation.pending.value"
+    >
       <KeepAlive
         ><component
           :is="currentPage"
@@ -79,10 +103,10 @@ onMounted(() => {
         <button
           v-for="item in tabs"
           :key="item.id"
-          :class="{ active: tab === item.id }"
-          :aria-current="tab === item.id ? 'page' : undefined"
+          :class="{ active: navigation.selected.value === item.id }"
+          :aria-current="navigation.selected.value === item.id ? 'page' : undefined"
           :title="item.name"
-          @click="tab = item.id"
+          @click="navigation.go(item.id)"
         >
           <svg
             v-if="item.id === 'inventory'"

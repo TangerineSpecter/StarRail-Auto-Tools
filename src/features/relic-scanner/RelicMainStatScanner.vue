@@ -443,17 +443,6 @@ onBeforeUnmount(() => {
           @keydown.enter="emit('open-relic', row.item)"
           @keydown.space.prevent="emit('open-relic', row.item)"
         >
-          <!-- Top Bar Header -->
-          <div class="upgrade-card-header">
-            <div class="upgrade-badge"><i class="sparkle">✦</i> 替换推荐</div>
-            <div class="upgrade-card-tags">
-              <span class="slot-pill">{{ slotLabel(row.item.slot) }}</span>
-              <span :class="['grade-pill', gradeClass(row.grade)]">
-                {{ row.grade ?? "—" }}
-              </span>
-            </div>
-          </div>
-
           <!-- Main Info Section -->
           <div class="upgrade-card-main">
             <!-- Relic Icon Frame -->
@@ -469,10 +458,19 @@ onBeforeUnmount(() => {
               <span class="relic-level-tag">+{{ row.item.level }}</span>
             </div>
 
-            <!-- Set & Main Stat -->
+            <!-- Set, Upgrade Badge, Tags & Main Stat -->
             <div class="relic-meta">
               <div class="relic-name-row">
-                <b class="relic-set-name">{{ row.item.setName }}</b>
+                <div class="relic-title-group">
+                  <b class="relic-set-name" :title="row.item.setName">{{ row.item.setName }}</b>
+                  <span class="upgrade-badge"><i class="sparkle">✦</i> 替换推荐</span>
+                </div>
+                <div class="upgrade-card-tags">
+                  <span class="slot-pill">{{ slotLabel(row.item.slot) }}</span>
+                  <span :class="['grade-pill', gradeClass(row.grade)]">
+                    {{ row.grade ?? "—" }}
+                  </span>
+                </div>
               </div>
               <div class="main-stat-badge">
                 <small>主词条</small>
@@ -484,26 +482,41 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- Target Character Banner -->
+          <!-- Target Character Banner with Upgrade Delta -->
           <div class="target-character-bar">
-            <div class="character-avatar-wrapper">
-              <img
-                v-if="row.characterAvatar"
-                :src="row.characterAvatar"
-                :alt="row.characterDisplayLabel"
-                class="character-avatar-img"
-              />
-              <span
-                v-else
-                :class="['character-avatar-fallback', `element-${row.characterElement}`]"
-              >
-                {{ row.characterDisplayLabel.slice(0, 1) }}
-              </span>
+            <div class="character-target-left">
+              <div class="character-avatar-wrapper">
+                <img
+                  v-if="row.characterAvatar"
+                  :src="row.characterAvatar"
+                  :alt="row.characterDisplayLabel"
+                  class="character-avatar-img"
+                />
+                <span
+                  v-else
+                  :class="['character-avatar-fallback', `element-${row.characterElement}`]"
+                >
+                  {{ row.characterDisplayLabel.slice(0, 1) }}
+                </span>
+              </div>
+              <div class="character-target-info">
+                <span class="target-caption">适配角色</span>
+                <span :class="['target-character-name', `element-${row.characterElement}`]">
+                  {{ row.characterDisplayLabel }}
+                </span>
+              </div>
             </div>
-            <div class="character-target-info">
-              <span class="target-caption">适配角色</span>
-              <span :class="['target-character-name', `element-${row.characterElement}`]">
-                {{ row.characterDisplayLabel }}
+
+            <div class="character-target-delta">
+              <span class="roll-delta-tag">
+                <i class="up-arrow">↑</i> +{{ row.deltaWeightedRolls.toFixed(2) }}
+                <small>rolls</small>
+              </span>
+              <span class="roll-vs-detail">
+                {{ row.weightedRolls.toFixed(2) }} <small>vs</small>
+                {{
+                  row.equippedWeightedRolls != null ? row.equippedWeightedRolls.toFixed(2) : "空槽"
+                }}
               </span>
             </div>
           </div>
@@ -519,23 +532,6 @@ onBeforeUnmount(() => {
               <span class="substat-label">{{ statLabel(sub.key) }}</span>
               <em>+{{ formatStatValue(sub.key, sub.value) }}</em>
             </span>
-          </div>
-
-          <!-- Score Footer -->
-          <div class="upgrade-card-footer">
-            <div class="roll-score-info">
-              <span class="roll-delta-tag">
-                <i class="up-arrow">↑</i> +{{ row.deltaWeightedRolls.toFixed(2) }}
-                <small>rolls</small>
-              </span>
-              <span class="roll-vs-detail">
-                {{ row.weightedRolls.toFixed(2) }} <small>vs</small>
-                {{
-                  row.equippedWeightedRolls != null ? row.equippedWeightedRolls.toFixed(2) : "空槽"
-                }}
-              </span>
-            </div>
-            <span class="card-view-btn">查看详情 ›</span>
           </div>
         </article>
       </div>
@@ -1046,23 +1042,23 @@ onBeforeUnmount(() => {
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-  grid-auto-rows: 252px;
+  grid-auto-rows: min-content;
   align-content: start;
   align-items: stretch;
-  gap: 14px;
+  gap: 12px;
   overflow: auto;
   padding: 4px 4px 16px;
 }
 
 .upgrade-card {
-  display: grid;
-  grid-template-rows: 22px 52px 44px 48px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  padding: 14px 16px;
-  border: 1px solid rgba(45, 75, 116, 0.18);
-  border-radius: 6px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 245, 253, 0.88));
-  box-shadow: 0 4px 16px rgba(42, 69, 105, 0.06);
+  padding: 12px 14px;
+  border: 1px solid rgba(45, 75, 116, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 245, 253, 0.88));
+  box-shadow: 0 3px 12px rgba(42, 69, 105, 0.05);
   cursor: pointer;
   transition:
     border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
@@ -1073,16 +1069,15 @@ onBeforeUnmount(() => {
   user-select: none;
   position: relative;
   overflow: hidden;
-  height: 252px;
 }
 
 .upgrade-card:hover {
-  border-color: rgba(37, 95, 185, 0.55);
+  border-color: rgba(37, 95, 185, 0.5);
   background: #ffffff;
   box-shadow:
-    0 10px 28px rgba(35, 70, 130, 0.14),
-    0 0 0 1px rgba(50, 120, 220, 0.2);
-  transform: translateY(-3px);
+    0 8px 24px rgba(35, 70, 130, 0.12),
+    0 0 0 1px rgba(50, 120, 220, 0.18);
+  transform: translateY(-2px);
 }
 
 .upgrade-card:focus-visible {
@@ -1090,43 +1085,131 @@ onBeforeUnmount(() => {
   outline-offset: 2px;
 }
 
-.upgrade-card-header {
+.upgrade-card-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.relic-thumb {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(199, 165, 90, 0.58);
+  background: #ffffff;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.relic-thumb.rarity-5 {
+  border-color: #dcb05a;
+  background: linear-gradient(135deg, #fffcf5, #f5e9d3);
+}
+
+.relic-thumb.rarity-4 {
+  border-color: #a855f7;
+  background: linear-gradient(135deg, #fbf5ff, #ebd5ff);
+}
+
+.relic-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.relic-thumb-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.relic-level-tag {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(28, 75, 147, 0.88);
+  color: #fff;
+  font:
+    700 9px/1 "Bahnschrift",
+    sans-serif;
+  padding: 2px 4px;
+  border-top-left-radius: 3px;
+}
+
+.relic-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.relic-name-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.relic-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.relic-set-name {
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .upgrade-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 3px;
+  padding: 1.5px 6px;
   border-radius: 4px;
-  background: rgba(39, 148, 71, 0.12);
-  color: #1e7e38;
-  font-size: 11px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  color: #15803d;
+  font-size: 10.5px;
   font-weight: 700;
+  flex-shrink: 0;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .upgrade-badge .sparkle {
   color: #16a34a;
   font-style: normal;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .upgrade-card-tags {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  flex-shrink: 0;
 }
 
 .slot-pill {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  background: rgba(220, 230, 242, 0.5);
-  padding: 2px 7px;
+  background: rgba(220, 230, 242, 0.55);
+  padding: 1.5px 6px;
   border-radius: 3px;
 }
 
@@ -1134,12 +1217,12 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   font:
-    800 11px/1.2 "Bahnschrift",
+    800 10.5px/1.2 "Bahnschrift",
     sans-serif;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .grade-pill.grade-sss,
@@ -1223,84 +1306,11 @@ onBeforeUnmount(() => {
   color: #475569;
 }
 
-.upgrade-card-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.relic-thumb {
-  position: relative;
-  width: 52px;
-  height: 52px;
-  flex-shrink: 0;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(199, 165, 90, 0.58);
-  background: #ffffff;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.04);
-}
-
-.relic-thumb.rarity-5 {
-  border-color: #dcb05a;
-  background: linear-gradient(135deg, #fffcf5, #f5e9d3);
-}
-
-.relic-thumb.rarity-4 {
-  border-color: #a855f7;
-  background: linear-gradient(135deg, #fbf5ff, #ebd5ff);
-}
-
-.relic-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.relic-thumb-fallback {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  color: var(--gold);
-  font-weight: 700;
-}
-
-.relic-level-tag {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: rgba(28, 75, 147, 0.88);
-  color: #fff;
-  font:
-    700 9px/1 "Bahnschrift",
-    sans-serif;
-  padding: 2px 4px;
-  border-top-left-radius: 3px;
-}
-
-.relic-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex: 1;
-}
-
-.relic-set-name {
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .main-stat-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   background: rgba(28, 75, 147, 0.06);
   border: 1px solid rgba(28, 75, 147, 0.12);
@@ -1310,7 +1320,7 @@ onBeforeUnmount(() => {
 
 .main-stat-badge small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 9.5px;
 }
 
 .main-stat-badge strong {
@@ -1328,16 +1338,26 @@ onBeforeUnmount(() => {
   font-style: normal;
   font-size: 11px;
   font-weight: 700;
+  font-family: "Bahnschrift", sans-serif;
 }
 
 .target-character-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 10px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
   border-radius: 6px;
-  background: rgba(236, 242, 251, 0.65);
-  border: 1px solid rgba(46, 79, 126, 0.08);
+  background: linear-gradient(135deg, rgba(238, 244, 254, 0.85), rgba(246, 250, 255, 0.65));
+  border: 1px solid rgba(46, 79, 126, 0.1);
+}
+
+.character-target-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
 }
 
 .character-avatar-wrapper {
@@ -1350,6 +1370,7 @@ onBeforeUnmount(() => {
   background: #fff;
   display: grid;
   place-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .character-avatar-img {
@@ -1373,6 +1394,8 @@ onBeforeUnmount(() => {
 .target-caption {
   color: var(--muted);
   font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .target-character-name {
@@ -1412,6 +1435,52 @@ onBeforeUnmount(() => {
   color: #c48310;
 }
 
+.character-target-delta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.roll-delta-tag {
+  color: #16a34a;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: "Bahnschrift", sans-serif;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.roll-delta-tag .up-arrow {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.roll-delta-tag small {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #15803d;
+  margin-left: 1px;
+}
+
+.roll-vs-detail {
+  color: var(--muted);
+  font-size: 10px;
+  font-family: "Bahnschrift", sans-serif;
+  line-height: 1.2;
+}
+
+.roll-vs-detail small {
+  color: var(--muted);
+  opacity: 0.85;
+}
+
 .substat-chips-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1421,16 +1490,17 @@ onBeforeUnmount(() => {
 
 .substat-chip {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(74px, 0.7fr);
+  grid-template-columns: minmax(0, 1fr) minmax(70px, 0.7fr);
   align-items: center;
   min-width: 0;
   column-gap: 6px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(46, 79, 126, 0.12);
-  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(46, 79, 126, 0.1);
+  font-size: 10.5px;
   color: var(--ink-soft);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .substat-label {
@@ -1440,60 +1510,12 @@ onBeforeUnmount(() => {
 }
 
 .substat-chip em {
-  justify-self: stretch;
+  justify-self: end;
+  text-align: right;
   font-style: normal;
   color: #2563eb;
   font-weight: 700;
-}
-
-.upgrade-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 0;
-  padding-top: 4px;
-  border-top: 1px dashed rgba(46, 79, 126, 0.12);
-}
-
-.roll-score-info {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.roll-delta-tag {
-  color: #16a34a;
-  font-size: 13px;
-  font-weight: 800;
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-}
-
-.roll-delta-tag .up-arrow {
-  font-style: normal;
-  font-size: 12px;
-}
-
-.roll-delta-tag small {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.roll-vs-detail {
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.roll-vs-detail small {
-  color: var(--muted);
-}
-
-.card-view-btn {
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 600;
+  font-family: "Bahnschrift", sans-serif;
 }
 
 @media (max-width: 760px) {

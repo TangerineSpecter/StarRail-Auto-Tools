@@ -4,21 +4,36 @@ import { onActivated, onBeforeUnmount, onDeactivated, watch, type Ref } from "vu
 export function useHorizontalSwipe(options: {
   surface: Ref<HTMLElement | null>;
   enabled: Ref<boolean>;
-  onSwipe: (direction: "left" | "right") => void;
+  onSwipe?: (direction: "left" | "right") => void;
+  onDrag?: (distance: number) => void;
+  onRelease?: (distance: number, velocity: number) => void;
+  onCancel?: () => void;
+  dragHandle?: string;
   allowScreenEdge?: boolean;
 }) {
   let active = true;
   let detach: (() => void) | undefined;
   let blockedClickUntil = 0;
-  let gesture: { id: number; x: number; y: number; started: number; horizontal: boolean } | null =
-    null;
+  let gesture: {
+    id: number;
+    x: number;
+    y: number;
+    started: number;
+    horizontal: boolean;
+    lastX: number;
+    lastTime: number;
+    velocity: number;
+  } | null = null;
 
   function cancel() {
+    if (gesture?.horizontal) options.onCancel?.();
     gesture = null;
   }
   function eligible(target: EventTarget | null, surface: HTMLElement) {
     if (!(target instanceof Element)) return false;
+    const handle = options.dragHandle ? target.closest(options.dragHandle) : null;
     if (
+      !handle &&
       target.closest(
         'input, textarea, select, button, a, summary, [contenteditable]:not([contenteditable="false"]), [role="slider"], [data-swipe-ignore]',
       )
@@ -54,6 +69,9 @@ export function useHorizontalSwipe(options: {
       y: touch.clientY,
       started: Date.now(),
       horizontal: false,
+      lastX: touch.clientX,
+      lastTime: Date.now(),
+      velocity: 0,
     };
   }
   function move(event: TouchEvent) {
@@ -70,22 +88,38 @@ export function useHorizontalSwipe(options: {
     }
     blockedClickUntil = Date.now() + 500;
     if (event.cancelable) event.preventDefault();
+    const now = Date.now();
+    gesture.velocity = (touch.clientX - gesture.lastX) / Math.max(1, now - gesture.lastTime);
+    gesture.lastX = touch.clientX;
+    gesture.lastTime = now;
+    options.onDrag?.(touch.clientX - gesture.x);
   }
   function end(event: TouchEvent) {
     const current = gesture;
-    cancel();
-    if (!current || !options.enabled.value || event.touches.length || !current.horizontal) return;
+    gesture = null;
+    if (!current || !options.enabled.value || event.touches.length || !current.horizontal) {
+      if (current?.horizontal) options.onCancel?.();
+      return;
+    }
     blockedClickUntil = Date.now() + 500;
     const touch = Array.from(event.changedTouches).find((item) => item.identifier === current.id);
-    if (!touch || Date.now() - current.started > 1200) return;
+    if (!touch) {
+      options.onCancel?.();
+      return;
+    }
     const x = touch.clientX - current.x;
+    if (options.onRelease) {
+      options.onRelease(x, Date.now() - current.lastTime < 100 ? current.velocity : 0);
+      return;
+    }
+    if (Date.now() - current.started > 1200) return;
     const y = Math.abs(touch.clientY - current.y);
     const threshold = Math.max(
       48,
       Math.min(88, (options.surface.value?.clientWidth ?? 360) * 0.18),
     );
     if (Math.abs(x) < threshold || Math.abs(x) < y * 1.35) return;
-    options.onSwipe(x < 0 ? "left" : "right");
+    options.onSwipe?.(x < 0 ? "left" : "right");
   }
   function click(event: MouseEvent) {
     if (event.detail === 0 || Date.now() >= blockedClickUntil) return;
@@ -131,4 +165,9 @@ export function useHorizontalSwipe(options: {
   });
   onDeactivated(stop);
   onBeforeUnmount(stop);
+  return {
+    resetTracking: () => {
+      gesture = null;
+    },
+  };
 }

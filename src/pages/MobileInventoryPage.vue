@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onDeactivated, ref, toRaw, watch } from "vue";
+import { computed, onActivated, onDeactivated, ref, toRaw, watch } from "vue";
 import RelicQualityFilterFields from "@/features/inventory/RelicQualityFilterFields.vue";
 import RelicQualityToolbar from "@/features/inventory/RelicQualityToolbar.vue";
 import MobileInventoryControls from "@/features/inventory/MobileInventoryControls.vue";
@@ -12,7 +12,8 @@ import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useInventorySplitView } from "@/features/inventory/useInventorySplitView";
 import { useInventoryDetailTransition } from "@/features/inventory/useInventoryDetailTransition";
 import { useInventoryCategoryTransition } from "@/features/inventory/useInventoryCategoryTransition";
-import { useInventoryCategorySwipe } from "@/features/inventory/useInventoryCategorySwipe";
+import { useInventoryCategoryPager } from "@/features/inventory/useInventoryCategoryPager";
+import MobileInventoryPreview from "@/features/inventory/MobileInventoryPreview.vue";
 import { useMobileInventoryWindow } from "@/features/inventory/useMobileInventoryWindow";
 import { useMobileRelicQuality } from "@/features/inventory/useMobileRelicQuality";
 import { createInventoryFilterForm } from "@/features/inventory/filter";
@@ -44,16 +45,22 @@ const categoryTransition = useInventoryCategoryTransition({
   cancelDetail: transitionDetail.cancel,
   cancelPrepare: archive.cancelPreparedKind,
 });
-useInventoryCategorySwipe({
+const pager = useInventoryCategoryPager({
   surface: master,
-  kind: categoryTransition.selectedKind,
+  body: categoryBody,
+  kind: archive.kind,
   enabled: computed(
     () =>
       !categoryTransition.pending.value &&
       !archive.filterOpen.value &&
       (!detailOpen.value || splitView.value),
   ),
-  switchTo: switchKind,
+  preview: archive.previewKind,
+  async commit(kind) {
+    controls.value?.cancelSearch();
+    await categoryTransition.switchTo(kind, false);
+    return archive.kind.value === kind;
+  },
 });
 const filterDraft = ref(createInventoryFilterForm());
 const quality = useMobileRelicQuality(
@@ -65,6 +72,7 @@ const qualityCount = computed(() =>
 );
 const activeFilterCount = computed(() => archive.activeFilterCount.value + qualityCount.value);
 function openFilters() {
+  pager.cancel();
   filterDraft.value = structuredClone(toRaw(archive.filters.value));
   quality.begin();
   archive.filterOpen.value = true;
@@ -83,6 +91,7 @@ function resetFilters() {
   archive.resetFilters();
 }
 function openDetail(kind: InventoryKind, id: number) {
+  pager.cancel();
   categoryTransition.cancel();
   transitionDetail(() => {
     activeDetailId.value = id;
@@ -94,6 +103,7 @@ function closeDetail() {
   transitionDetail(detail.close, true);
 }
 function switchKind(kind: InventoryKind) {
+  pager.cancel();
   controls.value?.cancelSearch();
   void categoryTransition.switchTo(kind);
 }
@@ -106,10 +116,30 @@ const listItems = computed(() =>
 const listWindow = useMobileInventoryWindow({
   items: listItems,
   kind: archive.kind,
-  pending: categoryTransition.pending,
+  pending: computed(() => categoryTransition.pending.value || pager.active.value),
   master,
 });
-onDeactivated(detail.close);
+const previewItems = computed(() => {
+  const rows = pager.preview.value?.items ?? [];
+  return pager.target.value === "relic" ? quality.preview(rows as RelicListItem[]) : rows;
+});
+let pageActive = true;
+function warmNeighbours() {
+  if (!pageActive) return;
+  for (const kind of ["relic", "lightCone", "character"] as const) {
+    if (kind !== archive.kind.value) void archive.previewKind(kind).catch(() => {});
+  }
+}
+watch(() => archive.result.value, warmNeighbours);
+watch(runtime.inventoryRevision, pager.cancel);
+onActivated(() => {
+  pageActive = true;
+  warmNeighbours();
+});
+onDeactivated(() => {
+  pageActive = false;
+  detail.close();
+});
 </script>
 <template>
   <section :class="['mobile-archive', { 'is-split': splitView }]">
@@ -117,83 +147,114 @@ onDeactivated(detail.close);
       <div class="mobile-inventory-toolbar">
         <MobileInventoryCategoryTabs
           :kind="categoryTransition.selectedKind.value"
+          :position="pager.active.value ? pager.position.value : undefined"
+          :motion-ms="pager.active.value ? pager.duration.value : undefined"
           @category="switchKind"
         />
         <slot name="toolbar-actions" />
       </div>
       <div
-        ref="categoryBody"
-        class="mobile-inventory-category-content"
-        :inert="categoryTransition.pending.value"
-        :aria-busy="categoryTransition.pending.value"
+        class="mobile-inventory-pager"
+        :class="{ 'is-interacting': pager.active.value }"
+        :style="
+          pager.active.value
+            ? { minHeight: `${pager.top.value + pager.height.value}px` }
+            : undefined
+        "
       >
-        <MobileInventoryControls
-          ref="controls"
-          v-model:search="archive.filters.value.search"
-          hide-categories
-          :kind="archive.kind.value"
-          :total="archive.result.value.total"
-          :active-filter-count="activeFilterCount"
-          :has-filters="archive.hasActiveSearchOrFilters.value || qualityCount > 0"
-          @search="archive.applyFilters"
-          @filter="openFilters"
-          @reset="resetFilters"
-        />
-        <InventoryFilterDrawer
-          v-model="archive.filterOpen.value"
-          v-model:filters="filterDraft"
-          :kind="archive.kind.value"
-          :busy="runtime.busy.value"
-          @apply="applyFilters"
-          @reset="resetDraft"
-        >
-          <template #relic-quality>
-            <RelicQualityFilterFields v-model="quality.draft.value" :plans="quality.plans.value" />
-            <details class="filter-group-wide relic-quality-preview">
-              <summary>质量建议</summary>
-              <RelicQualityToolbar
-                :items="archive.result.value.items as RelicListItem[]"
-                actions-only
-                :preview-plan="quality.draftPlan.value"
-                @error="runtime.error.value = $event"
-                @notice="runtime.notice.value = $event"
-              />
-            </details>
-          </template>
-        </InventoryFilterDrawer>
-        <InventoryList
-          :kind="archive.kind.value"
-          :items="listWindow.visibleItems.value"
-          :selected-ids="archive.selectedIds.value"
-          :all-selected="false"
-          :appending="archive.appending.value"
-          :busy="runtime.busy.value"
-          read-only
-          :active-detail-id="activeDetailId"
-          @detail="openDetail"
-        />
         <div
-          v-if="listWindow.hasMore.value"
-          :ref="(element) => (listWindow.sentinel.value = element as HTMLElement | null)"
-          class="mobile-inventory-render-sentinel"
-          aria-hidden="true"
+          ref="categoryBody"
+          class="mobile-inventory-category-content"
+          :style="pager.paneStyle.value"
+          :inert="categoryTransition.pending.value || pager.settling.value"
+          :aria-busy="categoryTransition.pending.value || pager.settling.value"
+        >
+          <MobileInventoryControls
+            ref="controls"
+            v-model:search="archive.filters.value.search"
+            hide-categories
+            :kind="archive.kind.value"
+            :total="archive.result.value.total"
+            :active-filter-count="activeFilterCount"
+            :has-filters="archive.hasActiveSearchOrFilters.value || qualityCount > 0"
+            @search="archive.applyFilters"
+            @filter="openFilters"
+            @reset="resetFilters"
+          />
+          <InventoryFilterDrawer
+            v-model="archive.filterOpen.value"
+            v-model:filters="filterDraft"
+            :kind="archive.kind.value"
+            :busy="runtime.busy.value"
+            @apply="applyFilters"
+            @reset="resetDraft"
+          >
+            <template #relic-quality>
+              <RelicQualityFilterFields
+                v-model="quality.draft.value"
+                :plans="quality.plans.value"
+              />
+              <details class="filter-group-wide relic-quality-preview">
+                <summary>质量建议</summary>
+                <RelicQualityToolbar
+                  :items="archive.result.value.items as RelicListItem[]"
+                  actions-only
+                  :preview-plan="quality.draftPlan.value"
+                  @error="runtime.error.value = $event"
+                  @notice="runtime.notice.value = $event"
+                />
+              </details>
+            </template>
+          </InventoryFilterDrawer>
+          <InventoryList
+            :kind="archive.kind.value"
+            :items="listWindow.visibleItems.value"
+            :selected-ids="archive.selectedIds.value"
+            :all-selected="false"
+            :appending="archive.appending.value"
+            :busy="runtime.busy.value"
+            read-only
+            :active-detail-id="activeDetailId"
+            @detail="openDetail"
+          />
+          <div
+            v-if="listWindow.hasMore.value"
+            :ref="(element) => (listWindow.sentinel.value = element as HTMLElement | null)"
+            class="mobile-inventory-render-sentinel"
+            aria-hidden="true"
+          />
+          <button
+            v-if="!listWindow.hasMore.value && archive.result.value.page > 1"
+            class="mobile-more"
+            :disabled="runtime.busy.value"
+            @click="archive.goPage(archive.result.value.page - 1)"
+          >
+            上一页
+          </button>
+          <button
+            v-if="!listWindow.hasMore.value && archive.result.value.page < archive.pageCount.value"
+            class="mobile-more"
+            :disabled="runtime.busy.value"
+            @click="archive.goPage(archive.result.value.page + 1)"
+          >
+            下一页
+          </button>
+        </div>
+        <MobileInventoryPreview
+          v-if="pager.active.value && pager.target.value"
+          :kind="pager.target.value"
+          :result="pager.preview.value"
+          :items="previewItems"
+          :search="archive.filtersByKind[pager.target.value].search"
+          :filter-count="
+            archive.activeFilterCountFor(pager.target.value) +
+            (pager.target.value === 'relic' ? quality.activeCount.value : 0)
+          "
+          :viewport-height="pager.height.value"
+          :width="master?.clientWidth ?? 360"
+          :error="pager.error.value"
+          :style="pager.neighbourStyle.value"
         />
-        <button
-          v-if="!listWindow.hasMore.value && archive.result.value.page > 1"
-          class="mobile-more"
-          :disabled="runtime.busy.value"
-          @click="archive.goPage(archive.result.value.page - 1)"
-        >
-          上一页
-        </button>
-        <button
-          v-if="!listWindow.hasMore.value && archive.result.value.page < archive.pageCount.value"
-          class="mobile-more"
-          :disabled="runtime.busy.value"
-          @click="archive.goPage(archive.result.value.page + 1)"
-        >
-          下一页
-        </button>
       </div>
     </div>
     <InventoryDetailDrawer

@@ -53,10 +53,10 @@ export function useInventoryArchive(options: ArchiveOptions) {
       result.value.items.length > 0 &&
       result.value.items.every((item) => selectedIds.value.has(inventoryItemId(item))),
   );
-  const activeFilterCount = computed(() => {
-    const form = filters.value;
+  function activeFilterCountFor(nextKind: InventoryKind) {
+    const form = filtersByKind[nextKind];
     const values =
-      kind.value === "relic"
+      nextKind === "relic"
         ? [
             form.slots.length,
             form.mainStats.length,
@@ -67,11 +67,12 @@ export function useInventoryArchive(options: ArchiveOptions) {
             form.discard,
             form.equipped,
           ]
-        : kind.value === "lightCone"
+        : nextKind === "lightCone"
           ? [form.superimposition.length, form.locked, form.equipped]
           : [form.path.length, form.eidolon.length, form.element.length, form.buildPlan];
     return values.filter(Boolean).length;
-  });
+  }
+  const activeFilterCount = computed(() => activeFilterCountFor(kind.value));
   const hasActiveSearchOrFilters = computed(
     () => filters.value.search.trim().length > 0 || activeFilterCount.value > 0,
   );
@@ -87,6 +88,42 @@ export function useInventoryArchive(options: ArchiveOptions) {
       result: PagedResult<InventoryListItem>;
     }
   >();
+  const previewRequests = new Map<
+    InventoryKind,
+    { key: string; promise: Promise<PagedResult<InventoryListItem>> }
+  >();
+  /** Read a neighbour without changing the active category or its busy/request state. */
+  async function previewKind(nextKind: InventoryKind): Promise<PagedResult<InventoryListItem>> {
+    const query = buildInventoryFilter(nextKind, filtersByKind[nextKind], 1, 50);
+    const dataRevision = revision.value;
+    const signature = JSON.stringify(query);
+    const key = `${dataRevision}:${signature}`;
+    const cached = preparedCache.get(nextKind);
+    if (cached?.revision === dataRevision && cached.query === signature)
+      return { ...cached.result };
+    const pending = previewRequests.get(nextKind);
+    if (pending?.key === key) return pending.promise;
+    const promise = (async () => {
+      const next =
+        nextKind === "relic"
+          ? await inventoryApi.listRelics(query as RelicFilter)
+          : nextKind === "lightCone"
+            ? await inventoryApi.listLightCones(query as LightConeFilter)
+            : await inventoryApi.listCharacters(query as CharacterFilter);
+      if (
+        dataRevision === revision.value &&
+        signature === JSON.stringify(buildInventoryFilter(nextKind, filtersByKind[nextKind], 1, 50))
+      )
+        cachePage(nextKind, query, next, dataRevision);
+      return next;
+    })();
+    previewRequests.set(nextKind, { key, promise });
+    try {
+      return await promise;
+    } finally {
+      if (previewRequests.get(nextKind)?.promise === promise) previewRequests.delete(nextKind);
+    }
+  }
   function cachePage(
     category: InventoryKind,
     query: unknown,
@@ -150,15 +187,7 @@ export function useInventoryArchive(options: ArchiveOptions) {
     try {
       const query = buildInventoryFilter(nextKind, filtersByKind[nextKind], 1, 50);
       const dataRevision = revision.value;
-      const cached = preparedCache.get(nextKind);
-      const next =
-        cached?.revision === dataRevision && cached.query === JSON.stringify(query)
-          ? cached.result
-          : nextKind === "relic"
-            ? await inventoryApi.listRelics(query as RelicFilter)
-            : nextKind === "lightCone"
-              ? await inventoryApi.listLightCones(query as LightConeFilter)
-              : await inventoryApi.listCharacters(query as CharacterFilter);
+      const next = await previewKind(nextKind);
       if (currentRequest !== requestId) return null;
       cachePage(nextKind, query, next, dataRevision);
       return () => {
@@ -329,10 +358,13 @@ export function useInventoryArchive(options: ArchiveOptions) {
     pageCount,
     allSelected,
     activeFilterCount,
+    activeFilterCountFor,
     hasActiveSearchOrFilters,
     load,
     switchKind,
     prepareKind,
+    previewKind,
+    filtersByKind,
     cancelPreparedKind,
     resetFilters,
     applyFilters,

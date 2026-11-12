@@ -40,6 +40,19 @@ function fixture(cachePrepared = false) {
   return { state, wrapper, error, revision };
 }
 describe("prepared inventory categories", () => {
+  it("preloads a neighbour without changing the active page or cancelling an existing read", async () => {
+    const { state, wrapper } = fixture(true);
+    await state.load();
+    const page = state.result.value;
+    const ready = await state.previewKind("lightCone");
+    expect(ready.items).toEqual(lightCones);
+    expect(state.kind.value).toBe("relic");
+    expect(state.result.value).toBe(page);
+    (await state.prepareKind("lightCone"))!();
+    expect(api.listLightCones).toHaveBeenCalledOnce();
+    expect(state.kind.value).toBe("lightCone");
+    wrapper.unmount();
+  });
   it("reuses a first-page mobile result only for the same filters and inventory revision", async () => {
     const { state, wrapper, revision } = fixture(true);
     await state.load();

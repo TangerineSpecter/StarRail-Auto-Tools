@@ -39,7 +39,7 @@ export function useInventoryCategoryTransition(options: {
     pending.value = false;
   }
 
-  async function switchTo(next: InventoryKind) {
+  async function switchTo(next: InventoryKind, motion = true) {
     if (next === selectedKind.value && pending.value) return;
     const id = ++generation;
     stopMotion();
@@ -73,12 +73,15 @@ export function useInventoryCategoryTransition(options: {
         await nextTick();
         await nextTick();
         if (id !== generation) return;
-        if (options.body.value?.parentElement) options.body.value.parentElement.scrollTop = 0;
+        const scroller =
+          options.body.value?.closest<HTMLElement>(".mobile-inventory-master") ??
+          options.body.value?.parentElement;
+        if (scroller) scroller.scrollTop = 0;
         window.scrollTo(0, 0);
       };
       applyFallback = commit;
       const body = options.body.value;
-      if (!body || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (!motion || !body || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         await commit();
         return;
       }

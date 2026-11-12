@@ -56,5 +56,18 @@ export function useMobileRelicQuality(
   onBeforeUnmount(() => {
     disposed = true;
   });
-  return { plans, draft, draftPlan, displayItems, activeCount, begin, apply, resetDraft, reset };
+  const preview = (rows: RelicListItem[]) =>
+    filterRelicQuality(rows, applied.value, activePlan.value);
+  return {
+    plans,
+    draft,
+    draftPlan,
+    displayItems,
+    activeCount,
+    begin,
+    apply,
+    resetDraft,
+    reset,
+    preview,
+  };
 }

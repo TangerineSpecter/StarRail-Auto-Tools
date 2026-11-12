@@ -1,14 +1,16 @@
 import { createPinia } from "pinia";
 import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import MobileApp from "@/mobile/MobileApp.vue";
 
 vi.mock("@/shared/api/inventory", () => ({
   inventoryApi: { summary: vi.fn().mockResolvedValue({ relics: 0, characters: 0, lightCones: 0 }) },
 }));
+afterEach(() => vi.restoreAllMocks());
 
 describe("mobile analysis navigation", () => {
   it("replaces Teams with Analysis and keeps all five destinations reachable", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
     const wrapper = mount(MobileApp, {
       global: {
         plugins: [createPinia()],
@@ -50,6 +52,7 @@ describe("mobile analysis navigation", () => {
       ".sync-stub",
     ].entries()) {
       await buttons[index]!.trigger("click");
+      await vi.dynamicImportSettled();
       await flushPromises();
       expect(wrapper.find(selector).exists()).toBe(true);
       expect(buttons[index]!.attributes("aria-current")).toBe("page");
