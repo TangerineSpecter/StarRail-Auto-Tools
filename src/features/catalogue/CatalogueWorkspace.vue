@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import { characterCatalogue, lightConeCatalogue, relicCatalogue } from "@/shared/catalogue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import RelicSetGrid from "./RelicSetGrid.vue";
 import LightConeGrid from "./LightConeGrid.vue";
 import CharacterGrid from "./CharacterGrid.vue";
@@ -17,9 +27,122 @@ import type {
 } from "@/types";
 
 defineOptions({ name: "CatalogueWorkspace" });
+const mobile = useMobileView();
 const { inventoryRevision } = useRuntimeContext();
 const { relicCounts, lightConeCounts } = useCatalogueOwnedCounts(inventoryRevision);
 const tab = ref<"cavern" | "planar" | "lightCone" | "character">("cavern");
+const tabOrder = ["cavern", "planar", "lightCone", "character"] as const;
+type TabKey = (typeof tabOrder)[number];
+const transitionDirection = ref<"next" | "prev">("next");
+
+const tabButtons = ref<Record<string, HTMLElement | null>>({});
+const setTabButtonRef = (key: string, el: unknown) => {
+  tabButtons.value[key] = (el as HTMLElement) ?? null;
+};
+
+const indicatorX = ref(0);
+const indicatorReady = ref(false);
+function updateIndicator() {
+  const el = tabButtons.value[tab.value];
+  if (el) {
+    indicatorX.value = el.offsetLeft + (el.offsetWidth - 18) / 2;
+    if (!indicatorReady.value) {
+      void nextTick(() => {
+        indicatorReady.value = true;
+      });
+    }
+  }
+}
+
+function selectTab(nextTab: TabKey, explicitDirection?: "next" | "prev") {
+  if (nextTab === tab.value) return;
+  const oldIdx = tabOrder.indexOf(tab.value);
+  const newIdx = tabOrder.indexOf(nextTab);
+  transitionDirection.value = explicitDirection ?? (newIdx > oldIdx ? "next" : "prev");
+  tab.value = nextTab;
+  void nextTick(updateIndicator);
+}
+
+function nextTab() {
+  const curIdx = tabOrder.indexOf(tab.value);
+  const nextIdx = (curIdx + 1) % tabOrder.length;
+  selectTab(tabOrder[nextIdx], "next");
+}
+
+function prevTab() {
+  const curIdx = tabOrder.indexOf(tab.value);
+  const prevIdx = (curIdx - 1 + tabOrder.length) % tabOrder.length;
+  selectTab(tabOrder[prevIdx], "prev");
+}
+
+/* Horizontal swipe gesture on content area (matching inventory swipe feel) */
+let touchStartX = 0;
+let touchStartY = 0;
+let isHorizontalGesture = false;
+let preventClickUntil = 0;
+
+function onTouchStart(e: TouchEvent) {
+  if (!mobile || e.touches.length !== 1) return;
+  const target = e.target as HTMLElement | null;
+  // Ignore horizontally scrollable tabs header and secondary tabs
+  if (target?.closest(".catalogue-tabs, .mobile-relic-secondary-tabs, [data-swipe-ignore]")) return;
+
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+  isHorizontalGesture = false;
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (!mobile || e.touches.length !== 1) return;
+  const touch = e.touches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+  const absX = Math.abs(deltaX);
+  const absY = Math.abs(deltaY);
+
+  if (!isHorizontalGesture) {
+    if (absY >= 10 && absY >= absX) return;
+    if (absX >= 12 && absX >= absY * 1.15) {
+      isHorizontalGesture = true;
+    }
+  }
+
+  if (isHorizontalGesture) {
+    preventClickUntil = Date.now() + 500;
+  }
+}
+
+function onTouchEnd(e: TouchEvent) {
+  if (!mobile || !isHorizontalGesture) return;
+  if (!e.changedTouches.length) return;
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+  const absX = Math.abs(deltaX);
+  const absY = Math.abs(deltaY);
+
+  isHorizontalGesture = false;
+  if (absX > 32 && absX > absY * 1.15) {
+    preventClickUntil = Date.now() + 500;
+    if (deltaX < 0) {
+      nextTab();
+    } else {
+      prevTab();
+    }
+  }
+}
+
+function onClickCapture(e: MouseEvent) {
+  if (Date.now() < preventClickUntil) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}
+
+watch(tab, () => {
+  void nextTick(updateIndicator);
+});
 const selectedCharacter = ref<CharacterCatalogueEntry | null>(null);
 const selectedSet = ref<RelicSetCatalogueEntry | null>(null);
 const selectedLightCone = ref<LightConeCatalogueEntry | null>(null);
@@ -70,14 +193,32 @@ function onEscape(event: KeyboardEvent) {
   else if (selectedSet.value) selectedSet.value = null;
   else if (selectedLightCone.value) selectedLightCone.value = null;
 }
-const removeEscapeListener = () => window.removeEventListener("keydown", onEscape);
-onMounted(() => window.addEventListener("keydown", onEscape));
-onActivated(() => window.addEventListener("keydown", onEscape));
-onDeactivated(removeEscapeListener);
-onBeforeUnmount(removeEscapeListener);
+const onWindowResize = () => updateIndicator();
+const removeListeners = () => {
+  window.removeEventListener("keydown", onEscape);
+  window.removeEventListener("resize", onWindowResize);
+};
+onMounted(() => {
+  window.addEventListener("keydown", onEscape);
+  window.addEventListener("resize", onWindowResize);
+  void nextTick(updateIndicator);
+});
+onActivated(() => {
+  window.addEventListener("keydown", onEscape);
+  window.addEventListener("resize", onWindowResize);
+  void nextTick(updateIndicator);
+});
+onDeactivated(removeListeners);
+onBeforeUnmount(removeListeners);
 </script>
 <template>
-  <section class="catalogue-workspace">
+  <section
+    class="catalogue-workspace"
+    @touchstart.passive="onTouchStart"
+    @touchmove="onTouchMove"
+    @touchend.passive="onTouchEnd"
+    @click.capture="onClickCapture"
+  >
     <header class="catalogue-heading">
       <div>
         <p class="eyebrow">LOCAL REFERENCE DATA</p>
@@ -87,9 +228,10 @@ onBeforeUnmount(removeEscapeListener);
         <button
           v-for="item in tabs"
           :key="item.key"
+          :ref="(el) => setTabButtonRef(item.key, el)"
           :class="['catalogue-tab-btn', { active: tab === item.key }]"
           :aria-pressed="tab === item.key"
-          @click="tab = item.key"
+          @click="selectTab(item.key)"
         >
           <span
             ><small>{{ item.code }}</small
@@ -98,10 +240,22 @@ onBeforeUnmount(removeEscapeListener);
             >{{ item.count }} <small>{{ item.unit }}</small></b
           >
         </button>
+        <span
+          v-if="mobile"
+          class="catalogue-tab-indicator"
+          :style="{
+            transform: `translateX(${indicatorX}px)`,
+            transition: indicatorReady ? undefined : 'none',
+          }"
+          aria-hidden="true"
+        />
       </div>
     </header>
     <div class="catalogue-groups">
-      <Transition name="catalogue-panel" appear>
+      <Transition
+        :name="mobile ? `catalogue-slide-${transitionDirection}` : 'catalogue-panel'"
+        :mode="mobile ? 'out-in' : undefined"
+      >
         <KeepAlive>
           <RelicSetGrid
             v-if="tab === 'cavern'"

@@ -32,10 +32,16 @@ onDeactivated(detail.close);
 <style scoped>
 .mobile-analysis {
   min-width: 0;
-  padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 .mobile-analysis :deep(.relic-scanner) {
   height: auto;
+  padding: 0;
+  overflow: visible;
+}
+.mobile-analysis :deep(.scanner-mode-viewport),
+.mobile-analysis :deep(.scanner-mode-pane) {
+  height: auto;
+  min-height: 0;
   padding: 0;
   overflow: visible;
 }

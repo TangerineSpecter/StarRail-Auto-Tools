@@ -233,7 +233,7 @@ input {
   backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 10px 32px rgba(15, 30, 50, 0.15);
-  z-index: 95;
+  z-index: 999;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -302,6 +302,11 @@ input {
 .mobile-nav button.active svg {
   stroke: #ffffff;
 }
+
+/* Sub-mode arrow buttons: hidden in side-rail postures, only shown on unfolded-portrait bottom bar */
+.mobile-nav button.mobile-nav-sub-btn {
+  display: none;
+}
 /* Outer-screen menus occupy the shared side rail, aligned 50px from the frame edge.
    Keep content clear of both the rail and hardware insets; the rail is not added twice. */
 [data-posture="landscape-hinge-top"] {
@@ -337,6 +342,7 @@ input {
   width: auto;
   max-width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
   flex-direction: row;
+  align-items: center;
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
@@ -356,6 +362,37 @@ input {
   min-width: 58px;
   padding: 4px 10px;
   border-radius: 999px;
+}
+[data-posture="unfolded-portrait"] .mobile-nav button.mobile-nav-sub-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-width: 36px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #626e78;
+  box-shadow: none;
+}
+[data-posture="unfolded-portrait"] .mobile-nav button.mobile-nav-sub-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+[data-posture="unfolded-portrait"] .mobile-nav button.mobile-nav-sub-btn:active {
+  transform: scale(0.92);
+  background: rgba(38, 59, 76, 0.08);
+}
+[data-posture="unfolded-portrait"] .mobile-nav button.mobile-nav-sub-btn.prev {
+  order: -1;
+}
+[data-posture="unfolded-portrait"] .mobile-nav button.mobile-nav-sub-btn.next {
+  order: 10;
 }
 
 /* The expanded menu shares the viewport-edge rail with the system status UI.
@@ -392,12 +429,17 @@ html.mobile-view.mobile-page-transition .mobile-content {
   view-transition-name: mobile-page-content;
 }
 html.mobile-view.mobile-page-transition .mobile-nav {
-  view-transition-name: none;
+  view-transition-name: mobile-page-nav;
 }
 ::view-transition {
   pointer-events: none;
 }
+::view-transition-group(mobile-page-nav) {
+  z-index: 1000;
+  animation: none !important;
+}
 ::view-transition-group(mobile-page-content) {
+  z-index: 1;
   animation-duration: 280ms;
 }
 ::view-transition-image-pair(mobile-page-content) {

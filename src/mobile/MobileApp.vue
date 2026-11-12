@@ -13,6 +13,7 @@ import { useRuntimeStore } from "@/app/stores/runtime";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import { mobileViewKey } from "@/shared/contracts/mobile-view";
 import { readOnlyViewKey } from "@/shared/contracts/view-mode";
+import { mobileSubModeKey } from "@/shared/contracts/mobile-sub-mode";
 import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import MobileSync from "./MobileSync.vue";
@@ -25,6 +26,26 @@ const refs = storeToRefs(runtime);
 provide(runtimeContextKey, refs);
 provide(readOnlyViewKey, true);
 provide(mobileViewKey, true);
+
+const subModeHandlers = ref<{ prev: () => void; next: () => void } | null>(null);
+const hasSubMode = computed(() => Boolean(subModeHandlers.value));
+provide(mobileSubModeKey, {
+  active: hasSubMode,
+  prev: () => subModeHandlers.value?.prev(),
+  next: () => subModeHandlers.value?.next(),
+  register: (handlers) => {
+    if (!handlers) {
+      subModeHandlers.value = null;
+      return () => {};
+    }
+    subModeHandlers.value = handlers;
+    return () => {
+      if (subModeHandlers.value === handlers) {
+        subModeHandlers.value = null;
+      }
+    };
+  },
+});
 const tabs = [
   { id: "inventory", name: "背包" },
   { id: "catalogue", name: "图鉴" },
@@ -105,7 +126,26 @@ onMounted(() => {
         </component>
       </KeepAlive>
     </div>
-    <nav class="mobile-nav" aria-label="主导航">
+    <nav class="mobile-nav" :class="{ 'has-sub-mode': hasSubMode }" aria-label="主导航">
+      <button
+        v-if="hasSubMode"
+        type="button"
+        class="mobile-nav-sub-btn prev"
+        aria-label="上一项模式"
+        @click="subModeHandlers?.prev()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+
       <div class="mobile-nav-brand">
         <img src="/logo/android-chrome-192x192.png" alt="星穹数据航站" />
       </div>
@@ -192,6 +232,25 @@ onMounted(() => {
           <span>{{ item.name }}</span>
         </button>
       </div>
+
+      <button
+        v-if="hasSubMode"
+        type="button"
+        class="mobile-nav-sub-btn next"
+        aria-label="下一项模式"
+        @click="subModeHandlers?.next()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
     </nav>
   </main>
 </template>
