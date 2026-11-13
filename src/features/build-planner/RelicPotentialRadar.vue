@@ -19,11 +19,13 @@ const props = withDefaults(
     weakSlot?: string | null;
     minPotentialPct?: number;
     size?: number;
+    showBreakdown?: boolean;
   }>(),
   {
     weakSlot: null,
     minPotentialPct: 40,
     size: 176,
+    showBreakdown: false,
   },
 );
 
@@ -104,115 +106,225 @@ const ariaLabel = computed(() => {
 
 const hasAnyPiece = computed(() => axes.value.some((axis) => !axis.missing));
 
+const breakdownItems = computed(() =>
+  axes.value.map((axis) => ({
+    slot: axis.slot,
+    label: slotLabel(axis.slot),
+    grade: axis.missing ? "—" : (axis.letterGrade ?? "—"),
+    pctText: axis.missing ? "未装备" : `${Math.round(axis.potentialPct)}%`,
+    isWeak: props.weakSlot === axis.slot,
+    missing: axis.missing,
+    belowThreshold: !axis.missing && axis.potentialPct < (props.minPotentialPct ?? 40),
+  })),
+);
+
 const hoveredSlot = ref<string | null>(null);
 </script>
 
 <template>
-  <div
-    class="relic-potential-radar"
-    role="img"
-    :aria-label="ariaLabel"
-    :style="{ width: `${size}px`, height: `${size}px` }"
-  >
-    <svg
-      class="radar-svg"
-      :viewBox="`0 0 ${VIEW} ${VIEW}`"
-      width="100%"
-      height="100%"
-      aria-hidden="true"
+  <div class="radar-widget-wrap">
+    <div
+      class="relic-potential-radar"
+      role="img"
+      :aria-label="ariaLabel"
+      :style="{ width: `${size}px`, height: `${size}px` }"
     >
-      <!-- Concentric grid -->
-      <polygon
-        v-for="ring in gridRings"
-        :key="ring.pct"
-        class="radar-grid-ring"
-        :points="ring.points"
-      />
-      <!-- Quality threshold ring -->
-      <polygon v-if="thresholdRing" class="radar-threshold-ring" :points="thresholdRing" />
-      <!-- Axis rays -->
-      <line
-        v-for="(ray, index) in axisRays"
-        :key="`ray-${index}`"
-        class="radar-axis-ray"
-        :x1="CX"
-        :y1="CY"
-        :x2="ray.x2"
-        :y2="ray.y2"
-      />
-      <!-- Value area -->
-      <polygon v-if="hasAnyPiece" class="radar-value-area" :points="valuePolygon" />
-      <!-- Vertices -->
-      <circle
-        v-for="vertex in vertices"
-        :key="vertex.slot"
-        class="radar-vertex"
-        :class="{
-          'is-weak': vertex.isWeak,
-          'is-missing': vertex.missing,
-          'is-ungraded': !vertex.missing && vertex.letterGrade === null,
-          'is-hovered': hoveredSlot === vertex.slot,
-        }"
-        :cx="vertex.point.x"
-        :cy="vertex.point.y"
-        :r="vertex.isWeak || hoveredSlot === vertex.slot ? 4 : 2.6"
-      />
-      <!-- Hitboxes for vertices to make hovering easier -->
-      <circle
-        v-for="vertex in vertices"
-        :key="`hit-${vertex.slot}`"
-        class="radar-vertex-hitbox"
-        :cx="vertex.point.x"
-        :cy="vertex.point.y"
-        r="14"
-        @mouseenter="hoveredSlot = vertex.slot"
-        @mouseleave="hoveredSlot = null"
-      />
-      <!-- Axis labels -->
-      <g
-        v-for="label in labels"
-        :key="`label-${label.slot}`"
-        class="radar-axis-label"
-        :class="{ 'is-weak': label.isWeak, 'is-missing': label.missing }"
-        @mouseenter="hoveredSlot = label.slot"
-        @mouseleave="hoveredSlot = null"
+      <svg
+        class="radar-svg"
+        :viewBox="`0 0 ${VIEW} ${VIEW}`"
+        width="100%"
+        height="100%"
+        aria-hidden="true"
       >
-        <title>{{ label.title }}</title>
-        <text :x="label.x" :y="label.y" text-anchor="middle" dominant-baseline="middle">
-          {{ label.shortLabel }}
-        </text>
-      </g>
-    </svg>
-    <div class="radar-center" aria-hidden="true">
-      <em class="radar-center-grade">{{ averageLetterGrade }}</em>
-      <strong>{{ averagePotentialPct.toFixed(0) }}%</strong>
-      <span>平均潜力</span>
+        <!-- Concentric grid -->
+        <polygon
+          v-for="ring in gridRings"
+          :key="ring.pct"
+          class="radar-grid-ring"
+          :points="ring.points"
+        />
+        <!-- Quality threshold ring -->
+        <polygon v-if="thresholdRing" class="radar-threshold-ring" :points="thresholdRing" />
+        <!-- Axis rays -->
+        <line
+          v-for="(ray, index) in axisRays"
+          :key="`ray-${index}`"
+          class="radar-axis-ray"
+          :x1="CX"
+          :y1="CY"
+          :x2="ray.x2"
+          :y2="ray.y2"
+        />
+        <!-- Value area -->
+        <polygon v-if="hasAnyPiece" class="radar-value-area" :points="valuePolygon" />
+        <!-- Vertices -->
+        <circle
+          v-for="vertex in vertices"
+          :key="vertex.slot"
+          class="radar-vertex"
+          :class="{
+            'is-weak': vertex.isWeak,
+            'is-missing': vertex.missing,
+            'is-ungraded': !vertex.missing && vertex.letterGrade === null,
+            'is-hovered': hoveredSlot === vertex.slot,
+          }"
+          :cx="vertex.point.x"
+          :cy="vertex.point.y"
+          :r="vertex.isWeak || hoveredSlot === vertex.slot ? 4 : 2.6"
+        />
+        <!-- Hitboxes for vertices to make hovering easier -->
+        <circle
+          v-for="vertex in vertices"
+          :key="`hit-${vertex.slot}`"
+          class="radar-vertex-hitbox"
+          :cx="vertex.point.x"
+          :cy="vertex.point.y"
+          r="14"
+          @mouseenter="hoveredSlot = vertex.slot"
+          @mouseleave="hoveredSlot = null"
+        />
+        <!-- Axis labels -->
+        <g
+          v-for="label in labels"
+          :key="`label-${label.slot}`"
+          class="radar-axis-label"
+          :class="{ 'is-weak': label.isWeak, 'is-missing': label.missing }"
+          @mouseenter="hoveredSlot = label.slot"
+          @mouseleave="hoveredSlot = null"
+        >
+          <title>{{ label.title }}</title>
+          <text :x="label.x" :y="label.y" text-anchor="middle" dominant-baseline="middle">
+            {{ label.shortLabel }}
+          </text>
+        </g>
+      </svg>
+      <div class="radar-center" aria-hidden="true">
+        <em class="radar-center-grade">{{ averageLetterGrade }}</em>
+        <strong>{{ averagePotentialPct.toFixed(0) }}%</strong>
+        <span>平均潜力</span>
+      </div>
+
+      <!-- Hover tooltips -->
+      <div
+        v-for="vertex in vertices"
+        :key="`tooltip-${vertex.slot}`"
+        class="radar-html-tooltip"
+        :class="{ visible: hoveredSlot === vertex.slot }"
+        :style="{
+          left: `${(vertex.point.x / VIEW) * 100}%`,
+          top: `${(vertex.point.y / VIEW) * 100}%`,
+        }"
+        aria-hidden="true"
+      >
+        <div class="tooltip-content">
+          {{ labels.find((item) => item.slot === vertex.slot)?.title }}
+        </div>
+      </div>
     </div>
 
-    <!-- Hover tooltips -->
-    <div
-      v-for="vertex in vertices"
-      :key="`tooltip-${vertex.slot}`"
-      class="radar-html-tooltip"
-      :class="{ visible: hoveredSlot === vertex.slot }"
-      :style="{
-        left: `${(vertex.point.x / VIEW) * 100}%`,
-        top: `${(vertex.point.y / VIEW) * 100}%`,
-      }"
-      aria-hidden="true"
-    >
-      <div class="tooltip-content">
-        {{ labels.find((item) => item.slot === vertex.slot)?.title }}
+    <div v-if="showBreakdown" class="radar-slot-breakdown">
+      <div
+        v-for="item in breakdownItems"
+        :key="item.slot"
+        :class="[
+          'radar-slot-chip',
+          {
+            'is-weak': item.isWeak,
+            'is-missing': item.missing,
+            'is-below': item.belowThreshold && !item.isWeak,
+          },
+        ]"
+      >
+        <span class="radar-slot-chip-name">
+          {{ item.label }}
+          <em v-if="item.isWeak" class="radar-slot-weak-tag">短板</em>
+        </span>
+        <span class="radar-slot-chip-score">
+          <b v-if="!item.missing">{{ item.grade }}</b>
+          <small>{{ item.pctText }}</small>
+        </span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.radar-widget-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
 .relic-potential-radar {
   position: relative;
   flex: 0 0 auto;
   margin: 0 auto;
+}
+.radar-slot-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  width: 100%;
+}
+.radar-slot-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(28, 49, 80, 0.07);
+  background: #f6f9fd;
+  font-size: 12px;
+}
+.radar-slot-chip.is-weak {
+  border-color: rgba(199, 123, 50, 0.34);
+  background: #fff8ee;
+}
+.radar-slot-chip.is-below {
+  border-color: rgba(196, 75, 75, 0.2);
+  background: #fdf6f6;
+}
+.radar-slot-chip.is-missing {
+  opacity: 0.65;
+}
+.radar-slot-chip-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #364c69;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.radar-slot-weak-tag {
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(199, 123, 50, 0.16);
+  color: #b4651c;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.radar-slot-chip-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.radar-slot-chip-score b {
+  color: #1f5399;
+  font-size: 12px;
+  font-weight: 800;
+}
+.radar-slot-chip.is-weak .radar-slot-chip-score b {
+  color: #b4651c;
+}
+.radar-slot-chip-score small {
+  color: #6b809b;
+  font-size: 11px;
+  font-weight: 600;
 }
 .radar-svg {
   display: block;

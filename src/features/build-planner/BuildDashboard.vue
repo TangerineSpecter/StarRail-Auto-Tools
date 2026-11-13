@@ -855,7 +855,13 @@ defineExpose({ reload: loadDashboard });
         <BuildCardDetails
           :model-value="selectedCharacterId === card.character.characterId"
           :title="characterDisplayName(card.character)"
+          :avatar="card.image"
+          :summary="`${card.completed} / ${card.targets.length} 项达标 · 有效词条 ${card.effectiveTotal}`"
+          :completion-pct="`${(card.quality.combinedRatio * 100).toFixed(0)}%`"
+          :completion-class="getCompletionClass(card.quality.combinedRatio)"
+          :can-edit="!readOnly"
           @update:model-value="setDetailsVisible(card.character.characterId, $event)"
+          @edit="emit('editBuild', card.character.characterId)"
         >
           <div class="build-card-body">
             <div class="build-card-main">
@@ -905,7 +911,9 @@ defineExpose({ reload: loadDashboard });
                           ? `${item.set.name}已装备${item.pieces}件`
                           : `${item.set.name}未装备${item.pieces}件`
                       "
-                      >{{ item.matched ? "✓" : "×" }}</span
+                      >{{
+                        mobile ? (item.matched ? "✓ 已配齐" : "× 未配齐") : item.matched ? "✓" : "×"
+                      }}</span
                     >
                   </div>
                 </div>
@@ -1007,6 +1015,7 @@ defineExpose({ reload: loadDashboard });
                   :weak-slot="card.weakSlot"
                   :average-potential-pct="card.averagePotentialPct"
                   :min-potential-pct="card.minPotentialPct"
+                  :show-breakdown="mobile"
                 />
               </div>
             </div>
