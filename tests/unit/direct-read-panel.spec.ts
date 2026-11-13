@@ -17,7 +17,7 @@ const snapshot: DirectReadSnapshot = {
   relics: 0,
   lightCones: 0,
   characters: 0,
-  protocolVersion: "reliquary-v23.0.0 / HSR-4.5",
+  protocolVersion: "reliquary-v25.0.0 / HSR-4.7",
   currentUid: null,
   incomingUid: null,
   requiresAccountSwitch: false,

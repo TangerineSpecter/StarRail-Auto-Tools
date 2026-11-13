@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "compilerVersion": "station-clauses-v2",
-  "dataVersion": "8b85088764e06875f799ef7fb5e0c641af85eea8af9f3f9c250ad822a07ac83f",
+  "dataVersion": "d39925d498735d21d705603db609b599304f784a980946e48d07c1f4e40faeca",
   "definitions": [
     {
       "sourceRef": "character:1001:ranks:1",
@@ -89054,6 +89054,41 @@
       "unusedParameters": []
     },
     {
+      "sourceRef": "character:1501:skills:1571711",
+      "sourceHash": "c0ee9cd02342d302b885f823dd3a759faf4f5d7c38f030ac28cc42463ade909e",
+      "ownerId": "character:1501",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1501:skills:1571711:clause:0",
+          "start": 0,
+          "end": 155,
+          "parameterRefs": [
+            "p5",
+            "p1",
+            "p2",
+            "p3",
+            "p4"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
       "sourceRef": "character:1501:skills:18302584",
       "sourceHash": "c3e29031f807778564a6782da40296dad5384c9c06b98f2652a85b7ac819d0ba",
       "ownerId": "character:1501",
@@ -90055,6 +90090,61 @@
         }
       ],
       "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1502:skills:1643996",
+      "sourceHash": "cea656c8e09594cd473a833815fa7053d860cf0cd9c81d992f7b93f9e062653b",
+      "ownerId": "character:1502",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1502:skills:1643996:clause:0",
+          "start": 0,
+          "end": 60,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1502:skills:1643996:clause:1",
+          "start": 60,
+          "end": 105,
+          "parameterRefs": [
+            "p2",
+            "p4"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p3"
+      ]
     },
     {
       "sourceRef": "character:1502:skills:1665351",
@@ -91692,6 +91782,59 @@
           "start": 0,
           "end": 23,
           "parameterRefs": [],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1503:skills:1390493",
+      "sourceHash": "55709207b844e8b6fb0b839cf27475b45ec42c2f1c1aa04542ef4c4740877e03",
+      "ownerId": "character:1503",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1503:skills:1390493:clause:0",
+          "start": 0,
+          "end": 41,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1503:skills:1390493:clause:1",
+          "start": 41,
+          "end": 118,
+          "parameterRefs": [
+            "p2",
+            "p3"
+          ],
           "literals": [],
           "activation": "unresolvedCondition",
           "operations": [
@@ -93824,6 +93967,60 @@
       "unusedParameters": []
     },
     {
+      "sourceRef": "character:1505:skills:123026",
+      "sourceHash": "02493feaf2e58a29d108859a1e5d4bd591d882acab3fb8b09c752823a5b0dfc2",
+      "ownerId": "character:1505",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1505:skills:123026:clause:0",
+          "start": 0,
+          "end": 72,
+          "parameterRefs": [
+            "p3"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1505:skills:123026:clause:1",
+          "start": 72,
+          "end": 197,
+          "parameterRefs": [
+            "p2",
+            "p4",
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
       "sourceRef": "character:1505:skills:28644",
       "sourceHash": "04508525df56442c3700237cbe5e89dfbb648d261adf5033b8ad04c63665e1d1",
       "ownerId": "character:1505",
@@ -95093,6 +95290,46 @@
               "value": 0,
               "start": 84,
               "end": 85,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1506:skills:1007849",
+      "sourceHash": "c8744bdc72c3b27edf848ecf95aa4224478de4d74f618ea378a1bea971461438",
+      "ownerId": "character:1506",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1506:skills:1007849:clause:0",
+          "start": 0,
+          "end": 112,
+          "parameterRefs": [
+            "p1",
+            "p3",
+            "p2"
+          ],
+          "literals": [
+            {
+              "value": 1,
+              "start": 67,
+              "end": 68,
               "unit": "number"
             }
           ],
@@ -102030,6 +102267,1386 @@
       "unusedParameters": []
     },
     {
+      "sourceRef": "character:1511:ranks:1",
+      "sourceHash": "14bed091baa48246e3f34bb0d01559bb2994038584176850bd32434e7dbad1ad",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:ranks:1:clause:0",
+          "start": 0,
+          "end": 28,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:1:clause:1",
+          "start": 28,
+          "end": 72,
+          "parameterRefs": [
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:ranks:2",
+      "sourceHash": "115ba3d9c37736e0433fa72ac3cff8cd87a7e2ea3a5e7abadd423820fea4f507",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:ranks:2:clause:0",
+          "start": 0,
+          "end": 17,
+          "parameterRefs": [],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:2:clause:1",
+          "start": 17,
+          "end": 79,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 151129,
+              "start": 70,
+              "end": 76,
+              "unit": "number"
+            },
+            {
+              "value": 2,
+              "start": 77,
+              "end": 78,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:ranks:3",
+      "sourceHash": "183d2edd49405cc1553724a6dc10080e5e4509ae1ac4a005d9debcfd452d3498",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:ranks:3:clause:0",
+          "start": 0,
+          "end": 17,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 2,
+              "start": 6,
+              "end": 7,
+              "unit": "number"
+            },
+            {
+              "value": 15,
+              "start": 13,
+              "end": 15,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:3:clause:1",
+          "start": 17,
+          "end": 33,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 1,
+              "start": 22,
+              "end": 23,
+              "unit": "number"
+            },
+            {
+              "value": 10,
+              "start": 29,
+              "end": 31,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:3:clause:2",
+          "start": 33,
+          "end": 50,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 1,
+              "start": 39,
+              "end": 40,
+              "unit": "number"
+            },
+            {
+              "value": 15,
+              "start": 46,
+              "end": 48,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:ranks:4",
+      "sourceHash": "43dc8fd2a0372ba2d9e7dd668a790f2985820c31cabf9bd7d76839683da54a9a",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:ranks:4:clause:0",
+          "start": 0,
+          "end": 38,
+          "parameterRefs": [
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:4:clause:1",
+          "start": 38,
+          "end": 90,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:ranks:5",
+      "sourceHash": "cbbb3883c09a7e464617db456d247738a5c997adf6c9e1635789a22bb88ce182",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:ranks:5:clause:0",
+          "start": 0,
+          "end": 16,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 2,
+              "start": 5,
+              "end": 6,
+              "unit": "number"
+            },
+            {
+              "value": 15,
+              "start": 12,
+              "end": 14,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:5:clause:1",
+          "start": 16,
+          "end": 32,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 2,
+              "start": 21,
+              "end": 22,
+              "unit": "number"
+            },
+            {
+              "value": 15,
+              "start": 28,
+              "end": 30,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:5:clause:2",
+          "start": 32,
+          "end": 49,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 1,
+              "start": 38,
+              "end": 39,
+              "unit": "number"
+            },
+            {
+              "value": 15,
+              "start": 45,
+              "end": 47,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:ranks:6",
+      "sourceHash": "714497f5e9496784eef63f3532859034499acd3e14c13332e7ccfbfbf122785d",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:ranks:6:clause:0",
+          "start": 0,
+          "end": 49,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:ranks:6:clause:1",
+          "start": 49,
+          "end": 107,
+          "parameterRefs": [
+            "p3",
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:skills:21134318",
+      "sourceHash": "c626a2f724971c8012b06cad7013eba6f02d679bc2fb7927e01386a3371e2ede",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:21134318:clause:0",
+          "start": 0,
+          "end": 112,
+          "parameterRefs": [
+            "p1",
+            "p3"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p2"
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4229558",
+      "sourceHash": "bbf08a0dad838cdd9f3d3187ccc4a1fb5216237974a394424bff4d636cd9a419",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4229558:clause:0",
+          "start": 0,
+          "end": 75,
+          "parameterRefs": [
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4229558:clause:1",
+          "start": 75,
+          "end": 174,
+          "parameterRefs": [
+            "p1",
+            "p6"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p3",
+        "p4",
+        "p5"
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4412821",
+      "sourceHash": "3b5aa937f6d291e019346ba36fb02782792620a31ce6f88a32464425c861c177",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4412821:clause:0",
+          "start": 0,
+          "end": 52,
+          "parameterRefs": [
+            "p8",
+            "p11"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4412821:clause:1",
+          "start": 52,
+          "end": 90,
+          "parameterRefs": [
+            "p7"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4412821:clause:2",
+          "start": 90,
+          "end": 205,
+          "parameterRefs": [
+            "p2",
+            "p3",
+            "p9",
+            "p10"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p1",
+        "p4",
+        "p5",
+        "p6"
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4445535",
+      "sourceHash": "220205c0d3af6144acdc19c9048f5a70c63f5a8dd9c3e6c25bcb85b9058c22a1",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4445535:clause:0",
+          "start": 0,
+          "end": 55,
+          "parameterRefs": [],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4445535:clause:1",
+          "start": 55,
+          "end": 96,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4445535:clause:2",
+          "start": 96,
+          "end": 170,
+          "parameterRefs": [
+            "p3",
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:skills:4452841",
+      "sourceHash": "b9fd84e14de3a41f177d7128ee71c25ce0beeb7657412c546dda96298f075b58",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4452841:clause:0",
+          "start": 0,
+          "end": 23,
+          "parameterRefs": [],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:skills:4485134",
+      "sourceHash": "86a70224581c218c7725c9f1c8fabae56d5943fa057b64ee7bb364fd6fe1829d",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4485134:clause:0",
+          "start": 0,
+          "end": 19,
+          "parameterRefs": [],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4485134:clause:1",
+          "start": 19,
+          "end": 113,
+          "parameterRefs": [
+            "p1",
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:skills:4513608",
+      "sourceHash": "7d0aa0e861236178df18b34491445a90860854b13c22e58284169c4d5c7c3a9e",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4513608:clause:0",
+          "start": 0,
+          "end": 38,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "selectedAbility",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p2"
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4684708",
+      "sourceHash": "6703c11e26d0d9691bd927c5e9519c6b72b4de86d82ba4b3494b3516b61964f5",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4684708:clause:0",
+          "start": 0,
+          "end": 79,
+          "parameterRefs": [
+            "p5",
+            "p6"
+          ],
+          "literals": [
+            {
+              "value": 1,
+              "start": 77,
+              "end": 78,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4684708:clause:1",
+          "start": 79,
+          "end": 177,
+          "parameterRefs": [
+            "p2",
+            "p3",
+            "p4"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p1"
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4695006",
+      "sourceHash": "3177ecf8003628926ac4f0d708830cdba3635c710cc286c449cee3d7ee5bc709",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:skills:4695006:clause:0",
+          "start": 0,
+          "end": 121,
+          "parameterRefs": [
+            "p2",
+            "p1"
+          ],
+          "literals": [
+            {
+              "value": 1,
+              "start": 13,
+              "end": 14,
+              "unit": "number"
+            },
+            {
+              "value": 1,
+              "start": 86,
+              "end": 87,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:skills:4695006:clause:1",
+          "start": 121,
+          "end": 137,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 1,
+              "start": 134,
+              "end": 135,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511101",
+      "sourceHash": "9e87e74bc14cdfc97af2f17b30fa9fbda8881015a2d82233148a4154e6e4baf5",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511101:clause:0",
+          "start": 0,
+          "end": 74,
+          "parameterRefs": [
+            "p1",
+            "p3"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:traces:1511101:clause:1",
+          "start": 74,
+          "end": 93,
+          "parameterRefs": [],
+          "literals": [
+            {
+              "value": 1,
+              "start": 88,
+              "end": 89,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p2"
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511102",
+      "sourceHash": "eba1bfd800b68bf34a331b4418ed709b9a29c160ae5ca9c5c8ea7f0fa0c160a1",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511102:clause:0",
+          "start": 0,
+          "end": 68,
+          "parameterRefs": [
+            "p1",
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511103",
+      "sourceHash": "350a3e6130bb8b95a65068538a96d2e52618a1abb10773ac2e9bf8492d9ab5e8",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511103:clause:0",
+          "start": 0,
+          "end": 86,
+          "parameterRefs": [
+            "p1",
+            "p2",
+            "p3",
+            "p4"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:1511:traces:1511103:clause:1",
+          "start": 86,
+          "end": 119,
+          "parameterRefs": [
+            "p5"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511201",
+      "sourceHash": "34cf0e832331d0e395bad1a5a977cd77e400f09679e217c06a8e0b59364e523f",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511201:clause:0",
+          "start": 0,
+          "end": 16,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511202",
+      "sourceHash": "fbb01090e1943e29fd278b5442b0f674ae27ad6c168aeacf5838864f81f7ab5f",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511202:clause:0",
+          "start": 0,
+          "end": 15,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511203",
+      "sourceHash": "e231dac8fb8b50eac31f35259076e2da40a0203ff5c392cb62b20d5967978f6d",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511203:clause:0",
+          "start": 0,
+          "end": 16,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511204",
+      "sourceHash": "35e6e2a0cb455b32de7b6ed178f56eba2cac7a9d4709196a056d8ad4f0f3107a",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511204:clause:0",
+          "start": 0,
+          "end": 14,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511205",
+      "sourceHash": "db0d3bf8e052d165e2b8a83776369d3d9216d8672d184b7675ca9ef039287bed",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511205:clause:0",
+          "start": 0,
+          "end": 16,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511206",
+      "sourceHash": "da6674480c8d936f5a8f128a9e6e1885982aa59c8b2d04f9c3da7dd2cf41b041",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511206:clause:0",
+          "start": 0,
+          "end": 15,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511207",
+      "sourceHash": "99eb50ee68b3b25188d7ddcb348ba477bdad00926c47f488e1bb022a4dafe3ff",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511207:clause:0",
+          "start": 0,
+          "end": 16,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511208",
+      "sourceHash": "78f9471ccc17003184a5aef487e750481669966fc03e8dd7cc7492cae7571163",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511208:clause:0",
+          "start": 0,
+          "end": 14,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511209",
+      "sourceHash": "1b5ec216348e778ca0a396888d8ec23d4f8dbcf1f874c45209969e46a042fa74",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511209:clause:0",
+          "start": 0,
+          "end": 15,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1511:traces:1511210",
+      "sourceHash": "a7b3a19ddf474810a2558740a5434c44866df09399e1a11f1ae4f4f36b8fdfdc",
+      "ownerId": "character:1511",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1511:traces:1511210:clause:0",
+          "start": 0,
+          "end": 16,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
       "sourceRef": "character:1512:ranks:1",
       "sourceHash": "556fd631ddcae46fa34992ba99230508231b319e62ceb3007d043399cca751c1",
       "ownerId": "character:1512",
@@ -103901,6 +105518,54 @@
         }
       ],
       "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:1513:skills:3857477",
+      "sourceHash": "030c4483fbd04b9ed622a646230d84a3ec0bfd8b5335bea9d46efad2d9e7880a",
+      "ownerId": "character:1513",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:1513:skills:3857477:clause:0",
+          "start": 0,
+          "end": 157,
+          "parameterRefs": [
+            "p2",
+            "p3",
+            "p4"
+          ],
+          "literals": [
+            {
+              "value": 1,
+              "start": 19,
+              "end": 20,
+              "unit": "number"
+            },
+            {
+              "value": 1,
+              "start": 49,
+              "end": 50,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": [
+        "p1"
+      ]
     },
     {
       "sourceRef": "character:1513:skills:3981092",
@@ -113681,6 +115346,79 @@
       "unusedParameters": []
     },
     {
+      "sourceRef": "character:8009:skills:19206459",
+      "sourceHash": "8d4abc7d3d97adbabea7ea0fc7cba30a72c57a3f8d2517f97c9ff66f912a02f7",
+      "ownerId": "character:8009",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:8009:skills:19206459:clause:0",
+          "start": 0,
+          "end": 56,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:8009:skills:19206459:clause:1",
+          "start": 56,
+          "end": 146,
+          "parameterRefs": [
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:8009:skills:19206459:clause:2",
+          "start": 146,
+          "end": 211,
+          "parameterRefs": [
+            "p3"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
       "sourceRef": "character:8009:skills:19213391",
       "sourceHash": "4a6ddd2d43dfc44930fee6c3ee39bbd45e5846e9ed4dfde2f8589e4e3d97a003",
       "ownerId": "character:8009",
@@ -114726,6 +116464,79 @@
               "decay": 1,
               "strategy": "direct",
               "limitation": "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "character:8010:skills:8051109",
+      "sourceHash": "34ac2ef94e26acff7362c3a960a81ea1c41e0d7b91938f4b0e8f3aad0af5cb94",
+      "ownerId": "character:8010",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "character:8010:skills:8051109:clause:0",
+          "start": 0,
+          "end": 56,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:8010:skills:8051109:clause:1",
+          "start": 56,
+          "end": 146,
+          "parameterRefs": [
+            "p2"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "character:8010:skills:8051109:clause:2",
+          "start": 146,
+          "end": 211,
+          "parameterRefs": [
+            "p3"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
             }
           ]
         }
@@ -119815,6 +121626,45 @@
             "p4"
           ],
           "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "lightcone:22009:skill:22009",
+      "sourceHash": "2f74f08ee38f60b143aa36c26110fa3b9c62aa441359e66e9dcc4c1d87d77255",
+      "ownerId": "lightcone:22009",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "lightcone:22009:skill:22009:clause:0",
+          "start": 0,
+          "end": 89,
+          "parameterRefs": [
+            "p1",
+            "p2"
+          ],
+          "literals": [
+            {
+              "value": 1,
+              "start": 5,
+              "end": 6,
+              "unit": "number"
+            }
+          ],
           "activation": "unresolvedCondition",
           "operations": [
             {
@@ -125103,6 +126953,67 @@
       "unusedParameters": []
     },
     {
+      "sourceRef": "lightcone:23065:skill:23065",
+      "sourceHash": "37fa15fae00bd555c37acba9daccedbb76e1af48eeffc06b1773bc64ffc6aa6b",
+      "ownerId": "lightcone:23065",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "lightcone:23065:skill:23065:clause:0",
+          "start": 0,
+          "end": 25,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "lightcone:23065:skill:23065:clause:1",
+          "start": 25,
+          "end": 139,
+          "parameterRefs": [
+            "p2",
+            "p3",
+            "p4"
+          ],
+          "literals": [
+            {
+              "value": 1,
+              "start": 80,
+              "end": 81,
+              "unit": "number"
+            }
+          ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
       "sourceRef": "lightcone:24000:skill:24000",
       "sourceHash": "64d09295818a100a34158357efc03b7d15000e5f74ce759df9e5335f1daf112d",
       "ownerId": "lightcone:24000",
@@ -129374,6 +131285,92 @@
               "unit": "number"
             }
           ],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "relic:329:set:2",
+      "sourceHash": "661a1691c0c765b2827bbdc9fad2232b313479d2ae02c42ea77e9f73ce689018",
+      "ownerId": "relic:329",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "relic:329:set:2:clause:0",
+          "start": 0,
+          "end": 29,
+          "parameterRefs": [
+            "p1"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        },
+        {
+          "id": "relic:329:set:2:clause:1",
+          "start": 29,
+          "end": 94,
+          "parameterRefs": [
+            "p2",
+            "p3"
+          ],
+          "literals": [],
+          "activation": "unresolvedCondition",
+          "operations": [
+            {
+              "kind": "unsupported",
+              "target": "self",
+              "scaling": "flat",
+              "repeats": 1,
+              "decay": 1,
+              "strategy": "direct",
+              "limitation": "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+            }
+          ]
+        }
+      ],
+      "unusedParameters": []
+    },
+    {
+      "sourceRef": "relic:330:set:2",
+      "sourceHash": "7d6af92a3f661c23e0b329c0550e911ac2c56558403c087ad7fd150c4366c766",
+      "ownerId": "relic:330",
+      "adoption": "adopted",
+      "precision": "approximate",
+      "clauses": [
+        {
+          "id": "relic:330:set:2:clause:0",
+          "start": 0,
+          "end": 98,
+          "parameterRefs": [
+            "p1",
+            "p2",
+            "p3"
+          ],
+          "literals": [],
           "activation": "unresolvedCondition",
           "operations": [
             {

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T02:53:07.927Z",
+  "generatedAt": "2026-11-13T09:31:04.262Z",
   "manifest": [
     {
       "kind": "character",
       "url": "https://starrailstation.com/cn/characters",
-      "count": 98,
+      "count": 99,
       "mapping": [
         {
           "slug": "aventurinewaveflair",
@@ -16,6 +16,11 @@
           "slug": "robinsummeretto",
           "gameId": "1512",
           "pathId": 8
+        },
+        {
+          "slug": "nihilux",
+          "gameId": "1511",
+          "pathId": 9
         },
         {
           "slug": "himekonova",
@@ -504,8 +509,13 @@
     {
       "kind": "lightcone",
       "url": "https://starrailstation.com/cn/equipment",
-      "count": 170,
+      "count": 172,
       "mapping": [
+        {
+          "slug": "23065",
+          "gameId": "23065",
+          "pathId": 9
+        },
         {
           "slug": "23064",
           "gameId": "23064",
@@ -865,6 +875,11 @@
           "slug": "24000",
           "gameId": "24000",
           "pathId": 1
+        },
+        {
+          "slug": "22009",
+          "gameId": "22009",
+          "pathId": 9
         },
         {
           "slug": "22008",
@@ -1363,7 +1378,7 @@
     {
       "kind": "relic",
       "url": "https://starrailstation.com/cn/relics",
-      "count": 62,
+      "count": 64,
       "mapping": [
         {
           "slug": "101",
@@ -1674,6 +1689,16 @@
           "slug": "328",
           "gameId": "328",
           "pathId": null
+        },
+        {
+          "slug": "329",
+          "gameId": "329",
+          "pathId": null
+        },
+        {
+          "slug": "330",
+          "gameId": "330",
+          "pathId": null
         }
       ],
       "added": [],
@@ -1681,14 +1706,55 @@
     }
   ],
   "changes": {
-    "added": [],
+    "added": [
+      "character:1501:skills:1571711",
+      "character:1502:skills:1643996",
+      "character:1503:skills:1390493",
+      "character:1505:skills:123026",
+      "character:1506:skills:1007849",
+      "character:1511:ranks:1",
+      "character:1511:ranks:2",
+      "character:1511:ranks:3",
+      "character:1511:ranks:4",
+      "character:1511:ranks:5",
+      "character:1511:ranks:6",
+      "character:1511:skills:21134318",
+      "character:1511:skills:4229558",
+      "character:1511:skills:4412821",
+      "character:1511:skills:4445535",
+      "character:1511:skills:4452841",
+      "character:1511:skills:4485134",
+      "character:1511:skills:4513608",
+      "character:1511:skills:4684708",
+      "character:1511:skills:4695006",
+      "character:1511:traces:1511101",
+      "character:1511:traces:1511102",
+      "character:1511:traces:1511103",
+      "character:1511:traces:1511201",
+      "character:1511:traces:1511202",
+      "character:1511:traces:1511203",
+      "character:1511:traces:1511204",
+      "character:1511:traces:1511205",
+      "character:1511:traces:1511206",
+      "character:1511:traces:1511207",
+      "character:1511:traces:1511208",
+      "character:1511:traces:1511209",
+      "character:1511:traces:1511210",
+      "character:1513:skills:3857477",
+      "character:8009:skills:19206459",
+      "character:8010:skills:8051109",
+      "lightcone:22009:skill:22009",
+      "lightcone:23065:skill:23065",
+      "relic:329:set:2",
+      "relic:330:set:2"
+    ],
     "changed": [],
     "deleted": []
   },
   "counts": {
-    "owners": 338,
-    "abilities": 3000,
-    "pending": 3000,
+    "owners": 343,
+    "abilities": 3040,
+    "pending": 3040,
     "reviewed": 0
   },
   "auditStatus": "pending"

@@ -4489,14 +4489,17 @@ mod tests {
                 "ascension": 6,
                 "eidolon": 0,
                 "skills": {},
-                "traces": {},
+                "traces": {"elation_debt": true},
+                "affinitive_eidolons": [1, 2],
                 "ability_version": 1
-            }]
+            }],
+            "recon_relics": [90001]
         }))
         .unwrap();
         assert_eq!(payload.relics[0]._uid, 90001);
         assert_eq!(payload.light_cones[0].id, 20001);
         assert_eq!(payload.characters[0].id, 1001);
+        assert_eq!(payload.characters[0].traces["elation_debt"], true);
     }
 
     #[test]

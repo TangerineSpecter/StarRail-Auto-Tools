@@ -11,6 +11,7 @@ describe("reviewed standing ID reader", () => {
     expect(Object.keys(definitions.lightCones)).toHaveLength(170);
     expect(Object.keys(definitions.relics)).toHaveLength(62);
     let bindingCount = Object.keys(bindings.lightCones).length;
+    const pendingCones: number[] = [];
     for (const cone of lightCones.lightCones) {
       const result = reviewedStandingRules({
         lightConeId: cone.id,
@@ -19,11 +20,29 @@ describe("reviewed standing ID reader", () => {
         characterPath: cone.path,
         entityStats: { "Max Energy": 200 },
       });
+      if (!(String(cone.id) in definitions.lightCones)) {
+        pendingCones.push(cone.id);
+        expect(result.unreviewedSources).toEqual([`lightCone/${cone.id}`]);
+        expect(result.contributions).toEqual([]);
+        expect(result.conversions).toEqual([]);
+        continue;
+      }
       expect(result.unreviewedSources, cone.name).toEqual([]);
       expect(result.missingInputs, cone.name).toEqual([]);
       const binding = bindings.lightCones[String(cone.id) as keyof typeof bindings.lightCones];
       for (const item of [...result.contributions, ...result.conversions])
         expect(item).toEqual(expect.objectContaining(binding));
+    }
+    expect(pendingCones).toEqual([22009, 23065]);
+    for (const setId of [329, 330]) {
+      const result = reviewedStandingRules({
+        lightConeId: 0,
+        superimposition: 1,
+        sets: [{ setId, count: 2 }],
+      });
+      expect(result.unreviewedSources).toEqual([`relic/${setId}/2`]);
+      expect(result.contributions).toEqual([]);
+      expect(result.conversions).toEqual([]);
     }
     for (const [id, parts] of Object.entries(bindings.relics)) {
       bindingCount += Object.keys(parts).length;

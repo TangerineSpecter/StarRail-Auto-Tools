@@ -1,9 +1,9 @@
 {
   "complete": false,
   "summary": {
-    "abilities": 2967,
+    "abilities": 3040,
     "completeAbilities": 24,
-    "pendingAbilities": 2943,
+    "pendingAbilities": 3016,
     "clauses": 27,
     "mappedClauses": 27,
     "excludedClauses": 0,
@@ -12,9 +12,9 @@
   },
   "byKind": {
     "character": {
-      "abilities": 2637,
+      "abilities": 2701,
       "completeAbilities": 24,
-      "pendingAbilities": 2613,
+      "pendingAbilities": 2677,
       "clauses": 27,
       "mappedClauses": 27,
       "excludedClauses": 0,
@@ -22,9 +22,9 @@
       "complete": false
     },
     "lightCone": {
-      "abilities": 169,
+      "abilities": 172,
       "completeAbilities": 0,
-      "pendingAbilities": 169,
+      "pendingAbilities": 172,
       "clauses": 0,
       "mappedClauses": 0,
       "excludedClauses": 0,
@@ -32,9 +32,9 @@
       "complete": false
     },
     "relic": {
-      "abilities": 92,
+      "abilities": 98,
       "completeAbilities": 0,
-      "pendingAbilities": 92,
+      "pendingAbilities": 98,
       "clauses": 0,
       "mappedClauses": 0,
       "excludedClauses": 0,
@@ -27284,6 +27284,19 @@
       ]
     },
     {
+      "sourceRef": "character:1501:skills:1571711",
+      "ownerId": "character:1501",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1501:skills:1571711",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "character:1501:skills:18302584",
       "ownerId": "character:1501",
       "kind": "character",
@@ -27570,6 +27583,19 @@
       ]
     },
     {
+      "sourceRef": "character:1502:skills:1643996",
+      "ownerId": "character:1502",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1502:skills:1643996",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "character:1502:skills:1665351",
       "ownerId": "character:1502",
       "kind": "character",
@@ -27799,6 +27825,383 @@
       "issues": [
         {
           "sourceRef": "character:1502:traces:1502210",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:ranks:1",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:ranks:1",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:ranks:2",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:ranks:2",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:ranks:3",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:ranks:3",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:ranks:4",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:ranks:4",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:ranks:5",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:ranks:5",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:ranks:6",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:ranks:6",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1059400",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1059400",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1085039",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1085039",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1132254",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1132254",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1284812",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1284812",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1333369",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1333369",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1358853",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1358853",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1380386",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1380386",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1390493",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1390493",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:1406146",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:1406146",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:skills:18205246",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:skills:18205246",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503101",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503101",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503102",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503102",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503103",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503103",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503201",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503201",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503202",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503202",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503203",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503203",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503204",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503204",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503205",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503205",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503206",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503206",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503207",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503207",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503208",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503208",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503209",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503209",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1503:traces:1503210",
+      "ownerId": "character:1503",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1503:traces:1503210",
           "reason": "missing-audit"
         }
       ]
@@ -28207,6 +28610,19 @@
       ]
     },
     {
+      "sourceRef": "character:1505:skills:123026",
+      "ownerId": "character:1505",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1505:skills:123026",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "character:1505:skills:28644",
       "ownerId": "character:1505",
       "kind": "character",
@@ -28540,6 +28956,19 @@
       "issues": [
         {
           "sourceRef": "character:1506:ranks:6",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1506:skills:1007849",
+      "ownerId": "character:1506",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1506:skills:1007849",
           "reason": "missing-audit"
         }
       ]
@@ -30339,6 +30768,370 @@
       ]
     },
     {
+      "sourceRef": "character:1511:ranks:1",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:ranks:1",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:ranks:2",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:ranks:2",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:ranks:3",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:ranks:3",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:ranks:4",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:ranks:4",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:ranks:5",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:ranks:5",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:ranks:6",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:ranks:6",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:21134318",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:21134318",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4229558",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4229558",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4412821",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4412821",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4445535",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4445535",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4452841",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4452841",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4485134",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4485134",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4513608",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4513608",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4684708",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4684708",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:skills:4695006",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:skills:4695006",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511101",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511101",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511102",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511102",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511103",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511103",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511201",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511201",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511202",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511202",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511203",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511203",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511204",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511204",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511205",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511205",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511206",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511206",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511207",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511207",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511208",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511208",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511209",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511209",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1511:traces:1511210",
+      "ownerId": "character:1511",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1511:traces:1511210",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "character:1512:ranks:1",
       "ownerId": "character:1512",
       "kind": "character",
@@ -30789,6 +31582,19 @@
       "issues": [
         {
           "sourceRef": "character:1513:skills:3826511",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:1513:skills:3857477",
+      "ownerId": "character:1513",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:1513:skills:3857477",
           "reason": "missing-audit"
         }
       ]
@@ -33875,6 +34681,19 @@
       ]
     },
     {
+      "sourceRef": "character:8009:skills:19206459",
+      "ownerId": "character:8009",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:8009:skills:19206459",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "character:8009:skills:19213391",
       "ownerId": "character:8009",
       "kind": "character",
@@ -34195,6 +35014,19 @@
       "issues": [
         {
           "sourceRef": "character:8010:skills:7984724",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "character:8010:skills:8051109",
+      "ownerId": "character:8010",
+      "kind": "character",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "character:8010:skills:8051109",
           "reason": "missing-audit"
         }
       ]
@@ -35695,6 +36527,19 @@
       ]
     },
     {
+      "sourceRef": "lightcone:22009:skill:22009",
+      "ownerId": "lightcone:22009",
+      "kind": "lightCone",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "lightcone:22009:skill:22009",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "lightcone:23000:skill:23000",
       "ownerId": "lightcone:23000",
       "kind": "lightCone",
@@ -36410,6 +37255,19 @@
       ]
     },
     {
+      "sourceRef": "lightcone:23055:skill:23055",
+      "ownerId": "lightcone:23055",
+      "kind": "lightCone",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "lightcone:23055:skill:23055",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "lightcone:23056:skill:23056",
       "ownerId": "lightcone:23056",
       "kind": "lightCone",
@@ -36522,6 +37380,19 @@
       "issues": [
         {
           "sourceRef": "lightcone:23064:skill:23064",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "lightcone:23065:skill:23065",
+      "ownerId": "lightcone:23065",
+      "kind": "lightCone",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "lightcone:23065:skill:23065",
           "reason": "missing-audit"
         }
       ]
@@ -37450,6 +38321,58 @@
       ]
     },
     {
+      "sourceRef": "relic:133:set:2",
+      "ownerId": "relic:133",
+      "kind": "relic",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "relic:133:set:2",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "relic:133:set:4",
+      "ownerId": "relic:133",
+      "kind": "relic",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "relic:133:set:4",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "relic:134:set:2",
+      "ownerId": "relic:134",
+      "kind": "relic",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "relic:134:set:2",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "relic:134:set:4",
+      "ownerId": "relic:134",
+      "kind": "relic",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "relic:134:set:4",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
       "sourceRef": "relic:301:set:2",
       "ownerId": "relic:301",
       "kind": "relic",
@@ -37809,6 +38732,32 @@
       "issues": [
         {
           "sourceRef": "relic:328:set:2",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "relic:329:set:2",
+      "ownerId": "relic:329",
+      "kind": "relic",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "relic:329:set:2",
+          "reason": "missing-audit"
+        }
+      ]
+    },
+    {
+      "sourceRef": "relic:330:set:2",
+      "ownerId": "relic:330",
+      "kind": "relic",
+      "status": "pending",
+      "clauses": [],
+      "issues": [
+        {
+          "sourceRef": "relic:330:set:2",
           "reason": "missing-audit"
         }
       ]
@@ -46969,6 +47918,10 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "character:1501:skills:1571711",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "character:1501:skills:18302584",
       "reason": "missing-audit"
     },
@@ -47057,6 +48010,10 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "character:1502:skills:1643996",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "character:1502:skills:1665351",
       "reason": "missing-audit"
     },
@@ -47126,6 +48083,122 @@
     },
     {
       "sourceRef": "character:1502:traces:1502210",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:ranks:1",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:ranks:2",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:ranks:3",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:ranks:4",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:ranks:5",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:ranks:6",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1059400",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1085039",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1132254",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1284812",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1333369",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1358853",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1380386",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1390493",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:1406146",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:skills:18205246",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503101",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503102",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503103",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503201",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503202",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503203",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503204",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503205",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503206",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503207",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503208",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503209",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1503:traces:1503210",
       "reason": "missing-audit"
     },
     {
@@ -47253,6 +48326,10 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "character:1505:skills:123026",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "character:1505:skills:28644",
       "reason": "missing-audit"
     },
@@ -47354,6 +48431,10 @@
     },
     {
       "sourceRef": "character:1506:ranks:6",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1506:skills:1007849",
       "reason": "missing-audit"
     },
     {
@@ -47909,6 +48990,118 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "character:1511:ranks:1",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:ranks:2",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:ranks:3",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:ranks:4",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:ranks:5",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:ranks:6",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:21134318",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4229558",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4412821",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4445535",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4452841",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4485134",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4513608",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4684708",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:skills:4695006",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511101",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511102",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511103",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511201",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511202",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511203",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511204",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511205",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511206",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511207",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511208",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511209",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1511:traces:1511210",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "character:1512:ranks:1",
       "reason": "missing-audit"
     },
@@ -48046,6 +49239,10 @@
     },
     {
       "sourceRef": "character:1513:skills:3826511",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:1513:skills:3857477",
       "reason": "missing-audit"
     },
     {
@@ -48997,6 +50194,10 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "character:8009:skills:19206459",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "character:8009:skills:19213391",
       "reason": "missing-audit"
     },
@@ -49094,6 +50295,10 @@
     },
     {
       "sourceRef": "character:8010:skills:7984724",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "character:8010:skills:8051109",
       "reason": "missing-audit"
     },
     {
@@ -49557,6 +50762,10 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "lightcone:22009:skill:22009",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "lightcone:23000:skill:23000",
       "reason": "missing-audit"
     },
@@ -49777,6 +50986,10 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "lightcone:23055:skill:23055",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "lightcone:23056:skill:23056",
       "reason": "missing-audit"
     },
@@ -49810,6 +51023,10 @@
     },
     {
       "sourceRef": "lightcone:23064:skill:23064",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "lightcone:23065:skill:23065",
       "reason": "missing-audit"
     },
     {
@@ -50097,6 +51314,22 @@
       "reason": "missing-audit"
     },
     {
+      "sourceRef": "relic:133:set:2",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "relic:133:set:4",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "relic:134:set:2",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "relic:134:set:4",
+      "reason": "missing-audit"
+    },
+    {
       "sourceRef": "relic:301:set:2",
       "reason": "missing-audit"
     },
@@ -50206,6 +51439,14 @@
     },
     {
       "sourceRef": "relic:328:set:2",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "relic:329:set:2",
+      "reason": "missing-audit"
+    },
+    {
+      "sourceRef": "relic:330:set:2",
       "reason": "missing-audit"
     },
     {
@@ -62873,6 +64114,12 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1501:skills:1571711",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1501:skills:18302584",
       "severity": "warning"
     },
@@ -63005,6 +64252,12 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1502:skills:1643996",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1502:skills:1665351",
       "severity": "warning"
     },
@@ -63108,6 +64361,180 @@
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1502:traces:1502210",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:ranks:1",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:ranks:2",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:ranks:3",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:ranks:4",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:ranks:5",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:ranks:6",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1059400",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1085039",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1132254",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1284812",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1333369",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1358853",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1380386",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1390493",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:1406146",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:skills:18205246",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503101",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503102",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503103",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503201",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503202",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503203",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503204",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503205",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503206",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503207",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503208",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503209",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1503:traces:1503210",
       "severity": "warning"
     },
     {
@@ -63263,6 +64690,12 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1505:skills:123026",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1505:skills:524",
       "severity": "warning"
     },
@@ -63360,6 +64793,12 @@
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1506:ranks:6",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1506:skills:1007849",
       "severity": "warning"
     },
     {
@@ -64097,6 +65536,174 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:ranks:1",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:ranks:2",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:ranks:3",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:ranks:4",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:ranks:5",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:ranks:6",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:21134318",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4229558",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4412821",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4445535",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4452841",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4485134",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4513608",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4684708",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:skills:4695006",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511101",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511102",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511103",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511201",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511202",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511203",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511204",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511205",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511206",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511207",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511208",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511209",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1511:traces:1511210",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1512:skills:4026479",
       "severity": "warning"
     },
@@ -64218,6 +65825,12 @@
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:1513:skills:3826511",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:1513:skills:3857477",
       "severity": "warning"
     },
     {
@@ -65645,6 +67258,12 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:8009:skills:19206459",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:8009:skills:19213391",
       "severity": "warning"
     },
@@ -65790,6 +67409,12 @@
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
       "abilityId": "character:8010:skills:7984724",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "character:8010:skills:8051109",
       "severity": "warning"
     },
     {
@@ -66485,6 +68110,12 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "lightcone:22009:skill:22009",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "lightcone:23000:skill:23000",
       "severity": "warning"
     },
@@ -66815,6 +68446,12 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "lightcone:23055:skill:23055",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "lightcone:23056:skill:23056",
       "severity": "warning"
     },
@@ -66864,6 +68501,12 @@
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
       "abilityId": "lightcone:23064:skill:23064",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "lightcone:23065:skill:23065",
       "severity": "warning"
     },
     {
@@ -67295,6 +68938,30 @@
     {
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "relic:133:set:2",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "relic:133:set:4",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "relic:134:set:2",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "relic:134:set:4",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
       "abilityId": "relic:301:set:2",
       "severity": "warning"
     },
@@ -67458,6 +69125,18 @@
       "code": "uncovered-ability",
       "message": "No computational rule; not implicitly reviewed",
       "abilityId": "relic:328:set:2",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "relic:329:set:2",
+      "severity": "warning"
+    },
+    {
+      "code": "uncovered-ability",
+      "message": "No computational rule; not implicitly reviewed",
+      "abilityId": "relic:330:set:2",
       "severity": "warning"
     },
     {

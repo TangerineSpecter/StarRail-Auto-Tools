@@ -9,13 +9,13 @@ vi.mock("@/shared/utils/open-external-url", () => ({ openExternalUrl: vi.fn() })
 describe("AboutPanel", () => {
   it("shows product details and opens the repository in the default browser", async () => {
     const wrapper = mount(AboutPanel, {
-      props: { protocolVersion: "reliquary-v23.0.0 / HSR-4.5" },
+      props: { protocolVersion: "reliquary-v25.0.0 / HSR-4.7" },
     });
 
     expect(wrapper.text()).toContain("星穹铁道工具箱");
     expect(wrapper.text()).toContain("VERSION");
     expect(wrapper.text()).toContain(`v${APP_VERSION}`);
-    expect(wrapper.find(".game-version-label").text()).toContain("星穹铁道 4.5");
+    expect(wrapper.find(".game-version-label").text()).toContain("星穹铁道 4.7");
     expect(wrapper.find(".game-version-label").text()).toContain("WINDOWS");
     expect(wrapper.text()).toContain("GitHub");
     expect(wrapper.text()).not.toContain(PROJECT_URL);

@@ -240,7 +240,7 @@ pub fn start(app: AppHandle) -> Result<DirectReadSnapshot, AppError> {
             inner.pending_import = None;
             inner.snapshot.phase = DirectReadPhase::Starting;
             inner.snapshot.message =
-                "正在初始化 Windows Packet Monitor…（内置 reliquary v23，适配游戏 4.5）".to_owned();
+                "正在初始化 Windows Packet Monitor…（内置 reliquary v25，适配游戏 4.7）".to_owned();
             inner.snapshot.started_at = Some(now_millis());
             inner.snapshot.requires_account_switch = false;
             inner.snapshot.incoming_uid = None;

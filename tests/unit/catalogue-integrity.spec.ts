@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mechanicCatalogue } from "@/shared/catalogue/mechanics";
+import relicSets from "@/data/relic-sets.json";
 import { resolveAbility, validateCatalogueRules } from "@/shared/utils/catalogue-rules";
 
 describe("bundled complete source catalogue", () => {
@@ -7,7 +8,7 @@ describe("bundled complete source catalogue", () => {
     const owners = mechanicCatalogue.owners ?? [];
     const ids = new Set(owners.map((owner) => owner.id));
     expect(ids.size).toBe(owners.length);
-    expect(owners.filter((owner) => owner.sourceKind === "character")).toHaveLength(98);
+    expect(owners.filter((owner) => owner.sourceKind === "character")).toHaveLength(99);
     for (const ability of mechanicCatalogue.abilities) {
       expect(ids.has(ability.ownerId), ability.id).toBe(true);
       expect(ability.sourceNodeId, ability.id).toBeTruthy();
@@ -23,6 +24,13 @@ describe("bundled complete source catalogue", () => {
       }
     }
     expect(validateCatalogueRules(mechanicCatalogue, []).valid).toBe(true);
+  });
+  it("keeps control characters out of imported relic set names", () => {
+    for (const set of relicSets.sets)
+      expect(
+        [...set.name].some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127),
+      ).toBe(false);
+    expect(relicSets.sets.find((set) => set.id === 321)?.name).toBe("妖精织梦的乐园");
   });
   it("retains levels above ten and isolates summons from character equipment identities", () => {
     expect(mechanicCatalogue.abilities.some((ability) => ability.levels.includes(15))).toBe(true);

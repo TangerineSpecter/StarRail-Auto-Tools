@@ -4127,7 +4127,7 @@
       },
       "fourPiece": {
         "reviewedEffects": [
-          "当装备者施放攻击或受到攻击后，其在本场战斗中攻\u0000击力提高 5 % ，最多叠加 5 层。"
+          "当装备者施放攻击或受到攻击后，其在本场战斗中攻击力提高 5 % ，最多叠加 5 层。"
         ],
         "reviewedEffectsHash": "4652ab46e34c913ab218b2cce80717c69dec1b28754f106e8b7e3bb293b70e81",
         "review": {

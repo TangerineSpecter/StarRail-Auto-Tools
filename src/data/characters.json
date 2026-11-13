@@ -3,7 +3,7 @@
   "source": {
     "name": "Star Rail Station Wiki",
     "url": "https://starrailstation.com/cn/characters",
-    "syncedAt": "2026-10-21T02:52:06.346Z"
+    "syncedAt": "2026-11-13T09:30:00.558Z"
   },
   "characters": [
     {
@@ -9845,6 +9845,126 @@
       "backgroundImage": "/character-backgrounds/sunday.webp",
       "elementIcon": "/character-icons/elements/虚数.webp",
       "pathIcon": "/character-icons/paths/同谐.webp"
+    },
+    {
+      "slug": "nihilux",
+      "name": "星神★阿哈",
+      "element": "量子",
+      "path": "欢愉",
+      "rarity": 5,
+      "baseStats": {
+        "hp": 1047.816,
+        "attack": 679.14,
+        "defense": 509.355,
+        "speed": 94,
+        "taunt": 100
+      },
+      "traceStats": [
+        {
+          "id": 1511203,
+          "name": "暴击伤害强化",
+          "stats": [
+            {
+              "key": "暴击伤害",
+              "value": 0.053
+            }
+          ]
+        },
+        {
+          "id": 1511204,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "id": 1511205,
+          "name": "暴击伤害强化",
+          "stats": [
+            {
+              "key": "暴击伤害",
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": 1511206,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.04
+            }
+          ]
+        },
+        {
+          "id": 1511207,
+          "name": "暴击伤害强化",
+          "stats": [
+            {
+              "key": "暴击伤害",
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": 1511208,
+          "name": "速度强化",
+          "stats": [
+            {
+              "key": "速度",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": 1511209,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.053
+            }
+          ]
+        },
+        {
+          "id": 1511210,
+          "name": "暴击伤害强化",
+          "stats": [
+            {
+              "key": "暴击伤害",
+              "value": 0.107
+            }
+          ]
+        },
+        {
+          "id": 1511201,
+          "name": "暴击伤害强化",
+          "stats": [
+            {
+              "key": "暴击伤害",
+              "value": 0.053
+            }
+          ]
+        },
+        {
+          "id": 1511202,
+          "name": "暴击率强化",
+          "stats": [
+            {
+              "key": "暴击率",
+              "value": 0.026999999
+            }
+          ]
+        }
+      ],
+      "image": "/characters/nihilux.webp",
+      "backgroundImage": "/character-backgrounds/nihilux.webp",
+      "elementIcon": "/character-icons/elements/量子.webp",
+      "pathIcon": "/character-icons/paths/欢愉.webp"
     },
     {
       "slug": "xueyi",

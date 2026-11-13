@@ -1,7 +1,7 @@
 {
   "compilerVersion": "station-clauses-v2",
-  "dataVersion": "8b85088764e06875f799ef7fb5e0c641af85eea8af9f3f9c250ad822a07ac83f",
-  "abilities": 3000,
+  "dataVersion": "d39925d498735d21d705603db609b599304f784a980946e48d07c1f4e40faeca",
+  "abilities": 3040,
   "missingDescriptions": [
     "character:1220:skills:784534",
     "character:1308:skills:154711",
@@ -41,7 +41,7 @@
     "summon:8008:servant:servant-traces:15862105",
     "summon:8008:servant:servant-traces:16146253"
   ],
-  "clauses": 4357,
+  "clauses": 4424,
   "executableClauses": 150,
   "executableAbilities": 143,
   "primaryAbilitiesWithoutExecution": [
@@ -249,6 +249,10 @@
     "character:1510:skills:3766587",
     "character:1510:skills:3844937",
     "character:1510:skills:3915699",
+    "character:1511:skills:4229558",
+    "character:1511:skills:4485134",
+    "character:1511:skills:4513608",
+    "character:1511:skills:4684708",
     "character:1512:skills:3799442",
     "character:1512:skills:3813281",
     "character:1513:skills:3763671",
@@ -21065,8 +21069,8 @@
     {
       "ownerId": "character:1501",
       "sourceKind": "character",
-      "abilities": 29,
-      "clauses": 47,
+      "abilities": 30,
+      "clauses": 48,
       "executableClauses": 1,
       "limitations": [
         {
@@ -21308,6 +21312,13 @@
           ]
         },
         {
+          "sourceRef": "character:1501:skills:1571711",
+          "clauseId": "character:1501:skills:1571711:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
           "sourceRef": "character:1501:traces:1501101",
           "clauseId": "character:1501:traces:1501101:clause:0",
           "reasons": [
@@ -21403,8 +21414,8 @@
     {
       "ownerId": "character:1502",
       "sourceKind": "character",
-      "abilities": 26,
-      "clauses": 41,
+      "abilities": 27,
+      "clauses": 43,
       "executableClauses": 0,
       "limitations": [
         {
@@ -21529,6 +21540,20 @@
         {
           "sourceRef": "character:1502:skills:1607016",
           "clauseId": "character:1502:skills:1607016:clause:3",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1502:skills:1643996",
+          "clauseId": "character:1502:skills:1643996:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1502:skills:1643996",
+          "clauseId": "character:1502:skills:1643996:clause:1",
           "reasons": [
             "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
           ]
@@ -21699,8 +21724,8 @@
     {
       "ownerId": "character:1503",
       "sourceKind": "character",
-      "abilities": 28,
-      "clauses": 52,
+      "abilities": 29,
+      "clauses": 54,
       "executableClauses": 1,
       "limitations": [
         {
@@ -21923,6 +21948,20 @@
         {
           "sourceRef": "character:1503:skills:1380386",
           "clauseId": "character:1503:skills:1380386:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1390493",
+          "clauseId": "character:1503:skills:1390493:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1503:skills:1390493",
+          "clauseId": "character:1503:skills:1390493:clause:1",
           "reasons": [
             "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
           ]
@@ -22340,8 +22379,8 @@
     {
       "ownerId": "character:1505",
       "sourceKind": "character",
-      "abilities": 26,
-      "clauses": 42,
+      "abilities": 27,
+      "clauses": 44,
       "executableClauses": 1,
       "limitations": [
         {
@@ -22431,6 +22470,20 @@
         {
           "sourceRef": "character:1505:ranks:6",
           "clauseId": "character:1505:ranks:6:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1505:skills:123026",
+          "clauseId": "character:1505:skills:123026:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1505:skills:123026",
+          "clauseId": "character:1505:skills:123026:clause:1",
           "reasons": [
             "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
           ]
@@ -22643,8 +22696,8 @@
     {
       "ownerId": "character:1506",
       "sourceKind": "character",
-      "abilities": 31,
-      "clauses": 58,
+      "abilities": 32,
+      "clauses": 59,
       "executableClauses": 2,
       "limitations": [
         {
@@ -22734,6 +22787,13 @@
         {
           "sourceRef": "character:1506:ranks:6",
           "clauseId": "character:1506:ranks:6:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1506:skills:1007849",
+          "clauseId": "character:1506:skills:1007849:clause:0",
           "reasons": [
             "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
           ]
@@ -24380,6 +24440,337 @@
       ]
     },
     {
+      "ownerId": "character:1511",
+      "sourceKind": "character",
+      "abilities": 28,
+      "clauses": 46,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "character:1511:ranks:1",
+          "clauseId": "character:1511:ranks:1:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:1",
+          "clauseId": "character:1511:ranks:1:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:2",
+          "clauseId": "character:1511:ranks:2:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:2",
+          "clauseId": "character:1511:ranks:2:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:3",
+          "clauseId": "character:1511:ranks:3:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:3",
+          "clauseId": "character:1511:ranks:3:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:3",
+          "clauseId": "character:1511:ranks:3:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:4",
+          "clauseId": "character:1511:ranks:4:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:4",
+          "clauseId": "character:1511:ranks:4:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:5",
+          "clauseId": "character:1511:ranks:5:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:5",
+          "clauseId": "character:1511:ranks:5:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:5",
+          "clauseId": "character:1511:ranks:5:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:6",
+          "clauseId": "character:1511:ranks:6:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:ranks:6",
+          "clauseId": "character:1511:ranks:6:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:21134318",
+          "clauseId": "character:1511:skills:21134318:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4229558",
+          "clauseId": "character:1511:skills:4229558:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4229558",
+          "clauseId": "character:1511:skills:4229558:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4412821",
+          "clauseId": "character:1511:skills:4412821:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4412821",
+          "clauseId": "character:1511:skills:4412821:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4412821",
+          "clauseId": "character:1511:skills:4412821:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4445535",
+          "clauseId": "character:1511:skills:4445535:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4445535",
+          "clauseId": "character:1511:skills:4445535:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4445535",
+          "clauseId": "character:1511:skills:4445535:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4452841",
+          "clauseId": "character:1511:skills:4452841:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4485134",
+          "clauseId": "character:1511:skills:4485134:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4485134",
+          "clauseId": "character:1511:skills:4485134:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4513608",
+          "clauseId": "character:1511:skills:4513608:clause:0",
+          "reasons": [
+            "未找到明确的属性×倍率表达式；不能将描述中的任意百分比当作倍率。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4684708",
+          "clauseId": "character:1511:skills:4684708:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4684708",
+          "clauseId": "character:1511:skills:4684708:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4695006",
+          "clauseId": "character:1511:skills:4695006:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:skills:4695006",
+          "clauseId": "character:1511:skills:4695006:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511101",
+          "clauseId": "character:1511:traces:1511101:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511101",
+          "clauseId": "character:1511:traces:1511101:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511102",
+          "clauseId": "character:1511:traces:1511102:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511103",
+          "clauseId": "character:1511:traces:1511103:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511103",
+          "clauseId": "character:1511:traces:1511103:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511201",
+          "clauseId": "character:1511:traces:1511201:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511202",
+          "clauseId": "character:1511:traces:1511202:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511203",
+          "clauseId": "character:1511:traces:1511203:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511204",
+          "clauseId": "character:1511:traces:1511204:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511205",
+          "clauseId": "character:1511:traces:1511205:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511206",
+          "clauseId": "character:1511:traces:1511206:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511207",
+          "clauseId": "character:1511:traces:1511207:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511208",
+          "clauseId": "character:1511:traces:1511208:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511209",
+          "clauseId": "character:1511:traces:1511209:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1511:traces:1511210",
+          "clauseId": "character:1511:traces:1511210:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
       "ownerId": "character:1512",
       "sourceKind": "character",
       "abilities": 25,
@@ -24664,8 +25055,8 @@
     {
       "ownerId": "character:1513",
       "sourceKind": "character",
-      "abilities": 27,
-      "clauses": 44,
+      "abilities": 28,
+      "clauses": 45,
       "executableClauses": 3,
       "limitations": [
         {
@@ -24811,6 +25202,13 @@
         {
           "sourceRef": "character:1513:skills:3826511",
           "clauseId": "character:1513:skills:3826511:clause:3",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:1513:skills:3857477",
+          "clauseId": "character:1513:skills:3857477:clause:0",
           "reasons": [
             "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
           ]
@@ -26929,8 +27327,8 @@
     {
       "ownerId": "character:8009",
       "sourceKind": "character",
-      "abilities": 26,
-      "clauses": 38,
+      "abilities": 27,
+      "clauses": 41,
       "executableClauses": 1,
       "limitations": [
         {
@@ -27074,6 +27472,27 @@
           ]
         },
         {
+          "sourceRef": "character:8009:skills:19206459",
+          "clauseId": "character:8009:skills:19206459:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:8009:skills:19206459",
+          "clauseId": "character:8009:skills:19206459:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:8009:skills:19206459",
+          "clauseId": "character:8009:skills:19206459:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
           "sourceRef": "character:8009:skills:19213391",
           "clauseId": "character:8009:skills:19213391:clause:0",
           "reasons": [
@@ -27204,8 +27623,8 @@
     {
       "ownerId": "character:8010",
       "sourceKind": "character",
-      "abilities": 26,
-      "clauses": 38,
+      "abilities": 27,
+      "clauses": 41,
       "executableClauses": 1,
       "limitations": [
         {
@@ -27318,6 +27737,27 @@
           "clauseId": "character:8010:skills:7984724:clause:0",
           "reasons": [
             "仅执行本条明确的线性基础量；暴击、增益、状态触发、弹跳次数和期限尚未结算。"
+          ]
+        },
+        {
+          "sourceRef": "character:8010:skills:8051109",
+          "clauseId": "character:8010:skills:8051109:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:8010:skills:8051109",
+          "clauseId": "character:8010:skills:8051109:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "character:8010:skills:8051109",
+          "clauseId": "character:8010:skills:8051109:clause:2",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
           ]
         },
         {
@@ -29465,6 +29905,22 @@
       ]
     },
     {
+      "ownerId": "lightcone:22009",
+      "sourceKind": "lightCone",
+      "abilities": 1,
+      "clauses": 1,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "lightcone:22009:skill:22009",
+          "clauseId": "lightcone:22009:skill:22009:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
       "ownerId": "lightcone:23000",
       "sourceKind": "lightCone",
       "abilities": 1,
@@ -31443,6 +31899,29 @@
       ]
     },
     {
+      "ownerId": "lightcone:23065",
+      "sourceKind": "lightCone",
+      "abilities": 1,
+      "clauses": 2,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "lightcone:23065:skill:23065",
+          "clauseId": "lightcone:23065:skill:23065:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "lightcone:23065:skill:23065",
+          "clauseId": "lightcone:23065:skill:23065:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
       "ownerId": "lightcone:24000",
       "sourceKind": "lightCone",
       "abilities": 1,
@@ -33086,6 +33565,45 @@
         {
           "sourceRef": "relic:328:set:2",
           "clauseId": "relic:328:set:2:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
+      "ownerId": "relic:329",
+      "sourceKind": "relic",
+      "abilities": 1,
+      "clauses": 2,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "relic:329:set:2",
+          "clauseId": "relic:329:set:2:clause:0",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        },
+        {
+          "sourceRef": "relic:329:set:2",
+          "clauseId": "relic:329:set:2:clause:1",
+          "reasons": [
+            "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
+          ]
+        }
+      ]
+    },
+    {
+      "ownerId": "relic:330",
+      "sourceKind": "relic",
+      "abilities": 1,
+      "clauses": 1,
+      "executableClauses": 0,
+      "limitations": [
+        {
+          "sourceRef": "relic:330:set:2",
+          "clauseId": "relic:330:set:2:clause:0",
           "reasons": [
             "尚未编译该条款的解锁、条件或事件门控；保留参数与原文位置，不作为无条件效果执行。"
           ]

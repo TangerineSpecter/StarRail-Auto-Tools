@@ -76417,6 +76417,68 @@
       "sourceHash": "e4a00733e39763a88a97df098d17324eb59776aedc5a72e894b3d1a9b7f495a5"
     },
     {
+      "id": "character:1501:skills:1571711",
+      "ownerId": "character:1501",
+      "sourceNodeId": "1571711",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★兔子戏法",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "c3d24bb8a7717dc160339ecce7dfac55acb13ed2fb768aa29d1c114bde3d8f08",
+      "descriptionTemplate": "当「欢愉」命途升格时，欢愉技的伤害倍率提高原倍率的{p5:percentInteger}，我方目标造成伤害时无视敌方目标{p1:percentInteger}防御力，每持有{p2:integer}点【绝活共赏】，【红红火火】触发时额外提供{p3:integer}点爽点，最多额外提供{p4:integer}点。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.15,
+            0.2
+          ]
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 10
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p4": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            8,
+            12
+          ]
+        },
+        "p5": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.5,
+            1.2
+          ]
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "c0ee9cd02342d302b885f823dd3a759faf4f5d7c38f030ac28cc42463ade909e"
+    },
+    {
       "id": "character:1501:skills:18302584",
       "ownerId": "character:1501",
       "sourceNodeId": "18302584",
@@ -77142,6 +77204,57 @@
       ],
       "levelBinding": "talent",
       "sourceHash": "302f4d989c156d5311862674492e51d6041ffc5232c47291f959c4874ed10153"
+    },
+    {
+      "id": "character:1502:skills:1643996",
+      "ownerId": "character:1502",
+      "sourceNodeId": "1643996",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★心灵感应",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "a0940d23be1c8c3a5d6629dd90edefb6456a4e983ac956941860aaf0ea642b86",
+      "descriptionTemplate": "当「欢愉」命途升格时，【大吉大利】效果的伤害倍率提高，提高数值等同于原伤害倍率的{p1:percentInteger}。爻光施放终结技后固定恢复{p2:integer}点能量并获得{p4:integer}爽点。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.2,
+            0.4
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            12,
+            30
+          ]
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0
+        },
+        "p4": {
+          "kind": "constant",
+          "value": 10
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "cea656c8e09594cd473a833815fa7053d860cf0cd9c81d992f7b93f9e062653b"
     },
     {
       "id": "character:1502:skills:1665351",
@@ -78564,6 +78677,53 @@
       ],
       "levelBinding": null,
       "sourceHash": "956388364abf9161267bde121728d6b3593486ffa17da5fe3c4222f90bd7d479"
+    },
+    {
+      "id": "character:1503:skills:1390493",
+      "ownerId": "character:1503",
+      "sourceNodeId": "1390493",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★跃然纸上",
+      "type": "固有行迹",
+      "tag": "辅助",
+      "icon": "b459500fe1169315b3608f984fad32c2bdd4bf4edb70c42420bfe6d632aa57a0",
+      "descriptionTemplate": "当「欢愉」命途升格时，真珠的【绝活共赏】持有上限提高至{p1:integer}点。终结技提供的额外回合开始时获得的【好活当赏】和笑点，在额外回合结束时会保留{p2:percentInteger}和{p3:percentInteger}。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 75
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.1,
+            0.2
+          ]
+        },
+        "p3": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.1,
+            0.2
+          ]
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "55709207b844e8b6fb0b839cf27475b45ec42c2f1c1aa04542ef4c4740877e03"
     },
     {
       "id": "character:1503:skills:1406146",
@@ -80292,6 +80452,64 @@
       "sourceHash": "6cbb3d67078be2a90cbc6e864d132bd4508c918f0f52d29966c1b6f5fe8aef5c"
     },
     {
+      "id": "character:1505:skills:123026",
+      "ownerId": "character:1505",
+      "sourceNodeId": "123026",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★书中折花",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "f7b5bfa8a822ed1e4822937fca48a07578ea0e86fc277bd4a5600fcaf9879eb6",
+      "descriptionTemplate": "当「欢愉」命途升格时，可积攒最多{p3:integer}点溢出能量，施放终结技后清空并恢复相应的能量值，本次恢复不会触发天赋的获得好活当赏效果。造成的伤害无视敌方目标{p2:percentInteger}的防御力，每累计获得{p4:integer}点【绝活共赏】，使下一次终结技的伤害倍率及本次终结技通过天赋造成的欢愉伤害倍率提高原倍率的{p1:percentInteger}，该效果无法叠加。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.75,
+            1.5
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.1,
+            0.24
+          ]
+        },
+        "p3": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            60,
+            240
+          ]
+        },
+        "p4": {
+          "kind": "constant",
+          "value": 480
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "02493feaf2e58a29d108859a1e5d4bd591d882acab3fb8b09c752823a5b0dfc2"
+    },
+    {
       "id": "character:1505:skills:28644",
       "ownerId": "character:1505",
       "sourceNodeId": "28644",
@@ -81405,6 +81623,53 @@
       ],
       "levelBinding": null,
       "sourceHash": "6d478cec2b418a634ae5b3b36a017a1ca2b12cc31506abe4168a38346f02d406"
+    },
+    {
+      "id": "character:1506:skills:1007849",
+      "ownerId": "character:1506",
+      "sourceNodeId": "1007849",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★全息幻象",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "3921403d7a3d453fedef9d70ca1cd5e4197758f4cb479a723c3100eee6da2270",
+      "descriptionTemplate": "当「欢愉」命途升格时，【隐藏分】达到上限后可溢出至{p1:integer}，暴击伤害提高{p3:percentInteger}，每获得1点【绝活共赏】，同时获得相当于该点数{p2:percentInteger}的【隐藏分】。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            360,
+            999
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.2,
+            0.4
+          ]
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0.4
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "c8744bdc72c3b27edf848ecf95aa4224478de4d74f618ea378a1bea971461438"
     },
     {
       "id": "character:1506:skills:17656975",
@@ -87969,6 +88234,1111 @@
       "sourceHash": "3ba1768363f8ec4559a3a24e889f9b792ac3ff12b1e4da8655b2176ca08fe0a4"
     },
     {
+      "id": "character:1511:ranks:1",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1",
+      "sourceKind": "eidolon",
+      "groupId": "ranks",
+      "slot": "eidolon",
+      "name": "谁在太初噤声时笑场",
+      "type": "",
+      "tag": null,
+      "icon": "06daf8b2fd4236441c110920f7b45ebdeedba6c5164a919cadb2a028703b9335",
+      "descriptionTemplate": "进入战斗时，立即获得{p1:integer}点【愿力】。星神★阿哈在场时，我方全体目标造成的欢愉伤害增笑{p2:percentInteger}。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 5
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 0.15
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "14bed091baa48246e3f34bb0d01559bb2994038584176850bd32434e7dbad1ad"
+    },
+    {
+      "id": "character:1511:ranks:2",
+      "ownerId": "character:1511",
+      "sourceNodeId": "2",
+      "sourceKind": "eidolon",
+      "groupId": "ranks",
+      "slot": "eidolon",
+      "name": "在祂的眼睛和你之间",
+      "type": "",
+      "tag": null,
+      "icon": "8455932736cf4e770dda71c85482df519354f08dfcb2476de9bc7f472055f1b6",
+      "descriptionTemplate": "使「欢愉」命途升格效果获得加强：\n#{series_ref_skill_desc:UIText_SeriesSkillDescFormat,151129,2}",
+      "parameters": {},
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "115ba3d9c37736e0433fa72ac3cff8cd87a7e2ea3a5e7abadd423820fea4f507"
+    },
+    {
+      "id": "character:1511:ranks:3",
+      "ownerId": "character:1511",
+      "sourceNodeId": "3",
+      "sourceKind": "eidolon",
+      "groupId": "ranks",
+      "slot": "eidolon",
+      "name": "牌叠起，令悲喜轮回",
+      "type": "",
+      "tag": null,
+      "icon": "77547d55348085a49e40da509b03a61db44174767f9c9066f8550da9d7229cb7",
+      "descriptionTemplate": "终结技等级+2，最多不超过15级；普攻等级+1，最多不超过10级；欢愉技等级+1，最多不超过15级。",
+      "parameters": {},
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "183d2edd49405cc1553724a6dc10080e5e4509ae1ac4a005d9debcfd452d3498"
+    },
+    {
+      "id": "character:1511:ranks:4",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4",
+      "sourceKind": "eidolon",
+      "groupId": "ranks",
+      "slot": "eidolon",
+      "name": "黑箱一个玩笑的命运",
+      "type": "",
+      "tag": null,
+      "icon": "90bc6ed1e7eee6c6abd469b451bd03aab10499fb5d635e426e7c609c219b7668",
+      "descriptionTemplate": "欢愉技造成的真实伤害倍率提高原倍率的{p2:percentInteger}。星神★阿哈造成的欢愉伤害，会额外计入队友持有的【好活当赏】总和的{p1:percentInteger}。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 0.25
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "43dc8fd2a0372ba2d9e7dd668a790f2985820c31cabf9bd7d76839683da54a9a"
+    },
+    {
+      "id": "character:1511:ranks:5",
+      "ownerId": "character:1511",
+      "sourceNodeId": "5",
+      "sourceKind": "eidolon",
+      "groupId": "ranks",
+      "slot": "eidolon",
+      "name": "台前幕后，是我非我",
+      "type": "",
+      "tag": null,
+      "icon": "7411ca5b018807a6ab363c562bef4e820b84fd57b86f9d2032f51cb962556d29",
+      "descriptionTemplate": "战技等级+2，最多不超过15级；天赋等级+2，最多不超过15级；欢愉技等级+1，最多不超过15级。",
+      "parameters": {},
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "cbbb3883c09a7e464617db456d247738a5c997adf6c9e1635789a22bb88ce182"
+    },
+    {
+      "id": "character:1511:ranks:6",
+      "ownerId": "character:1511",
+      "sourceNodeId": "6",
+      "sourceKind": "eidolon",
+      "groupId": "ranks",
+      "slot": "eidolon",
+      "name": "因为神说：你就是欢愉",
+      "type": "",
+      "tag": null,
+      "icon": "09a57199b37803969cfde6e866c1d37d9b23fe27ad9c38ad1756118c588d5cf9",
+      "descriptionTemplate": "敌方目标始终拥有至少等同于该目标生命上限{p1:percentInteger}的【欢愉负债】效果。星神★阿哈首次施放终结技后，使阿哈行动提前{p3:percentInteger}并获得{p2:integer}笑点。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.2
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 100
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 1
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "714497f5e9496784eef63f3532859034499acd3e14c13332e7ccfbfbf122785d"
+    },
+    {
+      "id": "character:1511:skills:21134318",
+      "ownerId": "character:1511",
+      "sourceNodeId": "21134318",
+      "sourceKind": "character",
+      "groupId": "skills:6",
+      "slot": "talent",
+      "name": "阿哈正传",
+      "type": "天赋",
+      "tag": "强化",
+      "icon": "abc1865d2a470684f327d55c330743b0f59d54ca9961412415f8652299b1b70a",
+      "descriptionTemplate": "星神★阿哈与队友造成伤害时，对敌方目标额外造成等同于损失的生命值{p1:percentInteger}的【欢愉负债】效果，敌方目标阶段转换时会保留【欢愉负债】，最高不超过目标生命上限的{p3:percentInteger}。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.25
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0.1
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "c626a2f724971c8012b06cad7013eba6f02d679bc2fb7927e01386a3371e2ede"
+    },
+    {
+      "id": "character:1511:skills:4229558",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4229558",
+      "sourceKind": "character",
+      "groupId": "skills:1",
+      "slot": "skill",
+      "name": "此乃令使，阿哈认证™",
+      "type": "战技",
+      "tag": "辅助",
+      "icon": "7411ca5b018807a6ab363c562bef4e820b84fd57b86f9d2032f51cb962556d29",
+      "descriptionTemplate": "使除自身以外的指定我方单体角色获得【「欢愉」令使】状态，随后立即发动追加攻击，对敌方全体造成{p2:percentInteger}的量子属性欢愉伤害。【「欢愉」令使】状态持续整场战斗直至切换到下一个目标，持有【「欢愉」令使】状态的目标欢愉度提高{p1:percentInteger}并在回合开始时使星神★阿哈获得{p6:integer}点【愿力】。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "values": [
+            0.1,
+            0.11,
+            0.12,
+            0.13,
+            0.14,
+            0.15,
+            0.1625,
+            0.175,
+            0.1875,
+            0.2,
+            0.21,
+            0.22,
+            0.23,
+            0.24,
+            0.25
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "values": [
+            0.25,
+            0.275,
+            0.3,
+            0.325,
+            0.35,
+            0.375,
+            0.40625,
+            0.4375,
+            0.46875,
+            0.5,
+            0.525,
+            0.55,
+            0.575,
+            0.6,
+            0.625
+          ]
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0
+        },
+        "p4": {
+          "kind": "constant",
+          "value": 0
+        },
+        "p5": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p6": {
+          "kind": "constant",
+          "value": 1
+        }
+      },
+      "levels": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "levelBinding": "skill",
+      "sourceHash": "bbf08a0dad838cdd9f3d3187ccc4a1fb5216237974a394424bff4d636cd9a419"
+    },
+    {
+      "id": "character:1511:skills:4412821",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4412821",
+      "sourceKind": "character",
+      "groupId": "skills:3",
+      "slot": "talent",
+      "name": "与祂共演，奇迹新篇",
+      "type": "天赋",
+      "tag": "强化",
+      "icon": "8cdac3028f848f27c7cdfc643efdb6a563372952cf32fcdec63d8b7161423f62",
+      "descriptionTemplate": "【愿力】达到{p8:integer}点后可激活终结技，达到上限后还可溢出至{p11:integer}点。星神★阿哈在施放普攻、战技、欢愉技后获得{p7:integer}点【愿力】。我方笑点首次达到{p2:integer}点后，星神★阿哈将立即获得{p3:integer}点【愿力】，随后使我方全体暴击伤害提高{p9:percentInteger}，持续{p10:integer}回合，阿哈回合结束后可再次触发。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 40
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p4": {
+          "kind": "constant",
+          "value": 0
+        },
+        "p5": {
+          "kind": "constant",
+          "value": 20
+        },
+        "p6": {
+          "kind": "constant",
+          "value": 8
+        },
+        "p7": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p8": {
+          "kind": "constant",
+          "value": 8
+        },
+        "p9": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "values": [
+            0.2,
+            0.22,
+            0.24,
+            0.26,
+            0.28,
+            0.3,
+            0.325,
+            0.35,
+            0.375,
+            0.4,
+            0.42,
+            0.44,
+            0.46,
+            0.48,
+            0.5
+          ]
+        },
+        "p10": {
+          "kind": "constant",
+          "value": 3
+        },
+        "p11": {
+          "kind": "constant",
+          "value": 10
+        }
+      },
+      "levels": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "levelBinding": "talent",
+      "sourceHash": "3b5aa937f6d291e019346ba36fb02782792620a31ce6f88a32464425c861c177"
+    },
+    {
+      "id": "character:1511:skills:4445535",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4445535",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★无中生有",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "0bf0ec11adddc3d304bf4207d87b596179eb91dde2c35f2b139f2e7c432d94e5",
+      "descriptionTemplate": "持有【欢愉万相】状态时，星神★阿哈使我方「欢愉」命途升格，笑点与【好活当赏】状态强化为爽点和【绝活共赏】状态。爽点会在阿哈时刻结束时，重新获得消耗爽点的{p1:percentInteger}。【欢愉万相】期间，星神★阿哈暴击率提高{p3:percentInteger}，造成的伤害无视敌方目标{p2:percentInteger}的防御力。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.1
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.3,
+            0.6
+          ]
+        },
+        "p3": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.12,
+            0.2
+          ]
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "220205c0d3af6144acdc19c9048f5a70c63f5a8dd9c3e6c25bcb85b9058c22a1"
+    },
+    {
+      "id": "character:1511:skills:4452841",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4452841",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "攻击",
+      "type": "",
+      "tag": "",
+      "icon": "6ef61653c7a3b36aaa195ff86879690ac3dff732e5fcae955f5d204f8a38d487",
+      "descriptionTemplate": "攻击敌人，进入战斗后削弱敌方目标对应属性韧性。",
+      "parameters": {},
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "b9fd84e14de3a41f177d7128ee71c25ce0beeb7657412c546dda96298f075b58"
+    },
+    {
+      "id": "character:1511:skills:4485134",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4485134",
+      "sourceKind": "character",
+      "groupId": "skills:5",
+      "slot": "elation",
+      "name": "满月，是神在的时间",
+      "type": "欢愉技",
+      "tag": "群攻",
+      "icon": "dcd1ccbe254ed01f815b8afe9ea2ef44da0282da584e42204f38edd8619079d0",
+      "descriptionTemplate": "无视参演编号，始终在阿哈时刻最后施放。对敌方全体造成{p1:percentInteger}的量子属性欢愉伤害，并基于本次阿哈时刻我方目标造成的非真实伤害总和的{p2:percentInteger}造成真实伤害，由敌方全体均分。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "values": [
+            0.3,
+            0.33,
+            0.36,
+            0.39,
+            0.42,
+            0.45,
+            0.4875,
+            0.525,
+            0.5625,
+            0.6,
+            0.63,
+            0.66,
+            0.69,
+            0.72,
+            0.75
+          ]
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 0.2
+        }
+      },
+      "levels": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "levelBinding": "elation",
+      "sourceHash": "86a70224581c218c7725c9f1c8fabae56d5943fa057b64ee7bb364fd6fe1829d"
+    },
+    {
+      "id": "character:1511:skills:4513608",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4513608",
+      "sourceKind": "character",
+      "groupId": "skills:0",
+      "slot": "basic",
+      "name": "点星，开幕！",
+      "type": "普攻",
+      "tag": "单攻",
+      "icon": "6ef61653c7a3b36aaa195ff86879690ac3dff732e5fcae955f5d204f8a38d487",
+      "descriptionTemplate": "对指定敌方单体造成{p1:percentInteger}的量子属性欢愉伤害。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "values": [
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7
+          ]
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 1
+        }
+      },
+      "levels": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "levelBinding": "basic",
+      "sourceHash": "7d0aa0e861236178df18b34491445a90860854b13c22e58284169c4d5c7c3a9e"
+    },
+    {
+      "id": "character:1511:skills:4684708",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4684708",
+      "sourceKind": "character",
+      "groupId": "skills:2",
+      "slot": "ult",
+      "name": "啊哈！宇宙笑点大爆炸",
+      "type": "终结技",
+      "tag": "群攻",
+      "icon": "950c7b976bcd7cc92fc8390b5435f9170b683de87dc1bbff83940085c0fe0f18",
+      "descriptionTemplate": "使阿哈行动提前{p5:percentInteger}，星神★阿哈获得【欢愉万相】状态，持续{p6:integer}回合，星神★阿哈每回合开始时持续回合数减1。对敌方全体造成{p2:percentInteger}的量子属性欢愉伤害，随后造成{p3:integer}次伤害，每次伤害对敌方随机单体造成{p4:percentInteger}的量子属性欢愉伤害。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 8
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "values": [
+            1.2,
+            1.28,
+            1.36,
+            1.44,
+            1.52,
+            1.6,
+            1.7,
+            1.8,
+            1.9,
+            2,
+            2.08,
+            2.16,
+            2.24,
+            2.32,
+            2.4
+          ]
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 5
+        },
+        "p4": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "values": [
+            0.36,
+            0.384,
+            0.408,
+            0.432,
+            0.456,
+            0.48,
+            0.51,
+            0.54,
+            0.57,
+            0.6,
+            0.624,
+            0.648,
+            0.672,
+            0.696,
+            0.72
+          ]
+        },
+        "p5": {
+          "kind": "constant",
+          "value": 0.2
+        },
+        "p6": {
+          "kind": "constant",
+          "value": 3
+        }
+      },
+      "levels": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "levelBinding": "ult",
+      "sourceHash": "6703c11e26d0d9691bd927c5e9519c6b72b4de86d82ba4b3494b3516b61964f5"
+    },
+    {
+      "id": "character:1511:skills:4695006",
+      "ownerId": "character:1511",
+      "sourceNodeId": "4695006",
+      "sourceKind": "character",
+      "groupId": "skills:4",
+      "slot": "technique",
+      "name": "ABRACADABRA！",
+      "type": "秘技",
+      "tag": "强化",
+      "icon": "57b0f6c5bde0b5553a893ae76e1365e7460601af8dbcb20a77721e4d1919e630",
+      "descriptionTemplate": "使用秘技后，在自身周围制造1片持续{p2:integer}秒的特殊领域，处于特殊领域内的敌人陷入【视错】状态，【视错】状态下的敌人无法发现我方目标，进入战斗后使阿哈立即获得1个固定计入{p1:integer}笑点的额外回合，该回合不消耗笑点。我方制造的领域效果最多存在1个。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 20
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 20
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "3177ecf8003628926ac4f0d708830cdba3635c710cc286c449cee3d7ee5bc709"
+    },
+    {
+      "id": "character:1511:traces:1511101",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511101",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "愚弄众神的玩笑",
+      "type": "",
+      "tag": null,
+      "icon": "afef94330b139094a86157755388722b1aa11e39df8d39cc2dfef3c7e9a183a5",
+      "descriptionTemplate": "战技的追加攻击额外造成持有【「欢愉」令使】状态的目标{p1:percentInteger}的对应属性欢愉伤害并恢复{p3:integer}点战技点。本次额外造成的欢愉伤害不视为1次攻击。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.2
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 3
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 1
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "9e87e74bc14cdfc97af2f17b30fa9fbda8881015a2d82233148a4154e6e4baf5"
+    },
+    {
+      "id": "character:1511:traces:1511102",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511102",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "戏中人的异想国",
+      "type": "",
+      "tag": null,
+      "icon": "8caf4b6c9591377f0296edbec4e2e2b868c773ea5ca6e836e2d967f0fbd2780c",
+      "descriptionTemplate": "受到队友提供的治疗效果或护盾时，获得{p1:integer}点【愿力】，最多触发{p2:integer}次，施放终结技后重置可触发次数。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 1
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "eba1bfd800b68bf34a331b4418ed709b9a29c160ae5ca9c5c8ea7f0fa0c160a1"
+    },
+    {
+      "id": "character:1511:traces:1511103",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511103",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "盒中蕴藏的世界",
+      "type": "",
+      "tag": null,
+      "icon": "10c5e93a30d9a48c966eb78a77ee6d4fed2ba1ce23f4944251519a4881257c46",
+      "descriptionTemplate": "当星神★阿哈的速度大于等于{p1:integer}/{p2:integer}点时，欢愉度提高{p3:percentInteger}/{p4:percentInteger}。战斗开始时，使自身行动提前{p5:percentInteger}。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 125
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 150
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 1.2
+        },
+        "p4": {
+          "kind": "constant",
+          "value": 1.5
+        },
+        "p5": {
+          "kind": "constant",
+          "value": 0.3
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "350a3e6130bb8b95a65068538a96d2e52618a1abb10773ac2e9bf8492d9ab5e8"
+    },
+    {
+      "id": "character:1511:traces:1511201",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511201",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击伤害强化",
+      "type": "",
+      "tag": null,
+      "icon": "70505c64ff7cb3df4a9faf76eb488438570422a20d9dd2f42225da1dd1c97648",
+      "descriptionTemplate": "暴击伤害 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.053
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "34cf0e832331d0e395bad1a5a977cd77e400f09679e217c06a8e0b59364e523f"
+    },
+    {
+      "id": "character:1511:traces:1511202",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511202",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击率强化",
+      "type": "",
+      "tag": null,
+      "icon": "649d04ce090ec9e142d024138f54bf2e416362f48f452776826e5a4e8e26c028",
+      "descriptionTemplate": "暴击率 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.026999999
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "fbb01090e1943e29fd278b5442b0f674ae27ad6c168aeacf5838864f81f7ab5f"
+    },
+    {
+      "id": "character:1511:traces:1511203",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511203",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击伤害强化",
+      "type": "",
+      "tag": null,
+      "icon": "70505c64ff7cb3df4a9faf76eb488438570422a20d9dd2f42225da1dd1c97648",
+      "descriptionTemplate": "暴击伤害 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.053
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "e231dac8fb8b50eac31f35259076e2da40a0203ff5c392cb62b20d5967978f6d"
+    },
+    {
+      "id": "character:1511:traces:1511204",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511204",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "速度强化",
+      "type": "",
+      "tag": null,
+      "icon": "959ebc55a284ac83b29de4d97b3422772e372e53ff820bc9af972e0201aabe98",
+      "descriptionTemplate": "速度 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 2
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "35e6e2a0cb455b32de7b6ed178f56eba2cac7a9d4709196a056d8ad4f0f3107a"
+    },
+    {
+      "id": "character:1511:traces:1511205",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511205",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击伤害强化",
+      "type": "",
+      "tag": null,
+      "icon": "70505c64ff7cb3df4a9faf76eb488438570422a20d9dd2f42225da1dd1c97648",
+      "descriptionTemplate": "暴击伤害 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.08
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "db0d3bf8e052d165e2b8a83776369d3d9216d8672d184b7675ca9ef039287bed"
+    },
+    {
+      "id": "character:1511:traces:1511206",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511206",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击率强化",
+      "type": "",
+      "tag": null,
+      "icon": "649d04ce090ec9e142d024138f54bf2e416362f48f452776826e5a4e8e26c028",
+      "descriptionTemplate": "暴击率 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.04
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "da6674480c8d936f5a8f128a9e6e1885982aa59c8b2d04f9c3da7dd2cf41b041"
+    },
+    {
+      "id": "character:1511:traces:1511207",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511207",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击伤害强化",
+      "type": "",
+      "tag": null,
+      "icon": "70505c64ff7cb3df4a9faf76eb488438570422a20d9dd2f42225da1dd1c97648",
+      "descriptionTemplate": "暴击伤害 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.08
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "99eb50ee68b3b25188d7ddcb348ba477bdad00926c47f488e1bb022a4dafe3ff"
+    },
+    {
+      "id": "character:1511:traces:1511208",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511208",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "速度强化",
+      "type": "",
+      "tag": null,
+      "icon": "959ebc55a284ac83b29de4d97b3422772e372e53ff820bc9af972e0201aabe98",
+      "descriptionTemplate": "速度 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 3
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "78f9471ccc17003184a5aef487e750481669966fc03e8dd7cc7492cae7571163"
+    },
+    {
+      "id": "character:1511:traces:1511209",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511209",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击率强化",
+      "type": "",
+      "tag": null,
+      "icon": "649d04ce090ec9e142d024138f54bf2e416362f48f452776826e5a4e8e26c028",
+      "descriptionTemplate": "暴击率 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.053
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "1b5ec216348e778ca0a396888d8ec23d4f8dbcf1f874c45209969e46a042fa74"
+    },
+    {
+      "id": "character:1511:traces:1511210",
+      "ownerId": "character:1511",
+      "sourceNodeId": "1511210",
+      "sourceKind": "trace",
+      "groupId": "traces",
+      "slot": "trace",
+      "name": "暴击伤害强化",
+      "type": "",
+      "tag": null,
+      "icon": "70505c64ff7cb3df4a9faf76eb488438570422a20d9dd2f42225da1dd1c97648",
+      "descriptionTemplate": "暴击伤害 {p1:number}",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.107
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "a7b3a19ddf474810a2558740a5434c44866df09399e1a11f1ae4f4f36b8fdfdc"
+    },
+    {
       "id": "character:1512:ranks:1",
       "ownerId": "character:1512",
       "sourceNodeId": "1",
@@ -89366,6 +90736,64 @@
       ],
       "levelBinding": "talent",
       "sourceHash": "2a3018d415140a930271300b0716065875b341789ab422eaa5491ff4a8d33291"
+    },
+    {
+      "id": "character:1513:skills:3857477",
+      "ownerId": "character:1513",
+      "sourceNodeId": "3857477",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★三赌牌局",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "2532a970dd237011cbb018f8ca50af2840f9c5d9ed65b00f2fc28cd24e5fa006",
+      "descriptionTemplate": "当「欢愉」命途升格时，若只有星神★阿哈1位「欢愉」命途的队友，则行迹【纵享惊涛】中只存在砂金•戏浪1名「欢愉」命途角色时的效果也会生效，且该效果获得加强：我方全体速度提高{p2:percentInteger}，队友施放攻击后，砂金•戏浪额外获得{p3:integer}点【热意】以及{p4:integer}个爽点。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.15,
+            0.25
+          ]
+        },
+        "p3": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            1,
+            2
+          ]
+        },
+        "p4": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            1,
+            2
+          ]
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "030c4483fbd04b9ed622a646230d84a3ec0bfd8b5335bea9d46efad2d9e7880a"
     },
     {
       "id": "character:1513:skills:3981092",
@@ -97967,6 +99395,53 @@
       "sourceHash": "bffbc40d064ebc8d6242236ff5feb0b431c6ebea14ffe720652283417ddb22a8"
     },
     {
+      "id": "character:8009:skills:19206459",
+      "ownerId": "character:8009",
+      "sourceNodeId": "19206459",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★主角光环",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "d907f9d71a4721a30eb53d7cbba32a76ef44a369c4615c71df40bee0d1a47b1c",
+      "descriptionTemplate": "当「欢愉」命途升格时，终结技的暴击伤害提高效果额外提高{p1:percentInteger}，并对我方全体生效。终结技触发星神★阿哈的欢愉技前，额外触发一次开拓者的欢愉技，本次欢愉技的伤害倍率提高原倍率的{p2:percentInteger}，并基于我方角色持有的【绝活共赏】最高值进行计算。随后触发的星神★阿哈欢愉技，其真实伤害改为按上述开拓者欢愉技造成伤害的{p3:percentInteger}计算，由敌方全体均分。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.2,
+            0.3
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            2,
+            3
+          ]
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0.2
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "8d4abc7d3d97adbabea7ea0fc7cba30a72c57a3f8d2517f97c9ff66f912a02f7"
+    },
+    {
       "id": "character:8009:skills:19213391",
       "ownerId": "character:8009",
       "sourceNodeId": "19213391",
@@ -98875,6 +100350,53 @@
       ],
       "levelBinding": "basic",
       "sourceHash": "70975f8d015981f42aacb414454dffafc3f99531bc1791233e16b35edf6499dd"
+    },
+    {
+      "id": "character:8010:skills:8051109",
+      "ownerId": "character:8010",
+      "sourceNodeId": "8051109",
+      "sourceKind": "character",
+      "groupId": "skills",
+      "slot": "other",
+      "name": "欢愉万相★主角光环",
+      "type": "固有行迹",
+      "tag": "强化",
+      "icon": "d907f9d71a4721a30eb53d7cbba32a76ef44a369c4615c71df40bee0d1a47b1c",
+      "descriptionTemplate": "当「欢愉」命途升格时，终结技的暴击伤害提高效果额外提高{p1:percentInteger}，并对我方全体生效。终结技触发星神★阿哈的欢愉技前，额外触发一次开拓者的欢愉技，本次欢愉技的伤害倍率提高原倍率的{p2:percentInteger}，并基于我方角色持有的【绝活共赏】最高值进行计算。随后触发的星神★阿哈欢愉技，其真实伤害改为按上述开拓者欢愉技造成伤害的{p3:percentInteger}计算，由敌方全体均分。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            0.2,
+            0.3
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2
+          ],
+          "values": [
+            2,
+            3
+          ]
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0.2
+        }
+      },
+      "levels": [
+        1,
+        2
+      ],
+      "levelBinding": null,
+      "sourceHash": "34ac2ef94e26acff7362c3a960a81ea1c41e0d7b91938f4b0e8f3aad0af5cb94"
     },
     {
       "id": "character:8010:skills:8060414",
@@ -104778,6 +106300,64 @@
       "sourceHash": "c2428476531f6fc3183dd8c8b988ce2d2a5568381d65edf3e6995c0eaefa1e4a"
     },
     {
+      "id": "lightcone:22009:skill:22009",
+      "ownerId": "lightcone:22009",
+      "sourceNodeId": "22009",
+      "sourceKind": "lightCone",
+      "groupId": "skill",
+      "slot": "passive",
+      "name": "同谋",
+      "type": "",
+      "tag": null,
+      "icon": null,
+      "descriptionTemplate": "队伍中每有1名「欢愉」命途的角色，使装备者的暴击伤害提高{p1:percentInteger}，星神★阿哈在场时，装备者的暴击伤害额外提高{p2:percentInteger}。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "values": [
+            0.06,
+            0.07,
+            0.08,
+            0.09,
+            0.1
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "values": [
+            0.12,
+            0.14,
+            0.16,
+            0.18,
+            0.2
+          ]
+        }
+      },
+      "levels": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "levelBinding": "superimposition",
+      "sourceHash": "2f74f08ee38f60b143aa36c26110fa3b9c62aa441359e66e9dcc4c1d87d77255"
+    },
+    {
       "id": "lightcone:23000:skill:23000",
       "ownerId": "lightcone:23000",
       "sourceNodeId": "23000",
@@ -110076,6 +111656,85 @@
       "sourceHash": "ed1664c7d71b13b78d060aa41c3e17aed257df62e18c812e26a5e8e50dba6c6f"
     },
     {
+      "id": "lightcone:23065:skill:23065",
+      "ownerId": "lightcone:23065",
+      "sourceNodeId": "23065",
+      "sourceKind": "lightCone",
+      "groupId": "skill",
+      "slot": "passive",
+      "name": "即兴巡演",
+      "type": "",
+      "tag": null,
+      "icon": null,
+      "descriptionTemplate": "使装备者的基础速度提高{p1:integer}点。对我方其他单体施放战技时，获得{p2:integer}个笑点，该效果每间隔{p3:integer}回合最多触发1次，随后使我方全体在本场战斗中造成伤害时无视敌方目标{p4:percentInteger}的防御力，该效果无法叠加。",
+      "parameters": {
+        "p1": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "values": [
+            12,
+            14,
+            16,
+            18,
+            20
+          ]
+        },
+        "p2": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "values": [
+            10,
+            12,
+            14,
+            16,
+            18
+          ]
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 1
+        },
+        "p4": {
+          "kind": "table",
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "values": [
+            0.16,
+            0.18,
+            0.2,
+            0.22,
+            0.24
+          ]
+        }
+      },
+      "levels": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "levelBinding": "superimposition",
+      "sourceHash": "37fa15fae00bd555c37acba9daccedbb76e1af48eeffc06b1773bc64ffc6aa6b"
+    },
+    {
       "id": "lightcone:24000:skill:24000",
       "ownerId": "lightcone:24000",
       "sourceNodeId": "24000",
@@ -113371,6 +115030,70 @@
       ],
       "levelBinding": null,
       "sourceHash": "9fb5964fa234609619b7fbb8e108eedc7987f715cf55adc1a98ba4626620bebc"
+    },
+    {
+      "id": "relic:329:set:2",
+      "ownerId": "relic:329",
+      "sourceNodeId": "2",
+      "sourceKind": "relic",
+      "groupId": "set",
+      "slot": "twoPiece",
+      "name": "",
+      "type": "",
+      "tag": null,
+      "icon": null,
+      "descriptionTemplate": "使装备者的速度提高{p1:percentInteger}。当装备者的欢愉度大于等于{p2:percentInteger}时，进入战斗时立刻使行动提前{p3:percentInteger}。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.06
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 0.4
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0.4
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "661a1691c0c765b2827bbdc9fad2232b313479d2ae02c42ea77e9f73ce689018"
+    },
+    {
+      "id": "relic:330:set:2",
+      "ownerId": "relic:330",
+      "sourceNodeId": "2",
+      "sourceKind": "relic",
+      "groupId": "set",
+      "slot": "twoPiece",
+      "name": "",
+      "type": "",
+      "tag": null,
+      "icon": null,
+      "descriptionTemplate": "使装备者的速度提高{p1:percentInteger}，当装备者的速度大于等于{p2:integer}时，进入战斗后使我方全体击破特攻提高{p3:percentInteger}，该效果无法叠加。",
+      "parameters": {
+        "p1": {
+          "kind": "constant",
+          "value": 0.06
+        },
+        "p2": {
+          "kind": "constant",
+          "value": 145
+        },
+        "p3": {
+          "kind": "constant",
+          "value": 0.18
+        }
+      },
+      "levels": [
+        1
+      ],
+      "levelBinding": null,
+      "sourceHash": "7d6af92a3f661c23e0b329c0550e911ac2c56558403c087ad7fd150c4366c766"
     },
     {
       "id": "summon:1402:servant:servant-skills:8535737",
@@ -120861,6 +122584,7 @@
         "character:1501:skills:1495122",
         "character:1501:skills:1516488",
         "character:1501:skills:1546267",
+        "character:1501:skills:1571711",
         "character:1501:skills:18302584",
         "character:1501:traces:1501101",
         "character:1501:traces:1501102",
@@ -120900,6 +122624,7 @@
         "character:1502:ranks:6",
         "character:1502:skills:1581237",
         "character:1502:skills:1607016",
+        "character:1502:skills:1643996",
         "character:1502:skills:1665351",
         "character:1502:skills:1832749",
         "character:1502:skills:1864357",
@@ -120948,6 +122673,7 @@
         "character:1503:skills:1333369",
         "character:1503:skills:1358853",
         "character:1503:skills:1380386",
+        "character:1503:skills:1390493",
         "character:1503:skills:1406146",
         "character:1503:skills:18205246",
         "character:1503:traces:1503101",
@@ -121028,6 +122754,7 @@
         "character:1505:ranks:4",
         "character:1505:ranks:5",
         "character:1505:ranks:6",
+        "character:1505:skills:123026",
         "character:1505:skills:28644",
         "character:1505:skills:301520",
         "character:1505:skills:320937",
@@ -121071,6 +122798,7 @@
         "character:1506:ranks:4",
         "character:1506:ranks:5",
         "character:1506:ranks:6",
+        "character:1506:skills:1007849",
         "character:1506:skills:17656975",
         "character:1506:skills:17799541",
         "character:1506:skills:17825052",
@@ -121281,6 +123009,51 @@
       "variantKey": "hsr/1510/erudition/base"
     },
     {
+      "id": "character:1511",
+      "sourceKind": "character",
+      "gameId": "1511",
+      "slug": "nihilux",
+      "name": "星神★阿哈",
+      "source": {
+        "url": "https://starrailstation.com/cn/character/nihilux",
+        "mapping": {
+          "slug": "nihilux",
+          "gameId": "1511"
+        }
+      },
+      "abilityIds": [
+        "character:1511:ranks:1",
+        "character:1511:ranks:2",
+        "character:1511:ranks:3",
+        "character:1511:ranks:4",
+        "character:1511:ranks:5",
+        "character:1511:ranks:6",
+        "character:1511:skills:21134318",
+        "character:1511:skills:4229558",
+        "character:1511:skills:4412821",
+        "character:1511:skills:4445535",
+        "character:1511:skills:4452841",
+        "character:1511:skills:4485134",
+        "character:1511:skills:4513608",
+        "character:1511:skills:4684708",
+        "character:1511:skills:4695006",
+        "character:1511:traces:1511101",
+        "character:1511:traces:1511102",
+        "character:1511:traces:1511103",
+        "character:1511:traces:1511201",
+        "character:1511:traces:1511202",
+        "character:1511:traces:1511203",
+        "character:1511:traces:1511204",
+        "character:1511:traces:1511205",
+        "character:1511:traces:1511206",
+        "character:1511:traces:1511207",
+        "character:1511:traces:1511208",
+        "character:1511:traces:1511209",
+        "character:1511:traces:1511210"
+      ],
+      "variantKey": "hsr/1511/elation/base"
+    },
+    {
       "id": "character:1512",
       "sourceKind": "character",
       "gameId": "1512",
@@ -121346,6 +123119,7 @@
         "character:1513:skills:3770131",
         "character:1513:skills:3817314",
         "character:1513:skills:3826511",
+        "character:1513:skills:3857477",
         "character:1513:skills:3981092",
         "character:1513:skills:4043071",
         "character:1513:skills:4052226",
@@ -121736,6 +123510,7 @@
         "character:8009:skills:19007018",
         "character:8009:skills:19047026",
         "character:8009:skills:19116954",
+        "character:8009:skills:19206459",
         "character:8009:skills:19213391",
         "character:8009:skills:19230823",
         "character:8009:skills:19321862",
@@ -121778,6 +123553,7 @@
         "character:8010:skills:7895828",
         "character:8010:skills:7959475",
         "character:8010:skills:7984724",
+        "character:8010:skills:8051109",
         "character:8010:skills:8060414",
         "character:8010:skills:8201280",
         "character:8010:skills:8208793",
@@ -123465,6 +125241,23 @@
       ]
     },
     {
+      "id": "lightcone:22009",
+      "sourceKind": "lightCone",
+      "gameId": "22009",
+      "slug": "22009",
+      "name": "在世界尽头相会吧！",
+      "source": {
+        "url": "https://starrailstation.com/cn/lightcone/22009",
+        "mapping": {
+          "slug": "22009",
+          "gameId": "22009"
+        }
+      },
+      "abilityIds": [
+        "lightcone:22009:skill:22009"
+      ]
+    },
+    {
       "id": "lightcone:23000",
       "sourceKind": "lightCone",
       "gameId": "23000",
@@ -124567,6 +126360,23 @@
       },
       "abilityIds": [
         "lightcone:23064:skill:23064"
+      ]
+    },
+    {
+      "id": "lightcone:23065",
+      "sourceKind": "lightCone",
+      "gameId": "23065",
+      "slug": "23065",
+      "name": "当第一声「阿哈」响起",
+      "source": {
+        "url": "https://starrailstation.com/cn/lightcone/23065",
+        "mapping": {
+          "slug": "23065",
+          "gameId": "23065"
+        }
+      },
+      "abilityIds": [
+        "lightcone:23065:skill:23065"
       ]
     },
     {
@@ -125774,6 +127584,40 @@
       },
       "abilityIds": [
         "relic:328:set:2"
+      ]
+    },
+    {
+      "id": "relic:329",
+      "sourceKind": "relic",
+      "gameId": "329",
+      "slug": "329",
+      "name": "神的瞬息欢愉",
+      "source": {
+        "url": "https://starrailstation.com/cn/relics/329",
+        "mapping": {
+          "slug": "329",
+          "gameId": "329"
+        }
+      },
+      "abilityIds": [
+        "relic:329:set:2"
+      ]
+    },
+    {
+      "id": "relic:330",
+      "sourceKind": "relic",
+      "gameId": "330",
+      "slug": "330",
+      "name": "亚空异容所",
+      "source": {
+        "url": "https://starrailstation.com/cn/relics/330",
+        "mapping": {
+          "slug": "330",
+          "gameId": "330"
+        }
+      },
+      "abilityIds": [
+        "relic:330:set:2"
       ]
     },
     {

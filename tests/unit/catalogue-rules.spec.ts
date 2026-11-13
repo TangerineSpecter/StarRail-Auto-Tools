@@ -64,6 +64,14 @@ const context: RuleEvaluationContext = {
 const expressionContext = { parameters: {}, values: {} };
 
 describe("catalogue rule contract", () => {
+  it("marks unsupported linked descriptions as unavailable without inventing their effects", () => {
+    const source = {
+      ...ability,
+      descriptionTemplate:
+        "升格效果：#{series_ref_skill_desc:UIText_SeriesSkillDescFormat,151129,2}",
+    };
+    expect(resolveAbility(source, 1).description).toBe("升格效果：（升格效果详情暂不可用）");
+  });
   it.each([
     [1.49, "1 / 149% / 149.0% / 149.00% / 149%"],
     [1.5, "2 / 150% / 150.0% / 150.00% / 150%"],

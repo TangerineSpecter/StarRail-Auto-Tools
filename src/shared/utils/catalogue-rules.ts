@@ -106,9 +106,9 @@ export function resolveAbility(
     ability,
     level,
     parameters,
-    description: ability.descriptionTemplate.replace(
-      /\{([^{}:]+)(?::([^{}]+))?\}/g,
-      (_match, key: string, format?: string) => {
+    description: ability.descriptionTemplate
+      .replace(/#\{series_ref_skill_desc:[^{}]*\}/g, "（升格效果详情暂不可用）")
+      .replace(/\{([^{}:]+)(?::([^{}]+))?\}/g, (_match, key: string, format?: string) => {
         const value = own(parameters, key);
         if (typeof value !== "number") return "?";
         if (format === "integer") return String(Math.round(value));
@@ -119,8 +119,7 @@ export function resolveAbility(
         if (format === "fixed1") return value.toFixed(1);
         if (format === "fixed2") return value.toFixed(2);
         return String(value);
-      },
-    ),
+      }),
   };
 }
 
