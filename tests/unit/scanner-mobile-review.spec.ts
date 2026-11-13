@@ -34,7 +34,7 @@ describe("mobile scan review", () => {
       .find((b) => b.text().includes("位面饰品"))!
       .trigger("click");
     expect(wrapper.emitted("apply")).toBeUndefined();
-    await wrapper.get(".scanner-filter-heading button").trigger("click");
+    await wrapper.getComponent(drawer).vm.$emit("update:visible", false);
     await open();
     expect(wrapper.get("input").element.value).toBe("");
     await wrapper.get("input").setValue("  猎人  ");

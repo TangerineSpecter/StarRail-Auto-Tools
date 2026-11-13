@@ -73,6 +73,15 @@ const quality = useMobileRelicQuality(
 const qualityCount = computed(() =>
   archive.kind.value === "relic" ? quality.activeCount.value : 0,
 );
+const qualityDraftCount = computed(() => {
+  if (archive.kind.value !== "relic") return 0;
+  const draft = quality.draft.value;
+  return (
+    Number(draft.sortMode !== "default") +
+    Number(draft.characterId !== null) +
+    Number(Boolean(draft.minGrade))
+  );
+});
 const activeFilterCount = computed(() => archive.activeFilterCount.value + qualityCount.value);
 function openFilters() {
   pager.cancel();
@@ -284,6 +293,7 @@ onDeactivated(() => {
             v-model:filters="filterDraft"
             :kind="archive.kind.value"
             :busy="runtime.busy.value"
+            :extra-filter-count="qualityDraftCount"
             @apply="applyFilters"
             @reset="resetDraft"
           >

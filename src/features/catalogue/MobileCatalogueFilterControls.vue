@@ -5,6 +5,8 @@ import Drawer from "primevue/drawer";
 import { pathIconSrc } from "@/shared/catalogue";
 import FilterCheckIcon from "@/features/inventory/FilterCheckIcon.vue";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
+import MobileSegmentedControl from "@/shared/ui/MobileSegmentedControl.vue";
+import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { catalogueRailHostKey } from "./catalogue-capsule-host";
 
 const ELEMENT_COLORS: Record<string, string> = {
@@ -51,6 +53,17 @@ const {
   isUnfoldedPortrait,
 } = useMobileTopHeaderTarget("catalogue", toRef(props, "active"));
 const drawerOpen = ref(false);
+const sheetDrag = useSheetDragDismiss(() => {
+  drawerOpen.value = false;
+});
+watch(drawerOpen, (open) => {
+  if (!open) sheetDrag.reset();
+});
+const ownedOptions = [
+  { value: "all", label: "全部" },
+  { value: "owned", label: "已持有" },
+  { value: "unowned", label: "未持有" },
+] as const;
 
 const draft = reactive({
   path: "all" as string,
@@ -59,6 +72,16 @@ const draft = reactive({
   owned: "all" as "all" | "owned" | "unowned",
   search: "",
 });
+const draftCount = computed(
+  () =>
+    [
+      draft.path !== "all",
+      Boolean(props.availableElements && draft.element !== "all"),
+      draft.rarity !== "all",
+      Boolean(props.showOwned && draft.owned !== "all"),
+      Boolean(draft.search.trim()),
+    ].filter(Boolean).length,
+);
 
 const summaryParts = computed(() =>
   [
@@ -235,19 +258,13 @@ onDeactivated(() => {
     aria-label="图鉴筛选条件"
   >
     <form @submit.prevent="applyFilters()">
-      <header class="filter-drawer-heading">
+      <header class="filter-drawer-heading" v-on="sheetDrag.handlers">
         <div class="filter-drawer-title-row">
           <h2>筛选条件</h2>
-          <Button
-            class="mobile-filter-close"
-            type="button"
-            outlined
-            aria-label="关闭筛选"
-            @click="drawerOpen = false"
-            >关闭</Button
-          >
+          <span v-if="draftCount > 0" class="mobile-filter-count-pill">
+            已选 {{ draftCount }} 项
+          </span>
         </div>
-        <small>点击可切换或取消 · 未选即全部</small>
       </header>
       <div class="filter-scroll">
         <fieldset class="filter-group filter-group-wide">
@@ -338,26 +355,14 @@ onDeactivated(() => {
 
         <fieldset v-if="showOwned" class="filter-group filter-group-wide">
           <legend>持有状态</legend>
-          <div class="filter-chips filter-grid-3">
-            <label
-              v-for="option in [
-                { value: 'all', label: '全部' },
-                { value: 'owned', label: '已持有' },
-                { value: 'unowned', label: '未持有' },
-              ] as const"
-              :key="option.value"
-              class="filter-chip"
-            >
-              <input
-                type="checkbox"
-                :checked="draft.owned === option.value"
-                @change="draft.owned = option.value"
+          <div class="mobile-filter-card">
+            <div class="mobile-filter-row">
+              <MobileSegmentedControl
+                v-model="draft.owned"
+                :options="ownedOptions"
+                aria-label="持有状态"
               />
-              <span>
-                {{ option.label }}
-                <FilterCheckIcon v-if="draft.owned === option.value" />
-              </span>
-            </label>
+            </div>
           </div>
         </fieldset>
       </div>

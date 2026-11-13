@@ -33,8 +33,11 @@ describe("inventory filter drawer", () => {
       expect(wrapper.emitted("reset")).toHaveLength(1);
       if (mobile) {
         expect(wrapper.find(".filter-drawer-heading .filter-reset-btn").exists()).toBe(false);
-        await wrapper.get('[aria-label="关闭筛选"]').trigger("click");
-        expect(wrapper.emitted("update:modelValue")).toEqual([[false]]);
+        expect(wrapper.find(".mobile-filter-close").exists()).toBe(false);
+        const radios = wrapper.findAll('.mobile-segmented-option[role="radio"]');
+        expect(radios.length).toBeGreaterThan(0);
+        await radios[1]!.trigger("click");
+        expect(wrapper.find(".mobile-filter-count-pill").text()).toContain("1");
       } else {
         expect(wrapper.find(".filter-drawer-heading .filter-reset-btn").exists()).toBe(true);
         expect(wrapper.find('[aria-label="关闭筛选"]').exists()).toBe(false);

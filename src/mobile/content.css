@@ -825,46 +825,148 @@ html.mobile-view .detail-drawer :is(button, [role="button"]) {
 html.mobile-view .filter-drawer.p-drawer {
   width: min(640px, 100vw);
   max-width: 100vw;
-  height: min(760px, 82dvh);
+  height: min(760px, 84dvh);
   max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
   padding: 0 0 env(safe-area-inset-bottom);
   border: 0;
-  border-radius: 20px 20px 0 0;
-  background: white;
-  box-shadow: 0 -12px 40px rgba(30, 49, 79, 0.16);
+  border-radius: 22px 22px 0 0;
+  background: #f3f6fb;
+  box-shadow: 0 -14px 44px rgba(20, 38, 66, 0.18);
   overflow: hidden;
 }
 html.mobile-view .filter-drawer .filter-scroll {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: 16px;
-  gap: 16px 12px;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 14px 14px 18px;
+  gap: 14px;
 }
-html.mobile-view .filter-drawer .relic-quality-filter-fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-html.mobile-view .filter-drawer .relic-quality-filter-fields > label {
-  display: grid;
-  min-width: 0;
-  gap: 6px;
+html.mobile-view .filter-drawer .filter-group legend {
+  margin-bottom: 8px;
+  padding: 0 2px;
   font-size: 13px;
-  color: var(--ink-soft);
+  font-weight: 700;
+  color: #364c69;
 }
-html.mobile-view .filter-drawer .relic-quality-filter-fields > label:first-child {
-  grid-column: 1 / -1;
+html.mobile-view .filter-drawer .filter-group legend em {
+  font-size: 11px;
+  color: #6c809c;
 }
-html.mobile-view .filter-drawer .relic-quality-filter-fields .p-select {
-  min-width: 0;
-  width: 100%;
+html.mobile-view .filter-drawer .mobile-filter-card {
+  display: grid;
+  border-radius: 14px;
+  border: 1px solid rgba(28, 49, 80, 0.07);
+  background: #ffffff;
+  overflow: hidden;
+}
+html.mobile-view .filter-drawer .mobile-filter-row {
+  padding: 8px 10px;
+}
+html.mobile-view .filter-drawer .mobile-filter-row + .mobile-filter-row {
+  border-top: 1px solid rgba(28, 49, 80, 0.07);
+}
+html.mobile-view .filter-drawer .mobile-filter-row-compact {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+}
+html.mobile-view .filter-drawer .mobile-filter-row-stack {
+  display: grid;
+  gap: 7px;
+  padding: 9px 10px;
+}
+html.mobile-view .filter-drawer .mobile-filter-row-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #304561;
+  white-space: nowrap;
+}
+html.mobile-view .filter-drawer .mobile-filter-select-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 12px;
+  margin: 0;
+  cursor: pointer;
+}
+html.mobile-view .filter-drawer .mobile-filter-select-row + .mobile-filter-select-row {
+  border-top: 1px solid rgba(28, 49, 80, 0.07);
+}
+html.mobile-view .filter-drawer .mobile-filter-select-row .p-select {
+  width: auto;
+  min-width: 112px;
+  max-width: 62%;
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: #f1f5fa;
+  box-shadow: none;
+}
+html.mobile-view .filter-drawer .mobile-filter-select-row .p-select-label {
+  padding: 6px 6px 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1655b3;
+}
+html.mobile-view .filter-drawer .mobile-filter-select-row .p-select-dropdown {
+  width: 26px;
+  color: #677f9c;
+}
+html.mobile-view .filter-drawer .mobile-filter-range-card {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html.mobile-view
+  .filter-drawer
+  .mobile-filter-range-card
+  .mobile-filter-select-row
+  + .mobile-filter-select-row {
+  border-top: 0;
+  border-left: 1px solid rgba(28, 49, 80, 0.07);
+}
+html.mobile-view .filter-drawer .mobile-filter-range-card .p-select {
+  min-width: 72px;
+  max-width: none;
+}
+html.mobile-view .filter-drawer .relic-quality-preview {
+  border-radius: 14px;
+  border: 1px solid rgba(28, 49, 80, 0.07);
+  background: #ffffff;
+  padding: 0 12px;
+}
+html.mobile-view .filter-drawer .relic-quality-preview[open] {
+  padding-bottom: 12px;
 }
 html.mobile-view .filter-drawer .relic-quality-preview > summary {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   min-height: 44px;
   cursor: pointer;
   font-size: 13px;
-  color: var(--ink-soft);
+  font-weight: 600;
+  color: #304561;
+  list-style: none;
+}
+html.mobile-view .filter-drawer .relic-quality-preview > summary::-webkit-details-marker {
+  display: none;
+}
+html.mobile-view .filter-drawer .relic-quality-preview > summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.8px solid #758aa5;
+  border-bottom: 1.8px solid #758aa5;
+  transform: rotate(-45deg);
+  transition: transform 150ms ease;
+}
+html.mobile-view .filter-drawer .relic-quality-preview[open] > summary {
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(28, 49, 80, 0.07);
+}
+html.mobile-view .filter-drawer .relic-quality-preview[open] > summary::after {
+  transform: rotate(45deg);
 }
 html.mobile-view .filter-drawer .relic-quality-preview .score-toolbar {
   padding: 0;
@@ -881,43 +983,90 @@ html.mobile-view .filter-drawer .relic-quality-preview .score-toolbar-hint {
   font-size: 12px;
   line-height: 1.5;
 }
-html.mobile-view .filter-drawer .relic-quality-filter-hint {
-  margin: 10px 0 0;
-  font-size: 12px;
-  color: var(--muted);
+html.mobile-view .filter-drawer :is(button:not(.mobile-segmented-option), .filter-chip span) {
+  min-height: 40px;
 }
-html.mobile-view .filter-drawer :is(button, .filter-chip span, .p-select) {
-  min-height: 44px;
+html.mobile-view .filter-drawer .filter-chips {
+  gap: 8px;
 }
 html.mobile-view .filter-drawer .filter-chip span {
   display: inline-flex;
   align-items: center;
-  padding: 8px 10px;
-  font-size: 14px;
+  padding: 8px 11px;
+  border: 1px solid #e1e8f2;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #2b4260;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(20, 42, 74, 0.04);
+}
+html.mobile-view .filter-drawer .filter-chip input:checked + span {
+  border-color: #1c62c9;
+  background: #e9f2ff;
+  color: #1555b5;
+  font-weight: 600;
+  box-shadow: none;
 }
 html.mobile-view .filter-drawer .filter-drawer-heading {
-  padding: 16px;
+  padding: 10px 16px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(28, 49, 80, 0.08);
+  touch-action: none;
 }
 html.mobile-view .filter-drawer .filter-drawer-title-row {
+  gap: 10px;
   padding-left: max(0px, calc(env(safe-area-inset-left) - 16px));
   padding-right: max(0px, calc(env(safe-area-inset-right) - 16px));
+}
+html.mobile-view .filter-drawer .filter-drawer-heading h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+html.mobile-view .filter-drawer .mobile-filter-count-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eaf2ff;
+  color: #1655b3;
+  font-size: 12px;
+  font-weight: 600;
 }
 html.mobile-view .filter-drawer .filter-drawer-heading::before {
   content: "";
   align-self: center;
   width: 36px;
   height: 4px;
-  margin: -6px 0 12px;
+  margin: 0 0 10px;
   border-radius: 2px;
-  background: #cbd3dc;
+  background: rgba(60, 78, 104, 0.22);
 }
 html.mobile-view .filter-drawer .filter-actions {
-  padding: 12px 16px;
-  gap: 12px;
+  padding: 10px 14px 12px;
+  gap: 10px;
+  border-top: 1px solid rgba(28, 49, 80, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
 }
 html.mobile-view .filter-drawer .filter-actions button {
   flex: 1;
-  font-size: 14px;
+  min-height: 46px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+html.mobile-view .filter-drawer .filter-actions .filter-reset {
+  border-color: transparent;
+  background: #eef3f9;
+  color: #334a66;
+}
+html.mobile-view .filter-drawer .filter-actions .filter-submit {
+  border-color: #1655b3;
+  background: #1655b3;
+  color: #ffffff;
 }
 html.mobile-view .filter-drawer .filter-drawer-heading small {
   font-size: 12px;
@@ -1211,17 +1360,6 @@ html.mobile-view .mobile-content .relic-substat-item.hit-5 .hit-count-badge {
   html.mobile-view :is(.mobile-content, .mobile-top-header) .catalogue-tab-btn b {
     display: none;
   }
-}
-html.mobile-view .filter-drawer .mobile-filter-close {
-  margin-left: auto;
-  min-width: 64px;
-  min-height: 44px;
-  padding: 10px 14px;
-  border: 1px solid #d7e1ec;
-  border-radius: 8px;
-  background: #f1f5fa;
-  color: #38516f;
-  font-size: 14px;
 }
 html.mobile-view .catalogue-character-modal-close {
   margin-bottom: -44px;

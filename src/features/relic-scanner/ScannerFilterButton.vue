@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onDeactivated, ref } from "vue";
+import { computed, onDeactivated, ref, watch } from "vue";
 import Drawer from "primevue/drawer";
 import { slotLabel } from "@/shared/catalogue/relic-options";
+import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { emptyScanReviewFilters, type ScanReviewFilters } from "./scan-review";
 
 const props = defineProps<{
@@ -14,6 +15,12 @@ const props = defineProps<{
 const emit = defineEmits<{ apply: [filters: ScanReviewFilters] }>();
 const visible = ref(false);
 const draft = ref(emptyScanReviewFilters());
+const sheetDrag = useSheetDragDismiss(() => {
+  visible.value = false;
+});
+watch(visible, (open) => {
+  if (!open) sheetDrag.reset();
+});
 const count = computed(
   () =>
     [
@@ -67,9 +74,8 @@ onDeactivated(() => (visible.value = false));
     aria-label="分析筛选条件"
   >
     <template #header>
-      <div class="scanner-filter-heading">
+      <div class="scanner-filter-heading" v-on="sheetDrag.handlers">
         <h2>筛选条件</h2>
-        <button type="button" @click="visible = false">关闭</button>
       </div>
     </template>
     <form id="scanner-filter-form" class="scanner-filter-fields" @submit.prevent="apply">
@@ -190,18 +196,13 @@ html.mobile-view .scanner-filter-sheet .p-drawer-header {
   justify-content: space-between;
   width: 100%;
   gap: 12px;
+  touch-action: none;
 }
 .scanner-filter-heading h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--ink);
-}
-.scanner-filter-heading button {
-  min-width: 44px;
-  min-height: 44px;
-  border: 0;
-  background: transparent;
-  color: var(--blue);
 }
 html.mobile-view .scanner-filter-sheet .p-drawer-content {
   padding: 20px 16px;

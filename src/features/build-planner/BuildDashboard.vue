@@ -4,13 +4,14 @@ import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
 const readOnly = useReadOnlyView();
 const mobile = useMobileView();
-import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
+import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from "vue";
 import Button from "primevue/button";
 import Drawer from "primevue/drawer";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
-import FilterCheckIcon from "@/features/inventory/FilterCheckIcon.vue";
 import MobileFloatingSearch from "@/shared/ui/MobileFloatingSearch.vue";
+import MobileSegmentedControl from "@/shared/ui/MobileSegmentedControl.vue";
+import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
@@ -87,6 +88,15 @@ let dashboardRequestId = 0;
 const mobileActiveCount = computed(
   () => Number(sort.value !== "urgent") + Number(statusFilter.value !== "all"),
 );
+const mobileDraftCount = computed(
+  () => Number(draftSort.value !== "urgent") + Number(draftStatus.value !== "all"),
+);
+const filterSheetDrag = useSheetDragDismiss(() => {
+  filterOpen.value = false;
+});
+watch(filterOpen, (open) => {
+  if (!open) filterSheetDrag.reset();
+});
 const currentSortLabel = computed(
   () => SORT_OPTIONS.find((item) => item.value === sort.value)?.label ?? "最需提升",
 );
@@ -994,51 +1004,37 @@ defineExpose({ reload: loadDashboard });
       aria-label="毕业排序与筛选"
     >
       <form @submit.prevent="applyMobileFilter()">
-        <header class="filter-drawer-heading">
+        <header class="filter-drawer-heading" v-on="filterSheetDrag.handlers">
           <div class="filter-drawer-title-row">
             <h2>排序与筛选</h2>
-            <Button
-              class="mobile-filter-close"
-              type="button"
-              outlined
-              aria-label="关闭筛选"
-              @click="filterOpen = false"
-              >关闭</Button
-            >
+            <span v-if="mobileDraftCount > 0" class="mobile-filter-count-pill">
+              已选 {{ mobileDraftCount }} 项
+            </span>
           </div>
-          <small>点击切换排序方式或筛选达标状态</small>
         </header>
         <div class="filter-scroll">
           <fieldset class="filter-group filter-group-wide">
             <legend>排序方式</legend>
-            <div class="filter-chips filter-grid-3">
-              <label v-for="option in SORT_OPTIONS" :key="option.value" class="filter-chip">
-                <input
-                  type="checkbox"
-                  :checked="draftSort === option.value"
-                  @change="draftSort = option.value"
+            <div class="mobile-filter-card">
+              <div class="mobile-filter-row">
+                <MobileSegmentedControl
+                  v-model="draftSort"
+                  :options="SORT_OPTIONS"
+                  aria-label="排序方式"
                 />
-                <span>
-                  {{ option.label }}
-                  <FilterCheckIcon v-if="draftSort === option.value" />
-                </span>
-              </label>
+              </div>
             </div>
           </fieldset>
           <fieldset class="filter-group filter-group-wide">
             <legend>达标状态</legend>
-            <div class="filter-chips filter-grid-3">
-              <label v-for="option in STATUS_OPTIONS" :key="option.value" class="filter-chip">
-                <input
-                  type="checkbox"
-                  :checked="draftStatus === option.value"
-                  @change="draftStatus = option.value"
+            <div class="mobile-filter-card">
+              <div class="mobile-filter-row">
+                <MobileSegmentedControl
+                  v-model="draftStatus"
+                  :options="STATUS_OPTIONS"
+                  aria-label="达标状态"
                 />
-                <span>
-                  {{ option.label }}
-                  <FilterCheckIcon v-if="draftStatus === option.value" />
-                </span>
-              </label>
+              </div>
             </div>
           </fieldset>
         </div>
