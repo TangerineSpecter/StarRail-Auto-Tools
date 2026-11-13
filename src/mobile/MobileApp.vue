@@ -18,6 +18,7 @@ import { mobileSubModeKey, type MobileSubModeHandlers } from "@/shared/contracts
 import { mobileTopHeaderKey } from "@/shared/contracts/mobile-top-header";
 import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
+import { loadRelicMainStatScanner } from "@/pages/scanner-loaders";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import MobileSync from "./MobileSync.vue";
 import { useMobilePageTransition } from "./useMobilePageTransition";
@@ -135,6 +136,7 @@ onMounted(() => {
     Object.values(pageLoaders).forEach((loader) => {
       void loader().catch(() => {});
     });
+    void loadRelicMainStatScanner().catch(() => {});
   };
   if ("requestIdleCallback" in window) {
     window.requestIdleCallback(preloadPages, { timeout: 2000 });
@@ -159,9 +161,8 @@ onBeforeUnmount(() => {
     </p>
     <div
       ref="content"
-      class="mobile-content"
+      :class="['mobile-content', { 'is-transitioning': navigation.pending.value }]"
       :aria-busy="navigation.pending.value"
-      :inert="navigation.pending.value"
     >
       <KeepAlive
         ><component

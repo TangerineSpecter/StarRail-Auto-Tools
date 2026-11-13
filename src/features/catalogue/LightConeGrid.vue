@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onDeactivated, ref, watch } from "vue";
 import { useMobileView } from "@/shared/contracts/mobile-view";
+import { useMobileListWindow } from "@/shared/ui/useMobileListWindow";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { LightConeCatalogueEntry } from "@/types";
 import MobileCatalogueFilterControls from "./MobileCatalogueFilterControls.vue";
@@ -71,8 +72,19 @@ const filteredLightCones = computed(() => {
     return true;
   });
 });
+const {
+  visibleItems: windowedLightCones,
+  sentinel,
+  hasMore,
+} = useMobileListWindow({
+  items: filteredLightCones,
+  enabled: computed(() => mobile && !props.preview),
+  active: computed(() => isActive.value && (props.active ?? true)),
+  rowHeight: 108,
+  step: 14,
+});
 const visibleLightCones = computed(() =>
-  props.preview ? filteredLightCones.value.slice(0, 12) : filteredLightCones.value,
+  props.preview ? filteredLightCones.value.slice(0, 12) : windowedLightCones.value,
 );
 watch(
   [() => filteredLightCones.value.length, selectedPath, selectedRarity, selectedOwned, searchQuery],
@@ -270,6 +282,7 @@ watch(
           </div>
         </div>
       </button>
+      <div v-if="hasMore" ref="sentinel" class="catalogue-window-sentinel" aria-hidden="true" />
     </div>
 
     <!-- 空状态 -->

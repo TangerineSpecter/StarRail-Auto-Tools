@@ -53,35 +53,35 @@ function fixture(prepare = vi.fn().mockResolvedValue(undefined)) {
   return { wrapper, page, state, motions, animate, prepare, error };
 }
 describe("mobile main menu page transitions", () => {
-  it("overlaps viewport images and keeps the named menu stationary when capture is supported", async () => {
-    let update!: () => Promise<void>;
-    let finish!: () => void;
-    const skip = vi.fn();
+  it("starts sliding out immediately in parallel with loading without blocking on view transitions", async () => {
+    const startViewTransition = vi.fn();
     Object.defineProperty(document, "startViewTransition", {
       configurable: true,
-      value: (callback: () => Promise<void>) => {
-        update = callback;
-        return {
-          ready: Promise.resolve(),
-          finished: new Promise<void>((resolve) => {
-            finish = resolve;
-          }),
-          skipTransition: skip,
-        };
-      },
+      value: startViewTransition,
     });
-    const f = fixture();
+    let resolve!: () => void;
+    const f = fixture(
+      vi.fn().mockImplementationOnce(
+        () =>
+          new Promise<void>((done) => {
+            resolve = done;
+          }),
+      ),
+    );
     const switching = f.state.go("analysis");
     await flushPromises();
-    expect(document.documentElement.classList.contains("mobile-page-transition")).toBe(true);
+    expect(startViewTransition).not.toHaveBeenCalled();
+    expect(f.animate).toHaveBeenCalledTimes(1);
     expect(f.page.value).toBe("inventory");
-    await update();
+    f.motions[0]!.finish();
+    await flushPromises();
+    expect(f.page.value).toBe("inventory");
+    resolve();
+    await flushPromises();
     expect(f.page.value).toBe("analysis");
-    finish();
+    f.motions[1]!.finish();
     await switching;
-    expect(document.documentElement.classList.contains("mobile-page-transition")).toBe(false);
     expect(f.state.pending.value).toBe(false);
-    expect(f.animate).not.toHaveBeenCalled();
     f.wrapper.unmount();
   });
   it("slides out and in by menu order, preserving each page's scroll position", async () => {
@@ -92,8 +92,8 @@ describe("mobile main menu page transitions", () => {
     expect(f.page.value).toBe("inventory");
     expect(f.state.selected.value).toBe("analysis");
     expect(f.animate.mock.calls[0]?.[0]).toEqual([
-      { opacity: 1, transform: "translateX(0)" },
-      { opacity: 0, transform: "translateX(-36px)" },
+      { opacity: 1, transform: "translate3d(0, 0, 0)" },
+      { opacity: 0, transform: "translate3d(-24px, 0, 0)" },
     ]);
     f.motions[0]!.finish();
     await flushPromises();
@@ -109,8 +109,8 @@ describe("mobile main menu page transitions", () => {
     await flushPromises();
     expect(window.scrollTo).toHaveBeenLastCalledWith(0, 240);
     expect(f.animate.mock.calls[3]?.[0]).toEqual([
-      { opacity: 0, transform: "translateX(-44px)" },
-      { opacity: 1, transform: "translateX(0)" },
+      { opacity: 0, transform: "translate3d(-28px, 0, 0)" },
+      { opacity: 1, transform: "translate3d(0, 0, 0)" },
     ]);
     f.motions[3]!.finish();
     await back;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onDeactivated, ref, watch } from "vue";
 import { useMobileView } from "@/shared/contracts/mobile-view";
+import { useMobileListWindow } from "@/shared/ui/useMobileListWindow";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { CharacterCatalogueEntry } from "@/types";
 import MobileCatalogueFilterControls from "./MobileCatalogueFilterControls.vue";
@@ -73,8 +74,19 @@ const filteredCharacters = computed(() => {
     return true;
   });
 });
+const {
+  visibleItems: windowedCharacters,
+  sentinel,
+  hasMore,
+} = useMobileListWindow({
+  items: filteredCharacters,
+  enabled: computed(() => mobile && !props.preview),
+  active: computed(() => isActive.value && (props.active ?? true)),
+  rowHeight: 96,
+  step: 14,
+});
 const visibleCharacters = computed(() =>
-  props.preview ? filteredCharacters.value.slice(0, 12) : filteredCharacters.value,
+  props.preview ? filteredCharacters.value.slice(0, 12) : windowedCharacters.value,
 );
 watch(
   [
@@ -274,6 +286,7 @@ watch(
           </div>
         </div>
       </button>
+      <div v-if="hasMore" ref="sentinel" class="catalogue-window-sentinel" aria-hidden="true" />
     </div>
 
     <!-- 空状态 -->

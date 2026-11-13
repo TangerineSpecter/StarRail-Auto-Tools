@@ -1831,3 +1831,9 @@ button.catalogue-card:hover .relic-effect-row {
     grid-template-columns: 1fr;
   }
 }
+
+.catalogue-window-sentinel {
+  grid-column: 1 / -1;
+  height: 1px;
+  pointer-events: none;
+}

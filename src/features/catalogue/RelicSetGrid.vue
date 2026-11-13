@@ -3,6 +3,7 @@ import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useMobileSubMode } from "@/shared/contracts/mobile-sub-mode";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
+import { useMobileListWindow } from "@/shared/ui/useMobileListWindow";
 import MobileFarmingList from "./MobileFarmingList.vue";
 import { catalogueCapsuleHostKey } from "./catalogue-capsule-host";
 import { computed, inject, onActivated, onDeactivated, onUnmounted, ref, watch } from "vue";
@@ -171,7 +172,18 @@ const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
   "catalogue",
   isActive,
 );
-const visibleSets = computed(() => (props.preview ? props.sets.slice(0, 12) : props.sets));
+const {
+  visibleItems: windowedSets,
+  sentinel,
+  hasMore,
+} = useMobileListWindow({
+  items: computed(() => props.sets),
+  enabled: computed(() => mobile && !props.preview && viewMode.value === "cards"),
+  active: isActive,
+  rowHeight: 156,
+  step: 10,
+});
+const visibleSets = computed(() => (props.preview ? props.sets.slice(0, 12) : windowedSets.value));
 const topModeLabel = computed(() => {
   switch (viewMode.value) {
     case "cards":
@@ -479,6 +491,7 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
               </div>
             </div>
           </button>
+          <div v-if="hasMore" ref="sentinel" class="catalogue-window-sentinel" aria-hidden="true" />
         </div>
       </Transition>
     </div>
