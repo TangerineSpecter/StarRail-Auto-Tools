@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onDeactivated, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onDeactivated, ref, watch } from "vue";
 import type { InventoryKind } from "@/types";
 import MobileInventoryCategoryTabs from "./MobileInventoryCategoryTabs.vue";
+import { mobileInventoryCategoryMeta } from "./mobile-inventory-categories";
 
 const props = defineProps<{
   kind: InventoryKind;
@@ -67,6 +68,7 @@ function openFilterDrawer() {
   closeFloatingSearch();
   emit("filter");
 }
+const categoryMeta = computed(() => mobileInventoryCategoryMeta(props.kind));
 watch(() => props.kind, cancelSearch);
 onDeactivated(() => {
   composing.value = false;
@@ -149,9 +151,9 @@ defineExpose({ cancelSearch, closeFloatingSearch });
         <b v-if="activeFilterCount">{{ activeFilterCount }}</b>
       </button>
     </form>
-    <div class="mobile-inventory-status">
+    <div v-if="hasFilters || search.trim()" class="mobile-inventory-status">
       <p role="status">
-        {{ total }} {{ kind === "character" ? "名角色" : kind === "lightCone" ? "把光锥" : "件遗器"
+        {{ total }} {{ categoryMeta.unit }}{{ categoryMeta.name
         }}<span v-if="search.trim()"> · 搜索“{{ search.trim() }}”</span
         ><span v-if="hasFilters"> · 筛选结果</span>
       </p>

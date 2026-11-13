@@ -17,6 +17,7 @@ import MobileInventoryPreview from "@/features/inventory/MobileInventoryPreview.
 import { useMobileInventoryWindow } from "@/features/inventory/useMobileInventoryWindow";
 import { useMobileRelicQuality } from "@/features/inventory/useMobileRelicQuality";
 import { createInventoryFilterForm } from "@/features/inventory/filter";
+import { mobileInventoryCategoryMeta } from "@/features/inventory/mobile-inventory-categories";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import type { InventoryKind, RelicListItem } from "@/types";
@@ -133,6 +134,10 @@ const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
   "inventory",
   pageActive,
 );
+const activeCategoryMeta = computed(() => mobileInventoryCategoryMeta(archive.kind.value));
+const hasActiveFilters = computed(
+  () => archive.hasActiveSearchOrFilters.value || qualityCount.value > 0,
+);
 function warmNeighbours() {
   if (!pageActive.value) return;
   for (const kind of ["relic", "lightCone", "character"] as const) {
@@ -161,6 +166,16 @@ onDeactivated(() => {
             :motion-ms="pager.active.value ? pager.duration.value : undefined"
             @category="switchKind"
           />
+          <span
+            class="mobile-inventory-count-pill"
+            :class="{ 'is-filtered': hasActiveFilters }"
+            role="status"
+          >
+            <i class="mobile-inventory-count-pill-dot" aria-hidden="true" />
+            <b>{{ archive.result.value.total }}</b>
+            <span class="mobile-inventory-count-unit">{{ activeCategoryMeta.unit }}</span>
+            <span class="mobile-inventory-count-noun">{{ activeCategoryMeta.name }}</span>
+          </span>
           <slot name="toolbar-actions" />
         </div>
       </Teleport>

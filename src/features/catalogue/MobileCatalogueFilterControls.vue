@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, inject, onDeactivated, reactive, ref, watch } from "vue";
+import { computed, inject, onDeactivated, reactive, ref, toRef, watch } from "vue";
 import Button from "primevue/button";
 import Drawer from "primevue/drawer";
 import { pathIconSrc } from "@/shared/catalogue";
 import FilterCheckIcon from "@/features/inventory/FilterCheckIcon.vue";
+import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { catalogueRailHostKey } from "./catalogue-capsule-host";
 
 const ELEMENT_COLORS: Record<string, string> = {
@@ -44,6 +45,11 @@ const search = defineModel<string>("search", { default: "" });
 
 const railHost = inject(catalogueRailHostKey, undefined);
 const railTarget = computed(() => railHost?.value ?? null);
+const {
+  host: topHeaderHost,
+  enabled: useTopHeader,
+  isUnfoldedPortrait,
+} = useMobileTopHeaderTarget("catalogue", toRef(props, "active"));
 const drawerOpen = ref(false);
 
 const draft = reactive({
@@ -146,28 +152,31 @@ onDeactivated(() => {
       >
         重置
       </button>
-      <button
-        type="button"
-        class="mobile-catalogue-inline-filter"
-        :class="{ 'is-active': activeCount > 0 }"
-        :aria-label="activeCount ? `${ariaLabel}，已选 ${activeCount} 项条件` : ariaLabel"
-        @click="openDrawer()"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          aria-hidden="true"
+      <Teleport :to="topHeaderHost ?? 'body'" :disabled="!useTopHeader">
+        <button
+          v-if="active || !isUnfoldedPortrait"
+          type="button"
+          class="mobile-catalogue-inline-filter"
+          :class="{ 'is-active': activeCount > 0 }"
+          :aria-label="activeCount ? `${ariaLabel}，已选 ${activeCount} 项条件` : ariaLabel"
+          @click="openDrawer()"
         >
-          <path d="M4 7h16M4 17h16" />
-          <circle cx="9" cy="7" r="2.5" />
-          <circle cx="15" cy="17" r="2.5" />
-        </svg>
-        <span>筛选</span>
-        <b v-if="activeCount">{{ activeCount }}</b>
-      </button>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M4 17h16" />
+            <circle cx="9" cy="7" r="2.5" />
+            <circle cx="15" cy="17" r="2.5" />
+          </svg>
+          <span>筛选</span>
+          <b v-if="activeCount">{{ activeCount }}</b>
+        </button>
+      </Teleport>
     </div>
   </div>
 

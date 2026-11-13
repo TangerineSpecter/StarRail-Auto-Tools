@@ -15,9 +15,11 @@ export function useMobileTopHeaderTarget(
 ): {
   host: Ref<HTMLElement | null>;
   enabled: Ref<boolean>;
+  isUnfoldedPortrait: Ref<boolean>;
 } {
   const context = inject(mobileTopHeaderKey, null);
   const host = computed(() => context?.host.value ?? null);
+  const isUnfoldedPortrait = computed(() => Boolean(context?.isUnfoldedPortrait.value));
   const enabled = computed(() =>
     Boolean(
       context &&
@@ -27,5 +29,5 @@ export function useMobileTopHeaderTarget(
       context.activePage.value === pageId,
     ),
   );
-  return { host, enabled };
+  return { host, enabled, isUnfoldedPortrait };
 }

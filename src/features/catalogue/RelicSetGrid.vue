@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useMobileSubMode } from "@/shared/contracts/mobile-sub-mode";
+import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import MobileFarmingList from "./MobileFarmingList.vue";
 import { catalogueCapsuleHostKey } from "./catalogue-capsule-host";
@@ -161,6 +162,10 @@ const capsuleHost = inject(catalogueCapsuleHostKey, undefined);
 const teleportTarget = computed(() => capsuleHost?.value ?? null);
 const keptAlive = ref(!props.preview);
 const isActive = computed(() => !props.preview && keptAlive.value && (props.active ?? true));
+const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
+  "catalogue",
+  isActive,
+);
 const visibleSets = computed(() => (props.preview ? props.sets.slice(0, 12) : props.sets));
 const topModeLabel = computed(() => {
   switch (viewMode.value) {
@@ -233,23 +238,25 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
 </script>
 <template>
   <div class="relic-catalogue-section">
-    <div v-if="mobile" class="mobile-relic-submode-bar" aria-live="polite">
-      <button
-        type="button"
-        class="mobile-relic-submode-btn"
-        :aria-label="`当前展示：${topModeLabel}，点击切换下一项`"
-        @click="!preview && nextViewMode()"
-      >
-        <span>{{ topModeLabel }}</span>
-        <span class="mobile-relic-submode-dots" aria-hidden="true">
-          <i
-            v-for="(mode, idx) in viewModes"
-            :key="mode"
-            :class="{ active: idx === viewModes.indexOf(viewMode) }"
-          />
-        </span>
-      </button>
-    </div>
+    <Teleport v-if="mobile && useTopHeader && topHeaderHost" :to="topHeaderHost">
+      <div class="mobile-relic-submode-bar" aria-live="polite">
+        <button
+          type="button"
+          class="mobile-relic-submode-btn"
+          :aria-label="`当前展示：${topModeLabel}，点击切换下一项`"
+          @click="nextViewMode()"
+        >
+          <span>{{ topModeLabel }}</span>
+          <span class="mobile-relic-submode-dots" aria-hidden="true">
+            <i
+              v-for="(mode, idx) in viewModes"
+              :key="mode"
+              :class="{ active: idx === viewModes.indexOf(viewMode) }"
+            />
+          </span>
+        </button>
+      </div>
+    </Teleport>
     <div v-if="!mobile" class="relic-catalogue-toolbar">
       <div>
         <p class="relic-catalogue-kicker">SET TARGET PULSE</p>

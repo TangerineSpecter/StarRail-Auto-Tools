@@ -13,6 +13,7 @@ const props = defineProps<{
   lightCones: LightConeCatalogueEntry[];
   ownedCounts: Map<number, number>;
   preview?: boolean;
+  active?: boolean;
 }>();
 const emit = defineEmits<{ select: [lightCone: LightConeCatalogueEntry] }>();
 
@@ -83,7 +84,7 @@ const visibleLightCones = computed(() =>
       v-model:rarity="selectedRarity"
       v-model:owned="selectedOwned"
       v-model:search="searchQuery"
-      :active="isActive && !preview"
+      :active="isActive && (props.active ?? true) && !preview"
       unit="把光锥"
       :total="filteredLightCones.length"
       :available-paths="availablePaths"

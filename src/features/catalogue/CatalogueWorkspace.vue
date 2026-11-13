@@ -292,12 +292,14 @@ onBeforeUnmount(removeListeners);
               key="lightCone"
               :light-cones="catalogueLightCones"
               :owned-counts="lightConeCounts"
+              :active="tab === 'lightCone'"
               @select="selectedLightCone = $event"
             />
             <CharacterGrid
               v-else-if="tab === 'character'"
               key="character"
               :characters="catalogueCharacters"
+              :active="tab === 'character'"
               @select="selectedCharacter = $event"
             />
           </KeepAlive>

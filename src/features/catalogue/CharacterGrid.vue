@@ -11,6 +11,7 @@ const mobile = useMobileView();
 const props = defineProps<{
   characters: CharacterCatalogueEntry[];
   preview?: boolean;
+  active?: boolean;
 }>();
 const emit = defineEmits<{ select: [character: CharacterCatalogueEntry] }>();
 
@@ -85,7 +86,7 @@ const visibleCharacters = computed(() =>
       v-model:element="selectedElement"
       v-model:rarity="selectedRarity"
       v-model:search="searchQuery"
-      :active="isActive && !preview"
+      :active="isActive && (props.active ?? true) && !preview"
       unit="名角色"
       :total="filteredCharacters.length"
       :available-paths="availablePaths"

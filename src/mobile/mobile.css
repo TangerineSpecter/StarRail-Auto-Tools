@@ -407,10 +407,11 @@ input {
   right: 0;
   min-height: max(54px, env(safe-area-inset-top, 0px));
   padding: max(10px, calc(env(safe-area-inset-top, 0px) * 0.22))
-    calc(var(--mobile-frame-offset) + max(118px, calc(var(--mobile-content-right) + 94px))) 4px
+    calc(var(--mobile-frame-offset) + max(108px, calc(var(--mobile-content-right) + 84px))) 4px
     calc(var(--mobile-frame-offset) + var(--mobile-content-left));
   display: flex;
   align-items: center;
+  gap: 10px;
   z-index: 98;
   background: linear-gradient(180deg, rgba(241, 246, 255, 0.94) 0%, rgba(248, 251, 255, 0.84) 100%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
@@ -427,8 +428,18 @@ input {
   margin: 0;
 }
 [data-posture="unfolded-portrait"] .mobile-top-header > .catalogue-tabs {
+  order: 0;
+  flex: 0 1 auto;
+  min-width: 0;
   max-width: 100%;
   margin: 0;
+}
+[data-posture="unfolded-portrait"]
+  .mobile-top-header
+  > :is(.mobile-relic-submode-bar, .mobile-catalogue-inline-filter) {
+  order: 2;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* The expanded menu shares the viewport-edge rail with the system status UI.

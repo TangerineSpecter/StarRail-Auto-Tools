@@ -1491,9 +1491,68 @@ html.mobile-view .detail-drawer-content small {
   flex-shrink: 0;
   margin: 0;
 }
+.mobile-inventory-count-pill {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(238, 244, 252, 0.9);
+  border: 1px solid rgba(28, 53, 71, 0.08);
+  color: #5b6978;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+.mobile-inventory-count-pill-dot {
+  width: 6px;
+  height: 6px;
+  margin-right: 1px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.45);
+  flex-shrink: 0;
+}
+.mobile-inventory-count-pill b {
+  color: #1c3547;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.mobile-inventory-count-pill.is-filtered {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.24);
+  color: #1d4ed8;
+}
+.mobile-inventory-count-pill.is-filtered .mobile-inventory-count-pill-dot {
+  background: #2563eb;
+}
+.mobile-inventory-count-pill.is-filtered b {
+  color: #1d4ed8;
+}
 .mobile-inventory-toolbar > .mobile-dev-data-switch {
   flex-shrink: 0;
-  margin-left: auto;
+}
+@container inventory-toolbar (max-width: 315px) {
+  .mobile-inventory-toolbar .mobile-inventory-categories {
+    gap: 14px;
+    --inventory-category-step: 58px;
+  }
+  .mobile-inventory-count-pill {
+    gap: 3px;
+    padding: 0 8px;
+  }
+  .mobile-inventory-count-noun {
+    display: none;
+  }
 }
 @container inventory-toolbar (max-width: 260px) {
   .mobile-inventory-toolbar .mobile-inventory-categories {
@@ -1906,6 +1965,56 @@ html.mobile-view .mobile-archive.is-split .mobile-floating-search {
   place-items: center;
   min-width: 17px;
   height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #ffffff;
+  font-size: 10px;
+  line-height: 1;
+}
+html.mobile-view[data-posture="unfolded-portrait"] .mobile-catalogue-status {
+  min-height: 24px;
+  margin-bottom: 8px;
+}
+.mobile-top-header .mobile-catalogue-inline-filter {
+  position: relative;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid rgba(210, 222, 238, 0.9);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(15, 28, 48, 0.05);
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-top-header .mobile-catalogue-inline-filter span {
+  display: none;
+}
+.mobile-top-header .mobile-catalogue-inline-filter svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.mobile-top-header .mobile-catalogue-inline-filter.is-active {
+  background: #1c3547;
+  border-color: #1c3547;
+  color: #ffffff;
+}
+.mobile-top-header .mobile-catalogue-inline-filter.is-active svg {
+  stroke: #ffffff;
+}
+.mobile-top-header .mobile-catalogue-inline-filter b {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
   padding: 0 4px;
   border-radius: 999px;
   background: var(--blue);
@@ -2412,11 +2521,11 @@ html.mobile-view:not([data-posture="unfolded-portrait"]) .mobile-relic-submode-b
   display: none !important;
 }
 
-html.mobile-view[data-posture="unfolded-portrait"] .mobile-relic-submode-bar {
+html.mobile-view[data-posture="unfolded-portrait"] .mobile-top-header .mobile-relic-submode-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 0 8px;
+  justify-content: flex-end;
+  margin: 0;
 }
 .mobile-relic-submode-btn {
   display: inline-flex;
@@ -2424,14 +2533,14 @@ html.mobile-view[data-posture="unfolded-portrait"] .mobile-relic-submode-bar {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  min-width: 88px;
-  min-height: 32px;
-  padding: 4px 12px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 4px 8px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: #1c3547;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.1;
   white-space: nowrap;
