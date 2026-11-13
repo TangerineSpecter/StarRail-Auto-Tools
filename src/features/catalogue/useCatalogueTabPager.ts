@@ -193,7 +193,8 @@ export function useCatalogueTabPager<T extends string>(options: {
   const touch = useHorizontalSwipe({
     surface: options.surface,
     enabled: computed(() => options.enabled.value && !settling.value),
-    dragHandle: ".catalogue-tabs button",
+    dragHandle:
+      ".catalogue-tabs button, .catalogue-card, .lightcone-catalogue-card, .character-catalogue-card, .mobile-farming-item, .relic-target-bar-row",
     onDrag: drag,
     onRelease: (distance, velocity) => {
       if (active.value) drag(distance);

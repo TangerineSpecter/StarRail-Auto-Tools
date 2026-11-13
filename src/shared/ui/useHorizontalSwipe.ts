@@ -31,11 +31,12 @@ export function useHorizontalSwipe(options: {
   }
   function eligible(target: EventTarget | null, surface: HTMLElement) {
     if (!(target instanceof Element)) return false;
+    if (target.closest("[data-swipe-ignore]")) return false;
     const handle = options.dragHandle ? target.closest(options.dragHandle) : null;
     if (
       !handle &&
       target.closest(
-        'input, textarea, select, button, a, summary, [contenteditable]:not([contenteditable="false"]), [role="slider"], [data-swipe-ignore]',
+        'input, textarea, select, button, a, summary, [contenteditable]:not([contenteditable="false"]), [role="slider"]',
       )
     )
       return false;
