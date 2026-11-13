@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { pathIconSrc } from "@/shared/catalogue";
 import { useMobileView } from "@/shared/contracts/mobile-view";
+import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { formatBaseStat } from "@/shared/utils/display";
 import { lightConeSkillEffect } from "@/shared/utils/standing-stats";
 import type { LightConeCatalogueEntry } from "@/types";
@@ -14,6 +16,7 @@ const props = defineProps<{
 const mobile = useMobileView();
 const emit = defineEmits<{ close: [] }>();
 useCloseOnEscape(() => emit("close"));
+const sheetDrag = useSheetDragDismiss(() => emit("close"));
 
 const skillName = computed(() => props.lightCone.skill?.name ?? "");
 const firstEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 1));
@@ -28,16 +31,41 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
       aria-modal="true"
       :aria-label="`${lightCone.name}的图鉴信息`"
     >
-      <button class="catalogue-character-modal-close" type="button" @click="emit('close')">
+      <button
+        v-if="!mobile"
+        class="catalogue-character-modal-close"
+        type="button"
+        @click="emit('close')"
+      >
         ×
       </button>
-      <header class="lightcone-catalogue-modal-header">
-        <img v-if="lightCone.image" :src="lightCone.image" :alt="lightCone.name" />
-        <span v-else>◇</span>
-        <div>
-          <p class="eyebrow">LIGHT CONE ARCHIVE</p>
+      <header
+        :class="['lightcone-catalogue-modal-header', `rarity-${lightCone.rarity}`]"
+        v-on="mobile ? sheetDrag.handlers : {}"
+      >
+        <span v-if="mobile" class="catalogue-modal-grabber" aria-hidden="true" />
+        <div :class="['lightcone-header-cover', `rarity-${lightCone.rarity}`]">
+          <img v-if="lightCone.image" :src="lightCone.image" :alt="lightCone.name" />
+          <span v-else class="lightcone-header-fallback">◇</span>
+          <span v-if="mobile" class="lightcone-header-bar" aria-hidden="true" />
+        </div>
+        <div class="lightcone-header-info">
+          <p v-if="!mobile" class="eyebrow">LIGHT CONE ARCHIVE</p>
           <h2>{{ lightCone.name }}</h2>
-          <small>{{ lightCone.path }} · {{ "★".repeat(lightCone.rarity) }}</small>
+          <div v-if="mobile" class="lightcone-mobile-meta">
+            <span class="lightcone-meta-path">
+              <img :src="pathIconSrc(lightCone.path)" alt="" />{{ lightCone.path }}
+            </span>
+            <span
+              :class="['lightcone-meta-stars', `rarity-${lightCone.rarity}`]"
+              :aria-label="`${lightCone.rarity} 星`"
+              >{{ "★".repeat(lightCone.rarity) }}</span
+            >
+            <span :class="['lightcone-meta-owned', { 'is-owned': ownedCount > 0 }]">
+              {{ formatOwnedCount(ownedCount, "把") }}
+            </span>
+          </div>
+          <small v-else>{{ lightCone.path }} · {{ "★".repeat(lightCone.rarity) }}</small>
         </div>
       </header>
       <div class="lightcone-catalogue-modal-body">
@@ -45,10 +73,11 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
         <section class="lightcone-catalogue-section">
           <header class="lightcone-section-header">
             <div>
-              <p class="eyebrow">LEVEL 80 · MAX ASCENSION</p>
+              <p v-if="!mobile" class="eyebrow">LEVEL 80 · MAX ASCENSION</p>
               <h3>基础属性</h3>
             </div>
-            <span class="lightcone-catalogue-owned-badge">
+            <span v-if="mobile" class="lightcone-level-pill">满级 Lv.80</span>
+            <span v-else class="lightcone-catalogue-owned-badge">
               {{ formatOwnedCount(ownedCount, "把") }}
             </span>
           </header>
@@ -77,13 +106,23 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
         <section v-if="skillName" class="lightcone-catalogue-skill">
           <header class="lightcone-section-header">
             <div>
-              <p class="eyebrow">LIGHT CONE SKILL</p>
+              <p v-if="!mobile" class="eyebrow">LIGHT CONE SKILL</p>
               <h3>{{ skillName }}</h3>
             </div>
+            <span v-if="mobile" class="lightcone-skill-badge">光锥技能</span>
           </header>
           <div class="lightcone-skill-effects">
-            <p v-if="firstEffect"><b>叠影 1</b>{{ firstEffect }}</p>
-            <p v-if="maxEffect && maxEffect !== firstEffect"><b>叠影 5</b>{{ maxEffect }}</p>
+            <div v-if="firstEffect" class="lightcone-skill-rank-box">
+              <span class="rank-pill">叠影 1</span>
+              <p>{{ firstEffect }}</p>
+            </div>
+            <div
+              v-if="maxEffect && maxEffect !== firstEffect"
+              class="lightcone-skill-rank-box is-max"
+            >
+              <span class="rank-pill">叠影 5</span>
+              <p>{{ maxEffect }}</p>
+            </div>
           </div>
         </section>
       </div>
@@ -103,6 +142,7 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
   animation: catalogue-modal-in 200ms ease-out;
 }
 .lightcone-catalogue-modal-header {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 17px;
@@ -113,18 +153,31 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
     linear-gradient(125deg, #1e3659, #315e99 64%, #467ec5),
     radial-gradient(circle at 80% 0%, rgba(237, 203, 120, 0.34), transparent 42%);
 }
-.lightcone-catalogue-modal-header > img,
-.lightcone-catalogue-modal-header > span {
+.lightcone-header-cover {
+  position: relative;
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 76px;
   height: 76px;
+}
+.lightcone-header-cover img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
-.lightcone-catalogue-modal-header > span {
+.lightcone-header-fallback {
   display: grid;
   place-items: center;
+  width: 100%;
+  height: 100%;
   border: 1px dashed rgba(255, 255, 255, 0.56);
   font-size: 28px;
+}
+.lightcone-header-info {
+  min-width: 0;
+  flex: 1;
 }
 .lightcone-catalogue-modal-header p,
 .lightcone-catalogue-modal-header h2,
@@ -250,30 +303,210 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
   background: #fff;
   box-shadow: 0 2px 6px rgba(35, 75, 128, 0.04);
 }
-.lightcone-skill-effects p {
-  margin: 8px 0 0;
+.lightcone-skill-effects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lightcone-skill-rank-box {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+.lightcone-skill-rank-box .rank-pill {
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #eaf2fc;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.lightcone-skill-rank-box.is-max .rank-pill {
+  background: #fdf0d5;
+  color: #8f5306;
+}
+.lightcone-skill-rank-box p {
+  margin: 0;
   color: var(--ink-soft);
   font-size: 12px;
-  line-height: 1.55;
+  line-height: 1.58;
 }
-.lightcone-skill-effects p:first-child {
-  margin-top: 6px;
+/* Mobile catalogue modal redesign */
+.lightcone-modal-mobile {
+  border: 1px solid rgba(28, 49, 80, 0.1);
+  background: #f4f7fc;
 }
-.lightcone-skill-effects p b {
-  display: inline-block;
-  width: 48px;
-  color: var(--blue);
+.catalogue-modal-grabber {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(28, 49, 80, 0.16);
+}
+.lightcone-modal-mobile .lightcone-catalogue-modal-header {
+  min-height: 0;
+  padding: 20px 16px 14px;
+  gap: 12px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafe 100%);
+  border-bottom: 1px solid rgba(28, 49, 80, 0.07);
+}
+.lightcone-modal-mobile .lightcone-catalogue-modal-header.rarity-5 {
+  background: linear-gradient(180deg, #fffdf7 0%, #f9fafc 100%);
+}
+.lightcone-modal-mobile .lightcone-catalogue-modal-header.rarity-4 {
+  background: linear-gradient(180deg, #fbf9ff 0%, #f8f9fc 100%);
+}
+.lightcone-modal-mobile .lightcone-header-cover {
+  width: 60px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(28, 49, 80, 0.1);
+  background: linear-gradient(155deg, #f3f6fb, #e5ebf5);
+}
+.lightcone-modal-mobile .lightcone-header-cover.rarity-5 {
+  border-color: rgba(217, 147, 44, 0.3);
+  background: linear-gradient(155deg, #fff8eb 0%, #f7e6c4 100%);
+}
+.lightcone-modal-mobile .lightcone-header-cover.rarity-4 {
+  border-color: rgba(124, 92, 219, 0.24);
+  background: linear-gradient(155deg, #f8f4ff 0%, #eadffd 100%);
+}
+.lightcone-modal-mobile .lightcone-header-cover.rarity-3 {
+  border-color: rgba(60, 131, 206, 0.22);
+  background: linear-gradient(155deg, #f1f7fe 0%, #dcebfb 100%);
+}
+.lightcone-modal-mobile .lightcone-header-cover img {
+  width: 90%;
+  height: 90%;
+  filter: drop-shadow(0 3px 6px rgba(24, 38, 62, 0.14));
+}
+.lightcone-header-bar {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: #9fb0c6;
+}
+.lightcone-header-cover.rarity-5 .lightcone-header-bar {
+  background: linear-gradient(90deg, #d98c24, #f4c86a);
+}
+.lightcone-header-cover.rarity-4 .lightcone-header-bar {
+  background: linear-gradient(90deg, #7756d6, #ae92f5);
+}
+.lightcone-header-cover.rarity-3 .lightcone-header-bar {
+  background: linear-gradient(90deg, #3c83ce, #78b7f0);
+}
+.lightcone-modal-mobile .lightcone-catalogue-modal-header h2 {
+  margin: 0 0 7px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.28;
+}
+.lightcone-mobile-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lightcone-meta-path {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 6px;
+  background: #edf2f8;
+  color: #415873;
+  font-size: 11px;
+  font-weight: 600;
+}
+.lightcone-meta-path img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  filter: brightness(0) opacity(0.65);
+}
+.lightcone-meta-stars {
+  color: #d68e1c;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+.lightcone-meta-stars.rarity-4 {
+  color: #845ed7;
+}
+.lightcone-meta-stars.rarity-3 {
+  color: #3f84ce;
+}
+.lightcone-meta-owned {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #edf2f7;
+  color: #65788f;
+  font-size: 11px;
+  font-weight: 600;
+}
+.lightcone-meta-owned.is-owned {
+  background: #e6f0fc;
+  color: #1655b3;
+}
+.lightcone-modal-mobile .lightcone-catalogue-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: none;
+  padding: 14px;
+}
+.lightcone-modal-mobile .lightcone-catalogue-section,
+.lightcone-modal-mobile .lightcone-catalogue-skill {
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid rgba(28, 49, 80, 0.07);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(24, 43, 74, 0.03);
+}
+.lightcone-modal-mobile .lightcone-section-header {
+  align-items: center;
+  margin-bottom: 10px;
+}
+.lightcone-modal-mobile .lightcone-section-header h3 {
+  margin: 0;
+  font-size: 15px;
   font-weight: 700;
 }
-/* The mobile detail owns its compact strip; lazy-loaded desktop styles cannot
-   turn it back into the two-row card grid. */
+.lightcone-level-pill,
+.lightcone-skill-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.lightcone-level-pill {
+  background: #fef3dc;
+  color: #93580a;
+}
+.lightcone-skill-badge {
+  background: #eef4fc;
+  color: #2f5b8f;
+}
 .lightcone-modal-mobile .lightcone-base-stat-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
-  padding: 4px 0;
-  border: 0;
-  border-radius: 10px;
-  background: #f3f5f8;
+  padding: 10px 0;
+  border: 1px solid rgba(36, 86, 166, 0.08);
+  border-radius: 11px;
+  background: #f5f8fd;
 }
 .lightcone-modal-mobile .lightcone-stat-item {
   display: flex;
@@ -282,23 +515,45 @@ const maxEffect = computed(() => lightConeSkillEffect(props.lightCone.skill, 5))
   min-height: 0;
   padding: 0 8px;
   border: 0;
-  border-right: 1px solid var(--line);
+  border-right: 1px solid rgba(36, 86, 166, 0.1);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   transform: none;
 }
-.lightcone-modal-mobile .lightcone-base-stat-grid > :last-child:nth-child(odd) {
-  grid-column: auto;
+.lightcone-modal-mobile .lightcone-base-stat-grid > :last-child {
   border-right: 0;
 }
 .lightcone-modal-mobile .lightcone-stat-item .stat-label {
-  font-size: 13px;
-  line-height: 1.4;
+  color: #5c7089;
+  font-size: 12px;
+  line-height: 1.3;
 }
 .lightcone-modal-mobile .lightcone-stat-item .stat-value {
-  color: var(--ink);
-  font-size: 16px;
-  line-height: 1.3;
+  color: #1655b3;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.lightcone-modal-mobile .lightcone-skill-rank-box {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(36, 86, 166, 0.08);
+  background: #f6f9fe;
+}
+.lightcone-modal-mobile .lightcone-skill-rank-box.is-max {
+  background: #fffaf1;
+  border-color: rgba(217, 147, 44, 0.16);
+}
+.lightcone-modal-mobile .lightcone-skill-rank-box .rank-pill {
+  justify-self: start;
+  margin-top: 0;
+}
+.lightcone-modal-mobile .lightcone-skill-rank-box p {
+  color: #364962;
+  font-size: 13px;
+  line-height: 1.62;
 }
 </style>

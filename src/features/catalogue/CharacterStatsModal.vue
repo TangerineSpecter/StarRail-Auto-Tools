@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { inventoryApi } from "@/shared/api/inventory";
-import { catalogueCharacterId, lightConeById, relicCatalogue } from "@/shared/catalogue";
+import {
+  catalogueCharacterId,
+  lightConeById,
+  pathIconSrc,
+  relicCatalogue,
+} from "@/shared/catalogue";
+import { useMobileView } from "@/shared/contracts/mobile-view";
+import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { formatStatValue, pathLabel, slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import { formatBaseStat } from "@/shared/utils/display";
 import type { CharacterCatalogueEntry } from "@/types";
@@ -10,8 +17,10 @@ import { useCloseOnEscape } from "./close-on-escape";
 import CharacterAbilities from "./CharacterAbilities.vue";
 
 const props = defineProps<{ character: CharacterCatalogueEntry }>();
+const mobile = useMobileView();
 const emit = defineEmits<{ close: [] }>();
 useCloseOnEscape(() => emit("close"));
+const sheetDrag = useSheetDragDismiss(() => emit("close"));
 
 const equipment = ref<CatalogueCharacterEquipment | null>(null);
 const equipmentLoading = ref(true);
@@ -68,63 +77,96 @@ onBeforeUnmount(() => {
   <div class="catalogue-character-modal-backdrop" @click.self="emit('close')">
     <section
       class="catalogue-character-modal"
+      :class="{ 'character-modal-mobile': mobile }"
       role="dialog"
       aria-modal="true"
       :aria-label="`${character.name}的基础属性`"
     >
-      <button class="catalogue-character-modal-close" type="button" @click="emit('close')">
+      <button
+        v-if="!mobile"
+        class="catalogue-character-modal-close"
+        type="button"
+        @click="emit('close')"
+      >
         ×
       </button>
       <div
         class="catalogue-character-modal-hero"
+        :data-element="character.element"
         :style="
-          character.backgroundImage
+          !mobile && character.backgroundImage
             ? { backgroundImage: `url(${character.backgroundImage})` }
             : undefined
         "
+        v-on="mobile ? sheetDrag.handlers : {}"
       >
+        <span
+          v-if="mobile"
+          class="catalogue-modal-grabber catalogue-modal-grabber--light"
+          aria-hidden="true"
+        />
         <img v-if="character.image" :src="character.image" :alt="character.name" />
         <div class="catalogue-character-modal-title">
-          <p>BASELINE PROFILE</p>
+          <p v-if="!mobile">BASELINE PROFILE</p>
           <h2>{{ character.name }}</h2>
-          <span>{{ character.element }} · {{ character.path }}</span>
+          <div v-if="mobile" class="character-modal-meta">
+            <span :class="['character-element-tag', `elem-tag-${character.element}`]">
+              <img
+                v-if="character.elementIcon"
+                class="character-element-tag-icon"
+                :src="character.elementIcon"
+                :alt="character.element"
+              />
+              <span class="character-element-tag-text">{{ character.element }}</span>
+            </span>
+            <span class="character-modal-path-pill">
+              <img :src="pathIconSrc(character.path)" alt="" />{{ character.path }}
+            </span>
+            <span class="character-modal-stars" :aria-label="`${character.rarity ?? 5} 星`">
+              {{ "★".repeat(character.rarity ?? 5) }}
+            </span>
+          </div>
+          <span v-else>{{ character.element }} · {{ character.path }}</span>
         </div>
       </div>
       <div class="catalogue-character-modal-body">
-        <header>
-          <div>
-            <p class="eyebrow">LEVEL 80 · MAX ASCENSION</p>
-            <h3>基础属性</h3>
+        <section class="catalogue-character-stats-section">
+          <header>
+            <div>
+              <p v-if="!mobile" class="eyebrow">LEVEL 80 · MAX ASCENSION</p>
+              <h3>基础属性</h3>
+            </div>
+            <span v-if="mobile" class="character-modal-level-pill">满级 Lv.80</span>
+            <small v-else>满级</small>
+          </header>
+          <div v-if="character.baseStats" class="base-stat-grid">
+            <div>
+              <span>生命值</span><b>{{ formatBaseStat(character.baseStats.hp) }}</b
+              ><small v-if="!mobile">HP</small>
+            </div>
+            <div>
+              <span>攻击力</span><b>{{ formatBaseStat(character.baseStats.attack) }}</b
+              ><small v-if="!mobile">ATK</small>
+            </div>
+            <div>
+              <span>防御力</span><b>{{ formatBaseStat(character.baseStats.defense) }}</b
+              ><small v-if="!mobile">DEF</small>
+            </div>
+            <div>
+              <span>速度</span><b>{{ formatBaseStat(character.baseStats.speed) }}</b
+              ><small v-if="!mobile">SPD</small>
+            </div>
+            <div>
+              <span>嘲讽</span><b>{{ formatBaseStat(character.baseStats.taunt) }}</b
+              ><small v-if="!mobile">TAUNT</small>
+            </div>
           </div>
-          <small>满级</small>
-        </header>
-        <div v-if="character.baseStats" class="base-stat-grid">
-          <div>
-            <span>生命值</span><b>{{ formatBaseStat(character.baseStats.hp) }}</b
-            ><small>HP</small>
-          </div>
-          <div>
-            <span>攻击力</span><b>{{ formatBaseStat(character.baseStats.attack) }}</b
-            ><small>ATK</small>
-          </div>
-          <div>
-            <span>防御力</span><b>{{ formatBaseStat(character.baseStats.defense) }}</b
-            ><small>DEF</small>
-          </div>
-          <div>
-            <span>速度</span><b>{{ formatBaseStat(character.baseStats.speed) }}</b
-            ><small>SPD</small>
-          </div>
-          <div>
-            <span>嘲讽</span><b>{{ formatBaseStat(character.baseStats.taunt) }}</b
-            ><small>TAUNT</small>
-          </div>
-        </div>
-        <p v-else class="base-stat-empty">该角色的基础属性尚未同步。</p>
+          <p v-else class="base-stat-empty">该角色的基础属性尚未同步。</p>
+        </section>
         <section class="catalogue-character-equipment">
           <header>
             <div>
-              <p class="eyebrow">CURRENT EQUIPMENT</p>
+              <p v-if="!mobile" class="eyebrow">CURRENT EQUIPMENT</p>
               <h3>当前装备</h3>
             </div>
             <small v-if="equipment">{{ equippedRelics.length }} / 6 件遗器</small>

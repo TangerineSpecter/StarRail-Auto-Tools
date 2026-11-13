@@ -34,11 +34,23 @@ export function useCatalogueTabPager<T extends string>(options: {
   let cancelWait: (() => void) | undefined;
 
   const index = () => options.order.indexOf(options.tab.value);
-  const position = computed(() =>
-    active.value
-      ? Math.max(0, Math.min(options.order.length - 1, startIndex - offset.value / travel.value))
-      : index(),
-  );
+  const switchingTo = ref<T | null>(null);
+  const visualTab = computed(() => switchingTo.value ?? options.tab.value);
+  const position = computed(() => {
+    if (!active.value) return index();
+    const progress = -offset.value / travel.value;
+    const targetIdx = target.value ? options.order.indexOf(target.value) : -1;
+    if (targetIdx >= 0 && Math.abs(targetIdx - startIndex) > 1) {
+      return Math.max(
+        0,
+        Math.min(
+          options.order.length - 1,
+          startIndex + (targetIdx - startIndex) * Math.abs(progress),
+        ),
+      );
+    }
+    return Math.max(0, Math.min(options.order.length - 1, startIndex + progress));
+  });
   const paneStyle = computed(() =>
     active.value
       ? {
@@ -61,6 +73,18 @@ export function useCatalogueTabPager<T extends string>(options: {
     };
   });
 
+  function measurePane() {
+    startIndex = index();
+    width.value = Math.max(
+      1,
+      options.body.value?.clientWidth ?? options.surface.value?.clientWidth ?? 1,
+    );
+    const bodyTop = options.body.value?.getBoundingClientRect().top ?? 0;
+    const viewTop = Math.max(0, options.surface.value?.getBoundingClientRect().top ?? 0);
+    top.value = Math.max(0, viewTop - bodyTop);
+    height.value = Math.max(1, innerHeight - Math.max(viewTop, bodyTop));
+  }
+
   function reset() {
     touch.resetTracking();
     generation += 1;
@@ -71,19 +95,12 @@ export function useCatalogueTabPager<T extends string>(options: {
     offset.value = 0;
     duration.value = 0;
     target.value = null;
+    switchingTo.value = null;
   }
 
   function drag(distance: number) {
     if (!active.value) {
-      startIndex = index();
-      width.value = Math.max(
-        1,
-        options.body.value?.clientWidth ?? options.surface.value?.clientWidth ?? 1,
-      );
-      const bodyTop = options.body.value?.getBoundingClientRect().top ?? 0;
-      const viewTop = Math.max(0, options.surface.value?.getBoundingClientRect().top ?? 0);
-      top.value = Math.max(0, viewTop - bodyTop);
-      height.value = Math.max(1, innerHeight - Math.max(viewTop, bodyTop));
+      measurePane();
       active.value = true;
     }
     const next = options.order[startIndex + (distance < 0 ? 1 : -1)] ?? null;
@@ -94,8 +111,8 @@ export function useCatalogueTabPager<T extends string>(options: {
       : Math.sign(distance) * Math.min(width.value * 0.14, Math.abs(distance) * 0.22);
   }
 
-  async function animateTo(value: number) {
-    duration.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220;
+  async function animateTo(value: number, ms = 220) {
+    duration.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ms;
     offset.value = value;
     await nextTick();
     if (!duration.value) return;
@@ -111,6 +128,43 @@ export function useCatalogueTabPager<T extends string>(options: {
     });
   }
 
+  async function goTo(next: T) {
+    if (!options.enabled.value || next === visualTab.value) return;
+    const targetIdx = options.order.indexOf(next);
+    if (targetIdx < 0) return;
+    reset();
+    const id = ++generation;
+    measurePane();
+    if (targetIdx === startIndex) return;
+    target.value = next;
+    switchingTo.value = next;
+    duration.value = 0;
+    offset.value = 0;
+    active.value = true;
+    settling.value = true;
+    await nextTick();
+    if (id !== generation || !live) return;
+    options.body.value?.getBoundingClientRect();
+    await new Promise<void>((resolve) => {
+      const raf = requestAnimationFrame(() => {
+        cancelWait = undefined;
+        resolve();
+      });
+      cancelWait = () => {
+        cancelAnimationFrame(raf);
+        resolve();
+      };
+    });
+    if (id !== generation || !live) return;
+    await animateTo(targetIdx > startIndex ? -travel.value : travel.value, 260);
+    if (id !== generation || !live) return;
+    await options.onCommit(next);
+    if (id === generation && live) {
+      await nextTick();
+      reset();
+    }
+  }
+
   async function finish(distance: number, velocity: number) {
     if (!active.value || settling.value) return;
     const id = ++generation;
@@ -123,6 +177,7 @@ export function useCatalogueTabPager<T extends string>(options: {
           Math.abs(velocity) > 0.45 &&
           Math.sign(velocity) === Math.sign(distance)));
     if (switchPage && next) {
+      switchingTo.value = next;
       await animateTo(distance < 0 ? -travel.value : travel.value);
       if (id !== generation || !live) return;
       await options.onCommit(next);
@@ -166,6 +221,7 @@ export function useCatalogueTabPager<T extends string>(options: {
   return {
     active,
     settling,
+    visualTab,
     offset,
     travel,
     position,
@@ -175,6 +231,7 @@ export function useCatalogueTabPager<T extends string>(options: {
     height,
     paneStyle,
     neighbourStyle,
+    goTo,
     cancel: reset,
   };
 }

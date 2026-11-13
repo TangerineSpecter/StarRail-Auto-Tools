@@ -2,7 +2,9 @@
 import { computed, onUnmounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { resolveCharacterCatalogue } from "@/shared/catalogue";
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
+import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { useCloseOnEscape } from "./close-on-escape";
 import { summarizeSetTargets } from "./set-target-summary";
 import type {
@@ -15,11 +17,13 @@ const props = defineProps<{
   set: RelicSetCatalogueEntry;
   characters: CharacterCatalogueEntry[];
 }>();
+const mobile = useMobileView();
 const emit = defineEmits<{
   close: [];
   openCharacter: [character: CharacterCatalogueEntry];
 }>();
 useCloseOnEscape(() => emit("close"));
+const sheetDrag = useSheetDragDismiss(() => emit("close"));
 
 const recommendedCharacters = ref<RelicSetRecommendedCharacter[]>([]);
 const loading = ref(false);
@@ -71,11 +75,13 @@ onUnmounted(() => {
   <div class="catalogue-character-modal-backdrop" @click.self="emit('close')">
     <section
       class="set-recommendation-modal"
+      :class="{ 'set-recommendation-modal--mobile': mobile }"
       role="dialog"
       aria-modal="true"
       :aria-label="`${set.name}的推荐角色`"
     >
       <button
+        v-if="!mobile"
         class="catalogue-character-modal-close"
         type="button"
         aria-label="关闭推荐角色"
@@ -83,11 +89,12 @@ onUnmounted(() => {
       >
         ×
       </button>
-      <header class="set-recommendation-header">
+      <header class="set-recommendation-header" v-on="mobile ? sheetDrag.handlers : {}">
+        <span v-if="mobile" class="catalogue-modal-grabber" aria-hidden="true" />
         <img v-if="set.image" :src="set.image" alt="" />
         <span v-else>◇</span>
         <div>
-          <p class="eyebrow">BUILD PLAN TARGET</p>
+          <p v-if="!mobile" class="eyebrow">BUILD PLAN TARGET</p>
           <h2>{{ set.name }}</h2>
           <small>{{ set.kind === "cavern" ? "遗器" : "位面饰品" }} · 已设置为目标的角色</small>
         </div>
@@ -396,5 +403,67 @@ onUnmounted(() => {
   .set-target-summary-row {
     grid-template-columns: 76px minmax(0, 1fr);
   }
+}
+.set-recommendation-modal--mobile {
+  border: 1px solid rgba(28, 49, 80, 0.1);
+  background: #f4f7fc;
+}
+.catalogue-modal-grabber {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(28, 49, 80, 0.16);
+}
+.set-recommendation-modal--mobile .set-recommendation-header {
+  position: relative;
+  min-height: 0;
+  padding: 20px 16px 14px;
+  gap: 12px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafe 100%);
+  border-bottom: 1px solid rgba(28, 49, 80, 0.07);
+}
+.set-recommendation-modal--mobile .set-recommendation-header > img,
+.set-recommendation-modal--mobile .set-recommendation-header > span:not(.catalogue-modal-grabber) {
+  width: 56px;
+  height: 56px;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(28, 49, 80, 0.08);
+  background: linear-gradient(155deg, #f3f6fb, #e5ebf5);
+}
+.set-recommendation-modal--mobile .set-recommendation-header h2 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+}
+.set-recommendation-modal--mobile .set-recommendation-header small {
+  color: #5c7089;
+  font-size: 12px;
+}
+.set-recommendation-modal--mobile .set-recommendation-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: none;
+  padding: 14px;
+}
+.set-recommendation-modal--mobile .set-target-summary,
+.set-recommendation-modal--mobile .set-target-characters {
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid rgba(28, 49, 80, 0.07);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(24, 43, 74, 0.03);
+}
+.set-recommendation-modal--mobile .set-target-chip-list > span {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
 }
 </style>

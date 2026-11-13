@@ -1539,7 +1539,7 @@ button.catalogue-card:hover .relic-effect-row {
   font-size: 31px;
   letter-spacing: 0.06em;
 }
-.catalogue-character-modal-title span {
+.catalogue-character-modal-title > span {
   display: block;
   margin-top: 7px;
   color: rgba(255, 255, 255, 0.78);
@@ -1550,7 +1550,8 @@ button.catalogue-card:hover .relic-effect-row {
   padding: 22px 28px 19px;
   overflow-y: auto;
 }
-.catalogue-character-modal-body > header {
+.catalogue-character-modal-body > header,
+.catalogue-character-stats-section > header {
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -1564,7 +1565,8 @@ button.catalogue-card:hover .relic-effect-row {
   color: var(--ink);
   font-size: 18px;
 }
-.catalogue-character-modal-body > header small {
+.catalogue-character-modal-body > header small,
+.catalogue-character-stats-section > header small {
   color: #9a7839;
   font-size: 12px;
   font-weight: 700;

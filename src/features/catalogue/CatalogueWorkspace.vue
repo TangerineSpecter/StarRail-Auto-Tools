@@ -63,15 +63,16 @@ const setTabButtonRef = (key: string, el: unknown) => {
 };
 const filteredSummaryByTab = ref<Partial<Record<TabKey, { total: number; filtered: boolean }>>>({});
 
-function activeTabSummary() {
-  const current = tabs.find((item) => item.key === tab.value) ?? tabs[0];
+const activeTabSummary = () => {
+  const currentKey = mobile ? pager.visualTab.value : tab.value;
+  const current = tabs.find((item) => item.key === currentKey) ?? tabs[0];
   const override = filteredSummaryByTab.value[current.key];
   return {
     count: override ? override.total : current.count,
     unit: current.unit,
     filtered: override?.filtered ?? false,
   };
-}
+};
 
 function buttonIndicatorX(key: TabKey) {
   const el = tabButtons.value[key];
@@ -121,7 +122,12 @@ const activeIndicatorX = computed(() => {
 });
 
 const capsuleHostStyle = computed(() => {
-  if (!pager.active.value || pager.target.value !== "lightCone") return undefined;
+  if (
+    !pager.active.value ||
+    (pager.target.value !== "lightCone" && pager.target.value !== "character")
+  ) {
+    return undefined;
+  }
   const progress = Math.min(
     1,
     Math.abs(pager.offset.value) / Math.max(1, pager.travel.value * 0.55),
@@ -130,6 +136,10 @@ const capsuleHostStyle = computed(() => {
 });
 
 function selectTab(nextTab: TabKey, explicitDirection?: "next" | "prev") {
+  if (mobile) {
+    void pager.goTo(nextTab);
+    return;
+  }
   pager.cancel();
   skipNextTransition.value = false;
   if (nextTab === tab.value) return;
@@ -250,8 +260,11 @@ onBeforeUnmount(removeListeners);
               v-for="item in tabs"
               :key="item.key"
               :ref="(el) => setTabButtonRef(item.key, el)"
-              :class="['catalogue-tab-btn', { active: tab === item.key }]"
-              :aria-pressed="tab === item.key"
+              :class="[
+                'catalogue-tab-btn',
+                { active: (mobile ? pager.visualTab.value : tab) === item.key },
+              ]"
+              :aria-pressed="(mobile ? pager.visualTab.value : tab) === item.key"
               @click="selectTab(item.key)"
             >
               <span
