@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onDeactivated, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onDeactivated, ref, watch } from "vue";
 import type { InventoryKind } from "@/types";
+import MobileFloatingSearch from "@/shared/ui/MobileFloatingSearch.vue";
 import MobileInventoryCategoryTabs from "./MobileInventoryCategoryTabs.vue";
 import { mobileInventoryCategoryMeta } from "./mobile-inventory-categories";
 
@@ -22,45 +23,16 @@ const emit = defineEmits<{
 }>();
 const composing = ref(false);
 const searchOpen = ref(false);
-const floatingInput = ref<HTMLInputElement | null>(null);
-const keyboardInset = ref(0);
-const viewportTopInset = ref(0);
+const floatingSearchRef = ref<InstanceType<typeof MobileFloatingSearch> | null>(null);
 let timer: ReturnType<typeof setTimeout> | undefined;
-function updateVisualViewport() {
-  if (typeof window === "undefined") return;
-  const vv = window.visualViewport;
-  if (!vv) {
-    keyboardInset.value = 0;
-    viewportTopInset.value = 0;
-    return;
-  }
-  viewportTopInset.value = Math.max(0, Math.round(vv.offsetTop));
-  keyboardInset.value = Math.max(0, Math.round(window.innerHeight - (vv.offsetTop + vv.height)));
-}
-function bindVisualViewport(active: boolean) {
-  if (typeof window === "undefined") return;
-  const vv = window.visualViewport;
-  if (active) {
-    updateVisualViewport();
-    vv?.addEventListener("resize", updateVisualViewport);
-    vv?.addEventListener("scroll", updateVisualViewport);
-    window.addEventListener("resize", updateVisualViewport);
-    return;
-  }
-  vv?.removeEventListener("resize", updateVisualViewport);
-  vv?.removeEventListener("scroll", updateVisualViewport);
-  window.removeEventListener("resize", updateVisualViewport);
-  keyboardInset.value = 0;
-  viewportTopInset.value = 0;
-}
 function cancelSearch() {
   clearTimeout(timer);
   timer = undefined;
+  floatingSearchRef.value?.cancelPending();
 }
-function submit(blur = false) {
+function submit() {
   cancelSearch();
   if (!composing.value) emit("search");
-  if (blur) floatingInput.value?.blur();
 }
 function scheduleSearch() {
   cancelSearch();
@@ -78,47 +50,33 @@ function finishComposition() {
   composing.value = false;
   scheduleSearch();
 }
-function openFloatingSearch() {
-  searchOpen.value = true;
-  void nextTick(() => {
-    floatingInput.value?.focus({ preventScroll: true });
-    floatingInput.value?.select();
-  });
-}
 function closeFloatingSearch() {
   searchOpen.value = false;
 }
-function dismissFloatingSearch() {
-  composing.value = false;
-  if (timer !== undefined) submit();
-  closeFloatingSearch();
-}
-function submitFloatingSearch() {
-  if (composing.value) return;
-  submit(true);
-  closeFloatingSearch();
-}
 function toggleFloatingSearch() {
-  if (searchOpen.value) dismissFloatingSearch();
-  else openFloatingSearch();
+  if (searchOpen.value) floatingSearchRef.value?.dismissSearch();
+  else searchOpen.value = true;
 }
 function openFilterDrawer() {
   cancelSearch();
   closeFloatingSearch();
   emit("filter");
 }
+function clearAllFilters() {
+  composing.value = false;
+  cancelSearch();
+  closeFloatingSearch();
+  search.value = "";
+  emit("reset");
+}
 const categoryMeta = computed(() => mobileInventoryCategoryMeta(props.kind));
 watch(() => props.kind, cancelSearch);
-watch(searchOpen, (open) => {
-  bindVisualViewport(open);
-});
 onDeactivated(() => {
   composing.value = false;
   closeFloatingSearch();
   cancelSearch();
 });
 onBeforeUnmount(() => {
-  bindVisualViewport(false);
   cancelSearch();
 });
 defineExpose({ cancelSearch, closeFloatingSearch, toggleFloatingSearch, searchOpen });
@@ -133,7 +91,7 @@ defineExpose({ cancelSearch, closeFloatingSearch, toggleFloatingSearch, searchOp
         emit('category', $event);
       "
     />
-    <form class="mobile-inventory-search" role="search" @submit.prevent="submit(false)">
+    <form class="mobile-inventory-search" role="search" @submit.prevent="submit()">
       <svg
         class="mobile-inventory-search-icon"
         viewBox="0 0 24 24"
@@ -216,6 +174,26 @@ defineExpose({ cancelSearch, closeFloatingSearch, toggleFloatingSearch, searchOp
     <Teleport v-if="!preview" :to="railHost ?? 'body'" :disabled="!railHost">
       <div class="mobile-rail-tools" role="group" aria-label="背包快捷工具">
         <button
+          v-if="hasFilters || activeFilterCount > 0 || Boolean(search.trim())"
+          type="button"
+          class="mobile-rail-tool mobile-rail-tool-clear"
+          aria-label="清空搜索与筛选"
+          @click="clearAllFilters()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="m14.8 9.2-5.6 5.6M9.2 9.2l5.6 5.6" />
+          </svg>
+          <span>清空</span>
+        </button>
+        <button
           type="button"
           class="mobile-rail-tool"
           :class="{ 'is-active': searchOpen || Boolean(search.trim()) }"
@@ -260,72 +238,15 @@ defineExpose({ cancelSearch, closeFloatingSearch, toggleFloatingSearch, searchOp
         </button>
       </div>
     </Teleport>
-    <Teleport v-if="!preview" to="body">
-      <Transition name="mobile-floating-search">
-        <div
-          v-if="searchOpen"
-          class="mobile-floating-search-backdrop"
-          role="presentation"
-          :style="
-            keyboardInset || viewportTopInset
-              ? {
-                  '--mobile-search-top-inset': `${viewportTopInset}px`,
-                  '--mobile-search-keyboard-inset': `${keyboardInset}px`,
-                }
-              : undefined
-          "
-          @click.self="dismissFloatingSearch()"
-          @keydown.escape.prevent="dismissFloatingSearch()"
-        >
-          <form
-            class="mobile-floating-search"
-            role="search"
-            @submit.prevent="submitFloatingSearch()"
-          >
-            <svg
-              class="mobile-floating-search-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              aria-hidden="true"
-            >
-              <circle cx="10.5" cy="10.5" r="6.5" />
-              <path d="m16 16 4.5 4.5" />
-            </svg>
-            <input
-              ref="floatingInput"
-              v-model="search"
-              type="search"
-              aria-label="搜索背包名称或装备角色"
-              placeholder="搜索名称或角色"
-              enterkeyhint="search"
-              autocomplete="off"
-              @input="scheduleSearch()"
-              @compositionstart="startComposition"
-              @compositionend="finishComposition"
-              @keydown.escape.prevent="dismissFloatingSearch()"
-            />
-            <button
-              v-if="search"
-              class="mobile-floating-search-clear"
-              type="button"
-              aria-label="清空搜索"
-              @click="clearSearch()"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                aria-hidden="true"
-              >
-                <path d="m8 8 8 8M16 8l-8 8" />
-              </svg>
-            </button>
-          </form>
-        </div>
-      </Transition>
-    </Teleport>
+    <MobileFloatingSearch
+      ref="floatingSearchRef"
+      v-model="search"
+      v-model:open="searchOpen"
+      placeholder="搜索名称或角色"
+      aria-label="搜索背包名称或装备角色"
+      :debounce-ms="300"
+      :preview="preview"
+      @search="emit('search')"
+    />
   </div>
 </template>

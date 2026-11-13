@@ -50,7 +50,10 @@ const isUnfoldedPortrait = ref(
 const hasTopPrimary = computed(
   () =>
     isUnfoldedPortrait.value &&
-    (tab.value === "inventory" || tab.value === "catalogue" || tab.value === "analysis"),
+    (tab.value === "inventory" ||
+      tab.value === "catalogue" ||
+      tab.value === "build" ||
+      tab.value === "analysis"),
 );
 provide(mobileTopHeaderKey, {
   host: topHeaderEl,

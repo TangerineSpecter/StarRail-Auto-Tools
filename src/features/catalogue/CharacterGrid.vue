@@ -13,7 +13,10 @@ const props = defineProps<{
   preview?: boolean;
   active?: boolean;
 }>();
-const emit = defineEmits<{ select: [character: CharacterCatalogueEntry] }>();
+const emit = defineEmits<{
+  select: [character: CharacterCatalogueEntry];
+  summary: [payload: { total: number; filtered: boolean }];
+}>();
 
 const PATH_ORDER = ["毁灭", "巡猎", "智识", "同谐", "虚无", "存护", "丰饶", "记忆", "欢愉"];
 const ELEMENT_ORDER = ["物理", "火", "冰", "雷", "风", "量子", "虚数"];
@@ -76,6 +79,27 @@ const filteredCharacters = computed(() => {
 });
 const visibleCharacters = computed(() =>
   props.preview ? filteredCharacters.value.slice(0, 12) : filteredCharacters.value,
+);
+watch(
+  [
+    () => filteredCharacters.value.length,
+    selectedPath,
+    selectedElement,
+    selectedRarity,
+    searchQuery,
+  ],
+  () => {
+    if (props.preview) return;
+    emit("summary", {
+      total: filteredCharacters.value.length,
+      filtered:
+        selectedPath.value !== "all" ||
+        selectedElement.value !== "all" ||
+        selectedRarity.value !== "all" ||
+        Boolean(searchQuery.value.trim()),
+    });
+  },
+  { immediate: true },
 );
 </script>
 <template>

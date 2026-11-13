@@ -18,16 +18,6 @@ const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry]; retry: [] }>()
 </script>
 <template>
   <section class="mobile-farming" :aria-label="`${kindLabel}刷取评分`" :aria-busy="loading">
-    <header class="mobile-farming-heading">
-      <h3>{{ kindLabel }} · 刷取优先分</h3>
-      <p>{{ items.length }} 套 · 低分优先</p>
-    </header>
-    <details class="mobile-farming-help">
-      <summary>综合目标人数与当前穿戴质量<span>评分说明 ⌄</span></summary>
-      <p>
-        低分表示目标角色更多、当前套装质量更低，优先提升收益更高；横条表示提升机会。未设置培养目标的套装排在最后，分数不代表装备强弱。
-      </p>
-    </details>
     <p v-if="loading" class="mobile-farming-state" role="status">正在评估当前穿戴质量…</p>
     <p v-else-if="error" class="mobile-farming-state" role="alert">
       {{ error }}<button type="button" @click="emit('retry')">重试</button>
@@ -70,49 +60,6 @@ const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry]; retry: [] }>()
 <style scoped>
 .mobile-farming {
   min-width: 0;
-}
-.mobile-farming-heading {
-  display: flex;
-  align-items: start;
-  flex-direction: column;
-  gap: 4px;
-}
-.mobile-farming-heading h3 {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.4;
-  color: var(--ink);
-}
-.mobile-farming-heading p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-}
-.mobile-farming-help {
-  margin: 6px 0 12px;
-  color: var(--muted);
-  font-size: 12px;
-}
-.mobile-farming-help summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 44px;
-  line-height: 1.5;
-  cursor: pointer;
-  list-style: none;
-}
-.mobile-farming-help summary::-webkit-details-marker {
-  display: none;
-}
-.mobile-farming-help summary span {
-  flex-shrink: 0;
-  color: var(--blue);
-}
-.mobile-farming-help p {
-  margin: 0 0 12px;
-  line-height: 1.6;
 }
 .mobile-farming-list {
   display: grid;

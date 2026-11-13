@@ -138,11 +138,8 @@ onDeactivated(() => {
 </script>
 
 <template>
-  <div class="mobile-catalogue-status">
-    <p role="status">
-      {{ total }} {{ unit
-      }}<span v-if="summaryParts.length"> · {{ summaryParts.join(" · ") }}</span>
-    </p>
+  <div :class="['mobile-catalogue-status', { 'is-idle': !summaryParts.length }]">
+    <p v-if="summaryParts.length" role="status">筛选：{{ summaryParts.join(" · ") }}</p>
     <div class="mobile-catalogue-status-actions">
       <button
         v-if="activeCount > 0"
@@ -182,6 +179,26 @@ onDeactivated(() => {
 
   <Teleport v-if="active" :to="railTarget ?? 'body'" :disabled="!railTarget">
     <div class="mobile-rail-tools" role="group" aria-label="图鉴筛选工具">
+      <button
+        v-if="activeCount > 0"
+        type="button"
+        class="mobile-rail-tool mobile-rail-tool-clear"
+        aria-label="清空图鉴筛选"
+        @click="resetAll()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="m14.8 9.2-5.6 5.6M9.2 9.2l5.6 5.6" />
+        </svg>
+        <span>清空</span>
+      </button>
       <button
         type="button"
         class="mobile-rail-tool"

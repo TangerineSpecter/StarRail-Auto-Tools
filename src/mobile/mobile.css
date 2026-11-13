@@ -427,12 +427,14 @@ input {
 }
 [data-posture="unfolded-portrait"]
   .mobile-top-header
-  > :is(.mobile-inventory-toolbar, .mobile-scanner-categories) {
+  > :is(.mobile-inventory-toolbar, .mobile-scanner-categories, .mobile-build-toolbar) {
   width: 100%;
   min-width: 0;
   margin: 0;
 }
-[data-posture="unfolded-portrait"] .mobile-top-header > .catalogue-tabs {
+[data-posture="unfolded-portrait"]
+  .mobile-top-header
+  > :is(.catalogue-tabs, .mobile-catalogue-toolbar) {
   order: 0;
   flex: 0 1 auto;
   min-width: 0;

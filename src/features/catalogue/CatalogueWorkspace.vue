@@ -56,10 +56,22 @@ const selectedCharacter = ref<CharacterCatalogueEntry | null>(null);
 const selectedSet = ref<RelicSetCatalogueEntry | null>(null);
 const selectedLightCone = ref<LightConeCatalogueEntry | null>(null);
 
+const tabsRowEl = ref<HTMLElement | null>(null);
 const tabButtons = ref<Record<string, HTMLElement | null>>({});
 const setTabButtonRef = (key: string, el: unknown) => {
   tabButtons.value[key] = (el as HTMLElement) ?? null;
 };
+const filteredSummaryByTab = ref<Partial<Record<TabKey, { total: number; filtered: boolean }>>>({});
+
+function activeTabSummary() {
+  const current = tabs.find((item) => item.key === tab.value) ?? tabs[0];
+  const override = filteredSummaryByTab.value[current.key];
+  return {
+    count: override ? override.total : current.count,
+    unit: current.unit,
+    filtered: override?.filtered ?? false,
+  };
+}
 
 function buttonIndicatorX(key: TabKey) {
   const el = tabButtons.value[key];
@@ -178,24 +190,45 @@ function onEscape(event: KeyboardEvent) {
   else if (selectedSet.value) selectedSet.value = null;
   else if (selectedLightCone.value) selectedLightCone.value = null;
 }
+let tabsResizeObserver: ResizeObserver | null = null;
+const bindTabsObserver = () => {
+  tabsResizeObserver?.disconnect();
+  tabsResizeObserver = null;
+  if (typeof ResizeObserver === "undefined" || !tabsRowEl.value) return;
+  tabsResizeObserver = new ResizeObserver(() => {
+    updateIndicator();
+  });
+  tabsResizeObserver.observe(tabsRowEl.value);
+};
 const onWindowResize = () => updateIndicator();
 const removeListeners = () => {
   window.removeEventListener("keydown", onEscape);
   window.removeEventListener("resize", onWindowResize);
+  tabsResizeObserver?.disconnect();
+  tabsResizeObserver = null;
 };
 watch(useTopHeader, () => {
-  void nextTick(updateIndicator);
+  void nextTick(() => {
+    bindTabsObserver();
+    updateIndicator();
+  });
 });
 onMounted(() => {
   window.addEventListener("keydown", onEscape);
   window.addEventListener("resize", onWindowResize);
-  void nextTick(updateIndicator);
+  void nextTick(() => {
+    bindTabsObserver();
+    updateIndicator();
+  });
 });
 onActivated(() => {
   pageActive.value = true;
   window.addEventListener("keydown", onEscape);
   window.addEventListener("resize", onWindowResize);
-  void nextTick(updateIndicator);
+  void nextTick(() => {
+    bindTabsObserver();
+    updateIndicator();
+  });
 });
 onDeactivated(() => {
   pageActive.value = false;
@@ -211,35 +244,50 @@ onBeforeUnmount(removeListeners);
         <h2>遗器、饰品与光锥图鉴</h2>
       </div>
       <Teleport :to="topHeaderHost ?? 'body'" :disabled="!useTopHeader">
-        <div class="catalogue-tabs">
-          <button
-            v-for="item in tabs"
-            :key="item.key"
-            :ref="(el) => setTabButtonRef(item.key, el)"
-            :class="['catalogue-tab-btn', { active: tab === item.key }]"
-            :aria-pressed="tab === item.key"
-            @click="selectTab(item.key)"
-          >
-            <span
-              ><small>{{ item.code }}</small
-              >{{ item.label }}</span
-            ><b
-              >{{ item.count }} <small>{{ item.unit }}</small></b
+        <div :class="{ 'mobile-catalogue-toolbar': mobile }">
+          <div ref="tabsRowEl" class="catalogue-tabs">
+            <button
+              v-for="item in tabs"
+              :key="item.key"
+              :ref="(el) => setTabButtonRef(item.key, el)"
+              :class="['catalogue-tab-btn', { active: tab === item.key }]"
+              :aria-pressed="tab === item.key"
+              @click="selectTab(item.key)"
             >
-          </button>
+              <span
+                ><small>{{ item.code }}</small
+                >{{ item.label }}</span
+              ><b
+                >{{ item.count }} <small>{{ item.unit }}</small></b
+              >
+            </button>
+            <span
+              v-if="mobile"
+              class="catalogue-tab-indicator"
+              :style="{
+                transform: `translateX(${activeIndicatorX}px)`,
+                transition: pager.active.value
+                  ? `transform ${pager.duration.value}ms cubic-bezier(0.16, 1, 0.3, 1)`
+                  : indicatorReady
+                    ? undefined
+                    : 'none',
+              }"
+              aria-hidden="true"
+            />
+          </div>
           <span
             v-if="mobile"
-            class="catalogue-tab-indicator"
-            :style="{
-              transform: `translateX(${activeIndicatorX}px)`,
-              transition: pager.active.value
-                ? `transform ${pager.duration.value}ms cubic-bezier(0.16, 1, 0.3, 1)`
-                : indicatorReady
-                  ? undefined
-                  : 'none',
-            }"
-            aria-hidden="true"
-          />
+            :class="[
+              'mobile-inventory-count-pill',
+              'mobile-catalogue-count-pill',
+              { 'is-filtered': activeTabSummary().filtered },
+            ]"
+            role="status"
+          >
+            <i class="mobile-inventory-count-pill-dot" aria-hidden="true" />
+            <b>{{ activeTabSummary().count }}</b>
+            <span>{{ activeTabSummary().unit }}</span>
+          </span>
         </div>
       </Teleport>
     </header>
@@ -293,6 +341,7 @@ onBeforeUnmount(removeListeners);
               :light-cones="catalogueLightCones"
               :owned-counts="lightConeCounts"
               :active="tab === 'lightCone'"
+              @summary="filteredSummaryByTab.lightCone = $event"
               @select="selectedLightCone = $event"
             />
             <CharacterGrid
@@ -300,6 +349,7 @@ onBeforeUnmount(removeListeners);
               key="character"
               :characters="catalogueCharacters"
               :active="tab === 'character'"
+              @summary="filteredSummaryByTab.character = $event"
               @select="selectedCharacter = $event"
             />
           </KeepAlive>

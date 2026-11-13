@@ -15,7 +15,10 @@ const props = defineProps<{
   preview?: boolean;
   active?: boolean;
 }>();
-const emit = defineEmits<{ select: [lightCone: LightConeCatalogueEntry] }>();
+const emit = defineEmits<{
+  select: [lightCone: LightConeCatalogueEntry];
+  summary: [payload: { total: number; filtered: boolean }];
+}>();
 
 const PATH_ORDER = ["毁灭", "巡猎", "智识", "同谐", "虚无", "存护", "丰饶", "记忆", "欢愉"];
 
@@ -74,6 +77,21 @@ const filteredLightCones = computed(() => {
 });
 const visibleLightCones = computed(() =>
   props.preview ? filteredLightCones.value.slice(0, 12) : filteredLightCones.value,
+);
+watch(
+  [() => filteredLightCones.value.length, selectedPath, selectedRarity, selectedOwned, searchQuery],
+  () => {
+    if (props.preview) return;
+    emit("summary", {
+      total: filteredLightCones.value.length,
+      filtered:
+        selectedPath.value !== "all" ||
+        selectedRarity.value !== "all" ||
+        selectedOwned.value !== "all" ||
+        Boolean(searchQuery.value.trim()),
+    });
+  },
+  { immediate: true },
 );
 </script>
 <template>

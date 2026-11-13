@@ -4,9 +4,14 @@ import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
 const readOnly = useReadOnlyView();
 const mobile = useMobileView();
-import { computed, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
+import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from "vue";
+import Button from "primevue/button";
+import Drawer from "primevue/drawer";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
+import FilterCheckIcon from "@/features/inventory/FilterCheckIcon.vue";
+import MobileFloatingSearch from "@/shared/ui/MobileFloatingSearch.vue";
+import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
@@ -46,8 +51,32 @@ const emit = defineEmits<{
   editBuild: [characterId: number];
 }>();
 const { notice } = useRuntimeContext();
+type BuildSortMode = "urgent" | "complete" | "custom";
+type BuildStatusFilter = "all" | "pending" | "complete";
+const SORT_OPTIONS: ReadonlyArray<{ label: string; value: BuildSortMode }> = [
+  { label: "最需提升", value: "urgent" },
+  { label: "已达标优先", value: "complete" },
+  { label: "自定义排序", value: "custom" },
+];
+const STATUS_OPTIONS: ReadonlyArray<{ label: string; value: BuildStatusFilter }> = [
+  { label: "全部", value: "all" },
+  { label: "待提升", value: "pending" },
+  { label: "已达标", value: "complete" },
+];
+
 const search = ref("");
-const sort = ref("urgent");
+const sort = ref<BuildSortMode>("urgent");
+const statusFilter = ref<BuildStatusFilter>("all");
+const pageActive = ref(true);
+const searchOpen = ref(false);
+const filterOpen = ref(false);
+const draftSort = ref<BuildSortMode>("urgent");
+const draftStatus = ref<BuildStatusFilter>("all");
+const floatingSearchRef = ref<InstanceType<typeof MobileFloatingSearch> | null>(null);
+const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
+  "build",
+  pageActive,
+);
 const actionCharacterId = ref<number | null>(null);
 const dashboardElement = ref<HTMLElement | null>(null);
 const lightCones = lightConeCatalogueJson as LightConeCatalogue;
@@ -55,6 +84,44 @@ const relicSets = relicCatalogueJson as RelicSetCatalogue;
 const disabledTraceNodes = loadDisabledTraceNodes();
 const selectedCharacterId = ref<number | null>(null);
 let dashboardRequestId = 0;
+const mobileActiveCount = computed(
+  () => Number(sort.value !== "urgent") + Number(statusFilter.value !== "all"),
+);
+const currentSortLabel = computed(
+  () => SORT_OPTIONS.find((item) => item.value === sort.value)?.label ?? "最需提升",
+);
+const currentStatusLabel = computed(
+  () => STATUS_OPTIONS.find((item) => item.value === statusFilter.value)?.label ?? "全部",
+);
+function toggleMobileSearch() {
+  if (searchOpen.value) floatingSearchRef.value?.dismissSearch();
+  else {
+    filterOpen.value = false;
+    searchOpen.value = true;
+  }
+}
+function openMobileFilter() {
+  searchOpen.value = false;
+  draftSort.value = sort.value;
+  draftStatus.value = statusFilter.value;
+  filterOpen.value = true;
+}
+function resetMobileDraft() {
+  draftSort.value = "urgent";
+  draftStatus.value = "all";
+}
+function applyMobileFilter() {
+  sort.value = draftSort.value;
+  statusFilter.value = draftStatus.value;
+  filterOpen.value = false;
+}
+function resetMobileFilters() {
+  searchOpen.value = false;
+  filterOpen.value = false;
+  search.value = "";
+  sort.value = "urgent";
+  statusFilter.value = "all";
+}
 function openDetails(characterId: number, event?: KeyboardEvent) {
   if (!mobile || event?.isComposing) return;
   event?.preventDefault();
@@ -64,7 +131,13 @@ function setDetailsVisible(characterId: number, visible: boolean) {
   if (visible) selectedCharacterId.value = characterId;
   else if (selectedCharacterId.value === characterId) selectedCharacterId.value = null;
 }
+onActivated(() => {
+  pageActive.value = true;
+});
 onDeactivated(() => {
+  pageActive.value = false;
+  searchOpen.value = false;
+  filterOpen.value = false;
   selectedCharacterId.value = null;
 });
 onBeforeUnmount(() => {
@@ -277,7 +350,23 @@ const cards = computed(() =>
       };
     })
     .filter((card) => card.state.available)
-    .filter((card) => card.character.name.includes(search.value.trim()))
+    .filter((card) => {
+      const keyword = search.value.trim();
+      if (
+        keyword &&
+        !card.character.name.includes(keyword) &&
+        !characterDisplayName(card.character).includes(keyword)
+      ) {
+        return false;
+      }
+      if (statusFilter.value === "complete") {
+        return card.targets.length > 0 && card.completed >= card.targets.length;
+      }
+      if (statusFilter.value === "pending") {
+        return card.targets.length === 0 || card.completed < card.targets.length;
+      }
+      return true;
+    })
     .sort(compareCards),
 );
 
@@ -392,7 +481,94 @@ defineExpose({ reload: loadDashboard });
 
 <template>
   <section ref="dashboardElement" class="build-dashboard">
-    <header class="build-dashboard-heading">
+    <Teleport :to="topHeaderHost ?? 'body'" :disabled="!useTopHeader">
+      <div v-if="mobile" class="mobile-build-toolbar">
+        <p class="mobile-build-subtitle">追踪已配置角色的当前站街属性与毕业目标。</p>
+        <div
+          class="mobile-inventory-inline-tools mobile-build-inline-tools"
+          role="group"
+          aria-label="毕业列表快捷工具"
+        >
+          <button
+            v-if="Boolean(search.trim()) || mobileActiveCount > 0"
+            type="button"
+            class="mobile-inline-tool-clear"
+            aria-label="清空搜索与筛选"
+            title="清空"
+            @click="resetMobileFilters()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="m14.8 9.2-5.6 5.6M9.2 9.2l5.6 5.6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            :class="{ 'is-active': searchOpen || Boolean(search.trim()) }"
+            :aria-expanded="searchOpen"
+            aria-label="搜索毕业角色"
+            title="搜索"
+            @click="toggleMobileSearch()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="m16 16 4.5 4.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            :class="{ 'is-active': filterOpen || mobileActiveCount > 0 }"
+            aria-haspopup="dialog"
+            :aria-expanded="filterOpen"
+            :aria-label="
+              mobileActiveCount ? `筛选与排序，已调整 ${mobileActiveCount} 项` : '筛选与排序'
+            "
+            title="筛选"
+            @click="openMobileFilter()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M4 7h16M4 17h16" />
+              <circle cx="9" cy="7" r="2.5" />
+              <circle cx="15" cy="17" r="2.5" />
+            </svg>
+            <b v-if="mobileActiveCount">{{ mobileActiveCount }}</b>
+          </button>
+        </div>
+      </div>
+    </Teleport>
+    <div
+      v-if="mobile && (Boolean(search.trim()) || mobileActiveCount > 0)"
+      class="mobile-inventory-status mobile-build-status"
+    >
+      <p role="status">
+        {{ cards.length }} 位角色<span v-if="sort !== 'urgent'"> · {{ currentSortLabel }}</span
+        ><span v-if="statusFilter !== 'all'"> · {{ currentStatusLabel }}</span
+        ><span v-if="search.trim()"> · 搜索“{{ search.trim() }}”</span>
+      </p>
+      <button type="button" @click="resetMobileFilters()">重置</button>
+    </div>
+    <header v-if="!mobile" class="build-dashboard-heading">
       <div>
         <p class="eyebrow">BUILD MANAGEMENT</p>
         <h2>毕业管理</h2>
@@ -411,11 +587,7 @@ defineExpose({ reload: loadDashboard });
         </div>
         <InputText v-model="search" placeholder="搜索角色" /><Select
           v-model="sort"
-          :options="[
-            { label: '最需提升', value: 'urgent' },
-            { label: '已达标优先', value: 'complete' },
-            { label: '自定义排序', value: 'custom' },
-          ]"
+          :options="[...SORT_OPTIONS]"
           option-label="label"
           option-value="value"
         />
@@ -734,6 +906,150 @@ defineExpose({ reload: loadDashboard });
         </BuildCardDetails>
       </article>
     </div>
+    <Teleport v-if="mobile && pageActive" to="body">
+      <div class="mobile-rail-tools" role="group" aria-label="毕业列表快捷工具">
+        <button
+          v-if="Boolean(search.trim()) || mobileActiveCount > 0"
+          type="button"
+          class="mobile-rail-tool mobile-rail-tool-clear"
+          aria-label="清空搜索与筛选"
+          @click="resetMobileFilters()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="m14.8 9.2-5.6 5.6M9.2 9.2l5.6 5.6" />
+          </svg>
+          <span>清空</span>
+        </button>
+        <button
+          type="button"
+          class="mobile-rail-tool"
+          :class="{ 'is-active': searchOpen || Boolean(search.trim()) }"
+          :aria-expanded="searchOpen"
+          aria-label="搜索毕业角色"
+          @click="toggleMobileSearch()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m16 16 4.5 4.5" />
+          </svg>
+          <span>搜索</span>
+        </button>
+        <button
+          type="button"
+          class="mobile-rail-tool"
+          :class="{ 'is-active': filterOpen || mobileActiveCount > 0 }"
+          aria-haspopup="dialog"
+          :aria-expanded="filterOpen"
+          :aria-label="
+            mobileActiveCount ? `筛选与排序，已调整 ${mobileActiveCount} 项` : '筛选与排序'
+          "
+          @click="openMobileFilter()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M4 17h16" />
+            <circle cx="9" cy="7" r="2.5" />
+            <circle cx="15" cy="17" r="2.5" />
+          </svg>
+          <span>筛选</span>
+          <b v-if="mobileActiveCount">{{ mobileActiveCount }}</b>
+        </button>
+      </div>
+    </Teleport>
+    <MobileFloatingSearch
+      v-if="mobile"
+      ref="floatingSearchRef"
+      v-model="search"
+      v-model:open="searchOpen"
+      placeholder="搜索角色"
+      aria-label="搜索角色"
+    />
+    <Drawer
+      v-if="mobile && pageActive"
+      v-model:visible="filterOpen"
+      position="bottom"
+      block-scroll
+      class="filter-drawer"
+      aria-label="毕业排序与筛选"
+    >
+      <form @submit.prevent="applyMobileFilter()">
+        <header class="filter-drawer-heading">
+          <div class="filter-drawer-title-row">
+            <h2>排序与筛选</h2>
+            <Button
+              class="mobile-filter-close"
+              type="button"
+              outlined
+              aria-label="关闭筛选"
+              @click="filterOpen = false"
+              >关闭</Button
+            >
+          </div>
+          <small>点击切换排序方式或筛选达标状态</small>
+        </header>
+        <div class="filter-scroll">
+          <fieldset class="filter-group filter-group-wide">
+            <legend>排序方式</legend>
+            <div class="filter-chips filter-grid-3">
+              <label v-for="option in SORT_OPTIONS" :key="option.value" class="filter-chip">
+                <input
+                  type="checkbox"
+                  :checked="draftSort === option.value"
+                  @change="draftSort = option.value"
+                />
+                <span>
+                  {{ option.label }}
+                  <FilterCheckIcon v-if="draftSort === option.value" />
+                </span>
+              </label>
+            </div>
+          </fieldset>
+          <fieldset class="filter-group filter-group-wide">
+            <legend>达标状态</legend>
+            <div class="filter-chips filter-grid-3">
+              <label v-for="option in STATUS_OPTIONS" :key="option.value" class="filter-chip">
+                <input
+                  type="checkbox"
+                  :checked="draftStatus === option.value"
+                  @change="draftStatus = option.value"
+                />
+                <span>
+                  {{ option.label }}
+                  <FilterCheckIcon v-if="draftStatus === option.value" />
+                </span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+        <div class="filter-actions">
+          <Button class="filter-reset" type="button" outlined @click="resetMobileDraft()"
+            >重置全部</Button
+          >
+          <Button class="filter-submit" type="submit">查看结果</Button>
+        </div>
+      </form>
+    </Drawer>
   </section>
 </template>
 

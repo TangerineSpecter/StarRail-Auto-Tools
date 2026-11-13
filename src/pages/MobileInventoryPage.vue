@@ -179,6 +179,30 @@ onDeactivated(() => {
           <slot name="toolbar-actions" />
           <div class="mobile-inventory-inline-tools" role="group" aria-label="背包快捷工具">
             <button
+              v-if="hasActiveFilters"
+              type="button"
+              class="mobile-inline-tool-clear"
+              aria-label="清空搜索与筛选"
+              title="清空"
+              @click="
+                controls?.cancelSearch();
+                controls?.closeFloatingSearch();
+                resetFilters();
+              "
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="m14.8 9.2-5.6 5.6M9.2 9.2l5.6 5.6" />
+              </svg>
+            </button>
+            <button
               type="button"
               :class="{
                 'is-active': controls?.searchOpen || Boolean(archive.filters.value.search.trim()),
