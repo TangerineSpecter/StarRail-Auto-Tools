@@ -165,69 +165,6 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", updateScannerIndicator);
 });
 
-/* Content area swipe gesture to switch modes */
-let contentTouchStartX = 0;
-let contentTouchStartY = 0;
-let isContentSwiping = false;
-let preventContentClickUntil = 0;
-
-function onContentTouchStart(e: TouchEvent) {
-  if (!mobile || e.touches.length !== 1) return;
-  const target = e.target as HTMLElement | null;
-  if (
-    target?.closest("button, a, input, select, .mobile-scanner-categories, .mobile-glass-capsule")
-  )
-    return;
-  const touch = e.touches[0];
-  contentTouchStartX = touch.clientX;
-  contentTouchStartY = touch.clientY;
-  isContentSwiping = false;
-}
-
-function onContentTouchMove(e: TouchEvent) {
-  if (!mobile || e.touches.length !== 1) return;
-  const touch = e.touches[0];
-  const deltaX = touch.clientX - contentTouchStartX;
-  const deltaY = touch.clientY - contentTouchStartY;
-  const absX = Math.abs(deltaX);
-  const absY = Math.abs(deltaY);
-  if (!isContentSwiping) {
-    if (absY >= 10 && absY >= absX) return;
-    if (absX >= 12 && absX >= absY * 1.2) {
-      isContentSwiping = true;
-    }
-  }
-  if (isContentSwiping) {
-    preventContentClickUntil = Date.now() + 500;
-  }
-}
-
-function onContentTouchEnd(e: TouchEvent) {
-  if (!mobile || !isContentSwiping) return;
-  if (!e.changedTouches.length) return;
-  const touch = e.changedTouches[0];
-  const deltaX = touch.clientX - contentTouchStartX;
-  const deltaY = touch.clientY - contentTouchStartY;
-  const absX = Math.abs(deltaX);
-  const absY = Math.abs(deltaY);
-  isContentSwiping = false;
-  if (absX > 32 && absX > absY * 1.2) {
-    preventContentClickUntil = Date.now() + 500;
-    if (deltaX < 0) {
-      nextMode();
-    } else {
-      prevMode();
-    }
-  }
-}
-
-function onContentClickCapture(e: MouseEvent) {
-  if (Date.now() < preventContentClickUntil) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-}
-
 const gradeClass = (grade: string | null) => {
   if (!grade) return "grade-none";
   return `grade-${grade.toLowerCase().replace("+", "-plus")}`;
@@ -625,13 +562,7 @@ onBeforeUnmount(() => {
     </header>
 
     <!-- Content Viewport with Directional Slide Transition -->
-    <div
-      class="scanner-mode-viewport"
-      @touchstart.passive="onContentTouchStart"
-      @touchmove="onContentTouchMove"
-      @touchend.passive="onContentTouchEnd"
-      @click.capture="onContentClickCapture"
-    >
+    <div class="scanner-mode-viewport">
       <Transition :name="`slide-${transitionDirection}`" mode="out-in">
         <!-- UPGRADE MODE (替换推荐扫描) -->
         <div v-if="activeMode === 'upgrade'" key="upgrade" class="scanner-mode-pane">

@@ -78,23 +78,35 @@ function prevTab() {
 /* Horizontal swipe gesture on content area (matching inventory swipe feel) */
 let touchStartX = 0;
 let touchStartY = 0;
+let isTrackingGesture = false;
 let isHorizontalGesture = false;
 let preventClickUntil = 0;
 
 function onTouchStart(e: TouchEvent) {
-  if (!mobile || e.touches.length !== 1) return;
+  if (!mobile || e.touches.length !== 1) {
+    isTrackingGesture = false;
+    return;
+  }
   const target = e.target as HTMLElement | null;
-  // Ignore horizontally scrollable tabs header and secondary tabs
-  if (target?.closest(".catalogue-tabs, .mobile-relic-secondary-tabs, [data-swipe-ignore]")) return;
+  // Ignore bottom floating capsule, scrollable tabs header and secondary tabs
+  if (
+    target?.closest(
+      ".mobile-glass-capsule, .catalogue-tabs, .mobile-relic-secondary-tabs, [data-swipe-ignore]",
+    )
+  ) {
+    isTrackingGesture = false;
+    return;
+  }
 
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
+  isTrackingGesture = true;
   isHorizontalGesture = false;
 }
 
 function onTouchMove(e: TouchEvent) {
-  if (!mobile || e.touches.length !== 1) return;
+  if (!mobile || !isTrackingGesture || e.touches.length !== 1) return;
   const touch = e.touches[0];
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
@@ -102,7 +114,10 @@ function onTouchMove(e: TouchEvent) {
   const absY = Math.abs(deltaY);
 
   if (!isHorizontalGesture) {
-    if (absY >= 10 && absY >= absX) return;
+    if (absY >= 10 && absY >= absX) {
+      isTrackingGesture = false;
+      return;
+    }
     if (absX >= 12 && absX >= absY * 1.15) {
       isHorizontalGesture = true;
     }
@@ -114,7 +129,13 @@ function onTouchMove(e: TouchEvent) {
 }
 
 function onTouchEnd(e: TouchEvent) {
-  if (!mobile || !isHorizontalGesture) return;
+  if (!mobile || !isTrackingGesture || !isHorizontalGesture) {
+    isTrackingGesture = false;
+    isHorizontalGesture = false;
+    return;
+  }
+  isTrackingGesture = false;
+  isHorizontalGesture = false;
   if (!e.changedTouches.length) return;
   const touch = e.changedTouches[0];
   const deltaX = touch.clientX - touchStartX;
@@ -122,7 +143,6 @@ function onTouchEnd(e: TouchEvent) {
   const absX = Math.abs(deltaX);
   const absY = Math.abs(deltaY);
 
-  isHorizontalGesture = false;
   if (absX > 32 && absX > absY * 1.15) {
     preventClickUntil = Date.now() + 500;
     if (deltaX < 0) {
