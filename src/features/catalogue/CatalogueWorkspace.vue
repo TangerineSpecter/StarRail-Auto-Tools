@@ -6,6 +6,7 @@ import {
   onBeforeUnmount,
   onDeactivated,
   onMounted,
+  provide,
   ref,
   watch,
 } from "vue";
@@ -18,6 +19,8 @@ import CharacterGrid from "./CharacterGrid.vue";
 import CharacterStatsModal from "./CharacterStatsModal.vue";
 import LightConeStatsModal from "./LightConeStatsModal.vue";
 import SetRecommendationModal from "./SetRecommendationModal.vue";
+import { catalogueCapsuleHostKey } from "./catalogue-capsule-host";
+import { useCatalogueTabPager } from "./useCatalogueTabPager";
 import { ownedCountOf } from "./owned-counts";
 import { useCatalogueOwnedCounts } from "./useCatalogueOwnedCounts";
 import type {
@@ -34,18 +37,32 @@ const tab = ref<"cavern" | "planar" | "lightCone" | "character">("cavern");
 const tabOrder = ["cavern", "planar", "lightCone", "character"] as const;
 type TabKey = (typeof tabOrder)[number];
 const transitionDirection = ref<"next" | "prev">("next");
+const skipNextTransition = ref(false);
+
+const workspaceEl = ref<HTMLElement | null>(null);
+const pagerBody = ref<HTMLElement | null>(null);
+const capsuleHostEl = ref<HTMLElement | null>(null);
+provide(catalogueCapsuleHostKey, capsuleHostEl);
+
+const selectedCharacter = ref<CharacterCatalogueEntry | null>(null);
+const selectedSet = ref<RelicSetCatalogueEntry | null>(null);
+const selectedLightCone = ref<LightConeCatalogueEntry | null>(null);
 
 const tabButtons = ref<Record<string, HTMLElement | null>>({});
 const setTabButtonRef = (key: string, el: unknown) => {
   tabButtons.value[key] = (el as HTMLElement) ?? null;
 };
 
+function buttonIndicatorX(key: TabKey) {
+  const el = tabButtons.value[key];
+  return el ? el.offsetLeft + (el.offsetWidth - 18) / 2 : 0;
+}
+
 const indicatorX = ref(0);
 const indicatorReady = ref(false);
 function updateIndicator() {
-  const el = tabButtons.value[tab.value];
-  if (el) {
-    indicatorX.value = el.offsetLeft + (el.offsetWidth - 18) / 2;
+  if (tabButtons.value[tab.value]) {
+    indicatorX.value = buttonIndicatorX(tab.value);
     if (!indicatorReady.value) {
       void nextTick(() => {
         indicatorReady.value = true;
@@ -54,7 +71,47 @@ function updateIndicator() {
   }
 }
 
+const pager = useCatalogueTabPager<TabKey>({
+  order: tabOrder,
+  tab,
+  surface: workspaceEl,
+  body: pagerBody,
+  enabled: computed(
+    () => mobile && !selectedCharacter.value && !selectedSet.value && !selectedLightCone.value,
+  ),
+  async onCommit(next) {
+    skipNextTransition.value = true;
+    tab.value = next;
+    await nextTick();
+    await nextTick();
+    window.scrollTo(0, 0);
+    if (workspaceEl.value) workspaceEl.value.scrollTop = 0;
+    skipNextTransition.value = false;
+    void nextTick(updateIndicator);
+  },
+});
+
+const activeIndicatorX = computed(() => {
+  if (!pager.active.value) return indicatorX.value;
+  const pos = Math.max(0, Math.min(tabOrder.length - 1, pager.position.value));
+  const i0 = Math.floor(pos);
+  const i1 = Math.min(tabOrder.length - 1, i0 + 1);
+  const frac = pos - i0;
+  return buttonIndicatorX(tabOrder[i0]) * (1 - frac) + buttonIndicatorX(tabOrder[i1]) * frac;
+});
+
+const capsuleHostStyle = computed(() => {
+  if (!pager.active.value || pager.target.value !== "lightCone") return undefined;
+  const progress = Math.min(
+    1,
+    Math.abs(pager.offset.value) / Math.max(1, pager.travel.value * 0.55),
+  );
+  return { opacity: String(1 - progress) };
+});
+
 function selectTab(nextTab: TabKey, explicitDirection?: "next" | "prev") {
+  pager.cancel();
+  skipNextTransition.value = false;
   if (nextTab === tab.value) return;
   const oldIdx = tabOrder.indexOf(tab.value);
   const newIdx = tabOrder.indexOf(nextTab);
@@ -63,109 +120,9 @@ function selectTab(nextTab: TabKey, explicitDirection?: "next" | "prev") {
   void nextTick(updateIndicator);
 }
 
-function nextTab() {
-  const curIdx = tabOrder.indexOf(tab.value);
-  const nextIdx = (curIdx + 1) % tabOrder.length;
-  selectTab(tabOrder[nextIdx], "next");
-}
-
-function prevTab() {
-  const curIdx = tabOrder.indexOf(tab.value);
-  const prevIdx = (curIdx - 1 + tabOrder.length) % tabOrder.length;
-  selectTab(tabOrder[prevIdx], "prev");
-}
-
-/* Horizontal swipe gesture on content area (matching inventory swipe feel) */
-let touchStartX = 0;
-let touchStartY = 0;
-let isTrackingGesture = false;
-let isHorizontalGesture = false;
-let preventClickUntil = 0;
-
-function onTouchStart(e: TouchEvent) {
-  if (!mobile || e.touches.length !== 1) {
-    isTrackingGesture = false;
-    return;
-  }
-  const target = e.target as HTMLElement | null;
-  // Ignore bottom floating capsule, scrollable tabs header and secondary tabs
-  if (
-    target?.closest(
-      ".mobile-glass-capsule, .catalogue-tabs, .mobile-relic-secondary-tabs, [data-swipe-ignore]",
-    )
-  ) {
-    isTrackingGesture = false;
-    return;
-  }
-
-  const touch = e.touches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
-  isTrackingGesture = true;
-  isHorizontalGesture = false;
-}
-
-function onTouchMove(e: TouchEvent) {
-  if (!mobile || !isTrackingGesture || e.touches.length !== 1) return;
-  const touch = e.touches[0];
-  const deltaX = touch.clientX - touchStartX;
-  const deltaY = touch.clientY - touchStartY;
-  const absX = Math.abs(deltaX);
-  const absY = Math.abs(deltaY);
-
-  if (!isHorizontalGesture) {
-    if (absY >= 10 && absY >= absX) {
-      isTrackingGesture = false;
-      return;
-    }
-    if (absX >= 12 && absX >= absY * 1.15) {
-      isHorizontalGesture = true;
-    }
-  }
-
-  if (isHorizontalGesture) {
-    preventClickUntil = Date.now() + 500;
-  }
-}
-
-function onTouchEnd(e: TouchEvent) {
-  if (!mobile || !isTrackingGesture || !isHorizontalGesture) {
-    isTrackingGesture = false;
-    isHorizontalGesture = false;
-    return;
-  }
-  isTrackingGesture = false;
-  isHorizontalGesture = false;
-  if (!e.changedTouches.length) return;
-  const touch = e.changedTouches[0];
-  const deltaX = touch.clientX - touchStartX;
-  const deltaY = touch.clientY - touchStartY;
-  const absX = Math.abs(deltaX);
-  const absY = Math.abs(deltaY);
-
-  if (absX > 32 && absX > absY * 1.15) {
-    preventClickUntil = Date.now() + 500;
-    if (deltaX < 0) {
-      nextTab();
-    } else {
-      prevTab();
-    }
-  }
-}
-
-function onClickCapture(e: MouseEvent) {
-  if (Date.now() < preventClickUntil) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-}
-
 watch(tab, () => {
   void nextTick(updateIndicator);
 });
-const selectedCharacter = ref<CharacterCatalogueEntry | null>(null);
-const selectedSet = ref<RelicSetCatalogueEntry | null>(null);
-const selectedLightCone = ref<LightConeCatalogueEntry | null>(null);
 const cavernSets = relicCatalogue.sets.filter((set) => set.kind === "cavern");
 const planarSets = relicCatalogue.sets.filter((set) => set.kind === "planar");
 const catalogueLightCones = [...lightConeCatalogue.lightCones].sort(
@@ -232,13 +189,7 @@ onDeactivated(removeListeners);
 onBeforeUnmount(removeListeners);
 </script>
 <template>
-  <section
-    class="catalogue-workspace"
-    @touchstart.passive="onTouchStart"
-    @touchmove="onTouchMove"
-    @touchend.passive="onTouchEnd"
-    @click.capture="onClickCapture"
-  >
+  <section ref="workspaceEl" class="catalogue-workspace">
     <header class="catalogue-heading">
       <div>
         <p class="eyebrow">LOCAL REFERENCE DATA</p>
@@ -264,51 +215,115 @@ onBeforeUnmount(removeListeners);
           v-if="mobile"
           class="catalogue-tab-indicator"
           :style="{
-            transform: `translateX(${indicatorX}px)`,
-            transition: indicatorReady ? undefined : 'none',
+            transform: `translateX(${activeIndicatorX}px)`,
+            transition: pager.active.value
+              ? `transform ${pager.duration.value}ms cubic-bezier(0.16, 1, 0.3, 1)`
+              : indicatorReady
+                ? undefined
+                : 'none',
           }"
           aria-hidden="true"
         />
       </div>
     </header>
-    <div class="catalogue-groups">
-      <Transition
-        :name="mobile ? `catalogue-slide-${transitionDirection}` : 'catalogue-panel'"
-        :mode="mobile ? 'out-in' : undefined"
+    <div
+      class="catalogue-groups catalogue-pager"
+      :class="{ 'is-interacting': pager.active.value }"
+      :style="
+        pager.active.value ? { minHeight: `${pager.top.value + pager.height.value}px` } : undefined
+      "
+    >
+      <div
+        ref="pagerBody"
+        class="catalogue-pager-body"
+        :style="pager.paneStyle.value"
+        :inert="pager.settling.value"
+        :aria-busy="pager.settling.value"
       >
-        <KeepAlive>
-          <RelicSetGrid
-            v-if="tab === 'cavern'"
-            key="cavern"
-            :sets="cavernSets"
-            :owned-counts="relicCounts"
-            :inventory-revision="inventoryRevision"
-            @select="selectedSet = $event"
-          />
-          <RelicSetGrid
-            v-else-if="tab === 'planar'"
-            key="planar"
-            :sets="planarSets"
-            :owned-counts="relicCounts"
-            :inventory-revision="inventoryRevision"
-            @select="selectedSet = $event"
-          />
-          <LightConeGrid
-            v-else-if="tab === 'lightCone'"
-            key="lightCone"
-            :light-cones="catalogueLightCones"
-            :owned-counts="lightConeCounts"
-            @select="selectedLightCone = $event"
-          />
-          <CharacterGrid
-            v-else-if="tab === 'character'"
-            key="character"
-            :characters="catalogueCharacters"
-            @select="selectedCharacter = $event"
-          />
-        </KeepAlive>
-      </Transition>
+        <Transition
+          :name="
+            skipNextTransition
+              ? undefined
+              : mobile
+                ? `catalogue-slide-${transitionDirection}`
+                : 'catalogue-panel'
+          "
+          :css="!skipNextTransition"
+          :mode="mobile && !skipNextTransition ? 'out-in' : undefined"
+        >
+          <KeepAlive>
+            <RelicSetGrid
+              v-if="tab === 'cavern'"
+              key="cavern"
+              :sets="cavernSets"
+              :owned-counts="relicCounts"
+              :inventory-revision="inventoryRevision"
+              @select="selectedSet = $event"
+            />
+            <RelicSetGrid
+              v-else-if="tab === 'planar'"
+              key="planar"
+              :sets="planarSets"
+              :owned-counts="relicCounts"
+              :inventory-revision="inventoryRevision"
+              @select="selectedSet = $event"
+            />
+            <LightConeGrid
+              v-else-if="tab === 'lightCone'"
+              key="lightCone"
+              :light-cones="catalogueLightCones"
+              :owned-counts="lightConeCounts"
+              @select="selectedLightCone = $event"
+            />
+            <CharacterGrid
+              v-else-if="tab === 'character'"
+              key="character"
+              :characters="catalogueCharacters"
+              @select="selectedCharacter = $event"
+            />
+          </KeepAlive>
+        </Transition>
+      </div>
+      <div
+        v-if="pager.active.value && pager.target.value"
+        class="catalogue-pager-preview"
+        :style="pager.neighbourStyle.value"
+        inert
+        aria-hidden="true"
+      >
+        <RelicSetGrid
+          v-if="pager.target.value === 'cavern'"
+          :sets="cavernSets"
+          :owned-counts="relicCounts"
+          :inventory-revision="inventoryRevision"
+          preview
+        />
+        <RelicSetGrid
+          v-else-if="pager.target.value === 'planar'"
+          :sets="planarSets"
+          :owned-counts="relicCounts"
+          :inventory-revision="inventoryRevision"
+          preview
+        />
+        <LightConeGrid
+          v-else-if="pager.target.value === 'lightCone'"
+          :light-cones="catalogueLightCones"
+          :owned-counts="lightConeCounts"
+          preview
+        />
+        <CharacterGrid
+          v-else-if="pager.target.value === 'character'"
+          :characters="catalogueCharacters"
+          preview
+        />
+      </div>
     </div>
+    <div
+      ref="capsuleHostEl"
+      class="catalogue-capsule-host"
+      :style="capsuleHostStyle"
+      data-swipe-ignore
+    />
   </section>
   <CharacterStatsModal
     v-if="selectedCharacter"

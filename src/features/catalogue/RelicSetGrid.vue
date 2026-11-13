@@ -3,7 +3,17 @@ import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useMobileSubMode } from "@/shared/contracts/mobile-sub-mode";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import MobileFarmingList from "./MobileFarmingList.vue";
-import { computed, onActivated, onDeactivated, onMounted, onUnmounted, ref, watch } from "vue";
+import { catalogueCapsuleHostKey } from "./catalogue-capsule-host";
+import {
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import type { RelicSetCatalogueEntry, RelicSetFarmingProfile, RelicSetTargetCount } from "@/types";
 import { ownedCountOf } from "./owned-counts";
@@ -22,6 +32,7 @@ const props = defineProps<{
   sets: RelicSetCatalogueEntry[];
   ownedCounts: Map<number, number>;
   inventoryRevision?: number;
+  preview?: boolean;
 }>();
 const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry] }>();
 
@@ -145,9 +156,14 @@ watch(viewMode, (mode) => {
   if (mode === "farmingScore") void loadFarmingProfiles();
 });
 const subMode = useMobileSubMode();
+const capsuleHost = inject(catalogueCapsuleHostKey, undefined);
+const teleportTarget = computed(() => capsuleHost?.value ?? null);
+const isActive = ref(!props.preview);
+const visibleSets = computed(() => (props.preview ? props.sets.slice(0, 12) : props.sets));
+
 let cleanupSubMode: (() => void) | null = null;
 function registerSubMode() {
-  if (mobile) {
+  if (mobile && !props.preview) {
     cleanupSubMode?.();
     cleanupSubMode = subMode?.register({ prev: prevViewMode, next: nextViewMode }) ?? null;
   }
@@ -162,11 +178,17 @@ onMounted(() => {
   registerSubMode();
 });
 onActivated(() => {
+  if (props.preview) return;
+  isActive.value = true;
   registerSubMode();
   if (viewMode.value === "chart") void loadTargetCounts();
   if (viewMode.value === "farmingScore") void loadFarmingProfiles();
 });
-onDeactivated(unregisterSubMode);
+onDeactivated(() => {
+  if (props.preview) return;
+  isActive.value = false;
+  unregisterSubMode();
+});
 watch(
   () => props.inventoryRevision,
   () => {
@@ -191,6 +213,7 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
       class="mobile-relic-secondary-tabs"
       role="group"
       :aria-label="`${setKindLabel}展示方式`"
+      data-swipe-ignore
     >
       <button
         type="button"
@@ -395,7 +418,7 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
         <!-- 现代星铁质感遗器网格 -->
         <div v-else :key="`cards-${animKey}`" class="catalogue-grid">
           <button
-            v-for="(set, index) in sets"
+            v-for="(set, index) in visibleSets"
             :key="set.id"
             :class="['catalogue-card', `catalogue-card-${set.kind}`]"
             :style="{ '--row-i': Math.floor(index / 3) }"
@@ -443,68 +466,70 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
     </div>
 
     <!-- Mobile Floating Glass Capsule (Apple Music Style Translucent Pill, hidden in unfolded-portrait) -->
-    <nav
-      v-if="mobile"
-      ref="capsuleEl"
-      :class="['mobile-glass-capsule', `is-${viewMode}`]"
-      aria-label="图鉴展示模式切换"
-    >
-      <button
-        type="button"
-        class="capsule-arrow-btn prev"
-        aria-label="循环切换至上一模式"
-        @click="prevViewMode()"
+    <Teleport :to="teleportTarget ?? 'body'" :disabled="!teleportTarget">
+      <nav
+        v-if="mobile && !preview && isActive"
+        ref="capsuleEl"
+        :class="['mobile-glass-capsule', `is-${viewMode}`]"
+        aria-label="图鉴展示模式切换"
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+        <button
+          type="button"
+          class="capsule-arrow-btn prev"
+          aria-label="循环切换至上一模式"
+          @click="prevViewMode()"
         >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
 
-      <div
-        class="capsule-center-body"
-        role="button"
-        tabindex="0"
-        :style="capsuleDragStyle"
-        :aria-label="`${currentModeLabel}，点击切换模式`"
-        @click="nextViewMode()"
-      >
-        <Transition :name="`capsule-${viewTransitionDirection}`" mode="out-in">
-          <div :key="viewMode" class="capsule-titles">
-            <span class="capsule-title-main">{{ currentModeLabel }}</span>
-            <span class="capsule-title-sub">{{ currentModeSubLabel }}</span>
+        <div
+          class="capsule-center-body"
+          role="button"
+          tabindex="0"
+          :style="capsuleDragStyle"
+          :aria-label="`${currentModeLabel}，点击切换模式`"
+          @click="nextViewMode()"
+        >
+          <Transition :name="`capsule-${viewTransitionDirection}`" mode="out-in">
+            <div :key="viewMode" class="capsule-titles">
+              <span class="capsule-title-main">{{ currentModeLabel }}</span>
+              <span class="capsule-title-sub">{{ currentModeSubLabel }}</span>
+            </div>
+          </Transition>
+          <div class="capsule-dots" aria-hidden="true">
+            <span :class="{ active: viewMode === 'cards' }" />
+            <span :class="{ active: viewMode === 'chart' }" />
+            <span :class="{ active: viewMode === 'farmingScore' }" />
           </div>
-        </Transition>
-        <div class="capsule-dots" aria-hidden="true">
-          <span :class="{ active: viewMode === 'cards' }" />
-          <span :class="{ active: viewMode === 'chart' }" />
-          <span :class="{ active: viewMode === 'farmingScore' }" />
         </div>
-      </div>
 
-      <button
-        type="button"
-        class="capsule-arrow-btn next"
-        aria-label="循环切换至下一模式"
-        @click="nextViewMode()"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+        <button
+          type="button"
+          class="capsule-arrow-btn next"
+          aria-label="循环切换至下一模式"
+          @click="nextViewMode()"
         >
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </button>
-    </nav>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </nav>
+    </Teleport>
   </div>
 </template>

@@ -10,6 +10,7 @@ defineOptions({ name: "LightConeGrid" });
 const props = defineProps<{
   lightCones: LightConeCatalogueEntry[];
   ownedCounts: Map<number, number>;
+  preview?: boolean;
 }>();
 const emit = defineEmits<{ select: [lightCone: LightConeCatalogueEntry] }>();
 
@@ -61,6 +62,9 @@ const filteredLightCones = computed(() => {
     return true;
   });
 });
+const visibleLightCones = computed(() =>
+  props.preview ? filteredLightCones.value.slice(0, 12) : filteredLightCones.value,
+);
 </script>
 <template>
   <div class="lightcone-catalogue-section">
@@ -192,7 +196,7 @@ const filteredLightCones = computed(() => {
     </AdaptiveDisclosure>
     <div v-if="filteredLightCones.length > 0" :key="animKey" class="lightcone-catalogue-grid">
       <button
-        v-for="(item, index) in filteredLightCones"
+        v-for="(item, index) in visibleLightCones"
         :key="item.id"
         :class="['lightcone-catalogue-card', `rarity-${item.rarity}`]"
         :style="{ '--row-i': Math.floor(index / 4) }"

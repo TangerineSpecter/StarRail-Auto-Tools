@@ -6,7 +6,10 @@ import type { CharacterCatalogueEntry } from "@/types";
 
 defineOptions({ name: "CharacterGrid" });
 
-const props = defineProps<{ characters: CharacterCatalogueEntry[] }>();
+const props = defineProps<{
+  characters: CharacterCatalogueEntry[];
+  preview?: boolean;
+}>();
 const emit = defineEmits<{ select: [character: CharacterCatalogueEntry] }>();
 
 const PATH_ORDER = ["毁灭", "巡猎", "智识", "同谐", "虚无", "存护", "丰饶", "记忆", "欢愉"];
@@ -56,6 +59,9 @@ const filteredCharacters = computed(() => {
     return true;
   });
 });
+const visibleCharacters = computed(() =>
+  props.preview ? filteredCharacters.value.slice(0, 12) : filteredCharacters.value,
+);
 </script>
 <template>
   <div class="character-catalogue-section">
@@ -169,7 +175,7 @@ const filteredCharacters = computed(() => {
     </AdaptiveDisclosure>
     <div v-if="filteredCharacters.length > 0" :key="animKey" class="character-catalogue-grid">
       <button
-        v-for="(character, index) in filteredCharacters"
+        v-for="(character, index) in visibleCharacters"
         :key="character.slug"
         :class="[
           'character-catalogue-card',

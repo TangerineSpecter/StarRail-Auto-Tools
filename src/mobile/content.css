@@ -1941,6 +1941,24 @@ html.inventory-detail-transition::view-transition-old(inventory-detail):only-chi
   overflow: clip;
   background: transparent;
 }
+.catalogue-pager {
+  position: relative;
+  min-width: 0;
+}
+.catalogue-pager.is-interacting {
+  overflow: clip;
+  background: transparent;
+}
+.catalogue-pager-body {
+  min-width: 0;
+}
+.catalogue-pager-preview {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  background: transparent;
+  pointer-events: none;
+}
 .mobile-inventory-render-sentinel {
   height: 1px;
   pointer-events: none;
