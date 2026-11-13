@@ -17,6 +17,7 @@ import MobileInventoryPreview from "@/features/inventory/MobileInventoryPreview.
 import { useMobileInventoryWindow } from "@/features/inventory/useMobileInventoryWindow";
 import { useMobileRelicQuality } from "@/features/inventory/useMobileRelicQuality";
 import { createInventoryFilterForm } from "@/features/inventory/filter";
+import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import type { InventoryKind, RelicListItem } from "@/types";
 
@@ -127,9 +128,13 @@ const previewItems = computed(() => {
   const rows = pager.preview.value?.items ?? [];
   return pager.target.value === "relic" ? quality.preview(rows as RelicListItem[]) : rows;
 });
-let pageActive = true;
+const pageActive = ref(true);
+const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
+  "inventory",
+  pageActive,
+);
 function warmNeighbours() {
-  if (!pageActive) return;
+  if (!pageActive.value) return;
   for (const kind of ["relic", "lightCone", "character"] as const) {
     if (kind !== archive.kind.value) void archive.previewKind(kind).catch(() => {});
   }
@@ -137,26 +142,28 @@ function warmNeighbours() {
 watch(() => archive.result.value, warmNeighbours);
 watch(runtime.inventoryRevision, pager.cancel);
 onActivated(() => {
-  pageActive = true;
+  pageActive.value = true;
   warmNeighbours();
 });
 onDeactivated(() => {
-  pageActive = false;
+  pageActive.value = false;
   detail.close();
 });
 </script>
 <template>
   <section :class="['mobile-archive', { 'is-split': splitView }]">
     <div ref="master" class="mobile-inventory-master">
-      <div class="mobile-inventory-toolbar">
-        <MobileInventoryCategoryTabs
-          :kind="categoryTransition.selectedKind.value"
-          :position="pager.active.value ? pager.position.value : undefined"
-          :motion-ms="pager.active.value ? pager.duration.value : undefined"
-          @category="switchKind"
-        />
-        <slot name="toolbar-actions" />
-      </div>
+      <Teleport :to="topHeaderHost ?? 'body'" :disabled="!useTopHeader">
+        <div class="mobile-inventory-toolbar">
+          <MobileInventoryCategoryTabs
+            :kind="categoryTransition.selectedKind.value"
+            :position="pager.active.value ? pager.position.value : undefined"
+            :motion-ms="pager.active.value ? pager.duration.value : undefined"
+            @category="switchKind"
+          />
+          <slot name="toolbar-actions" />
+        </div>
+      </Teleport>
       <div
         class="mobile-inventory-pager"
         :class="{ 'is-interacting': pager.active.value }"

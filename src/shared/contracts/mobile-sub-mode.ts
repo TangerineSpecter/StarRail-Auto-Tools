@@ -1,6 +1,7 @@
 import { inject, type InjectionKey, type Ref } from "vue";
 
 export interface MobileSubModeHandlers {
+  pageId: string;
   prev: () => void;
   next: () => void;
 }

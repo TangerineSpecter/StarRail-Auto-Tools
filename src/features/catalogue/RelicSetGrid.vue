@@ -33,6 +33,7 @@ const props = defineProps<{
   ownedCounts: Map<number, number>;
   inventoryRevision?: number;
   preview?: boolean;
+  active?: boolean;
 }>();
 const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry] }>();
 
@@ -158,14 +159,32 @@ watch(viewMode, (mode) => {
 const subMode = useMobileSubMode();
 const capsuleHost = inject(catalogueCapsuleHostKey, undefined);
 const teleportTarget = computed(() => capsuleHost?.value ?? null);
-const isActive = ref(!props.preview);
+const keptAlive = ref(!props.preview);
+const isActive = computed(() => !props.preview && keptAlive.value && (props.active ?? true));
 const visibleSets = computed(() => (props.preview ? props.sets.slice(0, 12) : props.sets));
+const topModeLabel = computed(() => {
+  switch (viewMode.value) {
+    case "cards":
+      return "套装图鉴";
+    case "chart":
+      return "目标分布";
+    case "farmingScore":
+      return "刷取评分";
+    default:
+      return "";
+  }
+});
 
 let cleanupSubMode: (() => void) | null = null;
 function registerSubMode() {
-  if (mobile && !props.preview) {
+  if (mobile && isActive.value) {
     cleanupSubMode?.();
-    cleanupSubMode = subMode?.register({ prev: prevViewMode, next: nextViewMode }) ?? null;
+    cleanupSubMode =
+      subMode?.register({
+        pageId: "catalogue",
+        prev: prevViewMode,
+        next: nextViewMode,
+      }) ?? null;
   }
 }
 function unregisterSubMode() {
@@ -173,21 +192,28 @@ function unregisterSubMode() {
   cleanupSubMode = null;
 }
 
+watch(
+  isActive,
+  (active) => {
+    if (active) registerSubMode();
+    else unregisterSubMode();
+  },
+  { immediate: true },
+);
+
 onMounted(() => {
   triggerAnimation();
-  registerSubMode();
 });
 onActivated(() => {
   if (props.preview) return;
-  isActive.value = true;
-  registerSubMode();
+  keptAlive.value = true;
+  triggerAnimation();
   if (viewMode.value === "chart") void loadTargetCounts();
   if (viewMode.value === "farmingScore") void loadFarmingProfiles();
 });
 onDeactivated(() => {
   if (props.preview) return;
-  isActive.value = false;
-  unregisterSubMode();
+  keptAlive.value = false;
 });
 watch(
   () => props.inventoryRevision,
@@ -207,40 +233,23 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
 </script>
 <template>
   <div class="relic-catalogue-section">
-    <!-- Mobile Secondary Category Tabs (Top Tabs) -->
-    <div
-      v-if="mobile"
-      class="mobile-relic-secondary-tabs"
-      role="group"
-      :aria-label="`${setKindLabel}展示方式`"
-      data-swipe-ignore
-    >
+    <div v-if="mobile" class="mobile-relic-submode-bar" aria-live="polite">
       <button
         type="button"
-        :class="{ active: viewMode === 'cards' }"
-        :aria-pressed="viewMode === 'cards'"
-        @click="setViewMode('cards')"
+        class="mobile-relic-submode-btn"
+        :aria-label="`当前展示：${topModeLabel}，点击切换下一项`"
+        @click="!preview && nextViewMode()"
       >
-        套装图鉴
-      </button>
-      <button
-        type="button"
-        :class="{ active: viewMode === 'chart' }"
-        :aria-pressed="viewMode === 'chart'"
-        @click="setViewMode('chart')"
-      >
-        目标分布
-      </button>
-      <button
-        type="button"
-        :class="{ active: viewMode === 'farmingScore' }"
-        :aria-pressed="viewMode === 'farmingScore'"
-        @click="setViewMode('farmingScore')"
-      >
-        刷取评分
+        <span>{{ topModeLabel }}</span>
+        <span class="mobile-relic-submode-dots" aria-hidden="true">
+          <i
+            v-for="(mode, idx) in viewModes"
+            :key="mode"
+            :class="{ active: idx === viewModes.indexOf(viewMode) }"
+          />
+        </span>
       </button>
     </div>
-
     <div v-if="!mobile" class="relic-catalogue-toolbar">
       <div>
         <p class="relic-catalogue-kicker">SET TARGET PULSE</p>

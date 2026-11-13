@@ -2,6 +2,7 @@
 import {
   computed,
   defineAsyncComponent,
+  onBeforeUnmount,
   onMounted,
   provide,
   ref,
@@ -13,7 +14,8 @@ import { useRuntimeStore } from "@/app/stores/runtime";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import { mobileViewKey } from "@/shared/contracts/mobile-view";
 import { readOnlyViewKey } from "@/shared/contracts/view-mode";
-import { mobileSubModeKey } from "@/shared/contracts/mobile-sub-mode";
+import { mobileSubModeKey, type MobileSubModeHandlers } from "@/shared/contracts/mobile-sub-mode";
+import { mobileTopHeaderKey } from "@/shared/contracts/mobile-top-header";
 import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
@@ -28,25 +30,7 @@ provide(runtimeContextKey, refs);
 provide(readOnlyViewKey, true);
 provide(mobileViewKey, true);
 
-const subModeHandlers = ref<{ prev: () => void; next: () => void } | null>(null);
-const hasSubMode = computed(() => Boolean(subModeHandlers.value));
-provide(mobileSubModeKey, {
-  active: hasSubMode,
-  prev: () => subModeHandlers.value?.prev(),
-  next: () => subModeHandlers.value?.next(),
-  register: (handlers) => {
-    if (!handlers) {
-      subModeHandlers.value = null;
-      return () => {};
-    }
-    subModeHandlers.value = handlers;
-    return () => {
-      if (subModeHandlers.value === handlers) {
-        subModeHandlers.value = null;
-      }
-    };
-  },
-});
+const subModeByPage = shallowReactive<Record<string, MobileSubModeHandlers | undefined>>({});
 const tabs = [
   { id: "inventory", name: "背包" },
   { id: "catalogue", name: "图鉴" },
@@ -56,6 +40,37 @@ const tabs = [
 ] as const;
 type MobilePageId = (typeof tabs)[number]["id"];
 const tab = ref<MobilePageId>("inventory");
+const activeSubMode = computed(() => subModeByPage[tab.value] ?? null);
+const hasSubMode = computed(() => Boolean(activeSubMode.value));
+const topHeaderEl = ref<HTMLElement | null>(null);
+const isUnfoldedPortrait = ref(
+  typeof document !== "undefined" &&
+    document.documentElement.dataset.posture === "unfolded-portrait",
+);
+const hasTopPrimary = computed(
+  () =>
+    isUnfoldedPortrait.value &&
+    (tab.value === "inventory" || tab.value === "catalogue" || tab.value === "analysis"),
+);
+provide(mobileTopHeaderKey, {
+  host: topHeaderEl,
+  isUnfoldedPortrait,
+  activePage: tab,
+});
+provide(mobileSubModeKey, {
+  active: hasSubMode,
+  prev: () => activeSubMode.value?.prev(),
+  next: () => activeSubMode.value?.next(),
+  register: (handlers) => {
+    if (!handlers) return () => {};
+    subModeByPage[handlers.pageId] = handlers;
+    return () => {
+      if (subModeByPage[handlers.pageId] === handlers) {
+        delete subModeByPage[handlers.pageId];
+      }
+    };
+  },
+});
 const content = ref<HTMLElement | null>(null);
 const navEl = ref<HTMLElement | null>(null);
 const navItemsEl = ref<HTMLElement | null>(null);
@@ -67,8 +82,8 @@ useCapsuleSwipe({
   canStart: () =>
     document.documentElement.dataset.posture === "unfolded-portrait" &&
     (!navItemsEl.value || navItemsEl.value.scrollWidth <= navItemsEl.value.clientWidth + 1),
-  onNext: () => subModeHandlers.value?.next(),
-  onPrev: () => subModeHandlers.value?.prev(),
+  onNext: () => activeSubMode.value?.next(),
+  onPrev: () => activeSubMode.value?.prev(),
 });
 const pages = shallowReactive<Partial<Record<MobilePageId, Component>>>({
   inventory: MobileInventoryPage,
@@ -99,7 +114,19 @@ async function synced() {
     runtime.error = String(cause);
   }
 }
+let postureObserver: MutationObserver | undefined;
 onMounted(() => {
+  const syncPosture = () => {
+    isUnfoldedPortrait.value = document.documentElement.dataset.posture === "unfolded-portrait";
+  };
+  syncPosture();
+  if (typeof MutationObserver !== "undefined") {
+    postureObserver = new MutationObserver(syncPosture);
+    postureObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-posture"],
+    });
+  }
   synced();
   const preloadPages = () => {
     Object.values(pageLoaders).forEach((loader) => {
@@ -112,9 +139,14 @@ onMounted(() => {
     setTimeout(preloadPages, 800);
   }
 });
+onBeforeUnmount(() => {
+  postureObserver?.disconnect();
+  postureObserver = undefined;
+});
 </script>
 <template>
-  <main class="mobile-shell">
+  <main class="mobile-shell" :class="{ 'has-top-primary': hasTopPrimary }">
+    <header ref="topHeaderEl" class="mobile-top-header" />
     <h1 class="mobile-page-title">{{ tabs.find((item) => item.id === tab)?.name }}</h1>
     <p v-if="runtime.error" class="feedback error" role="alert">
       {{ runtime.error }}<button @click="runtime.error = ''">关闭</button>
@@ -146,7 +178,7 @@ onMounted(() => {
         type="button"
         class="mobile-nav-sub-btn prev"
         aria-label="上一项模式"
-        @click="subModeHandlers?.prev()"
+        @click="activeSubMode?.prev()"
       >
         <svg
           viewBox="0 0 24 24"
@@ -252,7 +284,7 @@ onMounted(() => {
         type="button"
         class="mobile-nav-sub-btn next"
         aria-label="下一项模式"
-        @click="subModeHandlers?.next()"
+        @click="activeSubMode?.next()"
       >
         <svg
           viewBox="0 0 24 24"

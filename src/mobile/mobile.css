@@ -394,6 +394,42 @@ input {
 [data-posture="unfolded-portrait"] .mobile-nav button.mobile-nav-sub-btn.next {
   order: 10;
 }
+.mobile-top-header {
+  display: none;
+}
+[data-posture="unfolded-portrait"] .mobile-shell.has-top-primary {
+  padding-top: max(60px, calc(env(safe-area-inset-top, 0px) + 6px));
+}
+[data-posture="unfolded-portrait"] .mobile-top-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: max(54px, env(safe-area-inset-top, 0px));
+  padding: max(10px, calc(env(safe-area-inset-top, 0px) * 0.22))
+    calc(var(--mobile-frame-offset) + max(118px, calc(var(--mobile-content-right) + 94px))) 4px
+    calc(var(--mobile-frame-offset) + var(--mobile-content-left));
+  display: flex;
+  align-items: center;
+  z-index: 98;
+  background: linear-gradient(180deg, rgba(241, 246, 255, 0.94) 0%, rgba(248, 251, 255, 0.84) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+[data-posture="unfolded-portrait"] .mobile-top-header:empty {
+  display: none;
+}
+[data-posture="unfolded-portrait"]
+  .mobile-top-header
+  > :is(.mobile-inventory-toolbar, .mobile-scanner-categories) {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+[data-posture="unfolded-portrait"] .mobile-top-header > .catalogue-tabs {
+  max-width: 100%;
+  margin: 0;
+}
 
 /* The expanded menu shares the viewport-edge rail with the system status UI.
    safe-area-inset-right marks the content boundary, not the menu's right offset. */
@@ -428,6 +464,9 @@ html.mobile-view.mobile-page-transition {
 html.mobile-view.mobile-page-transition .mobile-content {
   view-transition-name: mobile-page-content;
 }
+html.mobile-view.mobile-page-transition .mobile-top-header {
+  view-transition-name: mobile-page-top-header;
+}
 html.mobile-view.mobile-page-transition .mobile-nav {
   view-transition-name: mobile-page-nav;
 }
@@ -437,6 +476,10 @@ html.mobile-view.mobile-page-transition .mobile-nav {
 ::view-transition-group(mobile-page-nav) {
   z-index: 1000;
   animation: none !important;
+}
+::view-transition-group(mobile-page-top-header) {
+  z-index: 999;
+  animation-duration: 180ms;
 }
 ::view-transition-group(mobile-page-content) {
   z-index: 1;

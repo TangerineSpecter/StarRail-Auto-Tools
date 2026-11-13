@@ -11,6 +11,7 @@ import {
 } from "vue";
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useMobileSubMode } from "@/shared/contracts/mobile-sub-mode";
+import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import Button from "primevue/button";
 import ScannerFilterButton from "./ScannerFilterButton.vue";
@@ -65,6 +66,11 @@ const activeMode = ref<"mainStat" | "upgrade">("mainStat");
 const transitionDirection = ref<"next" | "prev">("next");
 
 const subMode = useMobileSubMode();
+const pageActive = ref(true);
+const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
+  "analysis",
+  pageActive,
+);
 
 const scannerTabButtons = ref<Record<string, HTMLElement | null>>({});
 const setScannerTabBtnRef = (key: string, el: unknown) => {
@@ -79,6 +85,9 @@ function updateScannerIndicator() {
 }
 
 watch(activeMode, () => {
+  void nextTick(updateScannerIndicator);
+});
+watch(useTopHeader, () => {
   void nextTick(updateScannerIndicator);
 });
 
@@ -128,7 +137,8 @@ let cleanupSubMode: (() => void) | null = null;
 function registerSubMode() {
   if (mobile) {
     cleanupSubMode?.();
-    cleanupSubMode = subMode?.register({ prev: prevMode, next: nextMode }) ?? null;
+    cleanupSubMode =
+      subMode?.register({ pageId: "analysis", prev: prevMode, next: nextMode }) ?? null;
     void nextTick(updateScannerIndicator);
   }
 }
@@ -138,14 +148,17 @@ function unregisterSubMode() {
 }
 
 onMounted(() => {
+  pageActive.value = true;
   registerSubMode();
   window.addEventListener("resize", updateScannerIndicator);
 });
 onActivated(() => {
+  pageActive.value = true;
   registerSubMode();
   window.addEventListener("resize", updateScannerIndicator);
 });
 onDeactivated(() => {
+  pageActive.value = false;
   unregisterSubMode();
   window.removeEventListener("resize", updateScannerIndicator);
 });
@@ -486,32 +499,34 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="relic-scanner">
-    <!-- Mobile Top Categories Tabs (User specified red-box position) -->
-    <nav v-if="mobile" class="mobile-scanner-categories" aria-label="分析模式">
-      <button
-        :ref="(el) => setScannerTabBtnRef('mainStat', el)"
-        type="button"
-        :class="{ active: activeMode === 'mainStat' }"
-        :aria-pressed="activeMode === 'mainStat'"
-        @click="goToMode('mainStat')"
-      >
-        主属性扫描
-      </button>
-      <button
-        :ref="(el) => setScannerTabBtnRef('upgrade', el)"
-        type="button"
-        :class="{ active: activeMode === 'upgrade' }"
-        :aria-pressed="activeMode === 'upgrade'"
-        @click="goToMode('upgrade')"
-      >
-        替换推荐扫描
-      </button>
-      <span
-        class="mobile-scanner-category-indicator"
-        :style="{ transform: `translateX(${scannerIndicatorX}px)` }"
-        aria-hidden="true"
-      />
-    </nav>
+    <!-- Mobile Top Categories Tabs -->
+    <Teleport :to="topHeaderHost ?? 'body'" :disabled="!useTopHeader">
+      <nav v-if="mobile" class="mobile-scanner-categories" aria-label="分析模式">
+        <button
+          :ref="(el) => setScannerTabBtnRef('mainStat', el)"
+          type="button"
+          :class="{ active: activeMode === 'mainStat' }"
+          :aria-pressed="activeMode === 'mainStat'"
+          @click="goToMode('mainStat')"
+        >
+          主属性扫描
+        </button>
+        <button
+          :ref="(el) => setScannerTabBtnRef('upgrade', el)"
+          type="button"
+          :class="{ active: activeMode === 'upgrade' }"
+          :aria-pressed="activeMode === 'upgrade'"
+          @click="goToMode('upgrade')"
+        >
+          替换推荐扫描
+        </button>
+        <span
+          class="mobile-scanner-category-indicator"
+          :style="{ transform: `translateX(${scannerIndicatorX}px)` }"
+          aria-hidden="true"
+        />
+      </nav>
+    </Teleport>
 
     <header v-if="!mobile" class="scanner-hero">
       <div class="scanner-title">

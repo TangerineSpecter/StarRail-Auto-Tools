@@ -12,6 +12,7 @@ import {
 } from "vue";
 import { characterCatalogue, lightConeCatalogue, relicCatalogue } from "@/shared/catalogue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import RelicSetGrid from "./RelicSetGrid.vue";
 import LightConeGrid from "./LightConeGrid.vue";
@@ -43,6 +44,11 @@ const workspaceEl = ref<HTMLElement | null>(null);
 const pagerBody = ref<HTMLElement | null>(null);
 const capsuleHostEl = ref<HTMLElement | null>(null);
 const railHostEl = ref<HTMLElement | null>(null);
+const pageActive = ref(true);
+const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
+  "catalogue",
+  pageActive,
+);
 provide(catalogueCapsuleHostKey, capsuleHostEl);
 provide(catalogueRailHostKey, railHostEl);
 
@@ -177,56 +183,65 @@ const removeListeners = () => {
   window.removeEventListener("keydown", onEscape);
   window.removeEventListener("resize", onWindowResize);
 };
+watch(useTopHeader, () => {
+  void nextTick(updateIndicator);
+});
 onMounted(() => {
   window.addEventListener("keydown", onEscape);
   window.addEventListener("resize", onWindowResize);
   void nextTick(updateIndicator);
 });
 onActivated(() => {
+  pageActive.value = true;
   window.addEventListener("keydown", onEscape);
   window.addEventListener("resize", onWindowResize);
   void nextTick(updateIndicator);
 });
-onDeactivated(removeListeners);
+onDeactivated(() => {
+  pageActive.value = false;
+  removeListeners();
+});
 onBeforeUnmount(removeListeners);
 </script>
 <template>
   <section ref="workspaceEl" class="catalogue-workspace">
-    <header class="catalogue-heading">
+    <header :class="['catalogue-heading', { 'is-teleported': useTopHeader }]">
       <div>
         <p class="eyebrow">LOCAL REFERENCE DATA</p>
         <h2>遗器、饰品与光锥图鉴</h2>
       </div>
-      <div class="catalogue-tabs">
-        <button
-          v-for="item in tabs"
-          :key="item.key"
-          :ref="(el) => setTabButtonRef(item.key, el)"
-          :class="['catalogue-tab-btn', { active: tab === item.key }]"
-          :aria-pressed="tab === item.key"
-          @click="selectTab(item.key)"
-        >
-          <span
-            ><small>{{ item.code }}</small
-            >{{ item.label }}</span
-          ><b
-            >{{ item.count }} <small>{{ item.unit }}</small></b
+      <Teleport :to="topHeaderHost ?? 'body'" :disabled="!useTopHeader">
+        <div class="catalogue-tabs">
+          <button
+            v-for="item in tabs"
+            :key="item.key"
+            :ref="(el) => setTabButtonRef(item.key, el)"
+            :class="['catalogue-tab-btn', { active: tab === item.key }]"
+            :aria-pressed="tab === item.key"
+            @click="selectTab(item.key)"
           >
-        </button>
-        <span
-          v-if="mobile"
-          class="catalogue-tab-indicator"
-          :style="{
-            transform: `translateX(${activeIndicatorX}px)`,
-            transition: pager.active.value
-              ? `transform ${pager.duration.value}ms cubic-bezier(0.16, 1, 0.3, 1)`
-              : indicatorReady
-                ? undefined
-                : 'none',
-          }"
-          aria-hidden="true"
-        />
-      </div>
+            <span
+              ><small>{{ item.code }}</small
+              >{{ item.label }}</span
+            ><b
+              >{{ item.count }} <small>{{ item.unit }}</small></b
+            >
+          </button>
+          <span
+            v-if="mobile"
+            class="catalogue-tab-indicator"
+            :style="{
+              transform: `translateX(${activeIndicatorX}px)`,
+              transition: pager.active.value
+                ? `transform ${pager.duration.value}ms cubic-bezier(0.16, 1, 0.3, 1)`
+                : indicatorReady
+                  ? undefined
+                  : 'none',
+            }"
+            aria-hidden="true"
+          />
+        </div>
+      </Teleport>
     </header>
     <div
       class="catalogue-groups catalogue-pager"
@@ -260,6 +275,7 @@ onBeforeUnmount(removeListeners);
               :sets="cavernSets"
               :owned-counts="relicCounts"
               :inventory-revision="inventoryRevision"
+              :active="tab === 'cavern'"
               @select="selectedSet = $event"
             />
             <RelicSetGrid
@@ -268,6 +284,7 @@ onBeforeUnmount(removeListeners);
               :sets="planarSets"
               :owned-counts="relicCounts"
               :inventory-revision="inventoryRevision"
+              :active="tab === 'planar'"
               @select="selectedSet = $event"
             />
             <LightConeGrid
