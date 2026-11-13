@@ -1,120 +1,19 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { relicImage } from "@/shared/catalogue";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import type { ScanReviewGroup } from "./scan-review";
 
-const props = defineProps<{ groups: ScanReviewGroup[] }>();
-const track = ref<HTMLElement>();
-const active = ref(0);
-let width = 0;
-let observer: ResizeObserver | undefined;
-function align(index: number, behavior: "instant" | "smooth" = "instant") {
-  const el = track.value;
-  const slide = el?.children[index] as HTMLElement | undefined;
-  if (!el || !slide) return;
-  const left = slide.getBoundingClientRect().left - el.getBoundingClientRect().left + el.scrollLeft;
-  el.scrollTo({ left, behavior });
-}
-function syncWidth() {
-  const nextWidth = track.value?.clientWidth ?? 0;
-  if (nextWidth === width) return false;
-  width = nextWidth;
-  if (width > 0) align(active.value);
-  return true;
-}
-function onScroll() {
-  const el = track.value;
-  if (!el || syncWidth() || !el.clientWidth) return;
-  const slides = Array.from(el.children) as HTMLElement[];
-  let nearest = 0;
-  let distance = Infinity;
-  slides.forEach((slide, index) => {
-    const delta = Math.abs(slide.getBoundingClientRect().left - el.getBoundingClientRect().left);
-    if (delta < distance) {
-      nearest = index;
-      distance = delta;
-    }
-  });
-  active.value = nearest;
-}
-function move(delta: number) {
-  const index = Math.max(0, Math.min(props.groups.length - 1, active.value + delta));
-  align(
-    index,
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
-  );
-}
-onMounted(() => {
-  width = track.value?.clientWidth ?? 0;
-  observer = new ResizeObserver(syncWidth);
-  if (track.value) observer.observe(track.value);
-});
-onBeforeUnmount(() => observer?.disconnect());
-watch(
-  () => props.groups,
-  async () => {
-    active.value = 0;
-    await nextTick();
-    track.value?.scrollTo({ left: 0, behavior: "instant" });
-  },
-);
+defineProps<{ groups: ScanReviewGroup[] }>();
 </script>
 
 <template>
-  <section
-    class="scanner-review-cards"
-    aria-label="按套装浏览待复核遗器"
-    aria-roledescription="轮播"
-  >
-    <div class="scanner-review-paging">
-      <p>{{ groups.length > 1 ? "左右滑动查看套装" : "按套装查看" }}</p>
-      <div class="scanner-review-page-controls">
-        <button type="button" aria-label="上一套遗器" :disabled="active === 0" @click="move(-1)">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            aria-hidden="true"
-          >
-            <path d="m14 7-5 5 5 5" />
-          </svg>
-        </button>
-        <span aria-live="polite" aria-atomic="true">{{ active + 1 }} / {{ groups.length }}</span>
-        <button
-          type="button"
-          aria-label="下一套遗器"
-          :disabled="active >= groups.length - 1"
-          @click="move(1)"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            aria-hidden="true"
-          >
-            <path d="m10 7 5 5-5 5" />
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div
-      ref="track"
-      class="scanner-review-track"
-      tabindex="0"
-      aria-label="套装卡片，可左右滑动"
-      @scroll.passive="onScroll"
-      @keydown.right.prevent="move(1)"
-      @keydown.left.prevent="move(-1)"
-    >
+  <section class="scanner-review-cards" aria-label="按套装浏览待复核遗器">
+    <div class="scanner-review-list">
       <article
-        v-for="(group, index) in groups"
+        v-for="group in groups"
         :key="group.setId"
-        class="scanner-review-slide"
-        :aria-label="`${group.setName}，第 ${index + 1} 套，共 ${groups.length} 套`"
-        aria-roledescription="幻灯片"
+        class="scanner-review-card"
+        :aria-label="`${group.setName}，共 ${group.groupTotal} 件待复核`"
       >
         <header class="scanner-review-set">
           <img
@@ -152,67 +51,19 @@ watch(
 .scanner-review-cards {
   min-width: 0;
 }
-.scanner-review-paging {
+.scanner-review-list {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.scanner-review-paging p {
-  margin: 0;
-  color: #526784;
-  font-size: 12px;
-}
-.scanner-review-page-controls {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  color: #526784;
-  font-variant-numeric: tabular-nums;
-}
-.scanner-review-page-controls button {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 12px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--blue);
-}
-.scanner-review-page-controls button:disabled {
-  opacity: 0.35;
-}
-.scanner-review-page-controls svg {
-  width: 20px;
-  height: 20px;
-}
-.scanner-review-track {
-  display: flex;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 12px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #b6c9df transparent;
-  padding-bottom: 10px;
 }
-.scanner-review-slide {
+.scanner-review-card {
   box-sizing: border-box;
-  flex: 0 0 calc(100% - 20px);
+  width: 100%;
   min-width: 0;
   border: 1px solid #dce4ef;
   border-radius: 14px;
   background: white;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   overflow: hidden;
-}
-.scanner-review-slide:only-child {
-  flex-basis: 100%;
 }
 .scanner-review-set {
   display: flex;
@@ -298,9 +149,5 @@ watch(
 }
 .scanner-review-part dd b {
   color: var(--blue);
-}
-.scanner-review-cards :is(button, .scanner-review-track):focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: -2px;
 }
 </style>
