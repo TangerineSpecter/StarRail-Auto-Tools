@@ -2176,7 +2176,8 @@ html.mobile-view:not([data-posture="unfolded-portrait"])
     inset 0 1px 1px rgba(255, 255, 255, 0.9);
   z-index: 90;
   user-select: none;
-  touch-action: pan-y;
+  -webkit-user-select: none;
+  touch-action: none;
   transition:
     transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 0.2s ease;

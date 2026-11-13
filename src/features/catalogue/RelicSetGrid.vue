@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useMobileSubMode } from "@/shared/contracts/mobile-sub-mode";
+import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import MobileFarmingList from "./MobileFarmingList.vue";
 import { computed, onActivated, onDeactivated, onMounted, onUnmounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
@@ -80,25 +81,13 @@ const currentModeSubLabel = computed(() => {
   }
 });
 
-let capsuleTouchStartX = 0;
-let capsuleTouchStartY = 0;
-function onCapsuleTouchStart(e: TouchEvent) {
-  if (!e.touches.length) return;
-  capsuleTouchStartX = e.touches[0].clientX;
-  capsuleTouchStartY = e.touches[0].clientY;
-}
-function onCapsuleTouchEnd(e: TouchEvent) {
-  if (!e.changedTouches.length) return;
-  const deltaX = e.changedTouches[0].clientX - capsuleTouchStartX;
-  const deltaY = e.changedTouches[0].clientY - capsuleTouchStartY;
-  if (Math.abs(deltaX) > 28 && Math.abs(deltaX) > Math.abs(deltaY)) {
-    if (deltaX < 0) {
-      nextViewMode();
-    } else {
-      prevViewMode();
-    }
-  }
-}
+const capsuleEl = ref<HTMLElement | null>(null);
+const { dragStyle: capsuleDragStyle } = useCapsuleSwipe({
+  element: capsuleEl,
+  enabled: computed(() => mobile),
+  onNext: nextViewMode,
+  onPrev: prevViewMode,
+});
 
 const animKey = ref(0);
 const triggerAnimation = () => {
@@ -456,10 +445,9 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
     <!-- Mobile Floating Glass Capsule (Apple Music Style Translucent Pill, hidden in unfolded-portrait) -->
     <nav
       v-if="mobile"
+      ref="capsuleEl"
       :class="['mobile-glass-capsule', `is-${viewMode}`]"
       aria-label="图鉴展示模式切换"
-      @touchstart.passive="onCapsuleTouchStart"
-      @touchend.passive="onCapsuleTouchEnd"
     >
       <button
         type="button"
@@ -483,6 +471,7 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
         class="capsule-center-body"
         role="button"
         tabindex="0"
+        :style="capsuleDragStyle"
         :aria-label="`${currentModeLabel}，点击切换模式`"
         @click="nextViewMode()"
       >

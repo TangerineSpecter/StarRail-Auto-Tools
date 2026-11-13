@@ -16,6 +16,7 @@ import { readOnlyViewKey } from "@/shared/contracts/view-mode";
 import { mobileSubModeKey } from "@/shared/contracts/mobile-sub-mode";
 import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
+import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import MobileSync from "./MobileSync.vue";
 import { useMobilePageTransition } from "./useMobilePageTransition";
 const MobileDevDataSwitch = import.meta.env.DEV
@@ -56,6 +57,19 @@ const tabs = [
 type MobilePageId = (typeof tabs)[number]["id"];
 const tab = ref<MobilePageId>("inventory");
 const content = ref<HTMLElement | null>(null);
+const navEl = ref<HTMLElement | null>(null);
+const navItemsEl = ref<HTMLElement | null>(null);
+useCapsuleSwipe({
+  element: navEl,
+  enabled: hasSubMode,
+  stopPropagation: false,
+  thresholdPx: 28,
+  canStart: () =>
+    document.documentElement.dataset.posture === "unfolded-portrait" &&
+    (!navItemsEl.value || navItemsEl.value.scrollWidth <= navItemsEl.value.clientWidth + 1),
+  onNext: () => subModeHandlers.value?.next(),
+  onPrev: () => subModeHandlers.value?.prev(),
+});
 const pages = shallowReactive<Partial<Record<MobilePageId, Component>>>({
   inventory: MobileInventoryPage,
   settings: MobileSync,
@@ -126,7 +140,7 @@ onMounted(() => {
         </component>
       </KeepAlive>
     </div>
-    <nav class="mobile-nav" :class="{ 'has-sub-mode': hasSubMode }" aria-label="主导航">
+    <nav ref="navEl" class="mobile-nav" :class="{ 'has-sub-mode': hasSubMode }" aria-label="主导航">
       <button
         v-if="hasSubMode"
         type="button"
@@ -149,7 +163,7 @@ onMounted(() => {
       <div class="mobile-nav-brand">
         <img src="/logo/android-chrome-192x192.png" alt="星穹数据航站" />
       </div>
-      <div class="mobile-nav-items">
+      <div ref="navItemsEl" class="mobile-nav-items">
         <button
           v-for="item in tabs"
           :key="item.id"
