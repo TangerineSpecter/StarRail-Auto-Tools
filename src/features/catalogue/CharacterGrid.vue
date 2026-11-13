@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import AdaptiveDisclosure from "@/shared/ui/AdaptiveDisclosure.vue";
-import { computed, onActivated, onMounted, ref, watch } from "vue";
+import { computed, onActivated, onDeactivated, onMounted, ref, watch } from "vue";
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { CharacterCatalogueEntry } from "@/types";
+import MobileCatalogueFilterControls from "./MobileCatalogueFilterControls.vue";
 
 defineOptions({ name: "CharacterGrid" });
+const mobile = useMobileView();
 
 const props = defineProps<{
   characters: CharacterCatalogueEntry[];
@@ -18,13 +20,21 @@ const ELEMENT_ORDER = ["物理", "火", "冰", "雷", "风", "量子", "虚数"]
 const selectedPath = ref<string>("all");
 const selectedElement = ref<string>("all");
 const selectedRarity = ref<number | "all">("all");
+const searchQuery = ref("");
+const isActive = ref(!props.preview);
 
 const animKey = ref(0);
 const triggerAnimation = () => {
   animKey.value++;
 };
 onMounted(triggerAnimation);
-onActivated(triggerAnimation);
+onActivated(() => {
+  if (!props.preview) isActive.value = true;
+  triggerAnimation();
+});
+onDeactivated(() => {
+  if (!props.preview) isActive.value = false;
+});
 watch([selectedPath, selectedElement, selectedRarity], triggerAnimation);
 
 const availablePaths = computed(() => {
@@ -46,6 +56,7 @@ const availableElements = computed(() => {
 });
 
 const filteredCharacters = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
   return props.characters.filter((item) => {
     if (selectedPath.value !== "all" && item.path !== selectedPath.value) {
       return false;
@@ -54,6 +65,9 @@ const filteredCharacters = computed(() => {
       return false;
     }
     if (selectedRarity.value !== "all" && item.rarity !== selectedRarity.value) {
+      return false;
+    }
+    if (query && !item.name.toLowerCase().includes(query)) {
       return false;
     }
     return true;
@@ -65,114 +79,109 @@ const visibleCharacters = computed(() =>
 </script>
 <template>
   <div class="character-catalogue-section">
+    <MobileCatalogueFilterControls
+      v-if="mobile"
+      v-model:path="selectedPath"
+      v-model:element="selectedElement"
+      v-model:rarity="selectedRarity"
+      v-model:search="searchQuery"
+      :active="isActive && !preview"
+      unit="名角色"
+      :total="filteredCharacters.length"
+      :available-paths="availablePaths"
+      :available-elements="availableElements"
+      :rarities="[5, 4]"
+      search-placeholder="搜索角色名称"
+      aria-label="筛选角色图鉴"
+    />
     <!-- 极简单行紧凑过滤工具栏 -->
-    <AdaptiveDisclosure
-      title="筛选角色"
-      :summary="
-        [
-          selectedPath !== 'all' ? selectedPath : '',
-          selectedElement !== 'all' ? selectedElement : '',
-          selectedRarity !== 'all' ? selectedRarity + '星' : '',
-        ]
-          .filter(Boolean)
-          .join(' · ') || '全部角色'
-      "
-    >
-      <div class="catalogue-filter-bar compact-toolbar">
-        <div class="catalogue-filter-group">
-          <div
-            role="button"
-            tabindex="0"
-            :class="['catalogue-filter-pill', { active: selectedPath === 'all' }]"
-            @click="selectedPath = 'all'"
-            @keydown.enter.prevent="selectedPath = 'all'"
-            @keydown.space.prevent="selectedPath = 'all'"
-          >
-            全部命途
-          </div>
-          <div
-            v-for="path in availablePaths"
-            :key="path"
-            role="button"
-            tabindex="0"
-            :class="['catalogue-filter-pill', { active: selectedPath === path }]"
-            @click="selectedPath = selectedPath === path ? 'all' : path"
-            @keydown.enter.prevent="selectedPath = selectedPath === path ? 'all' : path"
-            @keydown.space.prevent="selectedPath = selectedPath === path ? 'all' : path"
-          >
-            <img
-              v-if="pathIconSrc(path)"
-              :src="pathIconSrc(path)"
-              alt=""
-              class="filter-path-icon"
-            />
-            <span>{{ path }}</span>
-          </div>
+    <div v-else class="catalogue-filter-bar compact-toolbar">
+      <div class="catalogue-filter-group">
+        <div
+          role="button"
+          tabindex="0"
+          :class="['catalogue-filter-pill', { active: selectedPath === 'all' }]"
+          @click="selectedPath = 'all'"
+          @keydown.enter.prevent="selectedPath = 'all'"
+          @keydown.space.prevent="selectedPath = 'all'"
+        >
+          全部命途
         </div>
-
-        <div class="catalogue-filter-group catalogue-filter-right">
-          <div class="catalogue-filter-subgroup">
-            <div
-              role="button"
-              tabindex="0"
-              :class="['catalogue-filter-pill', { active: selectedElement === 'all' }]"
-              @click="selectedElement = 'all'"
-              @keydown.enter.prevent="selectedElement = 'all'"
-              @keydown.space.prevent="selectedElement = 'all'"
-            >
-              全部属性
-            </div>
-            <div
-              v-for="elem in availableElements"
-              :key="elem"
-              role="button"
-              tabindex="0"
-              :class="[
-                'catalogue-filter-pill',
-                `element-pill-${elem}`,
-                { active: selectedElement === elem },
-              ]"
-              @click="selectedElement = selectedElement === elem ? 'all' : elem"
-              @keydown.enter.prevent="selectedElement = selectedElement === elem ? 'all' : elem"
-              @keydown.space.prevent="selectedElement = selectedElement === elem ? 'all' : elem"
-            >
-              {{ elem }}
-            </div>
-          </div>
-
-          <div class="catalogue-filter-subgroup">
-            <div
-              role="button"
-              tabindex="0"
-              :class="['catalogue-filter-pill', { active: selectedRarity === 'all' }]"
-              @click="selectedRarity = 'all'"
-              @keydown.enter.prevent="selectedRarity = 'all'"
-              @keydown.space.prevent="selectedRarity = 'all'"
-            >
-              全部星级
-            </div>
-            <div
-              v-for="rarity in [5, 4]"
-              :key="rarity"
-              role="button"
-              tabindex="0"
-              :class="[
-                'catalogue-filter-pill',
-                `rarity-pill-${rarity}`,
-                { active: selectedRarity === rarity },
-              ]"
-              @click="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
-              @keydown.enter.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
-              @keydown.space.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
-            >
-              {{ rarity }}★
-            </div>
-          </div>
+        <div
+          v-for="path in availablePaths"
+          :key="path"
+          role="button"
+          tabindex="0"
+          :class="['catalogue-filter-pill', { active: selectedPath === path }]"
+          @click="selectedPath = selectedPath === path ? 'all' : path"
+          @keydown.enter.prevent="selectedPath = selectedPath === path ? 'all' : path"
+          @keydown.space.prevent="selectedPath = selectedPath === path ? 'all' : path"
+        >
+          <img v-if="pathIconSrc(path)" :src="pathIconSrc(path)" alt="" class="filter-path-icon" />
+          <span>{{ path }}</span>
         </div>
       </div>
 
-      <!-- 超紧凑左右布局角色网格 -->
-    </AdaptiveDisclosure>
+      <div class="catalogue-filter-group catalogue-filter-right">
+        <div class="catalogue-filter-subgroup">
+          <div
+            role="button"
+            tabindex="0"
+            :class="['catalogue-filter-pill', { active: selectedElement === 'all' }]"
+            @click="selectedElement = 'all'"
+            @keydown.enter.prevent="selectedElement = 'all'"
+            @keydown.space.prevent="selectedElement = 'all'"
+          >
+            全部属性
+          </div>
+          <div
+            v-for="elem in availableElements"
+            :key="elem"
+            role="button"
+            tabindex="0"
+            :class="[
+              'catalogue-filter-pill',
+              `element-pill-${elem}`,
+              { active: selectedElement === elem },
+            ]"
+            @click="selectedElement = selectedElement === elem ? 'all' : elem"
+            @keydown.enter.prevent="selectedElement = selectedElement === elem ? 'all' : elem"
+            @keydown.space.prevent="selectedElement = selectedElement === elem ? 'all' : elem"
+          >
+            {{ elem }}
+          </div>
+        </div>
+
+        <div class="catalogue-filter-subgroup">
+          <div
+            role="button"
+            tabindex="0"
+            :class="['catalogue-filter-pill', { active: selectedRarity === 'all' }]"
+            @click="selectedRarity = 'all'"
+            @keydown.enter.prevent="selectedRarity = 'all'"
+            @keydown.space.prevent="selectedRarity = 'all'"
+          >
+            全部星级
+          </div>
+          <div
+            v-for="rarity in [5, 4]"
+            :key="rarity"
+            role="button"
+            tabindex="0"
+            :class="[
+              'catalogue-filter-pill',
+              `rarity-pill-${rarity}`,
+              { active: selectedRarity === rarity },
+            ]"
+            @click="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
+            @keydown.enter.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
+            @keydown.space.prevent="selectedRarity = selectedRarity === rarity ? 'all' : rarity"
+          >
+            {{ rarity }}★
+          </div>
+        </div>
+      </div>
+    </div>
     <div v-if="filteredCharacters.length > 0" :key="animKey" class="character-catalogue-grid">
       <button
         v-for="(character, index) in visibleCharacters"

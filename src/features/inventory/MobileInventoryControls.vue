@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onDeactivated, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, onDeactivated, ref, watch } from "vue";
 import type { InventoryKind } from "@/types";
 import MobileInventoryCategoryTabs from "./MobileInventoryCategoryTabs.vue";
 
@@ -9,6 +9,8 @@ const props = defineProps<{
   activeFilterCount: number;
   hasFilters: boolean;
   hideCategories?: boolean;
+  preview?: boolean;
+  railHost?: HTMLElement | null;
 }>();
 const search = defineModel<string>("search", { required: true });
 const emit = defineEmits<{
@@ -18,14 +20,17 @@ const emit = defineEmits<{
   reset: [];
 }>();
 const composing = ref(false);
+const searchOpen = ref(false);
+const floatingInput = ref<HTMLInputElement | null>(null);
 let timer: ReturnType<typeof setTimeout> | undefined;
 function cancelSearch() {
   clearTimeout(timer);
   timer = undefined;
 }
-function submit() {
+function submit(blur = false) {
   cancelSearch();
   if (!composing.value) emit("search");
+  if (blur) floatingInput.value?.blur();
 }
 function scheduleSearch() {
   cancelSearch();
@@ -43,13 +48,33 @@ function finishComposition() {
   composing.value = false;
   scheduleSearch();
 }
+function openFloatingSearch() {
+  searchOpen.value = true;
+  void nextTick(() => {
+    floatingInput.value?.focus();
+    floatingInput.value?.select();
+  });
+}
+function closeFloatingSearch() {
+  searchOpen.value = false;
+}
+function toggleFloatingSearch() {
+  if (searchOpen.value) closeFloatingSearch();
+  else openFloatingSearch();
+}
+function openFilterDrawer() {
+  cancelSearch();
+  closeFloatingSearch();
+  emit("filter");
+}
 watch(() => props.kind, cancelSearch);
 onDeactivated(() => {
   composing.value = false;
+  closeFloatingSearch();
   cancelSearch();
 });
 onBeforeUnmount(cancelSearch);
-defineExpose({ cancelSearch });
+defineExpose({ cancelSearch, closeFloatingSearch });
 </script>
 <template>
   <div class="mobile-inventory-controls">
@@ -61,7 +86,7 @@ defineExpose({ cancelSearch });
         emit('category', $event);
       "
     />
-    <form class="mobile-inventory-search" role="search" @submit.prevent="submit">
+    <form class="mobile-inventory-search" role="search" @submit.prevent="submit(false)">
       <svg
         class="mobile-inventory-search-icon"
         viewBox="0 0 24 24"
@@ -80,7 +105,7 @@ defineExpose({ cancelSearch });
         placeholder="搜索名称或角色"
         enterkeyhint="search"
         autocomplete="off"
-        @input="scheduleSearch"
+        @input="scheduleSearch()"
         @compositionstart="startComposition"
         @compositionend="finishComposition"
       />
@@ -89,7 +114,7 @@ defineExpose({ cancelSearch });
         class="mobile-inventory-search-clear"
         type="button"
         aria-label="清空搜索"
-        @click="clearSearch"
+        @click="clearSearch()"
       >
         <svg
           viewBox="0 0 24 24"
@@ -107,10 +132,7 @@ defineExpose({ cancelSearch });
         type="button"
         :aria-label="activeFilterCount ? `筛选，已选 ${activeFilterCount} 项条件` : '筛选背包'"
         title="筛选"
-        @click="
-          cancelSearch();
-          emit('filter');
-        "
+        @click="openFilterDrawer()"
       >
         <svg
           viewBox="0 0 24 24"
@@ -130,7 +152,8 @@ defineExpose({ cancelSearch });
     <div class="mobile-inventory-status">
       <p role="status">
         {{ total }} {{ kind === "character" ? "名角色" : kind === "lightCone" ? "把光锥" : "件遗器"
-        }}<span v-if="hasFilters"> · 筛选结果</span>
+        }}<span v-if="search.trim()"> · 搜索“{{ search.trim() }}”</span
+        ><span v-if="hasFilters"> · 筛选结果</span>
       </p>
       <button
         v-if="hasFilters"
@@ -143,5 +166,105 @@ defineExpose({ cancelSearch });
         重置
       </button>
     </div>
+    <Teleport v-if="!preview" :to="railHost ?? 'body'" :disabled="!railHost">
+      <div class="mobile-rail-tools" role="group" aria-label="背包快捷工具">
+        <button
+          type="button"
+          class="mobile-rail-tool"
+          :class="{ 'is-active': searchOpen || Boolean(search.trim()) }"
+          :aria-expanded="searchOpen"
+          aria-label="搜索背包"
+          @click="toggleFloatingSearch()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m16 16 4.5 4.5" />
+          </svg>
+          <span>搜索</span>
+        </button>
+        <button
+          type="button"
+          class="mobile-rail-tool"
+          :class="{ 'is-active': activeFilterCount > 0 }"
+          :aria-label="activeFilterCount ? `筛选，已选 ${activeFilterCount} 项条件` : '筛选背包'"
+          @click="openFilterDrawer()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M4 17h16" />
+            <circle cx="9" cy="7" r="2.5" />
+            <circle cx="15" cy="17" r="2.5" />
+          </svg>
+          <span>筛选</span>
+          <b v-if="activeFilterCount">{{ activeFilterCount }}</b>
+        </button>
+      </div>
+      <Transition name="mobile-floating-search">
+        <form
+          v-if="searchOpen"
+          class="mobile-floating-search"
+          role="search"
+          @submit.prevent="submit(true)"
+        >
+          <svg
+            class="mobile-floating-search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m16 16 4.5 4.5" />
+          </svg>
+          <input
+            ref="floatingInput"
+            v-model="search"
+            type="search"
+            aria-label="搜索背包名称或装备角色"
+            placeholder="搜索名称或角色"
+            enterkeyhint="search"
+            autocomplete="off"
+            @input="scheduleSearch()"
+            @compositionstart="startComposition"
+            @compositionend="finishComposition"
+            @keydown.escape.prevent="closeFloatingSearch()"
+          />
+          <button
+            v-if="search"
+            class="mobile-floating-search-clear"
+            type="button"
+            aria-label="清空搜索"
+            @click="clearSearch()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path d="m8 8 8 8M16 8l-8 8" />
+            </svg>
+          </button>
+          <button type="button" class="mobile-floating-search-close" @click="closeFloatingSearch()">
+            收起
+          </button>
+        </form>
+      </Transition>
+    </Teleport>
   </div>
 </template>

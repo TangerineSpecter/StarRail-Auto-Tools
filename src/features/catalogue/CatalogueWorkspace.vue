@@ -19,7 +19,7 @@ import CharacterGrid from "./CharacterGrid.vue";
 import CharacterStatsModal from "./CharacterStatsModal.vue";
 import LightConeStatsModal from "./LightConeStatsModal.vue";
 import SetRecommendationModal from "./SetRecommendationModal.vue";
-import { catalogueCapsuleHostKey } from "./catalogue-capsule-host";
+import { catalogueCapsuleHostKey, catalogueRailHostKey } from "./catalogue-capsule-host";
 import { useCatalogueTabPager } from "./useCatalogueTabPager";
 import { ownedCountOf } from "./owned-counts";
 import { useCatalogueOwnedCounts } from "./useCatalogueOwnedCounts";
@@ -42,7 +42,9 @@ const skipNextTransition = ref(false);
 const workspaceEl = ref<HTMLElement | null>(null);
 const pagerBody = ref<HTMLElement | null>(null);
 const capsuleHostEl = ref<HTMLElement | null>(null);
+const railHostEl = ref<HTMLElement | null>(null);
 provide(catalogueCapsuleHostKey, capsuleHostEl);
+provide(catalogueRailHostKey, railHostEl);
 
 const selectedCharacter = ref<CharacterCatalogueEntry | null>(null);
 const selectedSet = ref<RelicSetCatalogueEntry | null>(null);
@@ -324,6 +326,7 @@ onBeforeUnmount(removeListeners);
       :style="capsuleHostStyle"
       data-swipe-ignore
     />
+    <div ref="railHostEl" class="mobile-catalogue-rail-host" data-swipe-ignore />
   </section>
   <CharacterStatsModal
     v-if="selectedCharacter"

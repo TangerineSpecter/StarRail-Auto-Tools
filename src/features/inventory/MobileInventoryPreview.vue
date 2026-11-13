@@ -30,6 +30,7 @@ const selected = new Set<number>();
       :has-filters="!!search || filterCount > 0"
       :search="search"
       hide-categories
+      preview
     />
     <p v-if="!result" class="mobile-inventory-preview-state">{{ error || "正在加载…" }}</p>
     <InventoryList

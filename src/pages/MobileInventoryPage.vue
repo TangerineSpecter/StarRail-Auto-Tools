@@ -37,6 +37,7 @@ const splitView = useInventorySplitView(detailOpen, master);
 const transitionDetail = useInventoryDetailTransition(master);
 const categoryBody = ref<HTMLElement | null>(null);
 const controls = ref<InstanceType<typeof MobileInventoryControls> | null>(null);
+const railHost = ref<HTMLElement | null>(null);
 const categoryTransition = useInventoryCategoryTransition({
   kind: archive.kind,
   body: categoryBody,
@@ -73,6 +74,7 @@ const qualityCount = computed(() =>
 const activeFilterCount = computed(() => archive.activeFilterCount.value + qualityCount.value);
 function openFilters() {
   pager.cancel();
+  controls.value?.closeFloatingSearch();
   filterDraft.value = structuredClone(toRaw(archive.filters.value));
   quality.begin();
   archive.filterOpen.value = true;
@@ -92,6 +94,7 @@ function resetFilters() {
 }
 function openDetail(kind: InventoryKind, id: number) {
   pager.cancel();
+  controls.value?.closeFloatingSearch();
   categoryTransition.cancel();
   transitionDetail(() => {
     activeDetailId.value = id;
@@ -105,6 +108,7 @@ function closeDetail() {
 function switchKind(kind: InventoryKind) {
   pager.cancel();
   controls.value?.cancelSearch();
+  controls.value?.closeFloatingSearch();
   void categoryTransition.switchTo(kind);
 }
 watch(detailOpen, (open) => {
@@ -177,6 +181,7 @@ onDeactivated(() => {
             :total="archive.result.value.total"
             :active-filter-count="activeFilterCount"
             :has-filters="archive.hasActiveSearchOrFilters.value || qualityCount > 0"
+            :rail-host="railHost"
             @search="archive.applyFilters"
             @filter="openFilters"
             @reset="resetFilters"
@@ -264,5 +269,6 @@ onDeactivated(() => {
       :inline="splitView"
       @close="closeDetail"
     />
+    <div ref="railHost" class="mobile-inventory-rail-host" />
   </section>
 </template>
