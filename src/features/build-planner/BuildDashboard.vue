@@ -184,6 +184,10 @@ function getProgressClass(percent: number | null) {
   return "progress-low";
 }
 
+function getCompletionClass(ratio: number) {
+  return getProgressClass(ratio * 100);
+}
+
 function dashboardState(entry: BuildDashboardEntry) {
   const character = entry.character;
   const catalogue = resolveCharacterCatalogue({
@@ -640,7 +644,101 @@ defineExpose({ reload: loadDashboard });
         @keydown.enter="openDetails(card.character.characterId, $event)"
         @keydown.space="openDetails(card.character.characterId, $event)"
       >
-        <header class="build-card-header">
+        <header v-if="mobile" class="mobile-build-card">
+          <div class="mobile-build-card-top">
+            <div class="build-character-avatar mobile-build-avatar">
+              <img v-if="card.image" :src="card.image" :alt="`${card.character.name} 头像`" />
+              <span v-else>{{ characterInitial(card.character.name) }}</span>
+            </div>
+            <div class="mobile-build-title-block">
+              <div class="mobile-build-name-row">
+                <p>{{ characterDisplayName(card.character) }}</p>
+              </div>
+              <div class="mobile-build-submeta">
+                <span
+                  :class="[
+                    'mobile-build-target-badge',
+                    {
+                      'is-done': card.targets.length > 0 && card.completed >= card.targets.length,
+                    },
+                  ]"
+                >
+                  {{ card.completed }}/{{ card.targets.length }} 达标
+                </span>
+                <span v-if="card.equippedLightCone" class="mobile-build-cone">
+                  {{ card.equippedLightCone.name }}·叠影{{ card.equippedLightCone.superimposition }}
+                </span>
+                <span v-else class="mobile-build-cone is-empty">未装备光锥</span>
+              </div>
+            </div>
+            <div :class="['mobile-build-score', getCompletionClass(card.quality.combinedRatio)]">
+              <strong>{{ (card.quality.combinedRatio * 100).toFixed(0) }}<small>%</small></strong>
+              <span>综合完成</span>
+            </div>
+            <svg
+              class="mobile-build-chevron"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 6 6 6-6 6" />
+            </svg>
+          </div>
+          <div
+            :class="['mobile-build-progress-track', getCompletionClass(card.quality.combinedRatio)]"
+            aria-hidden="true"
+          >
+            <span
+              :style="{
+                width: `${Math.min(100, Math.max(0, card.quality.combinedRatio * 100))}%`,
+              }"
+            />
+          </div>
+          <div class="mobile-build-stats">
+            <div class="mobile-build-stat">
+              <span>有效词条</span>
+              <b>{{ card.effectiveTotal }}</b>
+            </div>
+            <div class="mobile-build-stat">
+              <span>及格件数</span>
+              <b>{{ card.quality.qualityPassCount }}/{{ card.quality.qualityTotal }}</b>
+            </div>
+            <div v-if="card.weakSlot" class="mobile-build-stat is-weak">
+              <span>短板位置</span>
+              <b>{{ slotLabel(card.weakSlot) }}</b>
+            </div>
+          </div>
+          <div
+            v-if="planNote(card.entry.plan)"
+            class="build-card-note mobile-build-note"
+            :title="planNote(card.entry.plan)"
+            role="note"
+            :aria-label="`${card.character.name}的培养备注`"
+          >
+            <span class="build-card-note-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </span>
+            <p class="build-card-note-text">{{ planNote(card.entry.plan) }}</p>
+          </div>
+        </header>
+        <header v-else class="build-card-header">
           <div class="build-card-identity">
             <button
               v-if="!readOnly"
