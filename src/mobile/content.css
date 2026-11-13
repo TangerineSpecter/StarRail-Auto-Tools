@@ -2246,7 +2246,8 @@ html.mobile-view:is([data-posture="portrait"], [data-posture="unfolded-landscape
   .mobile-rail-tools {
   position: fixed;
   right: calc(var(--mobile-frame-offset) + var(--mobile-nav-inset));
-  top: max(224px, calc(env(safe-area-inset-top, 0px) + 172px));
+  top: auto;
+  bottom: calc(var(--mobile-nav-bottom) + 314px);
   width: var(--mobile-nav-width);
   display: flex;
   flex-direction: column;
@@ -2263,16 +2264,8 @@ html.mobile-view:is([data-posture="portrait"], [data-posture="unfolded-landscape
   user-select: none;
   -webkit-user-select: none;
 }
-html.mobile-view[data-posture="portrait"] .mobile-rail-tools:has(.mobile-rail-tool-clear) {
-  top: max(196px, calc(env(safe-area-inset-top, 0px) + 144px));
-}
 html.mobile-view[data-posture="unfolded-landscape"] .mobile-rail-tools {
   right: var(--mobile-nav-inset);
-  top: clamp(120px, calc(100dvh - var(--mobile-nav-bottom) - 420px), 216px);
-}
-html.mobile-view[data-posture="unfolded-landscape"]
-  .mobile-rail-tools:has(.mobile-rail-tool-clear) {
-  top: clamp(108px, calc(100dvh - var(--mobile-nav-bottom) - 472px), 172px);
 }
 .mobile-rail-tools button.mobile-rail-tool-clear {
   color: #dc2626;
