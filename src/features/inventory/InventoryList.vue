@@ -16,6 +16,7 @@ import {
 } from "@/shared/utils/relic-score";
 import { formatStatValue, pathLabel, slotLabel, statLabel } from "./options";
 import { inventoryItemId } from "./useInventoryArchive";
+import MobileCharacterCard from "./MobileCharacterCard.vue";
 import MobileLightConeCard from "./MobileLightConeCard.vue";
 import type {
   CharacterListItem,
@@ -348,62 +349,66 @@ function avatarColor(name: string): string {
         :key="item.characterId"
         class="character-card"
         :style="
-          characterBackground(item)
+          !readOnly && characterBackground(item)
             ? { '--character-card-backdrop': `url(${characterBackground(item)})` }
             : undefined
         "
         :aria-current="activeDetailId === item.characterId ? 'true' : undefined"
         @click="emit('detail', 'character', item.characterId)"
       >
-        <div class="character-card-header">
-          <img
-            v-if="characterAvatar(item)"
-            class="character-card-avatar"
-            :src="characterAvatar(item)"
-            :alt="`${characterLabel(item)} 头像`"
-          />
-          <div
-            v-else
-            class="character-card-avatar-fallback"
-            :style="{ background: avatarColor(item.name) }"
-          >
-            {{ item.name.charAt(0) }}
-          </div>
-          <div class="character-path">
-            <img class="path-icon" :src="pathIconSrc(item.path)" :alt="pathLabel(item.path)" /><span
-              class="path-text"
-              >{{ pathLabel(item.path) }}</span
+        <MobileCharacterCard v-if="readOnly" :item="item" />
+        <template v-else>
+          <div class="character-card-header">
+            <img
+              v-if="characterAvatar(item)"
+              class="character-card-avatar"
+              :src="characterAvatar(item)"
+              :alt="`${characterLabel(item)} 头像`"
+            />
+            <div
+              v-else
+              class="character-card-avatar-fallback"
+              :style="{ background: avatarColor(item.name) }"
             >
-          </div>
-          <div class="character-name">{{ characterLabel(item) }}</div>
-          <div
-            class="character-stars"
-            :aria-label="`${characterCatalogueEntry(item)?.rarity ?? 5} 星`"
-          >
-            {{ characterStars(item) }}
-          </div>
-        </div>
-        <div class="character-card-stats">
-          <div class="stat-col">
-            <span class="stat-label">等级</span
-            ><strong class="stat-val">Lv.{{ item.level }}</strong>
-          </div>
-          <div class="stat-col">
-            <span class="stat-label">星魂</span
-            ><strong :class="['stat-val', { 'is-active': item.eidolon > 0 }]"
-              >E{{ item.eidolon }}</strong
+              {{ item.name.charAt(0) }}
+            </div>
+            <div class="character-path">
+              <img
+                class="path-icon"
+                :src="pathIconSrc(item.path)"
+                :alt="pathLabel(item.path)"
+              /><span class="path-text">{{ pathLabel(item.path) }}</span>
+            </div>
+            <div class="character-name">{{ characterLabel(item) }}</div>
+            <div
+              class="character-stars"
+              :aria-label="`${characterCatalogueEntry(item)?.rarity ?? 5} 星`"
             >
+              {{ characterStars(item) }}
+            </div>
           </div>
-        </div>
-        <div v-if="!readOnly" class="character-card-actions">
-          <button
-            :class="['character-build-action', { 'has-build-plan': item.hasBuildPlan }]"
-            type="button"
-            @click.stop="emit('edit-build', item)"
-          >
-            培养方案 / 毕业目标
-          </button>
-        </div>
+          <div class="character-card-stats">
+            <div class="stat-col">
+              <span class="stat-label">等级</span
+              ><strong class="stat-val">Lv.{{ item.level }}</strong>
+            </div>
+            <div class="stat-col">
+              <span class="stat-label">星魂</span
+              ><strong :class="['stat-val', { 'is-active': item.eidolon > 0 }]"
+                >E{{ item.eidolon }}</strong
+              >
+            </div>
+          </div>
+          <div class="character-card-actions">
+            <button
+              :class="['character-build-action', { 'has-build-plan': item.hasBuildPlan }]"
+              type="button"
+              @click.stop="emit('edit-build', item)"
+            >
+              培养方案 / 毕业目标
+            </button>
+          </div>
+        </template>
       </div>
       <div v-if="!items.length" class="table-empty">
         <span>◇</span><strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong

@@ -58,14 +58,17 @@ const formatStandingBonus = (key: string, value: number) => {
         :alt="detail.name"
       />
       <div v-else class="path-seal">{{ pathLabel(catalogueEntry?.path ?? "").slice(0, 1) }}</div>
-      <div>
+      <div class="lightcone-identity-main">
         <p>{{ pathLabel(catalogueEntry?.path ?? "") }} · PATH</p>
         <h3>{{ detail.name }}</h3>
+        <div
+          class="detail-rarity-stars detail-inline-stars"
+          :aria-label="`${catalogueEntry?.rarity ?? 5} 星`"
+        >
+          <i v-for="value in catalogueEntry?.rarity ?? 5" :key="value">✦</i>
+        </div>
       </div>
       <b :class="{ 'is-max': detail.level === 80 }">Lv.{{ detail.level }}</b>
-    </div>
-    <div class="detail-rarity-stars">
-      <i v-for="value in catalogueEntry?.rarity ?? 5" :key="value">✦</i>
     </div>
     <div class="character-metrics">
       <div>

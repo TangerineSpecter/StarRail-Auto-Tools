@@ -2,6 +2,7 @@
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useHorizontalSwipe } from "@/shared/ui/useHorizontalSwipe";
+import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import CharacterDetail from "./CharacterDetail.vue";
 import LightConeDetail from "./LightConeDetail.vue";
@@ -114,6 +115,17 @@ function requestClose() {
   void animateDismiss(false);
 }
 
+const sheetDrag = useSheetDragDismiss(() => {
+  requestClose();
+});
+
+watch(
+  () => props.detail,
+  (next) => {
+    if (!next) sheetDrag.reset();
+  },
+);
+
 useHorizontalSwipe({
   surface: panel,
   enabled: computed(() => mobile && !closing.value),
@@ -211,7 +223,13 @@ onUnmounted(() => {
 </script>
 <template>
   <div
-    :class="['detail-backdrop', { 'inventory-detail-inline': inline }]"
+    :class="[
+      'detail-backdrop',
+      {
+        'inventory-detail-inline': inline,
+        'mobile-detail-sheet-backdrop': mobile && !inline,
+      },
+    ]"
     :style="backdropStyle"
     @click.self="!inline && requestClose()"
   >
@@ -220,6 +238,7 @@ onUnmounted(() => {
       :class="[
         'detail-drawer',
         {
+          'mobile-detail-sheet': mobile && !inline,
           'relic-detail-drawer': detail?.kind === 'relic',
           'character-detail-drawer': detail?.kind === 'character',
           'lightcone-detail-drawer': detail?.kind === 'lightCone',
@@ -230,7 +249,10 @@ onUnmounted(() => {
       :aria-modal="inline ? undefined : true"
       aria-label="档案详情"
     >
-      <header v-if="readOnly || detail?.kind !== 'character'">
+      <header
+        v-if="(mobile && !inline) || readOnly || detail?.kind !== 'character'"
+        v-on="mobile && !inline ? sheetDrag.handlers : {}"
+      >
         <div>
           <p class="eyebrow">
             {{
@@ -251,7 +273,14 @@ onUnmounted(() => {
             }}
           </h2>
         </div>
-        <button type="button" aria-label="关闭详情" @click="requestClose()">×</button>
+        <button
+          v-if="!mobile || inline"
+          type="button"
+          aria-label="关闭详情"
+          @click="requestClose()"
+        >
+          ×
+        </button>
       </header>
       <div class="detail-drawer-content">
         <div v-if="loading" class="detail-loading">正在加载详情…</div>

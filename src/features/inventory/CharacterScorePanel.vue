@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
+import { useMobileView } from "@/shared/contracts/mobile-view";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import InputNumber from "primevue/inputnumber";
 import { inventoryApi } from "@/shared/api/inventory";
@@ -33,6 +34,8 @@ const props = defineProps<{
   /** Full character SPD from standing stats when available (not relic-only bonus). */
   currentSpd?: number | null;
 }>();
+
+const mobile = useMobileView();
 
 const inventoryRelics = ref<RelicListItem[]>([]);
 const inventoryLoaded = ref(false);
@@ -569,13 +572,16 @@ async function computeFarmPriority() {
         <h3>六件词条质量</h3>
       </div>
       <small v-if="equippedInputs.length"
-        >{{ averageLetterGrade }} · 平均潜力 {{ summary.averagePotentialPct.toFixed(1) }}% ·
-        启发式非伤害</small
+        >{{ averageLetterGrade }} · 平均潜力 {{ summary.averagePotentialPct.toFixed(1) }}%<template
+          v-if="!mobile"
+        >
+          · 启发式非伤害</template
+        ></small
       >
       <small v-else>需装备遗器</small>
     </header>
 
-    <p class="score-disclaimer">
+    <p v-if="!mobile" class="score-disclaimer">
       词条评分衡量期望与稀有度，<strong>不是</strong>战斗伤害。刷本天数需手动计算，避免打开详情时卡顿。
     </p>
 
@@ -608,10 +614,11 @@ async function computeFarmPriority() {
         </div>
       </div>
 
-      <p class="score-hint">
+      <p v-if="!mobile" class="score-hint">
         下方六格为各部位字母评级、潜力%与加权
         Rolls；点击可查看当前装备遗器。仅<strong>潜力最低的短板部位</strong>会标「短板」（与等级字母无关）。
       </p>
+      <p v-else class="score-hint">点击下方部位可查看当前装备，橙标为最低潜力短板。</p>
       <div class="score-piece-grid">
         <button
           v-for="piece in summary.pieces"
