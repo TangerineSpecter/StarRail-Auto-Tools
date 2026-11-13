@@ -35,22 +35,22 @@ const lockedOptions = [
   { label: "全部", value: "" },
   { label: "已锁定", value: "true" },
   { label: "未锁定", value: "false" },
-] as const;
+];
 const discardOptions = [
   { label: "全部", value: "" },
   { label: "已弃置", value: "true" },
   { label: "未弃置", value: "false" },
-] as const;
+];
 const equippedOptions = [
   { label: "全部", value: "" },
   { label: "已装备", value: "true" },
   { label: "未装备", value: "false" },
-] as const;
+];
 const buildPlanOptions = [
   { label: "全部", value: "" },
   { label: "已设置", value: "true" },
   { label: "未设置", value: "false" },
-] as const;
+];
 const draftFilterCount = computed(() => {
   const form = filters.value;
   const baseValues =
