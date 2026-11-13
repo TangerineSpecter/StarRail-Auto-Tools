@@ -56,11 +56,6 @@ const hasTopPrimary = computed(
       tab.value === "build" ||
       tab.value === "analysis"),
 );
-provide(mobileTopHeaderKey, {
-  host: topHeaderEl,
-  isUnfoldedPortrait,
-  activePage: tab,
-});
 provide(mobileSubModeKey, {
   active: hasSubMode,
   prev: () => activeSubMode.value?.prev(),
@@ -105,9 +100,20 @@ const navigation = useMobilePageTransition({
   async prepare(next) {
     if (pages[next]) return;
     const loader = pageLoaders[next as keyof typeof pageLoaders];
+    if (next === "analysis") {
+      const [pageModule] = await Promise.all([loader(), loadRelicMainStatScanner()]);
+      pages[next] = pageModule.default;
+      return;
+    }
     pages[next] = (await loader()).default;
   },
   onError: (error) => (runtime.error = String(error)),
+});
+provide(mobileTopHeaderKey, {
+  host: topHeaderEl,
+  isUnfoldedPortrait,
+  activePage: tab,
+  selectedPage: navigation.selected,
 });
 const currentPage = computed(() => pages[tab.value]);
 async function synced() {

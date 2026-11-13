@@ -4,6 +4,7 @@ export interface MobileTopHeaderContext {
   host: Ref<HTMLElement | null>;
   isUnfoldedPortrait: Ref<boolean>;
   activePage: Ref<string>;
+  selectedPage?: Ref<string>;
 }
 
 export const mobileTopHeaderKey: InjectionKey<MobileTopHeaderContext> = Symbol("mobile-top-header");
@@ -16,6 +17,7 @@ export function useMobileTopHeaderTarget(
   host: Ref<HTMLElement | null>;
   enabled: Ref<boolean>;
   isUnfoldedPortrait: Ref<boolean>;
+  isLeaving: Ref<boolean>;
 } {
   const context = inject(mobileTopHeaderKey, null);
   const host = computed(() => context?.host.value ?? null);
@@ -29,5 +31,8 @@ export function useMobileTopHeaderTarget(
       context.activePage.value === pageId,
     ),
   );
-  return { host, enabled, isUnfoldedPortrait };
+  const isLeaving = computed(() =>
+    Boolean(context?.selectedPage && context.selectedPage.value !== pageId),
+  );
+  return { host, enabled, isUnfoldedPortrait, isLeaving };
 }

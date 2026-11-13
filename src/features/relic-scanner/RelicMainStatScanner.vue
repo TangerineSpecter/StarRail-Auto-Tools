@@ -67,10 +67,11 @@ const transitionDirection = ref<"next" | "prev">("next");
 
 const subMode = useMobileSubMode();
 const pageActive = ref(true);
-const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
-  "analysis",
-  pageActive,
-);
+const {
+  host: topHeaderHost,
+  enabled: useTopHeader,
+  isLeaving: isCapsuleLeaving,
+} = useMobileTopHeaderTarget("analysis", pageActive);
 
 const scannerTabButtons = ref<Record<string, HTMLElement | null>>({});
 const setScannerTabBtnRef = (key: string, el: unknown) => {
@@ -1025,85 +1026,93 @@ onBeforeUnmount(() => {
 
     <!-- Mobile Floating Glass Capsule (Apple Music Style, hidden in unfolded-portrait) -->
     <Teleport v-if="mobile && pageActive" to="body">
-      <nav
-        ref="capsuleEl"
-        :class="['mobile-glass-capsule', `is-${activeMode}`]"
-        aria-label="分析视图切换"
-      >
-        <button
-          type="button"
-          class="capsule-arrow-btn prev"
-          :disabled="loading || usefulnessLoading"
-          aria-label="循环切换至上一模式"
-          @click="prevMode()"
+      <Transition name="mobile-capsule-float" appear>
+        <nav
+          ref="capsuleEl"
+          :class="[
+            'mobile-glass-capsule',
+            `is-${activeMode}`,
+            { 'is-capsule-leaving': isCapsuleLeaving },
+          ]"
+          aria-label="分析视图切换"
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+          <button
+            type="button"
+            class="capsule-arrow-btn prev"
+            :disabled="loading || usefulnessLoading"
+            aria-label="循环切换至上一模式"
+            @click="prevMode()"
           >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
 
-        <div
-          class="capsule-center-body"
-          role="button"
-          tabindex="0"
-          :style="capsuleDragStyle"
-          :aria-label="
-            activeMode === 'mainStat' ? '主属性扫描，点击刷新' : '替换推荐扫描，点击刷新'
-          "
-          @click="refreshCurrentMode()"
-        >
-          <Transition :name="`capsule-${transitionDirection}`" mode="out-in">
-            <div :key="activeMode" class="capsule-titles">
-              <span class="capsule-title-main">
-                {{ activeMode === "mainStat" ? "主属性扫描" : "替换推荐扫描" }}
-              </span>
-              <span v-if="loading || usefulnessLoading" class="capsule-title-sub is-loading">
-                <span class="capsule-loading-dot" aria-hidden="true" /> 分析中…
-              </span>
-              <span v-else-if="activeMode === 'mainStat'" class="capsule-title-sub">
-                {{ result?.total ? `${result.total} 件待复核 · 点击刷新` : "轻触刷新 · 左右滑动" }}
-              </span>
-              <span v-else class="capsule-title-sub">
-                {{
-                  usefulnessRows.length
-                    ? `${usefulnessRows.length} 件可替换 · 点击刷新`
-                    : "轻触刷新 · 左右滑动"
-                }}
-              </span>
+          <div
+            class="capsule-center-body"
+            role="button"
+            tabindex="0"
+            :style="capsuleDragStyle"
+            :aria-label="
+              activeMode === 'mainStat' ? '主属性扫描，点击刷新' : '替换推荐扫描，点击刷新'
+            "
+            @click="refreshCurrentMode()"
+          >
+            <Transition :name="`capsule-${transitionDirection}`" mode="out-in">
+              <div :key="activeMode" class="capsule-titles">
+                <span class="capsule-title-main">
+                  {{ activeMode === "mainStat" ? "主属性扫描" : "替换推荐扫描" }}
+                </span>
+                <span v-if="loading || usefulnessLoading" class="capsule-title-sub is-loading">
+                  <span class="capsule-loading-dot" aria-hidden="true" /> 分析中…
+                </span>
+                <span v-else-if="activeMode === 'mainStat'" class="capsule-title-sub">
+                  {{
+                    result?.total ? `${result.total} 件待复核 · 点击刷新` : "轻触刷新 · 左右滑动"
+                  }}
+                </span>
+                <span v-else class="capsule-title-sub">
+                  {{
+                    usefulnessRows.length
+                      ? `${usefulnessRows.length} 件可替换 · 点击刷新`
+                      : "轻触刷新 · 左右滑动"
+                  }}
+                </span>
+              </div>
+            </Transition>
+            <div class="capsule-dots" aria-hidden="true">
+              <span :class="{ active: activeMode === 'mainStat' }" />
+              <span :class="{ active: activeMode === 'upgrade' }" />
             </div>
-          </Transition>
-          <div class="capsule-dots" aria-hidden="true">
-            <span :class="{ active: activeMode === 'mainStat' }" />
-            <span :class="{ active: activeMode === 'upgrade' }" />
           </div>
-        </div>
 
-        <button
-          type="button"
-          class="capsule-arrow-btn next"
-          :disabled="loading || usefulnessLoading"
-          aria-label="循环切换至下一模式"
-          @click="nextMode()"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+          <button
+            type="button"
+            class="capsule-arrow-btn next"
+            :disabled="loading || usefulnessLoading"
+            aria-label="循环切换至下一模式"
+            @click="nextMode()"
           >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
-      </nav>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </nav>
+      </Transition>
     </Teleport>
   </section>
 </template>

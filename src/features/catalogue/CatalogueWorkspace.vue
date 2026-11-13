@@ -45,10 +45,11 @@ const pagerBody = ref<HTMLElement | null>(null);
 const capsuleHostEl = ref<HTMLElement | null>(null);
 const railHostEl = ref<HTMLElement | null>(null);
 const pageActive = ref(true);
-const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
-  "catalogue",
-  pageActive,
-);
+const {
+  host: topHeaderHost,
+  enabled: useTopHeader,
+  isLeaving: isCapsuleLeaving,
+} = useMobileTopHeaderTarget("catalogue", pageActive);
 provide(catalogueCapsuleHostKey, capsuleHostEl);
 provide(catalogueRailHostKey, railHostEl);
 
@@ -304,6 +305,16 @@ onBeforeUnmount(removeListeners);
         </div>
       </Teleport>
     </header>
+    <Teleport v-if="mobile && pageActive" to="body">
+      <Transition name="mobile-capsule-float" appear>
+        <div
+          ref="capsuleHostEl"
+          :class="['catalogue-capsule-host', { 'is-capsule-leaving': isCapsuleLeaving }]"
+          :style="capsuleHostStyle"
+          data-swipe-ignore
+        />
+      </Transition>
+    </Teleport>
     <div
       class="catalogue-groups catalogue-pager"
       :class="{ 'is-interacting': pager.active.value }"
@@ -401,12 +412,6 @@ onBeforeUnmount(removeListeners);
         />
       </div>
     </div>
-    <div
-      ref="capsuleHostEl"
-      class="catalogue-capsule-host"
-      :style="capsuleHostStyle"
-      data-swipe-ignore
-    />
     <div ref="railHostEl" class="mobile-catalogue-rail-host" data-swipe-ignore />
   </section>
   <CharacterStatsModal
