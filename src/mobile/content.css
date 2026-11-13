@@ -1541,6 +1541,90 @@ html.mobile-view .detail-drawer-content small {
 .mobile-inventory-toolbar > .mobile-dev-data-switch {
   flex-shrink: 0;
 }
+.mobile-inventory-inline-tools {
+  display: none;
+}
+html.mobile-view:is(
+    [data-posture="landscape-hinge-top"],
+    [data-posture="landscape-hinge-bottom"],
+    [data-posture="unfolded-portrait"]
+  )
+  .mobile-inventory-toolbar
+  > .mobile-inventory-count-pill {
+  display: none;
+}
+html.mobile-view:is(
+    [data-posture="landscape-hinge-top"],
+    [data-posture="landscape-hinge-bottom"],
+    [data-posture="unfolded-portrait"]
+  )
+  .mobile-inventory-toolbar
+  > .mobile-dev-data-switch {
+  order: 1;
+  margin-left: 8px;
+}
+html.mobile-view:is(
+    [data-posture="landscape-hinge-top"],
+    [data-posture="landscape-hinge-bottom"],
+    [data-posture="unfolded-portrait"]
+  )
+  .mobile-inventory-inline-tools {
+  order: 2;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.mobile-inventory-inline-tools button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(210, 222, 238, 0.9);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(15, 28, 48, 0.05);
+  transition: all 0.15s ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-inventory-inline-tools button svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.mobile-inventory-inline-tools button:active {
+  transform: scale(0.92);
+}
+.mobile-inventory-inline-tools button.is-active {
+  background: #1c3547;
+  border-color: #1c3547;
+  color: #ffffff;
+}
+.mobile-inventory-inline-tools button.is-active svg {
+  stroke: #ffffff;
+}
+.mobile-inventory-inline-tools b {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #ffffff;
+  font-size: 10px;
+  line-height: 1;
+}
 @container inventory-toolbar (max-width: 315px) {
   .mobile-inventory-toolbar .mobile-inventory-categories {
     gap: 14px;
@@ -1719,7 +1803,13 @@ html.mobile-view[data-content-fold="book"] .mobile-inventory-controls {
 .mobile-rail-tools {
   display: none;
 }
-html.mobile-view:is([data-posture="portrait"], [data-posture="unfolded-landscape"])
+html.mobile-view:is(
+    [data-posture="portrait"],
+    [data-posture="unfolded-portrait"],
+    [data-posture="unfolded-landscape"],
+    [data-posture="landscape-hinge-top"],
+    [data-posture="landscape-hinge-bottom"]
+  )
   .mobile-inventory-search {
   display: none;
 }
@@ -1804,35 +1894,33 @@ html.mobile-view[data-posture="unfolded-landscape"] .mobile-rail-tools {
   font-size: 10px;
   line-height: 1;
 }
-.mobile-floating-search {
+.mobile-floating-search-backdrop {
   position: fixed;
-  top: max(18px, calc(env(safe-area-inset-top, 0px) + 6px));
-  left: calc(var(--mobile-frame-offset) + var(--mobile-content-left));
-  right: calc(var(--mobile-frame-offset) + var(--mobile-content-right));
-  z-index: 96;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: max(max(20px, env(safe-area-inset-top, 0px)), var(--mobile-search-top-inset, 0px))
+    max(20px, env(safe-area-inset-right, 0px))
+    max(max(20px, env(safe-area-inset-bottom, 0px)), var(--mobile-search-keyboard-inset, 0px))
+    max(20px, env(safe-area-inset-left, 0px));
+  background: rgba(15, 28, 46, 0.24);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+.mobile-floating-search {
   display: flex;
   align-items: center;
-  gap: 4px;
-  min-height: 50px;
-  padding: 3px 6px 3px 12px;
-  border: 1px solid rgba(37, 99, 235, 0.28);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.94);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-  backdrop-filter: blur(22px) saturate(180%);
+  gap: 8px;
+  width: min(440px, 100%);
+  min-height: 54px;
+  padding: 4px 8px 4px 16px;
+  border: 1px solid rgba(37, 99, 235, 0.24);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
   box-shadow:
-    0 12px 32px rgba(15, 28, 46, 0.14),
-    0 2px 6px rgba(15, 28, 46, 0.05);
-}
-html.mobile-view .mobile-archive.is-split .mobile-floating-search {
-  right: auto;
-  width: calc(
-    (
-        min(100vw, var(--mobile-frame-width)) - var(--mobile-content-left) -
-          var(--mobile-content-right) - 16px
-      ) /
-      2
-  );
+    0 20px 48px rgba(15, 28, 46, 0.2),
+    0 4px 12px rgba(15, 28, 46, 0.08);
 }
 .mobile-floating-search-icon {
   flex: 0 0 19px;
@@ -1879,28 +1967,21 @@ html.mobile-view .mobile-archive.is-split .mobile-floating-search {
   width: 21px;
   height: 21px;
 }
-.mobile-floating-search-close {
-  flex: 0 0 auto;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 11px;
-  background: #eff4fb;
-  color: var(--blue);
-  font-size: 13px;
-  font-weight: 600;
-}
 .mobile-floating-search-enter-active,
 .mobile-floating-search-leave-active {
-  transition:
-    opacity 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mobile-floating-search-enter-active .mobile-floating-search,
+.mobile-floating-search-leave-active .mobile-floating-search {
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .mobile-floating-search-enter-from,
 .mobile-floating-search-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.98);
+}
+.mobile-floating-search-enter-from .mobile-floating-search,
+.mobile-floating-search-leave-to .mobile-floating-search {
+  transform: translateY(8px) scale(0.96);
 }
 .mobile-catalogue-status {
   display: flex;
@@ -2525,7 +2606,7 @@ html.mobile-view[data-posture="unfolded-portrait"] .mobile-top-header .mobile-re
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin: 0;
+  margin: 0 0 0 auto;
 }
 .mobile-relic-submode-btn {
   display: inline-flex;

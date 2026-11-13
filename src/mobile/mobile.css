@@ -312,6 +312,11 @@ input {
 [data-posture="landscape-hinge-top"] {
   --mobile-nav-bottom: max(60px, calc(env(safe-area-inset-bottom, 0px) + 38px));
 }
+[data-posture="landscape-hinge-top"] .mobile-nav {
+  top: max(14px, env(safe-area-inset-top, 0px));
+  bottom: auto;
+  max-height: calc(100dvh - max(14px, env(safe-area-inset-top, 0px)) - var(--mobile-nav-bottom));
+}
 [data-posture="landscape-hinge-bottom"] {
   --mobile-content-left: max(
     env(safe-area-inset-left, 0px),
@@ -407,7 +412,7 @@ input {
   right: 0;
   min-height: max(54px, env(safe-area-inset-top, 0px));
   padding: max(10px, calc(env(safe-area-inset-top, 0px) * 0.22))
-    calc(var(--mobile-frame-offset) + max(108px, calc(var(--mobile-content-right) + 84px))) 4px
+    calc(var(--mobile-frame-offset) + max(142px, calc(var(--mobile-content-right) + 118px))) 4px
     calc(var(--mobile-frame-offset) + var(--mobile-content-left));
   display: flex;
   align-items: center;

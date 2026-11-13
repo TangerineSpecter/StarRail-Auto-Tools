@@ -177,6 +177,53 @@ onDeactivated(() => {
             <span class="mobile-inventory-count-noun">{{ activeCategoryMeta.name }}</span>
           </span>
           <slot name="toolbar-actions" />
+          <div class="mobile-inventory-inline-tools" role="group" aria-label="背包快捷工具">
+            <button
+              type="button"
+              :class="{
+                'is-active': controls?.searchOpen || Boolean(archive.filters.value.search.trim()),
+              }"
+              :aria-expanded="Boolean(controls?.searchOpen)"
+              aria-label="搜索背包"
+              title="搜索"
+              @click="controls?.toggleFloatingSearch()"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 4.5 4.5" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              :class="{ 'is-active': activeFilterCount > 0 }"
+              :aria-label="
+                activeFilterCount ? `筛选，已选 ${activeFilterCount} 项条件` : '筛选背包'
+              "
+              title="筛选"
+              @click="openFilters()"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M4 7h16M4 17h16" />
+                <circle cx="9" cy="7" r="2.5" />
+                <circle cx="15" cy="17" r="2.5" />
+              </svg>
+              <b v-if="activeFilterCount">{{ activeFilterCount }}</b>
+            </button>
+          </div>
         </div>
       </Teleport>
       <div
