@@ -110,6 +110,19 @@
   }
 }
 
+.is-revisited .catalogue-grid > .catalogue-card,
+.is-revisited .lightcone-catalogue-grid > .lightcone-catalogue-card,
+.is-revisited .character-catalogue-grid > .character-catalogue-card,
+.catalogue-pager-preview .catalogue-grid > .catalogue-card,
+.catalogue-pager-preview .lightcone-catalogue-grid > .lightcone-catalogue-card,
+.catalogue-pager-preview .character-catalogue-grid > .character-catalogue-card,
+html.mobile-view .catalogue-grid > .catalogue-card,
+html.mobile-view .lightcone-catalogue-grid > .lightcone-catalogue-card,
+html.mobile-view .character-catalogue-grid > .character-catalogue-card {
+  animation: none;
+  will-change: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .catalogue-panel-enter-active,
   .catalogue-grid > .catalogue-card,

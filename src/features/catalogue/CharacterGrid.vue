@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, onMounted, ref, watch } from "vue";
+import { computed, onActivated, onDeactivated, ref, watch } from "vue";
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { CharacterCatalogueEntry } from "@/types";
@@ -26,20 +26,16 @@ const selectedElement = ref<string>("all");
 const selectedRarity = ref<number | "all">("all");
 const searchQuery = ref("");
 const isActive = ref(!props.preview);
+const revisited = ref(false);
 
-const animKey = ref(0);
-const triggerAnimation = () => {
-  animKey.value++;
-};
-onMounted(triggerAnimation);
 onActivated(() => {
   if (!props.preview) isActive.value = true;
-  triggerAnimation();
 });
 onDeactivated(() => {
-  if (!props.preview) isActive.value = false;
+  if (props.preview) return;
+  isActive.value = false;
+  revisited.value = true;
 });
-watch([selectedPath, selectedElement, selectedRarity], triggerAnimation);
 
 const availablePaths = computed(() => {
   const present = new Set(props.characters.map((item) => item.path).filter(Boolean));
@@ -103,7 +99,7 @@ watch(
 );
 </script>
 <template>
-  <div class="character-catalogue-section">
+  <div :class="['character-catalogue-section', { 'is-revisited': revisited || preview }]">
     <MobileCatalogueFilterControls
       v-if="mobile"
       v-model:path="selectedPath"
@@ -207,7 +203,7 @@ watch(
         </div>
       </div>
     </div>
-    <div v-if="filteredCharacters.length > 0" :key="animKey" class="character-catalogue-grid">
+    <div v-if="filteredCharacters.length > 0" class="character-catalogue-grid">
       <button
         v-for="(character, index) in visibleCharacters"
         :key="character.slug"

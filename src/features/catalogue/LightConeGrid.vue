@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, onMounted, ref, watch } from "vue";
+import { computed, onActivated, onDeactivated, ref, watch } from "vue";
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import { pathIconSrc } from "@/shared/catalogue";
 import type { LightConeCatalogueEntry } from "@/types";
@@ -27,20 +27,16 @@ const selectedRarity = ref<number | "all">("all");
 const selectedOwned = ref<"all" | "owned" | "unowned">("all");
 const searchQuery = ref("");
 const isActive = ref(!props.preview);
+const revisited = ref(false);
 
-const animKey = ref(0);
-const triggerAnimation = () => {
-  animKey.value++;
-};
-onMounted(triggerAnimation);
 onActivated(() => {
   if (!props.preview) isActive.value = true;
-  triggerAnimation();
 });
 onDeactivated(() => {
-  if (!props.preview) isActive.value = false;
+  if (props.preview) return;
+  isActive.value = false;
+  revisited.value = true;
 });
-watch([selectedPath, selectedRarity, selectedOwned], triggerAnimation);
 
 const availablePaths = computed(() => {
   const present = new Set(props.lightCones.map((item) => item.path).filter(Boolean));
@@ -95,7 +91,7 @@ watch(
 );
 </script>
 <template>
-  <div class="lightcone-catalogue-section">
+  <div :class="['lightcone-catalogue-section', { 'is-revisited': revisited || preview }]">
     <MobileCatalogueFilterControls
       v-if="mobile"
       v-model:path="selectedPath"
@@ -212,7 +208,7 @@ watch(
         </div>
       </div>
     </div>
-    <div v-if="filteredLightCones.length > 0" :key="animKey" class="lightcone-catalogue-grid">
+    <div v-if="filteredLightCones.length > 0" class="lightcone-catalogue-grid">
       <button
         v-for="(item, index) in visibleLightCones"
         :key="item.id"

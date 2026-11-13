@@ -314,7 +314,6 @@ onBeforeUnmount(removeListeners);
                 : 'catalogue-panel'
           "
           :css="!skipNextTransition"
-          :mode="mobile && !skipNextTransition ? 'out-in' : undefined"
         >
           <KeepAlive>
             <RelicSetGrid

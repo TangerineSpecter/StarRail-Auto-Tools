@@ -5,16 +5,7 @@ import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import MobileFarmingList from "./MobileFarmingList.vue";
 import { catalogueCapsuleHostKey } from "./catalogue-capsule-host";
-import {
-  computed,
-  inject,
-  onActivated,
-  onDeactivated,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, inject, onActivated, onDeactivated, onUnmounted, ref, watch } from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import type { RelicSetCatalogueEntry, RelicSetFarmingProfile, RelicSetTargetCount } from "@/types";
 import { ownedCountOf } from "./owned-counts";
@@ -102,15 +93,13 @@ const { dragStyle: capsuleDragStyle } = useCapsuleSwipe({
   onPrev: prevViewMode,
 });
 
-const animKey = ref(0);
-const triggerAnimation = () => {
-  animKey.value++;
-};
-onMounted(triggerAnimation);
+const revisited = ref(false);
 const targetCounts = ref<RelicSetTargetCount[]>([]);
+const loadedTargetRevision = ref<number | undefined>(undefined);
 const chartLoading = ref(false);
 const chartError = ref("");
 const farmingProfiles = ref<RelicSetFarmingProfile[]>([]);
+const loadedFarmingRevision = ref<number | undefined>(undefined);
 const farmingLoading = ref(false);
 const farmingError = ref("");
 let targetCountRequestId = 0;
@@ -121,14 +110,22 @@ const maxTargetCount = computed(() => chartItems.value[0]?.targetCount ?? 0);
 const farmingItems = computed(() => scoreRelicSetsForFarming(props.sets, farmingProfiles.value));
 const setKindLabel = computed(() => (props.sets[0]?.kind === "planar" ? "位面饰品" : "遗器"));
 
-async function loadTargetCounts() {
+async function loadTargetCounts(force = false) {
+  if (
+    !force &&
+    targetCounts.value.length > 0 &&
+    loadedTargetRevision.value === props.inventoryRevision
+  ) {
+    return;
+  }
   const currentRequestId = ++targetCountRequestId;
-  chartLoading.value = true;
+  if (targetCounts.value.length === 0) chartLoading.value = true;
   chartError.value = "";
   try {
     const counts = await buildPlanApi.relicSetTargetCounts();
     if (currentRequestId !== targetCountRequestId) return;
     targetCounts.value = counts;
+    loadedTargetRevision.value = props.inventoryRevision;
   } catch (cause) {
     if (currentRequestId !== targetCountRequestId) return;
     chartError.value = String(cause);
@@ -137,14 +134,22 @@ async function loadTargetCounts() {
   }
 }
 
-async function loadFarmingProfiles() {
+async function loadFarmingProfiles(force = false) {
+  if (
+    !force &&
+    farmingProfiles.value.length > 0 &&
+    loadedFarmingRevision.value === props.inventoryRevision
+  ) {
+    return;
+  }
   const currentRequestId = ++farmingRequestId;
-  farmingLoading.value = true;
+  if (farmingProfiles.value.length === 0) farmingLoading.value = true;
   farmingError.value = "";
   try {
     const profiles = await buildPlanApi.relicSetFarmingProfiles();
     if (currentRequestId !== farmingRequestId) return;
     farmingProfiles.value = profiles;
+    loadedFarmingRevision.value = props.inventoryRevision;
   } catch (cause) {
     if (currentRequestId !== farmingRequestId) return;
     farmingError.value = String(cause);
@@ -206,28 +211,25 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => {
-  triggerAnimation();
-});
 onActivated(() => {
   if (props.preview) return;
   keptAlive.value = true;
-  triggerAnimation();
   if (viewMode.value === "chart") void loadTargetCounts();
   if (viewMode.value === "farmingScore") void loadFarmingProfiles();
 });
 onDeactivated(() => {
   if (props.preview) return;
   keptAlive.value = false;
+  revisited.value = true;
 });
 watch(
   () => props.inventoryRevision,
   () => {
-    if (viewMode.value === "chart") void loadTargetCounts();
-    if (viewMode.value === "farmingScore") void loadFarmingProfiles();
+    if (!isActive.value) return;
+    if (viewMode.value === "chart") void loadTargetCounts(true);
+    if (viewMode.value === "farmingScore") void loadFarmingProfiles(true);
   },
 );
-watch(() => props.sets, triggerAnimation);
 onUnmounted(() => {
   unregisterSubMode();
   targetCountRequestId += 1;
@@ -237,7 +239,7 @@ onUnmounted(() => {
 const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
 </script>
 <template>
-  <div class="relic-catalogue-section">
+  <div :class="['relic-catalogue-section', { 'is-revisited': revisited || preview }]">
     <Teleport v-if="mobile && useTopHeader && topHeaderHost" :to="topHeaderHost">
       <div class="mobile-relic-submode-bar" aria-live="polite">
         <button
@@ -432,7 +434,7 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
         </div>
 
         <!-- 现代星铁质感遗器网格 -->
-        <div v-else :key="`cards-${animKey}`" class="catalogue-grid">
+        <div v-else class="catalogue-grid">
           <button
             v-for="(set, index) in visibleSets"
             :key="set.id"
