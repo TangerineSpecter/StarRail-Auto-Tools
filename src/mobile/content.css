@@ -1812,6 +1812,8 @@ html.mobile-view .catalogue-modal-grabber {
   z-index: 4;
   width: 36px;
   height: 4px;
+  padding: 0;
+  border: 0;
   border-radius: 999px;
   background: rgba(28, 49, 80, 0.18);
   transform: translateX(-50%);

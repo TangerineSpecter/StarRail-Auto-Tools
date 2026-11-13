@@ -92,7 +92,7 @@ onUnmounted(() => {
       <header class="set-recommendation-header" v-on="mobile ? sheetDrag.handlers : {}">
         <span v-if="mobile" class="catalogue-modal-grabber" aria-hidden="true" />
         <img v-if="set.image" :src="set.image" alt="" />
-        <span v-else>◇</span>
+        <span v-else class="set-recommendation-fallback">◇</span>
         <div>
           <p v-if="!mobile" class="eyebrow">BUILD PLAN TARGET</p>
           <h2>{{ set.name }}</h2>
@@ -199,13 +199,13 @@ onUnmounted(() => {
     radial-gradient(circle at 80% 0%, rgba(237, 203, 120, 0.34), transparent 42%);
 }
 .set-recommendation-header > img,
-.set-recommendation-header > span {
+.set-recommendation-header > .set-recommendation-fallback {
   flex: 0 0 auto;
   width: 76px;
   height: 76px;
   object-fit: contain;
 }
-.set-recommendation-header > span {
+.set-recommendation-header > .set-recommendation-fallback {
   display: grid;
   place-items: center;
   border: 1px dashed rgba(255, 255, 255, 0.56);
@@ -428,7 +428,7 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(28, 49, 80, 0.07);
 }
 .set-recommendation-modal--mobile .set-recommendation-header > img,
-.set-recommendation-modal--mobile .set-recommendation-header > span:not(.catalogue-modal-grabber) {
+.set-recommendation-modal--mobile .set-recommendation-header > .set-recommendation-fallback {
   width: 56px;
   height: 56px;
   padding: 4px;

@@ -19,13 +19,11 @@ if (hasKey(supports)) run(`Set ${supports} true`);
 else run(`Add ${supports} bool true`);
 
 // The generated Xcode project starts with Tauri's icon. Rebuild its icon set
-// from the same source used by the desktop bundle on every iOS preparation.
+// from the full-bleed opaque iOS icon source (no outer margin/alpha halo) on every iOS preparation.
 const iconSet = fileURLToPath(
   new URL("../src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset/", import.meta.url),
 );
-const iconSource = fileURLToPath(
-  new URL("../public/logo/android-chrome-512x512.png", import.meta.url),
-);
+const iconSource = fileURLToPath(new URL("../src-tauri/icons/ios-icon.png", import.meta.url));
 const tauriCli = fileURLToPath(new URL("../node_modules/.bin/tauri", import.meta.url));
 const temporaryIcons = mkdtempSync(join(tmpdir(), "starrail-ios-icons-"));
 try {
