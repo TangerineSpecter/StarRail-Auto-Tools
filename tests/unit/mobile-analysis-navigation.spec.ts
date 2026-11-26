@@ -35,8 +35,9 @@ describe("mobile analysis navigation", () => {
     expect(wrapper.find(".mobile-header").exists()).toBe(false);
     expect(wrapper.get(".mobile-page-title").text()).toBe("背包");
     expect(wrapper.get(".mobile-nav-brand img").attributes("alt")).toBe("星穹数据航站");
+    expect(wrapper.get("button.mobile-nav-brand").attributes("aria-haspopup")).toBe("dialog");
     expect(wrapper.find(".mobile-inventory-toolbar .mobile-dev-data-switch").exists()).toBe(true);
-    const buttons = wrapper.findAll(".mobile-nav button");
+    const buttons = wrapper.findAll(".mobile-nav-items button");
     expect(buttons.map((button) => button.text())).toEqual([
       "背包",
       "图鉴",
@@ -61,6 +62,20 @@ describe("mobile analysis navigation", () => {
     await flushPromises();
     expect(wrapper.get("h1").text()).toBe("分析");
     expect(wrapper.text()).not.toContain("搜索配队");
+    const brandButton = wrapper.get("button.mobile-nav-brand");
+    expect(brandButton.attributes("aria-expanded")).toBe("false");
+    await brandButton.trigger("click");
+    expect(brandButton.attributes("aria-expanded")).toBe("true");
+    const localClose = wrapper.find(".mobile-about-close");
+    const bodyClose = document.body.querySelector<HTMLButtonElement>(".mobile-about-close");
+    expect(localClose.exists() || bodyClose !== null).toBe(true);
+    if (localClose.exists()) {
+      await localClose.trigger("click");
+    } else {
+      bodyClose?.click();
+      await wrapper.vm.$nextTick();
+    }
+    expect(brandButton.attributes("aria-expanded")).toBe("false");
     wrapper.unmount();
   });
 });

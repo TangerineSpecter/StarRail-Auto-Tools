@@ -20,12 +20,14 @@ import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import { loadRelicMainStatScanner } from "@/pages/scanner-loaders";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
+import MobileAboutSheet from "./MobileAboutSheet.vue";
 import MobileSync from "./MobileSync.vue";
 import { useMobilePageTransition } from "./useMobilePageTransition";
 const MobileDevDataSwitch = import.meta.env.DEV
   ? defineAsyncComponent(() => import("./MobileDevDataSwitch.vue"))
   : null;
 const runtime = useRuntimeStore();
+const aboutOpen = ref(false);
 const refs = storeToRefs(runtime);
 provide(runtimeContextKey, refs);
 provide(readOnlyViewKey, true);
@@ -202,9 +204,18 @@ onBeforeUnmount(() => {
         </svg>
       </button>
 
-      <div class="mobile-nav-brand">
+      <button
+        type="button"
+        class="mobile-nav-brand"
+        :class="{ active: aboutOpen }"
+        title="关于星穹数据航站与版本信息"
+        aria-label="关于星穹数据航站与版本信息"
+        aria-haspopup="dialog"
+        :aria-expanded="aboutOpen"
+        @click="aboutOpen = true"
+      >
         <img src="/logo/android-chrome-192x192.png" alt="星穹数据航站" />
-      </div>
+      </button>
       <div ref="navItemsEl" class="mobile-nav-items">
         <button
           v-for="item in tabs"
@@ -308,5 +319,6 @@ onBeforeUnmount(() => {
         </svg>
       </button>
     </nav>
+    <MobileAboutSheet v-model="aboutOpen" :summary="runtime.summary" />
   </main>
 </template>
