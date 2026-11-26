@@ -306,6 +306,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         }
     }
 

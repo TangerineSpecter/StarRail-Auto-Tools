@@ -161,20 +161,75 @@ describe("InventoryList", () => {
     expect(wrapper.emitted("detail")).toEqual([["relic", 7]]);
   });
 
-  it("distinguishes characters with a saved build plan", () => {
+  it("distinguishes characters with a saved build plan and shows version/update freshness", () => {
+    const recentTs = new Date(2026, 10, 26, 14, 30).getTime();
+    const olderTs = new Date(2026, 5, 10, 9, 0).getTime();
     const wrapper = mount(InventoryList, {
       props: {
         kind: "character",
-        items: [character],
+        items: [
+          {
+            ...character,
+            buildPlanUpdatedAt: recentTs,
+            buildPlanGameVersion: "4.7",
+          },
+          {
+            ...character,
+            characterId: 1004,
+            name: "瓦尔特",
+            path: "Nihility",
+            hasBuildPlan: true,
+            buildPlanUpdatedAt: olderTs,
+            buildPlanGameVersion: "4.2",
+          },
+          {
+            ...character,
+            characterId: 1002,
+            name: "丹恒",
+            path: "Hunt",
+            hasBuildPlan: true,
+            buildPlanUpdatedAt: olderTs,
+            buildPlanGameVersion: null,
+          },
+          {
+            ...character,
+            characterId: 1003,
+            name: "姬子",
+            path: "Erudition",
+            hasBuildPlan: false,
+            buildPlanUpdatedAt: null,
+            buildPlanGameVersion: null,
+          },
+        ],
         selectedIds: new Set<number>(),
         allSelected: false,
         appending: false,
         busy: false,
+        currentGameVersion: "4.7",
       },
     });
 
-    expect(wrapper.get(".character-build-action").classes()).toContain("has-build-plan");
-    expect(wrapper.get(".character-stars").text()).toBe("★★★★");
+    const cards = wrapper.findAll(".character-card");
+    expect(cards[0]!.get(".character-build-action").classes()).toContain("has-build-plan");
+    expect(cards[0]!.get(".character-stars").text()).toBe("★★★★");
+    expect(cards[0]!.get(".character-build-version").text()).toBe("v4.7");
+    expect(cards[0]!.get(".character-build-updated").text()).toBe("更新于 2026-11-26");
+    expect(cards[0]!.classes()).not.toContain("is-plan-outdated");
+
+    // Older game version highlights outdated badge for review
+    expect(cards[1]!.classes()).toContain("is-plan-outdated");
+    expect(cards[1]!.get(".character-build-version").text()).toContain("v4.2");
+    expect(cards[1]!.get(".character-build-version").text()).toContain("旧版");
+    expect(cards[1]!.get(".character-build-updated").text()).toBe("更新于 2026-06-10");
+
+    // Legacy plan with blank version leaves version pill absent while showing update date
+    expect(cards[2]!.find(".character-build-version").exists()).toBe(false);
+    expect(cards[2]!.get(".character-build-updated").text()).toBe("更新于 2026-06-10");
+    expect(cards[2]!.classes()).not.toContain("is-plan-outdated");
+
+    // Unconfigured character clearly indicates no build plan
+    expect(cards[3]!.get(".character-build-action").classes()).not.toContain("has-build-plan");
+    expect(cards[3]!.get(".character-build-status").text()).toBe("未设培养方案");
   });
 
   it("shows multipath equipped owner with path suffix", () => {

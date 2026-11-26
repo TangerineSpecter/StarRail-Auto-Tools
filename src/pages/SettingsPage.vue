@@ -95,7 +95,7 @@ const section = ref<"sync" | "game" | "mcp" | "model">("sync");
 .settings-sections {
   display: flex;
   gap: 8px;
-  padding: 16px clamp(32px, 5vw, 86px) 0;
+  padding: 16px clamp(32px, 5vw, 86px) 12px;
 }
 .settings-section {
   min-height: 32px;
@@ -118,7 +118,7 @@ const section = ref<"sync" | "game" | "mcp" | "model">("sync");
 }
 @media (max-width: 680px) {
   .settings-sections {
-    padding: 16px 20px 0;
+    padding: 16px 20px 12px;
   }
 }
 </style>

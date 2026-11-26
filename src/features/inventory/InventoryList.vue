@@ -14,6 +14,12 @@ import {
   formatEnhancementHitBadge,
   usesEnhancementHitCount,
 } from "@/shared/utils/relic-score";
+import {
+  formatPlanUpdatedDate,
+  formatPlanUpdatedDateTime,
+  formatPlanVersionTag,
+  isBuildPlanOutdated,
+} from "@/shared/utils/build-plan-meta";
 import { formatStatValue, pathLabel, slotLabel, statLabel } from "./options";
 import { inventoryItemId } from "./useInventoryArchive";
 import MobileCharacterCard from "./MobileCharacterCard.vue";
@@ -35,6 +41,7 @@ const props = defineProps<{
   busy: boolean;
   readOnly?: boolean;
   activeDetailId?: number | null;
+  currentGameVersion?: string;
 }>();
 const emit = defineEmits<{
   "toggle-all": [];
@@ -71,8 +78,20 @@ const characterAvatar = (item: CharacterListItem) =>
   characterCatalogueEntry(item)?.image ?? undefined;
 const characterBackground = (item: CharacterListItem) =>
   characterCatalogueEntry(item)?.backgroundImage;
-const characterStars = (item: CharacterListItem) =>
-  "★".repeat(characterCatalogueEntry(item)?.rarity ?? 5);
+const characterRarity = (item: CharacterListItem) => characterCatalogueEntry(item)?.rarity ?? 5;
+const characterStars = (item: CharacterListItem) => "★".repeat(characterRarity(item));
+const characterPlanVersionTag = (item: CharacterListItem) =>
+  item.hasBuildPlan ? formatPlanVersionTag(item.buildPlanGameVersion) : "";
+const characterPlanOutdated = (item: CharacterListItem) =>
+  item.hasBuildPlan && isBuildPlanOutdated(item.buildPlanGameVersion, props.currentGameVersion);
+const characterPlanUpdatedText = (item: CharacterListItem) => {
+  const date = formatPlanUpdatedDate(item.buildPlanUpdatedAt);
+  return date ? `更新于 ${date}` : "已保存目标";
+};
+const characterPlanUpdatedTitle = (item: CharacterListItem) => {
+  const dateTime = formatPlanUpdatedDateTime(item.buildPlanUpdatedAt);
+  return dateTime ? `方案更新于 ${dateTime}` : undefined;
+};
 const characterLabel = (item: Pick<CharacterListItem, "characterId" | "name" | "path">) =>
   characterDisplayName({
     characterId: item.characterId,
@@ -347,7 +366,13 @@ function avatarColor(name: string): string {
       <div
         v-for="item in characters()"
         :key="item.characterId"
-        class="character-card"
+        :class="[
+          'character-card',
+          {
+            'has-build-plan': item.hasBuildPlan,
+            'is-plan-outdated': characterPlanOutdated(item),
+          },
+        ]"
         :style="
           !readOnly && characterBackground(item)
             ? { '--character-card-backdrop': `url(${characterBackground(item)})` }
@@ -356,12 +381,16 @@ function avatarColor(name: string): string {
         :aria-current="activeDetailId === item.characterId ? 'true' : undefined"
         @click="emit('detail', 'character', item.characterId)"
       >
-        <MobileCharacterCard v-if="readOnly" :item="item" />
+        <MobileCharacterCard
+          v-if="readOnly"
+          :item="item"
+          :current-game-version="currentGameVersion"
+        />
         <template v-else>
           <div class="character-card-header">
             <img
               v-if="characterAvatar(item)"
-              class="character-card-avatar"
+              :class="['character-card-avatar', `rarity-${characterRarity(item)}`]"
               :src="characterAvatar(item)"
               :alt="`${characterLabel(item)} 头像`"
             />
@@ -372,17 +401,33 @@ function avatarColor(name: string): string {
             >
               {{ item.name.charAt(0) }}
             </div>
-            <div class="character-path">
-              <img
-                class="path-icon"
-                :src="pathIconSrc(item.path)"
-                :alt="pathLabel(item.path)"
-              /><span class="path-text">{{ pathLabel(item.path) }}</span>
+            <div class="character-card-meta-row">
+              <div class="character-path">
+                <img
+                  class="path-icon"
+                  :src="pathIconSrc(item.path)"
+                  :alt="pathLabel(item.path)"
+                /><span class="path-text">{{ pathLabel(item.path) }}</span>
+              </div>
+              <span
+                v-if="characterCatalogueEntry(item)?.element"
+                :class="[
+                  'character-element-pill',
+                  `elem-${characterCatalogueEntry(item)?.element}`,
+                ]"
+              >
+                <img
+                  v-if="characterCatalogueEntry(item)?.elementIcon"
+                  :src="characterCatalogueEntry(item)?.elementIcon"
+                  :alt="characterCatalogueEntry(item)?.element"
+                />
+                <span>{{ characterCatalogueEntry(item)?.element }}</span>
+              </span>
             </div>
             <div class="character-name">{{ characterLabel(item) }}</div>
             <div
-              class="character-stars"
-              :aria-label="`${characterCatalogueEntry(item)?.rarity ?? 5} 星`"
+              :class="['character-stars', `rarity-${characterRarity(item)}`]"
+              :aria-label="`${characterRarity(item)} 星`"
             >
               {{ characterStars(item) }}
             </div>
@@ -390,7 +435,9 @@ function avatarColor(name: string): string {
           <div class="character-card-stats">
             <div class="stat-col">
               <span class="stat-label">等级</span
-              ><strong class="stat-val">Lv.{{ item.level }}</strong>
+              ><strong :class="['stat-val', { 'is-max': item.level === 80 }]"
+                >Lv.{{ item.level }}</strong
+              >
             </div>
             <div class="stat-col">
               <span class="stat-label">星魂</span
@@ -401,11 +448,52 @@ function avatarColor(name: string): string {
           </div>
           <div class="character-card-actions">
             <button
-              :class="['character-build-action', { 'has-build-plan': item.hasBuildPlan }]"
+              :class="[
+                'character-build-action',
+                {
+                  'has-build-plan': item.hasBuildPlan,
+                  'is-outdated': characterPlanOutdated(item),
+                },
+              ]"
               type="button"
+              :title="
+                item.hasBuildPlan ? characterPlanUpdatedTitle(item) : '点击设置培养方案与毕业目标'
+              "
               @click.stop="emit('edit-build', item)"
             >
-              培养方案 / 毕业目标
+              <template v-if="item.hasBuildPlan">
+                <span class="character-build-action-head">
+                  <span class="character-build-status">
+                    <span class="character-build-dot" aria-hidden="true" />
+                    已设培养方案
+                  </span>
+                  <span
+                    v-if="characterPlanVersionTag(item)"
+                    :class="[
+                      'character-build-version',
+                      { 'is-outdated': characterPlanOutdated(item) },
+                    ]"
+                  >
+                    {{ characterPlanVersionTag(item)
+                    }}<template v-if="characterPlanOutdated(item)"> · 旧版</template>
+                  </span>
+                </span>
+                <span class="character-build-action-meta">
+                  <span class="character-build-updated">{{ characterPlanUpdatedText(item) }}</span>
+                  <span class="character-build-cta">{{
+                    characterPlanOutdated(item) ? "回顾方案 ›" : "编辑方案 ›"
+                  }}</span>
+                </span>
+              </template>
+              <template v-else>
+                <span class="character-build-action-head">
+                  <span class="character-build-status is-empty">未设培养方案</span>
+                  <span class="character-build-cta">+ 设置目标</span>
+                </span>
+                <span class="character-build-action-meta">
+                  <span class="character-build-updated">配置套装、词条与毕业目标</span>
+                </span>
+              </template>
             </button>
           </div>
         </template>

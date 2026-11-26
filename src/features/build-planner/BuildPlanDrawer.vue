@@ -19,10 +19,18 @@ import RelicOptimizerResults from "./RelicOptimizerResults.vue";
 import BuildPlanAdvicePanel from "./BuildPlanAdvicePanel.vue";
 import { useBuildPlanAdvice } from "./useBuildPlanAdvice";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
+import {
+  extractGameVersion,
+  formatPlanUpdatedDateTime,
+  formatPlanVersionTag,
+  isBuildPlanOutdated,
+  normalizeGameVersion,
+} from "@/shared/utils/build-plan-meta";
 
 const props = defineProps<{ characterId: number }>();
 const emit = defineEmits<{
   close: [];
+  saved: [];
   error: [message: string];
   notice: [message: string];
   deleted: [];
@@ -34,9 +42,26 @@ const editor = useBuildPlanEditor({
   setError: (message) => emit("error", message),
   setNotice: (message) => emit("notice", message),
   onDeleted: () => emit("deleted"),
-  onSaved: () => emit("close"),
+  onSaved: () => {
+    emit("saved");
+    emit("close");
+  },
   inventoryRevision: runtime?.inventoryRevision,
 });
+const currentGameVersion = computed(() =>
+  extractGameVersion(runtime?.summary.value.protocolVersion),
+);
+const planVersionTag = computed(() => formatPlanVersionTag(editor.plan.gameVersion));
+const planUpdatedAtText = computed(() => formatPlanUpdatedDateTime(editor.plan.updatedAt));
+const planOutdated = computed(() =>
+  isBuildPlanOutdated(editor.plan.gameVersion, currentGameVersion.value),
+);
+const hasSavedMeta = computed(() => Boolean(planVersionTag.value || planUpdatedAtText.value));
+const willStampVersion = computed(
+  () =>
+    Boolean(currentGameVersion.value) &&
+    normalizeGameVersion(editor.plan.gameVersion) !== currentGameVersion.value,
+);
 const planAdvice = useBuildPlanAdvice({
   characterId,
   planLoading: editor.loading,
@@ -79,6 +104,27 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             <p class="eyebrow">BUILD BLUEPRINT</p>
             <h2>培养方案 / 毕业目标</h2>
             <small>属性统计包含已换算的主词条与同步的副词条。</small>
+            <div
+              v-if="!editor.loading.value && (hasSavedMeta || currentGameVersion)"
+              class="build-plan-meta"
+            >
+              <span
+                v-if="planVersionTag"
+                :class="['build-plan-version-pill', { 'is-outdated': planOutdated }]"
+              >
+                {{ planVersionTag }}<template v-if="planOutdated"> · 旧版本</template>
+              </span>
+              <span v-if="planUpdatedAtText" class="build-plan-updated-text">
+                上次更新 {{ planUpdatedAtText }}
+              </span>
+              <span v-if="willStampVersion" class="build-plan-stamp-hint">
+                {{
+                  hasSavedMeta
+                    ? `保存将更新为 v${currentGameVersion}`
+                    : `保存将自动记录 v${currentGameVersion}`
+                }}
+              </span>
+            </div>
           </div>
           <button type="button" aria-label="关闭培养方案" @click="emit('close')">×</button>
         </header>
@@ -330,6 +376,39 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </template>
 
 <style scoped>
+.build-plan-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.build-plan-version-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(202, 139, 20, 0.35);
+  background: rgba(255, 247, 225, 0.96);
+  color: #8f5c00;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.build-plan-version-pill.is-outdated {
+  border-color: rgba(217, 119, 6, 0.45);
+  background: rgba(255, 241, 224, 0.98);
+  color: #b45309;
+}
+.build-plan-updated-text {
+  color: var(--ink-soft, #475569);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.build-plan-stamp-hint {
+  color: var(--muted, #64748b);
+}
 .optimizer-options-section > p {
   margin: 0 0 12px;
   color: var(--text-secondary);

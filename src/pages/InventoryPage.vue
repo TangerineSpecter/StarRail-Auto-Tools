@@ -12,6 +12,7 @@ import { useInventoryArchive } from "@/features/inventory/useInventoryArchive";
 import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import { relicCleanupApi } from "@/shared/api/relic-cleanup";
+import { extractGameVersion } from "@/shared/utils/build-plan-meta";
 import type { ArchiveView, InventoryKind, InventoryListItem, RelicListItem } from "@/types";
 
 defineOptions({ name: "InventoryPage" });
@@ -30,10 +31,18 @@ const archiveView = ref<ArchiveView>("relic");
 const buildCharacterId = ref<number | null>(null);
 const scoredRelicItems = ref<RelicListItem[] | null>(null);
 const isTeamView = computed(() => archiveView.value === "team");
+const currentGameVersion = computed(() => extractGameVersion(summary.value.protocolVersion));
 const listItems = computed<InventoryListItem[]>(() => {
   if (archive.kind.value === "relic" && scoredRelicItems.value) return scoredRelicItems.value;
   return archive.result.value.items;
 });
+
+function handleBuildPlanChanged() {
+  buildCharacterId.value = null;
+  if (archive.kind.value === "character") {
+    archive.applyFilters();
+  }
+}
 
 async function addSelectedToCleanup() {
   const ids = [...archive.selectedIds.value];
@@ -123,6 +132,7 @@ onBeforeUnmount(removeEscapeListener);
         :all-selected="archive.allSelected.value"
         :appending="archive.appending.value"
         :busy="busy"
+        :current-game-version="currentGameVersion"
         @toggle-all="archive.toggleAll"
         @toggle-selected="archive.toggleSelected"
         @detail="detail.open"
@@ -141,7 +151,8 @@ onBeforeUnmount(removeEscapeListener);
     v-if="buildCharacterId"
     :character-id="buildCharacterId"
     @close="buildCharacterId = null"
-    @deleted="buildCharacterId = null"
+    @saved="handleBuildPlanChanged"
+    @deleted="handleBuildPlanChanged"
     @error="error = $event"
     @notice="notice = $event"
   />

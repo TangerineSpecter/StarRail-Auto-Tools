@@ -42,6 +42,13 @@ import { useDashboardDrag } from "./useDashboardDrag";
 import lightConeCatalogueJson from "@/data/light-cones.json";
 import relicCatalogueJson from "@/data/relic-sets.json";
 import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
+import {
+  extractGameVersion,
+  formatPlanUpdatedDate,
+  formatPlanUpdatedDateTime,
+  formatPlanVersionTag,
+  isBuildPlanOutdated,
+} from "@/shared/utils/build-plan-meta";
 import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import type { BuildDashboardEntry, LightConeCatalogue, RelicSetCatalogue } from "@/types";
 
@@ -51,7 +58,8 @@ const error = ref("");
 const emit = defineEmits<{
   editBuild: [characterId: number];
 }>();
-const { notice } = useRuntimeContext();
+const { notice, summary } = useRuntimeContext();
+const currentGameVersion = computed(() => extractGameVersion(summary?.value?.protocolVersion));
 type BuildSortMode = "urgent" | "complete" | "custom";
 type BuildStatusFilter = "all" | "pending" | "complete";
 const SORT_OPTIONS: ReadonlyArray<{ label: string; value: BuildSortMode }> = [
@@ -799,6 +807,36 @@ defineExpose({ reload: loadDashboard });
               </div>
               <div class="build-character-actions">
                 <b>{{ card.completed }} / {{ card.targets.length }} 项达标</b>
+                <span
+                  v-if="formatPlanVersionTag(card.entry.plan.gameVersion)"
+                  :class="[
+                    'build-plan-version-badge',
+                    {
+                      'is-outdated': isBuildPlanOutdated(
+                        card.entry.plan.gameVersion,
+                        currentGameVersion,
+                      ),
+                    },
+                  ]"
+                >
+                  {{ formatPlanVersionTag(card.entry.plan.gameVersion)
+                  }}<template
+                    v-if="isBuildPlanOutdated(card.entry.plan.gameVersion, currentGameVersion)"
+                  >
+                    · 旧版</template
+                  >
+                </span>
+                <span
+                  v-if="formatPlanUpdatedDate(card.entry.plan.updatedAt)"
+                  class="build-plan-updated-meta"
+                  :title="
+                    formatPlanUpdatedDateTime(card.entry.plan.updatedAt)
+                      ? `方案更新于 ${formatPlanUpdatedDateTime(card.entry.plan.updatedAt)}`
+                      : undefined
+                  "
+                >
+                  更新于 {{ formatPlanUpdatedDate(card.entry.plan.updatedAt) }}
+                </span>
                 <button
                   v-if="!readOnly"
                   type="button"
@@ -1408,13 +1446,35 @@ defineExpose({ reload: loadDashboard });
 }
 .build-character-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 8px 10px;
   font-size: 11px;
 }
 .build-character-actions b {
   color: #55769b;
   font-weight: normal;
+}
+.build-plan-version-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(202, 139, 20, 0.34);
+  background: rgba(255, 247, 225, 0.96);
+  color: #8f5c00;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.build-plan-version-badge.is-outdated {
+  border-color: rgba(217, 119, 6, 0.44);
+  background: rgba(255, 237, 213, 0.96);
+  color: #b45309;
+}
+.build-plan-updated-meta {
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
 }
 .build-card-metrics {
   display: flex;

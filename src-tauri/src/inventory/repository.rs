@@ -159,7 +159,8 @@ impl InventoryStore {
                 note TEXT NOT NULL DEFAULT '',
                 updated_at INTEGER NOT NULL,
                 display_order INTEGER NOT NULL DEFAULT 0,
-                pinned INTEGER NOT NULL DEFAULT 0
+                pinned INTEGER NOT NULL DEFAULT 0,
+                game_version TEXT NOT NULL DEFAULT ''
             );
 
             CREATE TABLE IF NOT EXISTS character_build_targets (
@@ -285,6 +286,10 @@ impl InventoryStore {
             [],
         );
         let _ = connection.execute(
+            "ALTER TABLE character_build_plans ADD COLUMN game_version TEXT NOT NULL DEFAULT ''",
+            [],
+        );
+        let _ = connection.execute(
             "ALTER TABLE relics ADD COLUMN equipped_character_id INTEGER",
             [],
         );
@@ -379,7 +384,8 @@ impl InventoryStore {
     ) -> Result<Option<CharacterBuildPlan>, AppError> {
         let row = connection.query_row(
             "SELECT cavern_mode, cavern_set_a, cavern_set_b, planar_set_id, main_stats_json, effective_substats_json, note,
-                    COALESCE(substat_weights_json, '{}'), COALESCE(min_potential_pct, 40), COALESCE(spd_target, 0)
+                    COALESCE(substat_weights_json, '{}'), COALESCE(min_potential_pct, 40), COALESCE(spd_target, 0),
+                    COALESCE(game_version, ''), updated_at
              FROM character_build_plans WHERE character_id = ?1",
             [character_id], |row| Ok((
                 row.get::<_, String>(0)?,
@@ -392,6 +398,8 @@ impl InventoryStore {
                 row.get::<_, String>(7)?,
                 row.get::<_, f64>(8)?,
                 row.get::<_, f64>(9)?,
+                row.get::<_, String>(10)?,
+                row.get::<_, i64>(11)?,
             ))
         ).optional()?;
         let Some((
@@ -405,6 +413,8 @@ impl InventoryStore {
             substat_weights_json,
             min_potential_pct,
             spd_target,
+            game_version,
+            updated_at,
         )) = row
         else {
             return Ok(None);
@@ -433,6 +443,8 @@ impl InventoryStore {
             substat_weights: serde_json::from_str(&substat_weights_json).unwrap_or_default(),
             min_potential_pct,
             spd_target,
+            game_version,
+            updated_at,
         }))
     }
 
@@ -636,7 +648,7 @@ impl InventoryStore {
         }
         let transaction = connection.unchecked_transaction()?;
         for plan in &plans {
-            save_build_plan_in_transaction(&transaction, plan)?;
+            save_build_plan_in_transaction(&transaction, plan, BuildPlanSaveMode::ImportExcel)?;
         }
         touch_sync_local_updated_at(&transaction, now_millis())?;
         transaction.commit()?;
@@ -723,7 +735,7 @@ impl InventoryStore {
     pub fn save_build_plan(&self, plan: &CharacterBuildPlan) -> Result<(), AppError> {
         let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
-        save_build_plan_in_transaction(&transaction, plan)?;
+        save_build_plan_in_transaction(&transaction, plan, BuildPlanSaveMode::StampCurrent)?;
         // Plan weights changed; drop cached score so the next open/team view recomputes.
         transaction.execute(
             "DELETE FROM character_build_scores WHERE character_id = ?1",
@@ -1265,7 +1277,11 @@ impl InventoryStore {
             ],
         )?;
         for plan in options.build_plans {
-            save_build_plan_in_transaction(&transaction, plan)?;
+            save_build_plan_in_transaction(
+                &transaction,
+                plan,
+                BuildPlanSaveMode::PreserveMetadata,
+            )?;
         }
         apply_build_layouts(&transaction, options.build_layouts)?;
         if options.reset_sync_state {
@@ -1700,11 +1716,18 @@ impl InventoryStore {
             ((filter.page.page - 1) * filter.page.page_size) as i64,
         ));
         let sql = format!(
-            "SELECT character_id, name, path, level, ascension, eidolon,
-                    EXISTS (SELECT 1 FROM character_build_plans WHERE character_build_plans.character_id = characters.character_id),
-                    ability_version, source, updated_at
-             FROM characters {where_sql}
-             ORDER BY rarity DESC, level DESC, eidolon DESC, character_id LIMIT ? OFFSET ?"
+            "SELECT characters.character_id, characters.name, characters.path, characters.level,
+                    characters.ascension, characters.eidolon,
+                    character_build_plans.character_id IS NOT NULL,
+                    NULLIF(character_build_plans.updated_at, 0),
+                    NULLIF(character_build_plans.game_version, ''),
+                    characters.ability_version, characters.source, characters.updated_at
+             FROM characters
+             LEFT JOIN character_build_plans
+               ON character_build_plans.character_id = characters.character_id
+             {where_sql}
+             ORDER BY characters.rarity DESC, characters.level DESC, characters.eidolon DESC, characters.character_id
+             LIMIT ? OFFSET ?"
         );
         let mut statement = connection.prepare(&sql)?;
         let items = statement
@@ -1925,9 +1948,20 @@ impl InventoryStore {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum BuildPlanSaveMode {
+    /// Interactive user save: stamp current timestamp and current game version.
+    StampCurrent,
+    /// Excel import: stamp current timestamp; preserve explicit version cell or stamp current.
+    ImportExcel,
+    /// Sync snapshot restore: preserve exact timestamp and game version from the snapshot.
+    PreserveMetadata,
+}
+
 fn save_build_plan_in_transaction(
     transaction: &Transaction<'_>,
     plan: &CharacterBuildPlan,
+    mode: BuildPlanSaveMode,
 ) -> Result<(), AppError> {
     let weight_only = plan.targets.is_empty()
         && plan.cavern_set_a == 0
@@ -1992,15 +2026,35 @@ fn save_build_plan_in_transaction(
     } else {
         plan.effective_substats.iter().take(5).cloned().collect()
     };
+    let updated_at = match mode {
+        BuildPlanSaveMode::StampCurrent | BuildPlanSaveMode::ImportExcel => now_millis(),
+        BuildPlanSaveMode::PreserveMetadata => plan.updated_at.max(0),
+    };
+    let game_version = match mode {
+        BuildPlanSaveMode::StampCurrent => {
+            normalize_build_plan_game_version(current_game_version())
+        }
+        BuildPlanSaveMode::ImportExcel => {
+            let explicit = normalize_build_plan_game_version(&plan.game_version);
+            if explicit.is_empty() {
+                normalize_build_plan_game_version(current_game_version())
+            } else {
+                explicit
+            }
+        }
+        BuildPlanSaveMode::PreserveMetadata => {
+            normalize_build_plan_game_version(&plan.game_version)
+        }
+    };
     transaction.execute(
         "INSERT INTO character_build_plans(
             character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
             main_stats_json, effective_substats_json, note, updated_at, display_order, pinned,
-            substat_weights_json, min_potential_pct, spd_target
+            substat_weights_json, min_potential_pct, spd_target, game_version
          ) VALUES(
             ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9,
             COALESCE((SELECT MAX(display_order) + 1 FROM character_build_plans), 0), 0,
-            ?10, ?11, ?12
+            ?10, ?11, ?12, ?13
          )
          ON CONFLICT(character_id) DO UPDATE SET
             cavern_mode = excluded.cavern_mode,
@@ -2013,7 +2067,8 @@ fn save_build_plan_in_transaction(
             updated_at = excluded.updated_at,
             substat_weights_json = excluded.substat_weights_json,
             min_potential_pct = excluded.min_potential_pct,
-            spd_target = excluded.spd_target",
+            spd_target = excluded.spd_target,
+            game_version = excluded.game_version",
         params![
             plan.character_id,
             plan.cavern_mode,
@@ -2025,7 +2080,7 @@ fn save_build_plan_in_transaction(
             serde_json::to_string(&effective_substats)
                 .map_err(|error| AppError::Database(error.to_string()))?,
             note,
-            now_millis(),
+            updated_at,
             serde_json::to_string(&plan.substat_weights)
                 .map_err(|error| AppError::Database(error.to_string()))?,
             // Allow 0 as an explicit threshold; only replace non-finite / negative values.
@@ -2038,7 +2093,8 @@ fn save_build_plan_in_transaction(
                 plan.spd_target
             } else {
                 0.0
-            }
+            },
+            game_version
         ],
     )?;
     transaction.execute(
@@ -2666,9 +2722,11 @@ fn map_character(row: &Row<'_>) -> rusqlite::Result<CharacterListItem> {
         ascension: row.get(4)?,
         eidolon: row.get(5)?,
         has_build_plan: row.get(6)?,
-        ability_version: row.get(7)?,
-        source: row.get(8)?,
-        updated_at: row.get(9)?,
+        build_plan_updated_at: row.get(7)?,
+        build_plan_game_version: row.get(8)?,
+        ability_version: row.get(9)?,
+        source: row.get(10)?,
+        updated_at: row.get(11)?,
     })
 }
 
@@ -3867,6 +3925,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         let mut missing_character_plan = plan.clone();
@@ -3930,6 +3990,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&base_plan).unwrap();
         store
@@ -4025,6 +4087,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         store
@@ -4111,6 +4175,8 @@ mod tests {
                 substat_weights: HashMap::new(),
                 min_potential_pct: 40.0,
                 spd_target: 0.0,
+                game_version: String::new(),
+                updated_at: 0,
             })
             .unwrap();
 
@@ -4191,6 +4257,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&base_plan).unwrap();
         let second_plan = CharacterBuildPlan {
@@ -4276,6 +4344,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&first_plan).unwrap();
         first_plan.character_id = 1002;
@@ -4324,6 +4394,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
 
@@ -4603,6 +4675,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         store.clear(None).unwrap();
@@ -4643,6 +4717,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         let connection = store.connect().unwrap();
@@ -4693,6 +4769,8 @@ mod tests {
             substat_weights: HashMap::from([("SPD".to_owned(), 0.75)]),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
 
         store.save_build_plan(&plan).unwrap();
@@ -4743,6 +4821,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         let connection = store.connect().unwrap();
@@ -4804,6 +4884,8 @@ mod tests {
             ]),
             min_potential_pct: 0.0,
             spd_target: 160.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         let restored = store.build_plan(1001).unwrap().unwrap();
@@ -4850,6 +4932,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         assert_eq!(store.build_plan(1001).unwrap().unwrap().note, "");
@@ -4960,6 +5044,8 @@ mod tests {
             substat_weights: HashMap::new(),
             min_potential_pct: 40.0,
             spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
         };
         store.save_build_plan(&plan).unwrap();
         let snapshot = store.sync_snapshot().unwrap();
@@ -5131,6 +5217,8 @@ mod tests {
                 substat_weights: HashMap::new(),
                 min_potential_pct: 40.0,
                 spd_target: 0.0,
+                game_version: String::new(),
+                updated_at: 0,
             })
             .unwrap();
         let mut snapshot = store.sync_snapshot().unwrap();
@@ -5409,5 +5497,111 @@ mod tests {
         assert!(orphaned.members[0].as_ref().unwrap().name.contains("1001"));
         // clear(kind) keeps teams, matching build-plan retention on partial clear.
         assert_eq!(store.summary().unwrap().teams, 1);
+    }
+
+    #[test]
+    fn build_plan_tracks_updated_at_and_game_version_and_preserves_on_sync() {
+        let store = InventoryStore::test_store();
+        seed_characters(
+            &store,
+            &[
+                (1001, "三月七", "Preservation"),
+                (1002, "丹恒", "Hunt"),
+                (1003, "瓦尔特", "Nihility"),
+            ],
+        );
+        let plan = CharacterBuildPlan {
+            character_id: 1001,
+            cavern_mode: "fourPiece".to_owned(),
+            cavern_set_a: 101,
+            cavern_set_b: None,
+            planar_set_id: 301,
+            main_stats: HashMap::from([("Body".to_owned(), vec!["DEF%".to_owned()])]),
+            targets: vec![BuildTarget {
+                stat_key: "DEF".to_owned(),
+                target: 3200.0,
+                priority: 1,
+                minimum: 2800.0,
+            }],
+            effective_substats: vec!["DEF%".to_owned(), "SPD".to_owned()],
+            note: String::new(),
+            substat_weights: HashMap::new(),
+            min_potential_pct: 40.0,
+            spd_target: 0.0,
+            game_version: String::new(),
+            updated_at: 0,
+        };
+        store.save_build_plan(&plan).unwrap();
+
+        let saved = store.build_plan(1001).unwrap().expect("saved plan");
+        assert_eq!(saved.game_version, current_game_version());
+        assert!(saved.updated_at > 0);
+
+        // Simulate a legacy plan row saved before game_version existed (blank version, historical timestamp).
+        let legacy_timestamp: i64 = 1_735_689_600_000;
+        let conn = store.connect().unwrap();
+        conn.execute(
+            "INSERT INTO character_build_plans(
+                character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
+                main_stats_json, effective_substats_json, note, updated_at, display_order, pinned,
+                substat_weights_json, min_potential_pct, spd_target, game_version
+             ) VALUES(1002, 'fourPiece', 101, NULL, 301, '{}', '[]', '', ?1, 1, 0, '{}', 40, 0, '')",
+            [legacy_timestamp],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO character_build_targets(character_id, stat_key, target, priority, max_gap, minimum)
+             VALUES(1002, 'ATK', 2800, 1, 400, 2400)",
+            [],
+        )
+        .unwrap();
+        drop(conn);
+
+        let listed = store
+            .list_characters(&CharacterFilter::default())
+            .unwrap()
+            .items;
+        let march = listed.iter().find(|c| c.character_id == 1001).unwrap();
+        assert!(march.has_build_plan);
+        assert_eq!(
+            march.build_plan_game_version.as_deref(),
+            Some(current_game_version())
+        );
+        assert_eq!(march.build_plan_updated_at, Some(saved.updated_at));
+
+        let dan = listed.iter().find(|c| c.character_id == 1002).unwrap();
+        assert!(dan.has_build_plan);
+        assert_eq!(dan.build_plan_game_version, None);
+        assert_eq!(dan.build_plan_updated_at, Some(legacy_timestamp));
+
+        let welt = listed.iter().find(|c| c.character_id == 1003).unwrap();
+        assert!(!welt.has_build_plan);
+        assert_eq!(welt.build_plan_game_version, None);
+        assert_eq!(welt.build_plan_updated_at, None);
+
+        // Sync snapshot restore preserves historical updated_at and blank/older game_version.
+        let mut snapshot = store.sync_snapshot().unwrap();
+        let snap_march = snapshot
+            .build_plans
+            .iter_mut()
+            .find(|p| p.character_id == 1001)
+            .unwrap();
+        snap_march.game_version = "4.2".to_owned();
+        snap_march.updated_at = 1_750_000_000_000;
+
+        let restored_store = InventoryStore::test_store();
+        restored_store.replace_with_sync_snapshot(snapshot).unwrap();
+        let restored_march = restored_store.build_plan(1001).unwrap().unwrap();
+        assert_eq!(restored_march.game_version, "4.2");
+        assert_eq!(restored_march.updated_at, 1_750_000_000_000);
+        let restored_dan = restored_store.build_plan(1002).unwrap().unwrap();
+        assert_eq!(restored_dan.game_version, "");
+        assert_eq!(restored_dan.updated_at, legacy_timestamp);
+
+        // Re-saving an older/legacy plan interactively updates it to current_game_version().
+        restored_store.save_build_plan(&restored_march).unwrap();
+        let updated_march = restored_store.build_plan(1001).unwrap().unwrap();
+        assert_eq!(updated_march.game_version, current_game_version());
+        assert!(updated_march.updated_at >= 1_750_000_000_000);
     }
 }

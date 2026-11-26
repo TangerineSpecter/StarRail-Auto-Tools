@@ -20,10 +20,14 @@ import { createInventoryFilterForm } from "@/features/inventory/filter";
 import { mobileInventoryCategoryMeta } from "@/features/inventory/mobile-inventory-categories";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import { extractGameVersion } from "@/shared/utils/build-plan-meta";
 import type { InventoryKind, RelicListItem } from "@/types";
 
 defineOptions({ name: "MobileInventoryPage" });
 const runtime = useRuntimeContext();
+const currentGameVersion = computed(() =>
+  extractGameVersion(runtime.summary.value.protocolVersion),
+);
 const archive = useInventoryArchive({
   ...runtime,
   revision: runtime.inventoryRevision,
@@ -323,6 +327,7 @@ onDeactivated(() => {
             :busy="runtime.busy.value"
             read-only
             :active-detail-id="activeDetailId"
+            :current-game-version="currentGameVersion"
             @detail="openDetail"
           />
           <div

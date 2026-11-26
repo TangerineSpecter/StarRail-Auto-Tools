@@ -13,6 +13,8 @@ import type {
 } from "@/types";
 
 const updatedAt = 1794326400;
+const planUpdatedAtRecent = 1795651200000;
+const planUpdatedAtOlder = 1785542400000;
 // Stable catalogue IDs preserve the distinct paths of 三月七 and 开拓者.
 const available = characterCatalogue.characters.filter((c) => catalogueCharacterId(c) !== null);
 const variants = [
@@ -30,6 +32,8 @@ export const characters: CharacterListItem[] = selected.map((c, i) => ({
   ascension: i % 5 === 4 ? 5 : 6,
   eidolon: i % 7,
   hasBuildPlan: i < 8,
+  buildPlanUpdatedAt: i < 8 ? (i % 3 === 1 ? planUpdatedAtOlder : planUpdatedAtRecent) : null,
+  buildPlanGameVersion: i < 8 ? (i % 3 === 0 ? "4.7" : i % 3 === 1 ? "4.2" : null) : null,
   abilityVersion: 1,
   source: "mobile-demo",
   updatedAt,
@@ -151,6 +155,8 @@ export const dashboard: BuildDashboardEntry[] = characters.slice(0, 8).map((c, i
     substatWeights: {},
     minPotentialPct: 40,
     spdTarget: 134,
+    gameVersion: c.buildPlanGameVersion ?? "",
+    updatedAt: c.buildPlanUpdatedAt ?? 0,
     note:
       i % 2
         ? "优先补足速度，再平衡暴击与攻击力。用于检查较长说明在折叠屏上的换行。"

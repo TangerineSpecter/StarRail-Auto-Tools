@@ -448,6 +448,8 @@ export interface CharacterListItem {
   ascension: number;
   eidolon: number;
   hasBuildPlan: boolean;
+  buildPlanUpdatedAt?: number | null;
+  buildPlanGameVersion?: string | null;
   abilityVersion: number;
   source: string;
   updatedAt: number;
@@ -487,6 +489,10 @@ export interface CharacterBuildPlan {
   minPotentialPct: number;
   /** Optional SPD breakpoint target for the SPD helper (0 = unset). */
   spdTarget: number;
+  /** Game version when this plan was last saved (e.g. "4.7"); empty if unrecorded. */
+  gameVersion?: string;
+  /** Epoch milliseconds when this plan was last saved (0 or undefined if unknown/unsaved). */
+  updatedAt?: number;
 }
 
 export interface BuildPlanExcelImportResult {

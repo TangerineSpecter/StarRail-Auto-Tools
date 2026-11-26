@@ -9,8 +9,8 @@ use rust_xlsxwriter::{DataValidation, Format, FormatAlign, Note, Workbook, Works
 use serde::Deserialize;
 
 use super::models::{
-    fixed_main_stat_for_slot, normalize_build_plan_note, normalize_build_target_stat_key,
-    BuildTarget, CharacterBuildPlan,
+    fixed_main_stat_for_slot, normalize_build_plan_game_version, normalize_build_plan_note,
+    normalize_build_target_stat_key, BuildTarget, CharacterBuildPlan,
 };
 use crate::error::AppError;
 
@@ -181,6 +181,7 @@ fn headers() -> Vec<&'static str> {
         "角色 ID",
         "质量门槛",
         "速度断点",
+        "游戏版本",
     ]
 }
 fn header_tip(header: &str) -> &'static str {
@@ -218,6 +219,7 @@ fn header_tip(header: &str) -> &'static str {
         "角色 ID" => "隐藏的系统匹配字段，请勿修改；角色名称与 ID 不一致时以有效 ID 为准。",
         "质量门槛" => "质量达标的最低潜力百分比，范围 0～100；留空时默认为 40。",
         "速度断点" => "可选，填写大于等于 0 的速度目标。",
+        "游戏版本" => "可选，记录设置该方案时的游戏版本（如 4.7）；留空时导入将记录当前版本。",
         "星级" | "属性" | "命途" => "仅用于筛选和查看。修改这些列不会影响导入结果。",
         _ => "填写毕业方案配置。",
     }
@@ -484,6 +486,11 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
                 .write_number(row, 40, plan.spd_target)
                 .map_err(io_error)?;
         }
+        if !plan.game_version.trim().is_empty() {
+            sheet
+                .write_string(row, 41, plan.game_version.trim())
+                .map_err(io_error)?;
+        }
     }
     validation(sheet, 0, 0, &characters)?;
     validation(sheet, 4, 4, &modes)?;
@@ -507,6 +514,7 @@ pub(super) fn export(path: &Path, rows: &[ExportRow]) -> Result<(), AppError> {
     sheet.set_column_width(37, 28.0).map_err(io_error)?;
     sheet.set_column_width(39, 12.0).map_err(io_error)?;
     sheet.set_column_width(40, 12.0).map_err(io_error)?;
+    sheet.set_column_width(41, 12.0).map_err(io_error)?;
     for (index, row_data) in rows.iter().enumerate() {
         sheet
             .write_number(index as u32 + 1, 38, row_data.character_id)
@@ -770,6 +778,7 @@ pub(super) fn import(
         let spd_target = number(row.get(spd_column))
             .filter(|value| value.is_finite() && *value >= 0.0)
             .unwrap_or(0.0);
+        let game_version = normalize_build_plan_game_version(&text(row.get(spd_column + 1)));
         plans.push(CharacterBuildPlan {
             character_id,
             cavern_mode: if cavern_set_b.is_some() {
@@ -787,6 +796,8 @@ pub(super) fn import(
             substat_weights,
             min_potential_pct,
             spd_target,
+            game_version,
+            updated_at: 0,
         });
     }
     Ok(plans)
@@ -849,6 +860,8 @@ mod tests {
             ]),
             min_potential_pct: 45.0,
             spd_target: 160.0,
+            game_version: "4.7".into(),
+            updated_at: 0,
         };
         export(
             &path,
@@ -930,9 +943,11 @@ mod tests {
         assert!(!imported[0].substat_weights.contains_key("ATK%"));
         assert_eq!(imported[0].min_potential_pct, 45.0);
         assert_eq!(imported[0].spd_target, 160.0);
+        assert_eq!(imported[0].game_version, "4.7");
         assert_eq!(imported[1].character_id, 1002);
         assert_eq!(imported[1].note, "副C说明");
         assert_eq!(imported[1].spd_target, 160.0);
+        assert_eq!(imported[1].game_version, "4.7");
     }
 
     #[test]

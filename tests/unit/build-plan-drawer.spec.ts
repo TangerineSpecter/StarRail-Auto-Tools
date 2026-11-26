@@ -30,6 +30,8 @@ describe("BuildPlanDrawer", () => {
       substatWeights: { SPD: 1 },
       minPotentialPct: 40,
       spdTarget: 134,
+      gameVersion: "4.2",
+      updatedAt: new Date(2026, 5, 10, 9, 15).getTime(),
     });
     api.save.mockResolvedValue(undefined);
     api.optimizerContext.mockResolvedValue(null);
@@ -66,6 +68,8 @@ describe("BuildPlanDrawer", () => {
 
     expect(wrapper.text()).toContain("查询当前版本配装");
     expect(wrapper.text()).toContain("AI 推荐对照");
+    expect(wrapper.get(".build-plan-version-pill").text()).toContain("v4.2");
+    expect(wrapper.get(".build-plan-updated-text").text()).toContain("2026-06-10 09:15");
     expect(wrapper.text()).toContain("说明");
     expect(wrapper.text()).toContain("全局优化选项");
     expect(wrapper.text()).toContain("同时计算散件对照");

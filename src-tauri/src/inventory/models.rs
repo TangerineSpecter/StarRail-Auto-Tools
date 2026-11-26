@@ -6,6 +6,18 @@ use serde_json::Value;
 pub(crate) const SCHEMA_VERSION: i64 = 15;
 pub const PROTOCOL_VERSION: &str = "reliquary-v25.0.0 / HSR-4.7";
 
+/// Extract the HSR game version suffix from `PROTOCOL_VERSION` (e.g. `"4.7"`).
+pub fn current_game_version() -> &'static str {
+    PROTOCOL_VERSION
+        .split("HSR-")
+        .nth(1)
+        .map(|rest| {
+            rest.trim()
+                .trim_end_matches(|c: char| !c.is_ascii_alphanumeric() && c != '.')
+        })
+        .unwrap_or("")
+}
+
 /// Head / Hands have a single game-fixed main stat (not user plan goals).
 pub(crate) const FIXED_MAIN_STATS: &[(&str, &str)] = &[("Head", "HP"), ("Hands", "ATK")];
 
@@ -268,6 +280,8 @@ pub struct CharacterListItem {
     pub ascension: u32,
     pub eidolon: u32,
     pub has_build_plan: bool,
+    pub build_plan_updated_at: Option<i64>,
+    pub build_plan_game_version: Option<String>,
     pub ability_version: u32,
     pub source: String,
     pub updated_at: i64,
@@ -373,6 +387,12 @@ pub struct CharacterBuildPlan {
     /// Optional SPD breakpoint target for the SPD helper (0 = unset).
     #[serde(default)]
     pub spd_target: f64,
+    /// Game version when this plan was last saved (e.g. "4.7"); empty if unrecorded.
+    #[serde(default)]
+    pub game_version: String,
+    /// Epoch milliseconds when this plan was last saved (0 if unknown / unsaved).
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 fn default_min_potential_pct() -> f64 {
@@ -381,6 +401,9 @@ fn default_min_potential_pct() -> f64 {
 
 /// Maximum character length for a build-plan note (Unicode scalar values).
 pub const MAX_BUILD_PLAN_NOTE_LEN: usize = 500;
+
+/// Maximum character length for a recorded game version label.
+pub const MAX_BUILD_PLAN_GAME_VERSION_LEN: usize = 32;
 
 /// Maximum character length for a team name (Unicode scalar values).
 pub const MAX_TEAM_NAME_LEN: usize = 64;
@@ -398,6 +421,19 @@ pub fn normalize_build_plan_note(note: &str) -> String {
         trimmed.to_owned()
     } else {
         trimmed.chars().take(MAX_BUILD_PLAN_NOTE_LEN).collect()
+    }
+}
+
+/// Normalize a recorded game version label (e.g. `"v4.7"` -> `"4.7"`, blank stays `""`).
+pub fn normalize_build_plan_game_version(version: &str) -> String {
+    let trimmed = version.trim().trim_start_matches(['v', 'V']).trim();
+    if trimmed.chars().count() <= MAX_BUILD_PLAN_GAME_VERSION_LEN {
+        trimmed.to_owned()
+    } else {
+        trimmed
+            .chars()
+            .take(MAX_BUILD_PLAN_GAME_VERSION_LEN)
+            .collect()
     }
 }
 

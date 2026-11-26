@@ -13,6 +13,7 @@ const props = defineProps<{
   viewportHeight: number;
   width: number;
   error: string;
+  currentGameVersion?: string;
 }>();
 const visible = computed(() => {
   const row = props.kind === "relic" ? 180 : props.kind === "character" ? 80 : 100;
@@ -42,6 +43,7 @@ const selected = new Set<number>();
       :appending="false"
       :busy="false"
       read-only
+      :current-game-version="currentGameVersion"
     />
   </div>
 </template>

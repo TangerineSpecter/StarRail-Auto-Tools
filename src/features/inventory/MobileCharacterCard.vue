@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { characterDisplayName, pathIconSrc, resolveCharacterCatalogue } from "@/shared/catalogue";
+import {
+  formatPlanUpdatedDate,
+  formatPlanVersionTag,
+  isBuildPlanOutdated,
+} from "@/shared/utils/build-plan-meta";
 import { pathLabel } from "./options";
 import type { CharacterListItem } from "@/types";
 
-const props = defineProps<{ item: CharacterListItem }>();
+const props = defineProps<{ item: CharacterListItem; currentGameVersion?: string }>();
 
 const AVATAR_COLORS = ["#1ea2e8", "#e84a4a", "#8740e5", "#33b061", "#f0a21d", "#e0427f"];
 
@@ -35,6 +40,17 @@ const fallbackColor = computed(() => {
   }
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 });
+const planVersionTag = computed(() =>
+  props.item.hasBuildPlan ? formatPlanVersionTag(props.item.buildPlanGameVersion) : "",
+);
+const planUpdatedDate = computed(() =>
+  props.item.hasBuildPlan ? formatPlanUpdatedDate(props.item.buildPlanUpdatedAt) : "",
+);
+const planOutdated = computed(
+  () =>
+    props.item.hasBuildPlan &&
+    isBuildPlanOutdated(props.item.buildPlanGameVersion, props.currentGameVersion),
+);
 </script>
 
 <template>
@@ -78,7 +94,12 @@ const fallbackColor = computed(() => {
         <span :class="['character-card-eidolon', eidolonTone]">
           <span>星魂</span><b>E{{ item.eidolon }}</b>
         </span>
-        <span v-if="item.hasBuildPlan" class="character-card-plan is-configured"> ✓ 已设目标 </span>
+        <span v-if="item.hasBuildPlan" class="character-card-plan-group">
+          <span :class="['character-card-plan', 'is-configured', { 'is-outdated': planOutdated }]">
+            ✓ {{ planVersionTag || "已设目标" }}<template v-if="planOutdated"> · 旧版</template>
+          </span>
+          <span v-if="planUpdatedDate" class="character-card-plan-date">{{ planUpdatedDate }}</span>
+        </span>
         <span v-else class="character-card-detail-hint">档案详情 ›</span>
       </div>
     </div>
@@ -297,16 +318,36 @@ const fallbackColor = computed(() => {
 .character-card-eidolon.is-max b {
   color: #7d4906;
 }
+.character-card-plan-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
 .character-card-plan.is-configured {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #e8f7f0;
-  color: #13794b;
+  background: #fef3d6;
+  color: #965d00;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.character-card-plan.is-configured.is-outdated {
+  background: #ffedd5;
+  color: #b45309;
+}
+.character-card-plan-date {
+  color: #7c6844;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .character-card-detail-hint {
   color: #73859d;

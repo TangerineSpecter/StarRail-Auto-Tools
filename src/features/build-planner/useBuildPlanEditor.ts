@@ -27,6 +27,8 @@ const emptyPlan = (characterId: number): CharacterBuildPlan => ({
   substatWeights: {},
   minPotentialPct: 40,
   spdTarget: 0,
+  gameVersion: "",
+  updatedAt: 0,
 });
 
 async function yieldForCalculationFeedback() {
@@ -90,6 +92,9 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
         plan.minPotentialPct = 40;
       if (typeof plan.spdTarget !== "number" || !Number.isFinite(plan.spdTarget))
         plan.spdTarget = 0;
+      if (typeof plan.gameVersion !== "string") plan.gameVersion = "";
+      if (typeof plan.updatedAt !== "number" || !Number.isFinite(plan.updatedAt))
+        plan.updatedAt = 0;
     } catch (cause) {
       options.setError(String(cause));
     } finally {
