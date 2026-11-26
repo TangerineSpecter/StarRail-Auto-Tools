@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { gameLaunchApi } from "@/shared/api/game-launch";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { GameLaunchSettings } from "@/types";
 
 defineProps<{ busy: boolean }>();
@@ -11,6 +13,7 @@ const emit = defineEmits<{
 }>();
 
 const settings = ref<GameLaunchSettings>({ launcherPath: "" });
+const loading = ref(true);
 const detecting = ref(false);
 
 async function run<T>(action: () => Promise<T>, success?: string): Promise<T | undefined> {
@@ -61,6 +64,7 @@ async function save() {
 onMounted(async () => {
   const result = await run(() => gameLaunchApi.getSettings());
   if (result) settings.value = result;
+  loading.value = false;
 });
 </script>
 
@@ -86,6 +90,12 @@ onMounted(async () => {
         <span>✦</span
         >自动检测只检查常见安装目录；路径可随时手动更换。不会扫描全盘，也不会读取游戏内存。
       </p>
+      <LoadingState
+        v-if="loading"
+        variant="bar"
+        label="正在读取启动器设置…"
+        style="margin-bottom: 12px"
+      />
       <label class="launcher-field"
         ><span>启动器位置</span
         ><input
@@ -100,7 +110,8 @@ onMounted(async () => {
           :disabled="busy || detecting"
           @click="detect"
         >
-          {{ detecting ? "正在检测…" : "自动检测" }}
+          <InlineSpinner v-if="detecting" size="xs" />
+          <span>{{ detecting ? "正在检测…" : "自动检测" }}</span>
         </button>
         <button
           class="settings-button settings-button-secondary"
@@ -116,7 +127,8 @@ onMounted(async () => {
           :disabled="busy"
           @click="save"
         >
-          保存设置
+          <InlineSpinner v-if="busy" size="xs" />
+          <span>保存设置</span>
         </button>
       </div>
     </article>
@@ -211,6 +223,10 @@ onMounted(async () => {
   margin-top: 8px;
 }
 .settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 38px;
   padding: 0 15px;
   border: 1px solid transparent;

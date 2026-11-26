@@ -24,6 +24,7 @@ import { formatStatValue, pathLabel, slotLabel, statLabel } from "./options";
 import { inventoryItemId } from "./useInventoryArchive";
 import MobileCharacterCard from "./MobileCharacterCard.vue";
 import MobileLightConeCard from "./MobileLightConeCard.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type {
   CharacterListItem,
   InventoryKind,
@@ -137,7 +138,17 @@ function avatarColor(name: string): string {
 </script>
 
 <template>
-  <div class="table-shell" @scroll="emit('scroll', $event)">
+  <div
+    class="table-shell"
+    :class="{ 'is-refreshing': busy && items.length > 0 }"
+    @scroll="emit('scroll', $event)"
+  >
+    <LoadingState
+      v-if="busy && items.length > 0"
+      variant="bar"
+      class="inventory-refresh-bar"
+      label="正在更新列表…"
+    />
     <table v-if="kind !== 'character'" :class="['inventory-table', `inventory-table--${kind}`]">
       <colgroup>
         <col v-if="!readOnly" class="inventory-col-select" />
@@ -173,6 +184,16 @@ function avatarColor(name: string): string {
           <tr
             v-for="item in relics()"
             :key="item.itemId"
+            v-memo="[
+              item.itemId,
+              selectedIds.has(item.itemId),
+              activeDetailId === item.itemId,
+              item.level,
+              item.locked,
+              item.discard,
+              item.location,
+              readOnly,
+            ]"
             class="inventory-relic-row"
             :aria-current="activeDetailId === item.itemId ? 'true' : undefined"
             :tabindex="readOnly ? 0 : undefined"
@@ -194,6 +215,8 @@ function avatarColor(name: string): string {
                     v-if="relicImage(item.setId, item.slot)"
                     :src="relicImage(item.setId, item.slot)"
                     :alt="slotLabel(item.slot)"
+                    loading="lazy"
+                    decoding="async"
                     class="relic-piece-image"
                   /><span v-else class="relic-icon-star">☆</span>
                 </div>
@@ -253,6 +276,8 @@ function avatarColor(name: string): string {
                   v-if="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
                   :src="equippedCharacterAvatar(item.location, item.equippedCharacterId)"
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   class="relic-equip-avatar"
                 />{{ equippedCharacterLabel(item.location, item.equippedCharacterId) }}</span
               ><span v-else class="relic-equip-tag unequipped">未装备</span>
@@ -272,6 +297,15 @@ function avatarColor(name: string): string {
           <tr
             v-for="item in lightCones()"
             :key="item.itemId"
+            v-memo="[
+              item.itemId,
+              selectedIds.has(item.itemId),
+              activeDetailId === item.itemId,
+              item.level,
+              item.superimposition,
+              item.location,
+              readOnly,
+            ]"
             class="inventory-lightcone-row"
             :role="readOnly ? 'button' : undefined"
             :aria-label="readOnly ? `查看${item.name}` : undefined"
@@ -299,6 +333,8 @@ function avatarColor(name: string): string {
                       v-if="lightConeImage(item)"
                       :src="lightConeImage(item)"
                       :alt="item.name"
+                      loading="lazy"
+                      decoding="async"
                       class="light-cone-image"
                     /><span v-else class="relic-icon-star">☆</span>
                   </div>
@@ -351,12 +387,15 @@ function avatarColor(name: string): string {
         </template>
         <tr v-if="!items.length">
           <td :colspan="kind === 'lightCone' ? 6 : 7" class="table-empty">
-            <span>◇</span><strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong
-            ><small>{{
-              readOnly
-                ? "请在同步页面下载电脑端上传的数据"
-                : "启动游戏数据直读并重新登录后，档案会自动出现"
-            }}</small>
+            <LoadingState v-if="busy" variant="list" label="正在检索数据库…" :rows="5" />
+            <template v-else>
+              <span>◇</span><strong>没有符合条件的数据</strong
+              ><small>{{
+                readOnly
+                  ? "请在同步页面下载电脑端上传的数据"
+                  : "启动游戏数据直读并重新登录后，档案会自动出现"
+              }}</small>
+            </template>
           </td>
         </tr>
       </tbody>
@@ -393,6 +432,8 @@ function avatarColor(name: string): string {
               :class="['character-card-avatar', `rarity-${characterRarity(item)}`]"
               :src="characterAvatar(item)"
               :alt="`${characterLabel(item)} 头像`"
+              loading="lazy"
+              decoding="async"
             />
             <div
               v-else
@@ -407,6 +448,8 @@ function avatarColor(name: string): string {
                   class="path-icon"
                   :src="pathIconSrc(item.path)"
                   :alt="pathLabel(item.path)"
+                  loading="lazy"
+                  decoding="async"
                 /><span class="path-text">{{ pathLabel(item.path) }}</span>
               </div>
               <span
@@ -420,6 +463,8 @@ function avatarColor(name: string): string {
                   v-if="characterCatalogueEntry(item)?.elementIcon"
                   :src="characterCatalogueEntry(item)?.elementIcon"
                   :alt="characterCatalogueEntry(item)?.element"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <span>{{ characterCatalogueEntry(item)?.element }}</span>
               </span>
@@ -499,12 +544,15 @@ function avatarColor(name: string): string {
         </template>
       </div>
       <div v-if="!items.length" class="table-empty">
-        <span>◇</span><strong>{{ busy ? "正在检索数据库…" : "没有符合条件的数据" }}</strong
-        ><small>{{
-          readOnly
-            ? "请在同步页面下载电脑端上传的数据"
-            : "启动游戏数据直读并重新登录后，档案会自动出现"
-        }}</small>
+        <LoadingState v-if="busy" variant="cards" label="正在检索数据库…" :rows="4" />
+        <template v-else>
+          <span>◇</span><strong>没有符合条件的数据</strong
+          ><small>{{
+            readOnly
+              ? "请在同步页面下载电脑端上传的数据"
+              : "启动游戏数据直读并重新登录后，档案会自动出现"
+          }}</small>
+        </template>
       </div>
     </div>
     <div v-if="appending" class="loading-more">

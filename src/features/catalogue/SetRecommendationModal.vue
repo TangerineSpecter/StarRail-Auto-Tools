@@ -6,6 +6,7 @@ import { useMobileView } from "@/shared/contracts/mobile-view";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
 import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { useCloseOnEscape } from "./close-on-escape";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { summarizeSetTargets } from "./set-target-summary";
 import type {
   CharacterCatalogueEntry,
@@ -100,7 +101,7 @@ onUnmounted(() => {
         </div>
       </header>
       <div class="set-recommendation-body">
-        <p v-if="loading" class="set-recommendation-state">正在查询培养方案…</p>
+        <LoadingState v-if="loading" variant="list" label="正在查询培养方案…" :rows="3" compact />
         <p v-else-if="error" class="set-recommendation-state error">{{ error }}</p>
         <p v-else-if="!recommendations.length" class="set-recommendation-state">
           尚未有角色将此套装设为毕业目标。

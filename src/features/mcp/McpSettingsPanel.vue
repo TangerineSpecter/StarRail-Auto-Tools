@@ -2,6 +2,8 @@
 import InputNumber from "primevue/inputnumber";
 import { computed, onMounted, ref } from "vue";
 import { mcpApi } from "@/shared/api/mcp";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import {
   clientConfig,
   emptyMcpStatus,
@@ -133,7 +135,9 @@ onMounted(async () => {
           <span>✦</span>
           默认关闭。启用后仅绑定 127.0.0.1，并要求 Bearer Token。软件需保持运行，客户端才能连上。
         </p>
-        <div v-if="loading" class="settings-loading">正在读取 MCP 设置…</div>
+        <div v-if="loading" class="settings-loading">
+          <LoadingState variant="form" label="正在读取 MCP 设置…" :rows="4" compact />
+        </div>
         <form v-else class="settings-form" @submit.prevent="save">
           <div class="protocol-switch" role="radiogroup" aria-label="启用 MCP 服务">
             <button
@@ -192,7 +196,8 @@ onMounted(async () => {
           <p v-if="status.lastError" class="status-error">{{ status.lastError }}</p>
           <div class="settings-actions">
             <button class="settings-button settings-button-primary" type="submit" :disabled="busy">
-              保存并应用
+              <InlineSpinner v-if="busy" size="xs" />
+              <span>保存并应用</span>
             </button>
             <button
               class="settings-button settings-button-secondary"
@@ -435,6 +440,10 @@ onMounted(async () => {
   margin-top: 8px;
 }
 .settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 38px;
   padding: 0 15px;
   border: 1px solid transparent;

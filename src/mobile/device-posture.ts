@@ -80,7 +80,9 @@ export function initDevicePostureWatcher(): () => void {
 
   function update() {
     const posture = detectDevicePosture();
-    document.documentElement.dataset.posture = posture;
+    if (document.documentElement.dataset.posture !== posture) {
+      document.documentElement.dataset.posture = posture;
+    }
   }
 
   update();

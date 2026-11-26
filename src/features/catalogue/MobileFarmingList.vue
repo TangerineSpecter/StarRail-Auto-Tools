@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { RelicSetCatalogueEntry } from "@/types";
 import {
   farmingPriorityClass,
@@ -18,7 +19,7 @@ const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry]; retry: [] }>()
 </script>
 <template>
   <section class="mobile-farming" :aria-label="`${kindLabel}刷取评分`" :aria-busy="loading">
-    <p v-if="loading" class="mobile-farming-state" role="status">正在评估当前穿戴质量…</p>
+    <LoadingState v-if="loading" variant="list" label="正在评估当前穿戴质量…" :rows="5" compact />
     <p v-else-if="error" class="mobile-farming-state" role="alert">
       {{ error }}<button type="button" @click="emit('retry')">重试</button>
     </p>

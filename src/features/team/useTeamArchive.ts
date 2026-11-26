@@ -111,12 +111,15 @@ export function useTeamArchive(options: TeamArchiveOptions) {
     // Seed from embedded team payloads without wiping scores for other known IDs.
     mergeScores(scoresFromTeams(teams));
 
-    try {
-      const stored = await characterScoreApi.list(needed);
-      if (!isCurrent()) return;
-      mergeScores(stored);
-    } catch {
-      // list failures fall through to per-character recompute for misses
+    const uncachedForList = needed.filter((id) => !memberScores.value.has(id));
+    if (uncachedForList.length) {
+      try {
+        const stored = await characterScoreApi.list(uncachedForList);
+        if (!isCurrent()) return;
+        mergeScores(stored);
+      } catch {
+        // list failures fall through to per-character recompute for misses
+      }
     }
 
     const missing = needed.filter((id) => !memberScores.value.has(id));

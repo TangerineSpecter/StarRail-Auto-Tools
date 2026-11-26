@@ -1,5 +1,12 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fmt,
+    ops::{Deref, DerefMut},
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
+use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -38,9 +45,64 @@ pub(crate) fn normalize_build_target_stat_key(stat_key: &str) -> &str {
     }
 }
 
-#[derive(Debug, Clone)]
+const MAX_POOLED_CONNECTIONS: usize = 4;
+
+#[derive(Clone)]
 pub struct InventoryStore {
     pub(crate) path: PathBuf,
+    pub(crate) pool: Arc<Mutex<Vec<Connection>>>,
+}
+
+impl fmt::Debug for InventoryStore {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("InventoryStore")
+            .field("path", &self.path)
+            .finish()
+    }
+}
+
+pub(crate) struct PooledConnection {
+    connection: Option<Connection>,
+    pool: Arc<Mutex<Vec<Connection>>>,
+}
+
+impl PooledConnection {
+    pub(crate) fn new(connection: Connection, pool: Arc<Mutex<Vec<Connection>>>) -> Self {
+        Self {
+            connection: Some(connection),
+            pool,
+        }
+    }
+}
+
+impl Deref for PooledConnection {
+    type Target = Connection;
+
+    fn deref(&self) -> &Self::Target {
+        self.connection
+            .as_ref()
+            .expect("pooled connection stays present until drop")
+    }
+}
+
+impl DerefMut for PooledConnection {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.connection
+            .as_mut()
+            .expect("pooled connection stays present until drop")
+    }
+}
+
+impl Drop for PooledConnection {
+    fn drop(&mut self) {
+        if let Some(connection) = self.connection.take() {
+            if let Ok(mut guard) = self.pool.lock() {
+                if guard.len() < MAX_POOLED_CONNECTIONS {
+                    guard.push(connection);
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

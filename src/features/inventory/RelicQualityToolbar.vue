@@ -48,11 +48,14 @@ const activePlan = computed<CharacterBuildPlan | null>(() => {
   return found?.plan ?? null;
 });
 
-function scoreItem(item: RelicListItem) {
-  const weights = resolvePlanWeights({
+const activeWeights = computed(() =>
+  resolvePlanWeights({
     substatWeights: activePlan.value?.substatWeights,
     effectiveSubstats: activePlan.value?.effectiveSubstats,
-  });
+  }),
+);
+
+function scoreItem(item: RelicListItem) {
   return scoreRelic(
     {
       slot: item.slot,
@@ -61,7 +64,7 @@ function scoreItem(item: RelicListItem) {
       rarity: item.rarity,
       level: item.level,
     },
-    weights,
+    activeWeights.value,
     { allowedMainStats: activePlan.value?.mainStats },
   );
 }

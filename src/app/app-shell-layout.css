@@ -25,7 +25,6 @@
   pointer-events: none;
   border: 1px solid rgba(45, 84, 137, 0.09);
   border-radius: 50%;
-  animation: slow-spin 60s linear infinite;
 }
 .orbit::before,
 .orbit::after {
@@ -56,16 +55,6 @@
   left: -170px;
   width: 430px;
   height: 430px;
-  animation-direction: reverse;
-  animation-duration: 45s;
-}
-@keyframes slow-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 .app-shell {
   position: relative;

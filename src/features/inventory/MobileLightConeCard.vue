@@ -22,7 +22,13 @@ const owner = computed(() =>
 <template>
   <div class="inventory-lightcone-card">
     <div :class="['lightcone-card-cover', `rarity-${entry?.rarity ?? 0}`]">
-      <img v-if="entry?.image" :src="entry.image" :alt="item.name" />
+      <img
+        v-if="entry?.image"
+        :src="entry.image"
+        :alt="item.name"
+        loading="lazy"
+        decoding="async"
+      />
       <span v-else class="lightcone-card-cover-fallback">光锥</span>
       <span class="lightcone-cover-bar" aria-hidden="true" />
     </div>
@@ -35,7 +41,9 @@ const owner = computed(() =>
       </div>
       <div class="lightcone-card-meta">
         <span v-if="entry?.path" class="lightcone-card-path">
-          <img :src="pathIconSrc(entry.path)" alt="" />{{ pathLabel(entry.path) }}
+          <img :src="pathIconSrc(entry.path)" alt="" loading="lazy" decoding="async" />{{
+            pathLabel(entry.path)
+          }}
         </span>
         <span
           v-if="entry?.rarity"
@@ -64,7 +72,7 @@ const owner = computed(() =>
           <span>叠影</span><b>{{ item.superimposition }}</b>
         </span>
         <span v-if="item.location" class="lightcone-card-owner">
-          <img v-if="owner?.image" :src="owner.image" alt="" />
+          <img v-if="owner?.image" :src="owner.image" alt="" loading="lazy" decoding="async" />
           <span class="lightcone-owner-name">{{
             equippedCharacterLabel(item.location, item.equippedCharacterId)
           }}</span>

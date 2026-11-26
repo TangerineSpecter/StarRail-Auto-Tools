@@ -10,6 +10,7 @@ import {
   type WeightRole,
 } from "./tables";
 import {
+  isMainStatAllowed,
   qualityTagFromScore,
   scoreRelic,
   type RelicScoreResult,
@@ -195,30 +196,43 @@ export function scanUpgradeRecommendations(
   options?: { limit?: number },
 ): UpgradeRecommendation[] {
   const rows: UpgradeRecommendation[] = [];
+  const preparedPlans = plans.map((plan) => {
+    const weights = resolvePlanWeights({
+      substatWeights: plan.substatWeights,
+      effectiveSubstats: plan.effectiveSubstats,
+    });
+    const scoreOpts = { allowedMainStats: plan.mainStats };
+    const equippedScoreBySlot = new Map<string, RelicScoreResult>();
+    for (const piece of plan.equippedRelics ?? []) {
+      if (!equippedScoreBySlot.has(piece.slot)) {
+        equippedScoreBySlot.set(piece.slot, scoreRelic(piece, weights, scoreOpts));
+      }
+    }
+    return {
+      plan,
+      weights,
+      scoreOpts,
+      cavernSets: planTargetSetIdsForSlot(plan, "Head"),
+      planarSets: planTargetSetIdsForSlot(plan, "PlanarSphere"),
+      equippedScoreBySlot,
+    };
+  });
 
   for (const relic of candidates) {
+    const isPlanar = relic.slot === "PlanarSphere" || relic.slot === "LinkRope";
     let best: UpgradeRecommendation | null = null;
 
-    for (const plan of plans) {
-      const weights = resolvePlanWeights({
-        substatWeights: plan.substatWeights,
-        effectiveSubstats: plan.effectiveSubstats,
-      });
-      const scoreOpts = { allowedMainStats: plan.mainStats };
-      const candidateScore = scoreRelic(relic, weights, scoreOpts);
-
-      // Require an explicit pass on main-stat target (fixed Head/Hands still pass).
-      if (candidateScore.mainStatCorrect !== true) continue;
-
-      const targetSets = planTargetSetIdsForSlot(plan, relic.slot);
-      if (targetSets && typeof relic.setId === "number" && !targetSets.includes(relic.setId)) {
-        continue;
+    for (const prepared of preparedPlans) {
+      const { plan, weights, scoreOpts } = prepared;
+      // Fast O(1) checks before scoring the relic.
+      const targetSets = isPlanar ? prepared.planarSets : prepared.cavernSets;
+      if (targetSets) {
+        if (typeof relic.setId !== "number" || !targetSets.includes(relic.setId)) continue;
       }
-      // If plan targets sets but candidate has no setId, cannot verify match.
-      if (targetSets && typeof relic.setId !== "number") continue;
+      if (isMainStatAllowed(relic.slot, relic.mainStat, plan.mainStats) !== true) continue;
 
-      const equipped = (plan.equippedRelics ?? []).find((piece) => piece.slot === relic.slot);
-      const equippedScore = equipped ? scoreRelic(equipped, weights, scoreOpts) : null;
+      const candidateScore = scoreRelic(relic, weights, scoreOpts);
+      const equippedScore = prepared.equippedScoreBySlot.get(relic.slot) ?? null;
       const base = equippedScore?.weightedRolls ?? 0;
       const delta = candidateScore.weightedRolls - base;
       if (delta <= 1e-6) continue;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onActivated, onDeactivated, onMounted, onUnmounted } from "vue";
 
 const danmakuTexts = [
   "愿此行，终抵群星",
@@ -85,13 +85,43 @@ interface Danmaku {
 
 const activeDanmakus = ref<Danmaku[]>([]);
 let nextId = 0;
-let timer: number | null = null;
+let timer: ReturnType<typeof setInterval> | null = null;
+const pendingTimeouts = new Set<ReturnType<typeof setTimeout>>();
+let active = false;
 
 const trackCount = 6;
 const trackHeight = 100 / trackCount;
 const trackLastFired = new Array(trackCount).fill(0);
 
+function scheduleTimeout(fn: () => void, ms: number) {
+  const handle = window.setTimeout(() => {
+    pendingTimeouts.delete(handle);
+    fn();
+  }, ms);
+  pendingTimeouts.add(handle);
+}
+
+function clearPendingTimers() {
+  if (timer !== null) {
+    clearInterval(timer);
+    timer = null;
+  }
+  for (const handle of pendingTimeouts) {
+    clearTimeout(handle);
+  }
+  pendingTimeouts.clear();
+}
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
 const spawnDanmaku = () => {
+  if (!active || document.hidden || prefersReducedMotion()) return;
   const activeTexts = activeDanmakus.value.map((d) => d.text);
   const availableTexts = danmakuTexts.filter((t) => !activeTexts.includes(t));
 
@@ -101,7 +131,7 @@ const spawnDanmaku = () => {
   const style = danmakuStyles[Math.floor(Math.random() * danmakuStyles.length)];
   const now = Date.now();
 
-  let availableTracks = [];
+  const availableTracks = [];
   // 避开最顶部和最底部，保持视觉居中
   for (let i = 1; i < trackCount - 1; i++) {
     if (now - trackLastFired[i] > 2500) {
@@ -129,7 +159,7 @@ const spawnDanmaku = () => {
   activeDanmakus.value.push(danmaku);
 
   // 动画结束后移除
-  setTimeout(
+  scheduleTimeout(
     () => {
       activeDanmakus.value = activeDanmakus.value.filter((d) => d.id !== danmaku.id);
     },
@@ -137,16 +167,47 @@ const spawnDanmaku = () => {
   );
 };
 
-onMounted(() => {
-  // 初始发射
-  setTimeout(spawnDanmaku, 500);
-  setTimeout(spawnDanmaku, 1500);
+function startDanmaku() {
+  if (active) return;
+  active = true;
+  if (prefersReducedMotion()) return;
+  scheduleTimeout(spawnDanmaku, 500);
+  scheduleTimeout(spawnDanmaku, 1500);
+  timer = window.setInterval(spawnDanmaku, 1200);
+}
 
-  timer = window.setInterval(spawnDanmaku, 1200) as unknown as number;
+function stopDanmaku() {
+  active = false;
+  clearPendingTimers();
+  activeDanmakus.value = [];
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    clearPendingTimers();
+    activeDanmakus.value = [];
+  } else if (active) {
+    active = false;
+    startDanmaku();
+  }
+}
+
+onMounted(() => {
+  startDanmaku();
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+});
+
+onActivated(() => {
+  startDanmaku();
+});
+
+onDeactivated(() => {
+  stopDanmaku();
 });
 
 onUnmounted(() => {
-  if (timer) clearInterval(timer);
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
+  stopDanmaku();
 });
 </script>
 

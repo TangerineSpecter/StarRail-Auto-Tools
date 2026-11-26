@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { APP_VERSION, PROJECT_RELEASES_URL } from "@/shared/app-info";
 import { describeDownloadProgress, type AppUpdaterContext } from "@/shared/contracts/updater";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
 import { openExternalUrl } from "@/shared/utils/open-external-url";
 
 const props = defineProps<{
@@ -92,7 +93,8 @@ function handleManualDownload() {
           :disabled="isInstalling || isChecking"
           @click="handleInstallUpdate"
         >
-          {{ primaryInstallLabel }}
+          <InlineSpinner v-if="isInstalling" size="xs" />
+          <span>{{ primaryInstallLabel }}</span>
         </button>
         <button
           v-if="updater"
@@ -101,7 +103,8 @@ function handleManualDownload() {
           :disabled="isChecking || isInstalling"
           @click="handleCheckUpdate"
         >
-          {{ isChecking ? "检查中…" : availableUpdate ? "重新检查" : "检查更新" }}
+          <InlineSpinner v-if="isChecking" size="xs" />
+          <span>{{ isChecking ? "检查中…" : availableUpdate ? "重新检查" : "检查更新" }}</span>
         </button>
         <button
           type="button"
@@ -213,6 +216,10 @@ function handleManualDownload() {
 }
 .update-primary-btn,
 .update-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 35px;
   padding: 0 14px;
   font: 700 11px/1 var(--font-ui);

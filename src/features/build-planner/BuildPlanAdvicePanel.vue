@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { CharacterBuildAdvice } from "@/types";
 import type { AdviceChoice, AdviceCompareRow } from "./plan-advice";
 
@@ -55,7 +57,8 @@ function groupedRows() {
         :disabled="disabled || loading"
         @click="emit('query')"
       >
-        {{ loading ? "正在检索…" : advice ? "重新查询" : "查询当前版本配装" }}
+        <InlineSpinner v-if="loading" size="xs" />
+        <span>{{ loading ? "正在检索…" : advice ? "重新查询" : "查询当前版本配装" }}</span>
       </button>
       <button
         type="button"
@@ -67,9 +70,13 @@ function groupedRows() {
       </button>
     </div>
     <div class="build-advice-body">
-      <p v-if="loading" class="score-hint">
-        检索攻略并生成符合表单约束的套装、主词条、目标和权重。
-      </p>
+      <LoadingState
+        v-if="loading"
+        variant="page"
+        compact
+        label="正在检索当前版本配装…"
+        hint="检索攻略并生成符合表单约束的套装、主词条、目标和权重。"
+      />
       <p v-else-if="error" class="advisor-error">{{ error }}</p>
       <p v-else-if="!advice" class="score-hint">
         查询后会对照查询时的表单和 AI 推荐。点「使用推荐」立即写入该项。
@@ -153,6 +160,10 @@ function groupedRows() {
   margin: 12px 0 8px;
 }
 .build-advice-pane button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 32px;
   padding: 0 12px;
   border: 1px solid #173d7a;
@@ -189,7 +200,6 @@ function groupedRows() {
 .build-advice-body {
   min-height: 0;
   overflow: auto;
-  scrollbar-width: thin;
 }
 .advice-group {
   margin-top: 12px;

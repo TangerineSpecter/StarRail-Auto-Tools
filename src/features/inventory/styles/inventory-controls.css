@@ -667,6 +667,7 @@
 }
 
 .table-shell {
+  position: relative;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -674,6 +675,17 @@
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
   border-radius: calc(var(--control-radius) + 1px);
+}
+.table-shell.is-refreshing > table,
+.table-shell.is-refreshing > .character-card-grid {
+  opacity: 0.68;
+  transition: opacity 150ms ease;
+}
+.inventory-refresh-bar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  border-radius: 0;
 }
 .table-shell::-webkit-scrollbar {
   width: 0;

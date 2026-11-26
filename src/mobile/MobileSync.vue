@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import Drawer from "primevue/drawer";
 import { useMobileData } from "./useMobileData";
 import { inventoryApi } from "@/shared/api/inventory";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { formatTime } from "@/shared/utils/display";
 import type { InventorySummary, SyncSettings } from "@/types";
 
@@ -210,7 +211,8 @@ async function sync() {
             </svg>
             <span class="metric-label">当前本地数据</span>
           </div>
-          <strong class="metric-val local-stat">{{ localDataSummaryText }}</strong>
+          <strong v-if="summary" class="metric-val local-stat">{{ localDataSummaryText }}</strong>
+          <LoadingState v-else variant="inline" label="读取本地数据中…" compact />
         </div>
       </div>
 
@@ -279,7 +281,18 @@ async function sync() {
     </div>
 
     <!-- 底部连接信息面板 (iOS Inset Grouped 表单) -->
-    <div v-if="settings" class="settings-panel">
+    <div v-if="!settings && isBusy" class="settings-panel">
+      <div class="panel-top-bar">
+        <div class="panel-heading">
+          <span class="panel-eyebrow">CONFIGURATION</span>
+          <h3>连接信息</h3>
+        </div>
+      </div>
+      <div style="padding: 12px 16px 18px">
+        <LoadingState variant="form" label="正在读取连接配置…" :rows="4" compact />
+      </div>
+    </div>
+    <div v-else-if="settings" class="settings-panel">
       <div class="panel-top-bar">
         <div class="panel-heading">
           <span class="panel-eyebrow">CONFIGURATION</span>
@@ -695,22 +708,18 @@ async function sync() {
 
 .status-dot.loading {
   background: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-  animation: pulse-ring 1.5s infinite;
+  animation: pulse-ring 1.3s ease-in-out infinite;
 }
 
 @keyframes pulse-ring {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
-  }
+  0%,
   100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    transform: scale(0.88);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
   }
 }
 

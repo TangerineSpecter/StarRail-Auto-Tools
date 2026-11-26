@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
 import {
   estimateTbp,
   qualityTagFromScore,
@@ -133,7 +134,8 @@ async function computeTbp() {
       <div class="score-subhead">
         <h4>预计开拓力（升级成本）</h4>
         <button type="button" class="score-action" :disabled="tbpBusy" @click="computeTbp">
-          {{ tbpBusy ? "计算中…" : tbpEnabled ? "重新计算" : "计算刷本成本" }}
+          <InlineSpinner v-if="tbpBusy" size="xs" />
+          <span>{{ tbpBusy ? "计算中…" : tbpEnabled ? "重新计算" : "计算刷本成本" }}</span>
         </button>
       </div>
       <p v-if="!tbpEnabled" class="score-hint">

@@ -172,22 +172,33 @@ export function weightedRollsOfRelic(
  * applying both double-counts CR vs CD display magnitudes.
  */
 export function idealPotentialUnits(mainStat: string, weights: Record<string, number>): number {
-  const candidates = SUBSTAT_KEYS.filter((key) => key !== mainStat)
-    .map((key) => ({
-      key,
-      unit: effectiveWeight(key, weights),
-    }))
-    .filter((item) => item.unit > 0)
-    .sort((a, b) => b.unit - a.unit);
-
-  if (candidates.length === 0) return 0;
-
-  const openers = candidates.slice(0, 4);
-  let total = openers.reduce((sum, item) => sum + item.unit, 0);
-  const bestUnit = openers[0]?.unit ?? 0;
-  // 5 upgrade rolls at high quality into the best weighted line among openers.
-  total += 5 * bestUnit;
-  return total;
+  let w0 = 0;
+  let w1 = 0;
+  let w2 = 0;
+  let w3 = 0;
+  for (const key of SUBSTAT_KEYS) {
+    if (key === mainStat) continue;
+    const unit = effectiveWeight(key, weights);
+    if (unit <= w3) continue;
+    if (unit >= w0) {
+      w3 = w2;
+      w2 = w1;
+      w1 = w0;
+      w0 = unit;
+    } else if (unit >= w1) {
+      w3 = w2;
+      w2 = w1;
+      w1 = unit;
+    } else if (unit >= w2) {
+      w3 = w2;
+      w2 = unit;
+    } else {
+      w3 = unit;
+    }
+  }
+  if (w0 <= 0) return 0;
+  // 4 top openers + 5 upgrade rolls at high quality into the best weighted line among openers.
+  return w0 + w1 + w2 + w3 + 5 * w0;
 }
 
 export function currentPotentialUnits(
@@ -207,14 +218,7 @@ export function currentPotentialUnits(
 
 /** Maximum weighted rolls for perfection: 4 openers + 5 upgrades, all high (1.0), best weights. */
 export function maxWeightedRolls(mainStat: string, weights: Record<string, number>): number {
-  const candidates = SUBSTAT_KEYS.filter((key) => key !== mainStat)
-    .map((key) => ({ key, w: effectiveWeight(key, weights) }))
-    .filter((item) => item.w > 0)
-    .sort((a, b) => b.w - a.w);
-  if (candidates.length === 0) return 0;
-  const openers = candidates.slice(0, 4);
-  const best = openers[0]?.w ?? 0;
-  return openers.reduce((sum, item) => sum + item.w, 0) + 5 * best;
+  return idealPotentialUnits(mainStat, weights);
 }
 
 export function isMainStatAllowed(
@@ -238,12 +242,12 @@ export function scoreRelic(
 ): RelicScoreResult {
   const { total, breakdown } = weightedRollsOfRelic(relic, weights);
   const ideal = idealPotentialUnits(relic.mainStat, weights);
-  const current = currentPotentialUnits(relic, weights);
+  const current = total;
   const mainStatCorrect = isMainStatAllowed(relic.slot, relic.mainStat, options?.allowedMainStats);
   // Wrong selectable main stats do not receive a letter grade (Stat Score guide).
   const selectableWrong = mainStatCorrect === false && !isFixedMainStatSlot(relic.slot);
   const potentialPct = ideal > 0 ? (current / ideal) * 100 : 0;
-  const maxRolls = maxWeightedRolls(relic.mainStat, weights);
+  const maxRolls = ideal;
   const perfectionPct = maxRolls > 0 ? Math.min(100, (total / maxRolls) * 100) : 0;
 
   return {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { OcrImageResult } from "@/types";
 
 defineProps<{ result: OcrImageResult | null; busy: boolean }>();
@@ -15,7 +16,15 @@ const emit = defineEmits<{ capture: [] }>();
       </div>
       <span class="local-badge">本地识别</span>
     </div>
-    <div v-if="result" class="ocr-output">
+    <div v-if="busy" class="empty-output">
+      <LoadingState
+        variant="page"
+        compact
+        label="正在截图并识别画面…"
+        hint="请框选需要识别的区域"
+      />
+    </div>
+    <div v-else-if="result" class="ocr-output">
       <div class="output-meta">
         <span>{{ result.regions.length }} 个文本区域</span><span>{{ result.elapsedMs }} ms</span>
       </div>
@@ -38,8 +47,15 @@ const emit = defineEmits<{ capture: [] }>();
       <p>识别结果仅供核对</p>
       <small>点击下方按钮开始截图</small>
     </div>
-    <Button class="capture-action-btn" :disabled="busy" @click="emit('capture')">
-      <svg class="crop-icon" viewBox="0 0 24 24" width="1.2em" height="1.2em" aria-hidden="true">
+    <Button class="capture-action-btn" :loading="busy" :disabled="busy" @click="emit('capture')">
+      <svg
+        v-if="!busy"
+        class="crop-icon"
+        viewBox="0 0 24 24"
+        width="1.2em"
+        height="1.2em"
+        aria-hidden="true"
+      >
         <path
           d="M4 9V4h5v2H6v3H4Zm11-5h5v5h-2V6h-3V4ZM6 15v3h3v2H4v-5h2Zm12 0h2v5h-5v-2h3v-3Z"
           fill="currentColor"

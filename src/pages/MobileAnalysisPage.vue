@@ -5,11 +5,16 @@ import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { loadRelicMainStatScanner } from "./scanner-loaders";
 import { relicImage } from "@/shared/catalogue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import AsyncViewLoading from "@/shared/ui/AsyncViewLoading.vue";
 
 defineOptions({ name: "MobileAnalysisPage" });
 const runtime = useRuntimeContext();
 const detail = useInventoryDetail((message) => (runtime.error.value = message));
-const RelicMainStatScanner = defineAsyncComponent(loadRelicMainStatScanner);
+const RelicMainStatScanner = defineAsyncComponent({
+  loader: loadRelicMainStatScanner,
+  loadingComponent: AsyncViewLoading,
+  delay: 120,
+});
 onDeactivated(detail.close);
 </script>
 

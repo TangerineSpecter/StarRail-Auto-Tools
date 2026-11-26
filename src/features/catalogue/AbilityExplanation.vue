@@ -1,42 +1,98 @@
-<script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import type { CatalogueAbility } from "@/shared/contracts/catalogue-rules";
+<script lang="ts">
 import type { MechanismLibrary } from "@/shared/contracts/catalogue-mechanisms";
+
+type MechanismDefinition = MechanismLibrary["definitions"][number];
+
+let cachedIndex: Map<string, MechanismDefinition> | null = null;
+let loadIndexPromise: Promise<Map<string, MechanismDefinition>> | null = null;
+
+function mechanismKey(ownerId: string, sourceRef: string, sourceHash: string): string {
+  return `${ownerId}\0${sourceRef}\0${sourceHash}`;
+}
+
+function lookupCachedDefinition(
+  ownerId: string,
+  sourceRef: string,
+  sourceHash: string,
+): MechanismDefinition | undefined {
+  return cachedIndex?.get(mechanismKey(ownerId, sourceRef, sourceHash));
+}
+
+function loadMechanismIndex(): Promise<Map<string, MechanismDefinition>> {
+  if (cachedIndex) return Promise.resolve(cachedIndex);
+  if (!loadIndexPromise) {
+    loadIndexPromise = import("@/data/catalogue-mechanisms.json")
+      .then((result) => {
+        const lib = result.default as unknown as MechanismLibrary;
+        const map = new Map<string, MechanismDefinition>();
+        for (const def of lib.definitions) {
+          map.set(mechanismKey(def.ownerId, def.sourceRef, def.sourceHash), def);
+        }
+        cachedIndex = map;
+        return map;
+      })
+      .catch((cause) => {
+        loadIndexPromise = null;
+        throw cause;
+      });
+  }
+  return loadIndexPromise;
+}
+</script>
+
+<script setup lang="ts">
+import { computed, markRaw, ref, shallowRef, watch } from "vue";
+import type { CatalogueAbility } from "@/shared/contracts/catalogue-rules";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { resolveAbility } from "@/shared/utils/catalogue-rules";
 
 const props = defineProps<{ ability: CatalogueAbility; level: number | null }>();
-const library = ref<MechanismLibrary>();
+const loaded = ref(Boolean(cachedIndex));
+const definition = shallowRef<MechanismDefinition | undefined>(
+  lookupCachedDefinition(props.ability.ownerId, props.ability.id, props.ability.sourceHash),
+);
 const error = ref("");
 const open = ref(false);
 const resolved = computed(() => resolveAbility(props.ability, props.level ?? 1));
-const definition = computed(() =>
-  library.value?.definitions.find(
-    (d) =>
-      d.sourceRef === props.ability.id &&
-      d.sourceHash === props.ability.sourceHash &&
-      d.ownerId === props.ability.ownerId,
-  ),
-);
 const runnable = computed(() =>
   definition.value?.clauses.some(
     (c) => c.activation === "selectedAbility" && c.operations.some((o) => o.kind !== "unsupported"),
   ),
 );
+
+function syncDefinitionFromCache() {
+  if (!cachedIndex) {
+    definition.value = undefined;
+    return;
+  }
+  const found = cachedIndex.get(
+    mechanismKey(props.ability.ownerId, props.ability.id, props.ability.sourceHash),
+  );
+  definition.value = found ? markRaw(found) : undefined;
+}
+
 watch(open, async (value) => {
-  if (!value || library.value) return;
+  if (!value) return;
+  if (cachedIndex) {
+    loaded.value = true;
+    syncDefinitionFromCache();
+    return;
+  }
   error.value = "";
   try {
-    const result = await import("@/data/catalogue-mechanisms.json");
-    library.value = result.default as unknown as MechanismLibrary;
+    await loadMechanismIndex();
+    loaded.value = true;
+    syncDefinitionFromCache();
   } catch {
     error.value = "拆解数据加载失败，请关闭后重试。";
   }
 });
 watch(
-  () => props.ability.id,
+  () => [props.ability.ownerId, props.ability.id, props.ability.sourceHash] as const,
   () => {
     open.value = false;
     error.value = "";
+    if (cachedIndex) syncDefinitionFromCache();
   },
 );
 </script>
@@ -50,7 +106,7 @@ watch(
     <summary>查看参数与条款拆解</summary>
     <div v-if="open" class="catalogue-explanation-body">
       <p v-if="error" role="alert">{{ error }}</p>
-      <p v-else-if="!library">正在加载拆解记录…</p>
+      <LoadingState v-else-if="!loaded" variant="inline" label="正在加载拆解记录…" compact />
       <template v-else-if="definition">
         <p>{{ runnable ? "部分基础量可近似执行" : "已记录条款，操作尚未支持" }} · 非精确审核</p>
         <dl class="catalogue-explanation-parameters">

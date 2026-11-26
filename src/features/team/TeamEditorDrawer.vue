@@ -4,6 +4,7 @@ import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { CharacterBuildScore, CharacterListItem, Team, TeamInput } from "@/types";
 import { listAllOwnedCharacters } from "./list-owned-characters";
 import TeamCharacterPicker from "./TeamCharacterPicker.vue";
@@ -221,7 +222,13 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <section class="team-editor-slots">
           <div class="team-editor-slots-heading">
             <h3>角色槽位 ({{ draft.characterIds.filter((id) => id != null).length }}/4)</h3>
-            <small v-if="loadingCharacters" class="team-loading-hint">同步角色列表中…</small>
+            <LoadingState
+              v-if="loadingCharacters"
+              variant="inline"
+              label="同步角色列表中…"
+              compact
+              class="team-loading-hint"
+            />
           </div>
           <div class="team-editor-slot-grid">
             <div
@@ -308,8 +315,14 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <Button class="team-cancel-btn" type="button" text :disabled="busy" @click="emit('close')">
           取消
         </Button>
-        <Button class="team-save-btn" type="button" :disabled="busy" @click="submit">
-          保存配队
+        <Button
+          class="team-save-btn"
+          type="button"
+          :loading="busy"
+          :disabled="busy"
+          @click="submit"
+        >
+          {{ busy ? "保存中…" : "保存配队" }}
         </Button>
       </footer>
 

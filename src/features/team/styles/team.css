@@ -17,17 +17,6 @@
   background: linear-gradient(135deg, rgba(235, 241, 250, 0.95), rgba(246, 249, 255, 0.85));
 }
 
-.team-card-grid::-webkit-scrollbar {
-  width: 6px;
-}
-.team-card-grid::-webkit-scrollbar-thumb {
-  background: rgba(36, 86, 166, 0.2);
-  border-radius: 3px;
-}
-.team-card-grid::-webkit-scrollbar-thumb:hover {
-  background: rgba(36, 86, 166, 0.35);
-}
-
 .team-card {
   display: grid;
   gap: 14px;

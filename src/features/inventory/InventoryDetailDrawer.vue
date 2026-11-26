@@ -8,6 +8,7 @@ import CharacterDetail from "./CharacterDetail.vue";
 import LightConeDetail from "./LightConeDetail.vue";
 import RelicDetail from "./RelicDetail.vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { CharacterBuildPlan, InventoryDetail } from "@/types";
 import type { CharacterDetailData, LightConeDetailData, RelicDetailData } from "./detail-types";
 
@@ -20,6 +21,7 @@ const dragActive = ref(false);
 const closing = ref(false);
 const dragOffset = ref(0);
 const dragDuration = ref(0);
+let cachedPanelWidth = 0;
 let motionTimer: ReturnType<typeof setTimeout> | undefined;
 
 function clearMotionTimer() {
@@ -29,11 +31,15 @@ function clearMotionTimer() {
   }
 }
 
-function getPanelWidth() {
-  return Math.max(240, panel.value?.clientWidth ?? window.innerWidth);
+function getPanelWidth(forceMeasure = false) {
+  if (forceMeasure || cachedPanelWidth <= 0) {
+    cachedPanelWidth = Math.max(240, panel.value?.clientWidth ?? window.innerWidth);
+  }
+  return cachedPanelWidth;
 }
 
 function prefersReducedMotion() {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return true;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
@@ -47,13 +53,9 @@ const backdropStyle = computed(() => {
   const duration = dragDuration.value;
   return {
     backgroundColor: `rgba(23, 38, 67, ${(0.22 * factor).toFixed(3)})`,
-    backdropFilter: `blur(${(3 * factor).toFixed(2)}px)`,
-    WebkitBackdropFilter: `blur(${(3 * factor).toFixed(2)}px)`,
     pointerEvents: closing.value ? ("none" as const) : undefined,
     transition:
-      duration > 0
-        ? `background-color ${duration}ms cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter ${duration}ms cubic-bezier(0.16, 1, 0.3, 1), -webkit-backdrop-filter ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`
-        : "none",
+      duration > 0 ? `background-color ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)` : "none",
   };
 });
 
@@ -132,6 +134,7 @@ useHorizontalSwipe({
   allowScreenEdge: true,
   onDrag(distance) {
     if (props.inline || closing.value) return;
+    if (!dragActive.value) getPanelWidth(true);
     clearMotionTimer();
     dragActive.value = true;
     dragDuration.value = 0;
@@ -256,20 +259,24 @@ onUnmounted(() => {
         <div>
           <p class="eyebrow">
             {{
-              detail?.kind === "character"
-                ? "CHARACTER DATA"
-                : detail?.kind === "relic"
-                  ? "RELIC ANALYSIS"
-                  : "LIGHT CONE DATA"
+              loading && !detail
+                ? "LOADING DATA"
+                : detail?.kind === "character"
+                  ? "CHARACTER DATA"
+                  : detail?.kind === "relic"
+                    ? "RELIC ANALYSIS"
+                    : "LIGHT CONE DATA"
             }}
           </p>
           <h2>
             {{
-              detail?.kind === "character"
-                ? "角色档案详情"
-                : detail?.kind === "relic"
-                  ? "遗器档案详情"
-                  : "光锥档案详情"
+              loading && !detail
+                ? "档案详情"
+                : detail?.kind === "character"
+                  ? "角色档案详情"
+                  : detail?.kind === "relic"
+                    ? "遗器档案详情"
+                    : "光锥档案详情"
             }}
           </h2>
         </div>
@@ -283,7 +290,9 @@ onUnmounted(() => {
         </button>
       </header>
       <div class="detail-drawer-content">
-        <div v-if="loading" class="detail-loading">正在加载详情…</div>
+        <div v-if="loading" class="detail-loading">
+          <LoadingState variant="detail" label="正在加载详情…" :rows="4" />
+        </div>
         <RelicDetail
           v-else-if="detail?.kind === 'relic'"
           :detail="asRelic()"

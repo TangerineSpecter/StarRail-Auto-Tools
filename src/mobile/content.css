@@ -31,6 +31,9 @@ html.mobile-view body {
 .mobile-content :is(button, [role="button"], .p-select, select) {
   min-height: 44px;
 }
+html.mobile-view :is(a, button, [role="button"], [tabindex], label, summary) {
+  -webkit-tap-highlight-color: transparent;
+}
 .mobile-content :is(input, textarea, select),
 html.mobile-view :is(.p-drawer, .detail-drawer) :is(input, textarea, select) {
   font-size: 16px;
@@ -98,6 +101,10 @@ html.mobile-view :is(.p-drawer, .detail-drawer) :is(input, textarea, select) {
   border-radius: 10px;
 }
 .mobile-tool-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   flex-shrink: 0;
   padding: 8px 12px;
   border: 1px solid #d7dee6;
@@ -304,10 +311,13 @@ html.mobile-view .mobile-archive.is-split > .mobile-inventory-master {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #b5c3d5 transparent;
+  -webkit-overflow-scrolling: touch;
 }
 .mobile-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
   min-height: 44px;
   margin: 12px 0;
@@ -1058,7 +1068,7 @@ html.mobile-view .detail-drawer.mobile-detail-sheet > header {
     max(16px, calc(env(safe-area-inset-left) - var(--detail-sheet-outer)));
   background: #ffffff;
   border-bottom: 1px solid rgba(28, 49, 80, 0.08);
-  touch-action: pan-x;
+  touch-action: none;
 }
 html.mobile-view .detail-drawer-content {
   flex: 1 1 auto;

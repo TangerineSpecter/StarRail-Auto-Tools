@@ -20,6 +20,7 @@ import { createInventoryFilterForm } from "@/features/inventory/filter";
 import { mobileInventoryCategoryMeta } from "@/features/inventory/mobile-inventory-categories";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { extractGameVersion } from "@/shared/utils/build-plan-meta";
 import type { InventoryKind, RelicListItem } from "@/types";
 
@@ -272,6 +273,7 @@ onDeactivated(() => {
             : undefined
         "
       >
+        <LoadingState v-if="categoryTransition.pending.value" variant="bar" label="正在切换分类…" />
         <div
           ref="categoryBody"
           class="mobile-inventory-category-content"

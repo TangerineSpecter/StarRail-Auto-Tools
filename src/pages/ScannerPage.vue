@@ -5,6 +5,8 @@ import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { loadRelicCleanupPanel, loadRelicMainStatScanner } from "@/pages/scanner-loaders";
 import { relicImage } from "@/shared/catalogue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import AsyncViewLoading from "@/shared/ui/AsyncViewLoading.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 
 const { error } = useRuntimeContext();
 defineOptions({ name: "ScannerPage" });
@@ -13,8 +15,16 @@ const inventoryDetail = useInventoryDetail((message) => (error.value = message))
 const imageFor = (item: { setId: number; slot: string }) => relicImage(item.setId, item.slot);
 const mode = ref<"mainStat" | "cleanup">("cleanup");
 const panelReady = ref(false);
-const RelicCleanupPanel = defineAsyncComponent(loadRelicCleanupPanel);
-const RelicMainStatScanner = defineAsyncComponent(loadRelicMainStatScanner);
+const RelicCleanupPanel = defineAsyncComponent({
+  loader: loadRelicCleanupPanel,
+  loadingComponent: AsyncViewLoading,
+  delay: 120,
+});
+const RelicMainStatScanner = defineAsyncComponent({
+  loader: loadRelicMainStatScanner,
+  loadingComponent: AsyncViewLoading,
+  delay: 120,
+});
 let mountFrame: number | undefined;
 
 function selectMode(nextMode: "mainStat" | "cleanup") {
@@ -68,9 +78,10 @@ onBeforeUnmount(() => {
       </div>
     </nav>
     <div class="scanner-page-content">
-      <RelicCleanupPanel v-if="panelReady && mode === 'cleanup'" />
+      <LoadingState v-if="!panelReady" variant="page" label="正在准备遗器工作台…" />
+      <RelicCleanupPanel v-else-if="mode === 'cleanup'" />
       <RelicMainStatScanner
-        v-else-if="panelReady"
+        v-else
         :image-for="imageFor"
         @open-relic="inventoryDetail.open('relic', $event.itemId)"
       />

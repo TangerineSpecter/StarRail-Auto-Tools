@@ -32,15 +32,32 @@ export function useFrameRate() {
     frameHandle = window.requestAnimationFrame(sample);
   }
 
-  onMounted(() => {
-    if (typeof window.requestAnimationFrame !== "function") return;
+  function startLoop() {
+    if (frameHandle !== undefined || typeof window.requestAnimationFrame !== "function") return;
+    frameCount = 0;
+    sampleStartedAt = undefined;
     frameHandle = window.requestAnimationFrame(sample);
-  });
+  }
 
-  onBeforeUnmount(() => {
+  function stopLoop() {
     if (frameHandle === undefined || typeof window.cancelAnimationFrame !== "function") return;
     window.cancelAnimationFrame(frameHandle);
     frameHandle = undefined;
+  }
+
+  function onVisibilityChange() {
+    if (document.hidden) stopLoop();
+    else startLoop();
+  }
+
+  onMounted(() => {
+    if (!document.hidden) startLoop();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    stopLoop();
   });
 
   return { frameRate };

@@ -3,6 +3,7 @@ use std::{
     fs::File,
     io::BufWriter,
     path::{Path, PathBuf},
+    sync::{Arc, Mutex},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -46,18 +47,29 @@ struct SnapshotApplyOptions<'a> {
 
 impl InventoryStore {
     pub fn initialize(path: PathBuf) -> Result<Self, AppError> {
-        let store = Self { path };
+        let store = Self {
+            path,
+            pool: Arc::new(Mutex::new(Vec::new())),
+        };
         let connection = store.connect()?;
+        connection.pragma_update(None, "journal_mode", "WAL")?;
         store.migrate(&connection)?;
         Ok(store)
     }
 
-    fn connect(&self) -> Result<Connection, AppError> {
+    pub(crate) fn connect(&self) -> Result<PooledConnection, AppError> {
+        if let Ok(mut guard) = self.pool.lock() {
+            if let Some(connection) = guard.pop() {
+                return Ok(PooledConnection::new(connection, Arc::clone(&self.pool)));
+            }
+        }
         let connection = Connection::open(&self.path)?;
         connection.pragma_update(None, "foreign_keys", "ON")?;
-        connection.pragma_update(None, "journal_mode", "WAL")?;
+        connection.pragma_update(None, "synchronous", "NORMAL")?;
+        connection.pragma_update(None, "temp_store", "MEMORY")?;
+        connection.pragma_update(None, "cache_size", -32_000)?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
-        Ok(connection)
+        Ok(PooledConnection::new(connection, Arc::clone(&self.pool)))
     }
 
     fn migrate(&self, connection: &Connection) -> Result<(), AppError> {
@@ -157,6 +169,9 @@ impl InventoryStore {
                 main_stats_json TEXT NOT NULL,
                 effective_substats_json TEXT NOT NULL DEFAULT '[]',
                 note TEXT NOT NULL DEFAULT '',
+                substat_weights_json TEXT NOT NULL DEFAULT '{}',
+                min_potential_pct REAL NOT NULL DEFAULT 40,
+                spd_target REAL NOT NULL DEFAULT 0,
                 updated_at INTEGER NOT NULL,
                 display_order INTEGER NOT NULL DEFAULT 0,
                 pinned INTEGER NOT NULL DEFAULT 0,
@@ -236,90 +251,95 @@ impl InventoryStore {
 
             CREATE INDEX IF NOT EXISTS idx_relics_set_slot ON relics(set_id, slot);
             CREATE INDEX IF NOT EXISTS idx_relics_rarity_level ON relics(rarity, level);
+            CREATE INDEX IF NOT EXISTS idx_relics_rarity_level_id ON relics(rarity DESC, level DESC, item_id DESC);
             CREATE INDEX IF NOT EXISTS idx_relics_main_stat ON relics(main_stat);
             CREATE INDEX IF NOT EXISTS idx_relics_location ON relics(location);
+            CREATE INDEX IF NOT EXISTS idx_relics_equipped_char ON relics(equipped_character_id);
             CREATE INDEX IF NOT EXISTS idx_relic_substats_key_value ON relic_substats(stat_key, value);
             CREATE INDEX IF NOT EXISTS idx_light_cones_level ON light_cones(level, ascension);
             CREATE INDEX IF NOT EXISTS idx_light_cones_location ON light_cones(location);
+            CREATE INDEX IF NOT EXISTS idx_light_cones_equipped_char ON light_cones(equipped_character_id);
+            CREATE INDEX IF NOT EXISTS idx_light_cones_template_id ON light_cones(template_id);
             CREATE INDEX IF NOT EXISTS idx_characters_path_level ON characters(path, level);
             CREATE INDEX IF NOT EXISTS idx_teams_updated_at ON teams(updated_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_cleanup_queue_uid_created ON cleanup_queue(uid, created_at, item_id);
             CREATE INDEX IF NOT EXISTS idx_cleanup_runs_created_at ON cleanup_runs(created_at DESC);
             CREATE INDEX IF NOT EXISTS idx_cleanup_run_items_status ON cleanup_run_items(run_id, preview_status, execution_status);
             "#,
-        )?;
-        // Older databases predate the derived main-stat value. SQLite does not support
-        // conditional ADD COLUMN in a batch, so ignore the duplicate-column case.
-        let _ = connection.execute(
-            "ALTER TABLE relics ADD COLUMN main_stat_value REAL NOT NULL DEFAULT 0",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_targets ADD COLUMN minimum REAL NOT NULL DEFAULT 0",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN effective_substats_json TEXT NOT NULL DEFAULT '[]'",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN note TEXT NOT NULL DEFAULT ''",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN substat_weights_json TEXT NOT NULL DEFAULT '{}'",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN min_potential_pct REAL NOT NULL DEFAULT 40",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN spd_target REAL NOT NULL DEFAULT 0",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE character_build_plans ADD COLUMN game_version TEXT NOT NULL DEFAULT ''",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE relics ADD COLUMN equipped_character_id INTEGER",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE light_cones ADD COLUMN equipped_character_id INTEGER",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE characters ADD COLUMN rarity INTEGER NOT NULL DEFAULT 5",
-            [],
-        );
-        let _ = connection.execute(
-            "ALTER TABLE cleanup_queue ADD COLUMN uid INTEGER NOT NULL DEFAULT 0",
-            [],
-        );
-        connection.execute(
-            "UPDATE character_build_targets SET minimum = target - max_gap",
-            [],
         )?;
         let schema_version =
             connection.query_row("SELECT version FROM schema_meta LIMIT 1", [], |row| {
                 row.get::<_, i64>(0)
             })?;
         if schema_version < SCHEMA_VERSION {
+            // Older databases predate derived columns. SQLite does not support conditional
+            // ADD COLUMN in a batch, so ignore the duplicate-column case during upgrades.
+            let _ = connection.execute(
+                "ALTER TABLE relics ADD COLUMN main_stat_value REAL NOT NULL DEFAULT 0",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_targets ADD COLUMN minimum REAL NOT NULL DEFAULT 0",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN effective_substats_json TEXT NOT NULL DEFAULT '[]'",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN display_order INTEGER NOT NULL DEFAULT 0",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN note TEXT NOT NULL DEFAULT ''",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN substat_weights_json TEXT NOT NULL DEFAULT '{}'",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN min_potential_pct REAL NOT NULL DEFAULT 40",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN spd_target REAL NOT NULL DEFAULT 0",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE character_build_plans ADD COLUMN game_version TEXT NOT NULL DEFAULT ''",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE relics ADD COLUMN equipped_character_id INTEGER",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE light_cones ADD COLUMN equipped_character_id INTEGER",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE characters ADD COLUMN rarity INTEGER NOT NULL DEFAULT 5",
+                [],
+            );
+            let _ = connection.execute(
+                "ALTER TABLE cleanup_queue ADD COLUMN uid INTEGER NOT NULL DEFAULT 0",
+                [],
+            );
+            connection.execute(
+                "UPDATE character_build_targets SET minimum = target - max_gap",
+                [],
+            )?;
             normalize_existing_records(connection)?;
             backfill_main_stat_values(connection)?;
             backfill_character_rarities(connection)?;
             migrate_percentage_build_targets(connection)?;
+            connection.execute("UPDATE schema_meta SET version = ?1", [SCHEMA_VERSION])?;
         }
-        connection.execute("UPDATE schema_meta SET version = ?1", [SCHEMA_VERSION])?;
         Ok(())
     }
 
@@ -450,7 +470,7 @@ impl InventoryStore {
 
     pub fn build_dashboard(&self) -> Result<Vec<BuildDashboardEntry>, AppError> {
         let connection = self.connect()?;
-        let character_ids = connection
+        let ordered = connection
             .prepare(
                 "SELECT character_id, display_order, pinned
                  FROM character_build_plans
@@ -464,9 +484,23 @@ impl InventoryStore {
                 ))
             })?
             .collect::<Result<Vec<_>, _>>()?;
-        let mut entries = Vec::new();
-        for (character_id, display_order, pinned) in character_ids {
-            let Some(plan) = Self::build_plan_from_connection(&connection, character_id)? else {
+        if ordered.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut plans = load_all_build_plans(&connection)?;
+        let eligible_ids: Vec<u32> = ordered
+            .iter()
+            .filter_map(|(character_id, _, _)| {
+                plans
+                    .get(character_id)
+                    .filter(|plan| !plan.targets.is_empty())
+                    .map(|_| *character_id)
+            })
+            .collect();
+        let mut details = load_character_details_batch(&connection, &eligible_ids)?;
+        let mut entries = Vec::with_capacity(eligible_ids.len());
+        for (character_id, display_order, pinned) in ordered {
+            let Some(plan) = plans.remove(&character_id) else {
                 continue;
             };
             // A weight-only record is used by Stat Score before the user configures a graduation
@@ -474,7 +508,7 @@ impl InventoryStore {
             if plan.targets.is_empty() {
                 continue;
             }
-            let Some(character) = character_detail(&connection, character_id)? else {
+            let Some(character) = details.remove(&character_id) else {
                 continue;
             };
             entries.push(BuildDashboardEntry {
@@ -500,12 +534,17 @@ impl InventoryStore {
             )?
             .query_map([], |row| row.get::<_, u32>(0))?
             .collect::<Result<Vec<_>, _>>()?;
+        if character_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut plans = load_all_build_plans(&connection)?;
+        let mut details = load_character_details_batch(&connection, &character_ids)?;
         let mut profiles = Vec::with_capacity(character_ids.len());
         for character_id in character_ids {
-            let Some(plan) = Self::build_plan_from_connection(&connection, character_id)? else {
+            let Some(plan) = plans.remove(&character_id) else {
                 continue;
             };
-            let Some(character) = character_detail(&connection, character_id)? else {
+            let Some(character) = details.remove(&character_id) else {
                 continue;
             };
             profiles.push(RelicSetFarmingProfile { plan, character });
@@ -580,6 +619,7 @@ impl InventoryStore {
                 counts
             },
         );
+        let mut plans = load_all_build_plans(&connection)?;
         let rows = characters
             .into_iter()
             .map(
@@ -592,17 +632,17 @@ impl InventoryStore {
                     } else {
                         character_name
                     };
-                    Ok(ExportRow {
+                    ExportRow {
                         character_id,
                         character_name: display_name,
                         character_rarity,
                         character_path: catalogue_path.to_owned(),
                         character_element,
-                        plan: self.build_plan(character_id)?,
-                    })
+                        plan: plans.remove(&character_id),
+                    }
                 },
             )
-            .collect::<Result<Vec<_>, AppError>>()?;
+            .collect::<Vec<_>>();
         build_plan_excel::export(path, &rows)
     }
 
@@ -873,11 +913,10 @@ impl InventoryStore {
              LIMIT {limit} OFFSET {offset}"
         );
         let mut statement = connection.prepare(&list_sql)?;
-        let rows = statement.query_map(params_from_iter(values.iter()), team_row_from_sqlite)?;
-        let mut items = Vec::new();
-        for row in rows {
-            items.push(hydrate_team(&connection, row?)?);
-        }
+        let raw_teams = statement
+            .query_map(params_from_iter(values.iter()), team_row_from_sqlite)?
+            .collect::<Result<Vec<_>, _>>()?;
+        let items = hydrate_teams_batch(&connection, raw_teams)?;
         Ok(PagedResult {
             items,
             total,
@@ -1163,8 +1202,8 @@ impl InventoryStore {
         for relic in &import.relics {
             upsert_relic(&transaction, relic, now, run_id)?;
         }
-        for light_cone in &import.light_cones {
-            transaction.execute(
+        {
+            let mut light_cone_stmt = transaction.prepare_cached(
                 r#"
                 INSERT INTO light_cones(
                     item_id, template_id, name, level, ascension, superimposition,
@@ -1183,7 +1222,9 @@ impl InventoryStore {
                     updated_at = excluded.updated_at,
                     last_seen_run = excluded.last_seen_run
                 "#,
-                params![
+            )?;
+            for light_cone in &import.light_cones {
+                light_cone_stmt.execute(params![
                     light_cone._uid,
                     light_cone.id,
                     light_cone.name,
@@ -1195,11 +1236,9 @@ impl InventoryStore {
                     light_cone.lock,
                     now,
                     run_id
-                ],
-            )?;
-        }
-        for character in &import.characters {
-            transaction.execute(
+                ])?;
+            }
+            let mut character_stmt = transaction.prepare_cached(
                 r#"
                 INSERT INTO characters(
                     character_id, name, path, level, ascension, eidolon, rarity,
@@ -1221,7 +1260,9 @@ impl InventoryStore {
                     updated_at = excluded.updated_at,
                     last_seen_run = excluded.last_seen_run
                 "#,
-                params![
+            )?;
+            for character in &import.characters {
+                character_stmt.execute(params![
                     character.id,
                     character.name,
                     character.path,
@@ -1242,8 +1283,8 @@ impl InventoryStore {
                     character.ability_version,
                     now,
                     run_id
-                ],
-            )?;
+                ])?;
+            }
         }
 
         transaction.execute(
@@ -1380,24 +1421,44 @@ impl InventoryStore {
             .query_map(params_from_iter(paged_values.iter()), map_relic)?
             .collect::<Result<Vec<_>, _>>()?;
 
-        let mut substat_stmt = connection.prepare(
-            "SELECT kind, position, stat_key, value, count, step
-             FROM relic_substats WHERE relic_id = ?1 AND kind = 'normal' ORDER BY position",
-        )?;
-
-        for item in &mut items {
-            item.substats = substat_stmt
-                .query_map([item.item_id], |row| {
-                    Ok(RelicSubstatItem {
-                        kind: row.get(0)?,
-                        position: row.get(1)?,
-                        key: row.get(2)?,
-                        value: row.get(3)?,
-                        count: row.get(4)?,
-                        step: row.get(5)?,
-                    })
-                })?
-                .collect::<Result<Vec<_>, _>>()?;
+        if !items.is_empty() {
+            let placeholders = std::iter::repeat_n("?", items.len())
+                .collect::<Vec<_>>()
+                .join(", ");
+            let id_values: Vec<SqlValue> = items
+                .iter()
+                .map(|item| SqlValue::Integer(item.item_id as i64))
+                .collect();
+            let mut substat_stmt = connection.prepare(&format!(
+                "SELECT relic_id, kind, position, stat_key, value, count, step
+                 FROM relic_substats
+                 WHERE kind = 'normal' AND relic_id IN ({placeholders})
+                 ORDER BY relic_id, position"
+            ))?;
+            let mut by_relic = HashMap::<u32, Vec<RelicSubstatItem>>::with_capacity(items.len());
+            let substat_rows =
+                substat_stmt.query_map(params_from_iter(id_values.iter()), |row| {
+                    Ok((
+                        row.get::<_, u32>(0)?,
+                        RelicSubstatItem {
+                            kind: row.get(1)?,
+                            position: row.get(2)?,
+                            key: row.get(3)?,
+                            value: row.get(4)?,
+                            count: row.get(5)?,
+                            step: row.get(6)?,
+                        },
+                    ))
+                })?;
+            for row in substat_rows {
+                let (relic_id, substat) = row?;
+                by_relic.entry(relic_id).or_default().push(substat);
+            }
+            for item in &mut items {
+                if let Some(substats) = by_relic.remove(&item.item_id) {
+                    item.substats = substats;
+                }
+            }
         }
 
         Ok(PagedResult {
@@ -1536,7 +1597,6 @@ impl InventoryStore {
             values.extend(stats.iter().cloned().map(SqlValue::Text));
         }
         let where_sql = make_where(&clauses);
-        let total = query_count(&connection, "relics", &where_sql, &values)?;
 
         let sql = format!(
             "SELECT set_id, set_name, slot, main_stat, COUNT(*) AS cnt
@@ -1559,6 +1619,7 @@ impl InventoryStore {
         .collect();
 
         let mut groups: Vec<RelicMainStatSetGroup> = Vec::new();
+        let mut total: u64 = 0;
 
         let rows = statement.query_map(params_from_iter(values.iter()), |row| {
             Ok((
@@ -1572,6 +1633,7 @@ impl InventoryStore {
 
         for row in rows {
             let (set_id, set_name, slot, main_stat, count) = row?;
+            total += count;
             let set_group = match groups.iter_mut().find(|g| g.set_id == set_id) {
                 Some(g) => g,
                 None => {
@@ -2374,30 +2436,32 @@ fn upsert_relic(
     now: i64,
     run_id: i64,
 ) -> Result<(), AppError> {
-    transaction.execute(
-        r#"
-        INSERT INTO relics(
-            item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
-            location, equipped_character_id, locked, discard, source, updated_at, last_seen_run
-        ) VALUES (?1, ?2, ?3, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, 'network', ?13, ?14)
-        ON CONFLICT(item_id) DO UPDATE SET
-            set_id = excluded.set_id,
-            name = excluded.name,
-            set_name = excluded.set_name,
-            slot = excluded.slot,
-            rarity = excluded.rarity,
-            level = excluded.level,
-            main_stat = excluded.main_stat,
-            main_stat_value = excluded.main_stat_value,
-            location = excluded.location,
-            equipped_character_id = excluded.equipped_character_id,
-            locked = excluded.locked,
-            discard = excluded.discard,
-            source = excluded.source,
-            updated_at = excluded.updated_at,
-            last_seen_run = excluded.last_seen_run
-        "#,
-        params![
+    {
+        let mut upsert_stmt = transaction.prepare_cached(
+            r#"
+            INSERT INTO relics(
+                item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
+                location, equipped_character_id, locked, discard, source, updated_at, last_seen_run
+            ) VALUES (?1, ?2, ?3, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, 'network', ?13, ?14)
+            ON CONFLICT(item_id) DO UPDATE SET
+                set_id = excluded.set_id,
+                name = excluded.name,
+                set_name = excluded.set_name,
+                slot = excluded.slot,
+                rarity = excluded.rarity,
+                level = excluded.level,
+                main_stat = excluded.main_stat,
+                main_stat_value = excluded.main_stat_value,
+                location = excluded.location,
+                equipped_character_id = excluded.equipped_character_id,
+                locked = excluded.locked,
+                discard = excluded.discard,
+                source = excluded.source,
+                updated_at = excluded.updated_at,
+                last_seen_run = excluded.last_seen_run
+            "#,
+        )?;
+        upsert_stmt.execute(params![
             relic._uid,
             relic.set_id,
             relic.name,
@@ -2412,12 +2476,11 @@ fn upsert_relic(
             relic.discard,
             now,
             run_id
-        ],
-    )?;
-    transaction.execute(
-        "DELETE FROM relic_substats WHERE relic_id = ?1",
-        [relic._uid],
-    )?;
+        ])?;
+        let mut delete_stmt =
+            transaction.prepare_cached("DELETE FROM relic_substats WHERE relic_id = ?1")?;
+        delete_stmt.execute([relic._uid])?;
+    }
     insert_substats(transaction, relic._uid, "normal", &relic.substats)?;
     if let Some(substats) = &relic.reroll_substats {
         insert_substats(transaction, relic._uid, "reroll", substats)?;
@@ -2434,20 +2497,20 @@ fn insert_substats(
     kind: &str,
     substats: &[ImportSubstat],
 ) -> Result<(), AppError> {
+    let mut statement = transaction.prepare_cached(
+        "INSERT INTO relic_substats(relic_id, kind, position, stat_key, value, count, step)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+    )?;
     for (position, substat) in substats.iter().enumerate() {
-        transaction.execute(
-            "INSERT INTO relic_substats(relic_id, kind, position, stat_key, value, count, step)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-            params![
-                relic_id,
-                kind,
-                position as i64,
-                substat.key,
-                substat.value,
-                substat.count,
-                substat.step
-            ],
-        )?;
+        statement.execute(params![
+            relic_id,
+            kind,
+            position as i64,
+            substat.key,
+            substat.value,
+            substat.count,
+            substat.step
+        ])?;
     }
     Ok(())
 }
@@ -2781,66 +2844,245 @@ fn light_cone_detail(connection: &Connection, id: u32) -> Result<Option<Value>, 
     .transpose()
 }
 
-fn character_detail(connection: &Connection, id: u32) -> Result<Option<Value>, AppError> {
-    let detail = connection
-        .query_row(
-            "SELECT character_id, name, path, level, ascension, eidolon,
-                    skills_json, traces_json, memosprite_json, ability_version,
-                    source, updated_at
-             FROM characters WHERE character_id = ?1",
-            [id],
-            |row| {
-                let skills: String = row.get(6)?;
-                let traces: String = row.get(7)?;
-                let memosprite: Option<String> = row.get(8)?;
-                Ok(json!({
-                    "characterId": row.get::<_, u32>(0)?,
-                    "name": row.get::<_, String>(1)?,
-                    "path": row.get::<_, String>(2)?,
-                    "level": row.get::<_, u32>(3)?,
-                    "ascension": row.get::<_, u32>(4)?,
-                    "eidolon": row.get::<_, u32>(5)?,
-                    "skills": serde_json::from_str::<Value>(&skills).unwrap_or(Value::Null),
-                    "traces": serde_json::from_str::<Value>(&traces).unwrap_or(Value::Null),
-                    "memosprite": memosprite
-                        .and_then(|value| serde_json::from_str::<Value>(&value).ok()),
-                    "abilityVersion": row.get::<_, u32>(9)?,
-                    "source": row.get::<_, String>(10)?,
-                    "updatedAt": row.get::<_, i64>(11)?,
-                }))
+fn load_all_build_plans(
+    connection: &Connection,
+) -> Result<HashMap<u32, CharacterBuildPlan>, AppError> {
+    let mut target_stmt = connection.prepare(
+        "SELECT character_id, stat_key, target, priority, minimum
+         FROM character_build_targets
+         ORDER BY character_id, priority, stat_key",
+    )?;
+    let mut targets_by_char = HashMap::<u32, Vec<BuildTarget>>::new();
+    let target_rows = target_stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, u32>(0)?,
+            BuildTarget {
+                stat_key: row.get(1)?,
+                target: row.get(2)?,
+                priority: row.get(3)?,
+                minimum: row.get(4)?,
             },
-        )
-        .optional()
-        .map_err(AppError::from)?;
-    let Some(mut detail) = detail else {
-        return Ok(None);
-    };
+        ))
+    })?;
+    for row in target_rows {
+        let (character_id, target) = row?;
+        targets_by_char
+            .entry(character_id)
+            .or_default()
+            .push(target);
+    }
 
-    let relic_ids = connection
-        .prepare("SELECT item_id FROM relics WHERE equipped_character_id = ?1 ORDER BY slot")?
-        .query_map([id], |row| row.get::<_, u32>(0))?
-        .collect::<Result<Vec<_>, _>>()?;
-    let equipped_relics = relic_ids
-        .into_iter()
-        .map(|item_id| relic_detail(connection, item_id))
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .flatten()
+    let mut plan_stmt = connection.prepare(
+        "SELECT character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
+                main_stats_json, effective_substats_json, note,
+                COALESCE(substat_weights_json, '{}'), COALESCE(min_potential_pct, 40),
+                COALESCE(spd_target, 0), COALESCE(game_version, ''), updated_at
+         FROM character_build_plans",
+    )?;
+    let plan_rows = plan_stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, u32>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, u32>(2)?,
+            row.get::<_, Option<u32>>(3)?,
+            row.get::<_, u32>(4)?,
+            row.get::<_, String>(5)?,
+            row.get::<_, String>(6)?,
+            row.get::<_, String>(7)?,
+            row.get::<_, String>(8)?,
+            row.get::<_, f64>(9)?,
+            row.get::<_, f64>(10)?,
+            row.get::<_, String>(11)?,
+            row.get::<_, i64>(12)?,
+        ))
+    })?;
+    let mut plans = HashMap::new();
+    for row in plan_rows {
+        let (
+            character_id,
+            cavern_mode,
+            cavern_set_a,
+            cavern_set_b,
+            planar_set_id,
+            main_stats_json,
+            effective_substats_json,
+            note,
+            substat_weights_json,
+            min_potential_pct,
+            spd_target,
+            game_version,
+            updated_at,
+        ) = row?;
+        plans.insert(
+            character_id,
+            CharacterBuildPlan {
+                character_id,
+                cavern_mode,
+                cavern_set_a,
+                cavern_set_b,
+                planar_set_id,
+                main_stats: serde_json::from_str(&main_stats_json).unwrap_or_default(),
+                targets: targets_by_char.remove(&character_id).unwrap_or_default(),
+                effective_substats: serde_json::from_str(&effective_substats_json)
+                    .unwrap_or_default(),
+                note,
+                substat_weights: serde_json::from_str(&substat_weights_json).unwrap_or_default(),
+                min_potential_pct,
+                spd_target,
+                game_version,
+                updated_at,
+            },
+        );
+    }
+    Ok(plans)
+}
+
+fn load_character_details_batch(
+    connection: &Connection,
+    character_ids: &[u32],
+) -> Result<HashMap<u32, Value>, AppError> {
+    if character_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+    let placeholders = std::iter::repeat_n("?", character_ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let id_values: Vec<SqlValue> = character_ids
+        .iter()
+        .map(|id| SqlValue::Integer(*id as i64))
         .collect();
-    let light_cone_id = connection
-        .query_row(
-            "SELECT item_id FROM light_cones WHERE equipped_character_id = ?1 LIMIT 1",
-            [id],
-            |row| row.get::<_, u32>(0),
-        )
-        .optional()?;
-    detail["equippedRelics"] = Value::Array(equipped_relics);
-    detail["equippedLightCone"] = light_cone_id
-        .map(|item_id| light_cone_detail(connection, item_id))
-        .transpose()?
-        .flatten()
-        .unwrap_or(Value::Null);
-    Ok(Some(detail))
+
+    let mut char_stmt = connection.prepare(&format!(
+        "SELECT character_id, name, path, level, ascension, eidolon,
+                skills_json, traces_json, memosprite_json, ability_version,
+                source, updated_at
+         FROM characters
+         WHERE character_id IN ({placeholders})"
+    ))?;
+    let mut details = HashMap::<u32, Value>::with_capacity(character_ids.len());
+    let char_rows = char_stmt.query_map(params_from_iter(id_values.iter()), |row| {
+        let character_id: u32 = row.get(0)?;
+        let skills: String = row.get(6)?;
+        let traces: String = row.get(7)?;
+        let memosprite: Option<String> = row.get(8)?;
+        Ok((
+            character_id,
+            json!({
+                "characterId": character_id,
+                "name": row.get::<_, String>(1)?,
+                "path": row.get::<_, String>(2)?,
+                "level": row.get::<_, u32>(3)?,
+                "ascension": row.get::<_, u32>(4)?,
+                "eidolon": row.get::<_, u32>(5)?,
+                "skills": serde_json::from_str::<Value>(&skills).unwrap_or(Value::Null),
+                "traces": serde_json::from_str::<Value>(&traces).unwrap_or(Value::Null),
+                "memosprite": memosprite
+                    .and_then(|value| serde_json::from_str::<Value>(&value).ok()),
+                "abilityVersion": row.get::<_, u32>(9)?,
+                "source": row.get::<_, String>(10)?,
+                "updatedAt": row.get::<_, i64>(11)?,
+                "equippedRelics": [],
+                "equippedLightCone": Value::Null,
+            }),
+        ))
+    })?;
+    for row in char_rows {
+        let (character_id, detail) = row?;
+        details.insert(character_id, detail);
+    }
+    if details.is_empty() {
+        return Ok(details);
+    }
+
+    let mut relic_stmt = connection.prepare(&format!(
+        "SELECT item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
+                location, equipped_character_id, locked, discard, source, updated_at
+         FROM relics
+         WHERE equipped_character_id IN ({placeholders})
+         ORDER BY equipped_character_id, slot"
+    ))?;
+    let relics = relic_stmt
+        .query_map(params_from_iter(id_values.iter()), map_relic)?
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let mut substats_by_relic = HashMap::<u32, Vec<Value>>::with_capacity(relics.len());
+    if !relics.is_empty() {
+        let relic_placeholders = std::iter::repeat_n("?", relics.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let relic_id_values: Vec<SqlValue> = relics
+            .iter()
+            .map(|r| SqlValue::Integer(r.item_id as i64))
+            .collect();
+        let mut sub_stmt = connection.prepare(&format!(
+            "SELECT relic_id, kind, position, stat_key, value, count, step
+             FROM relic_substats
+             WHERE relic_id IN ({relic_placeholders})
+             ORDER BY relic_id, kind, position"
+        ))?;
+        let sub_rows = sub_stmt.query_map(params_from_iter(relic_id_values.iter()), |row| {
+            Ok((
+                row.get::<_, u32>(0)?,
+                json!({
+                    "kind": row.get::<_, String>(1)?,
+                    "position": row.get::<_, u32>(2)?,
+                    "key": row.get::<_, String>(3)?,
+                    "value": row.get::<_, f64>(4)?,
+                    "count": row.get::<_, u32>(5)?,
+                    "step": row.get::<_, u32>(6)?,
+                }),
+            ))
+        })?;
+        for row in sub_rows {
+            let (relic_id, substat) = row?;
+            substats_by_relic.entry(relic_id).or_default().push(substat);
+        }
+    }
+
+    let mut relics_by_char = HashMap::<u32, Vec<Value>>::new();
+    for relic in relics {
+        let Some(owner_id) = relic.equipped_character_id else {
+            continue;
+        };
+        let item_id = relic.item_id;
+        let mut value =
+            serde_json::to_value(relic).map_err(|error| AppError::Database(error.to_string()))?;
+        value["substats"] = Value::Array(substats_by_relic.remove(&item_id).unwrap_or_default());
+        relics_by_char.entry(owner_id).or_default().push(value);
+    }
+
+    let mut lc_stmt = connection.prepare(&format!(
+        "SELECT item_id, template_id, name, level, ascension, superimposition,
+                location, equipped_character_id, locked, source, updated_at
+         FROM light_cones
+         WHERE equipped_character_id IN ({placeholders})"
+    ))?;
+    let mut lc_by_char = HashMap::<u32, Value>::new();
+    let lc_rows = lc_stmt.query_map(params_from_iter(id_values.iter()), map_light_cone)?;
+    for row in lc_rows {
+        let lc = row?;
+        if let Some(owner_id) = lc.equipped_character_id {
+            if let std::collections::hash_map::Entry::Vacant(entry) = lc_by_char.entry(owner_id) {
+                let value = serde_json::to_value(lc)
+                    .map_err(|error| AppError::Database(error.to_string()))?;
+                entry.insert(value);
+            }
+        }
+    }
+
+    for (character_id, detail) in &mut details {
+        if let Some(equipped_relics) = relics_by_char.remove(character_id) {
+            detail["equippedRelics"] = Value::Array(equipped_relics);
+        }
+        if let Some(equipped_lc) = lc_by_char.remove(character_id) {
+            detail["equippedLightCone"] = equipped_lc;
+        }
+    }
+    Ok(details)
+}
+
+fn character_detail(connection: &Connection, id: u32) -> Result<Option<Value>, AppError> {
+    Ok(load_character_details_batch(connection, &[id])?.remove(&id))
 }
 
 /// Export location uses the equipped character id when known.
@@ -2856,6 +3098,35 @@ fn export_equipped_location(location: &str, equipped_character_id: Option<u32>) 
 }
 
 fn export_relics(connection: &Connection) -> Result<Vec<Value>, AppError> {
+    let mut substat_stmt = connection.prepare(
+        "SELECT relic_id, kind, stat_key, value, count, step
+         FROM relic_substats
+         ORDER BY relic_id, kind, position",
+    )?;
+    let mut substats_by_relic = HashMap::<u32, (Vec<Value>, Vec<Value>, Vec<Value>)>::new();
+    let substat_rows = substat_stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, u32>(0)?,
+            row.get::<_, String>(1)?,
+            json!({
+                "key": row.get::<_, String>(2)?,
+                "value": row.get::<_, f64>(3)?,
+                "count": row.get::<_, u32>(4)?,
+                "step": row.get::<_, u32>(5)?,
+            }),
+        ))
+    })?;
+    for row in substat_rows {
+        let (relic_id, kind, entry) = row?;
+        let buckets = substats_by_relic.entry(relic_id).or_default();
+        match kind.as_str() {
+            "normal" => buckets.0.push(entry),
+            "reroll" => buckets.1.push(entry),
+            "preview" => buckets.2.push(entry),
+            _ => {}
+        }
+    }
+
     let mut statement = connection.prepare(
         "SELECT item_id, set_id, name, slot, rarity, level, main_stat,
                 location, equipped_character_id, locked, discard FROM relics ORDER BY item_id",
@@ -2879,9 +3150,8 @@ fn export_relics(connection: &Connection) -> Result<Vec<Value>, AppError> {
     for row in rows {
         let (id, set_id, name, slot, rarity, level, mainstat, location, equipped_id, lock, discard) =
             row?;
-        let substats = export_substats(connection, id, "normal")?;
-        let reroll_substats = export_substats(connection, id, "reroll")?;
-        let preview_substats = export_substats(connection, id, "preview")?;
+        let (substats, reroll_substats, preview_substats) =
+            substats_by_relic.remove(&id).unwrap_or_default();
         result.push(json!({
             "set_id": set_id,
             "name": name,
@@ -2899,28 +3169,6 @@ fn export_relics(connection: &Connection) -> Result<Vec<Value>, AppError> {
         }));
     }
     Ok(result)
-}
-
-fn export_substats(
-    connection: &Connection,
-    relic_id: u32,
-    kind: &str,
-) -> Result<Vec<Value>, AppError> {
-    let mut statement = connection.prepare(
-        "SELECT stat_key, value, count, step FROM relic_substats
-         WHERE relic_id = ?1 AND kind = ?2 ORDER BY position",
-    )?;
-    let values = statement
-        .query_map(params![relic_id, kind], |row| {
-            Ok(json!({
-                "key": row.get::<_, String>(0)?,
-                "value": row.get::<_, f64>(1)?,
-                "count": row.get::<_, u32>(2)?,
-                "step": row.get::<_, u32>(3)?,
-            }))
-        })?
-        .collect::<Result<Vec<_>, _>>()?;
-    Ok(values)
 }
 
 fn export_light_cones(connection: &Connection) -> Result<Vec<Value>, AppError> {
@@ -3019,74 +3267,107 @@ fn clear_character_build_scores(transaction: &Transaction<'_>) -> Result<(), App
     Ok(())
 }
 
-fn load_character_build_score(
-    connection: &Connection,
-    character_id: u32,
-) -> Result<Option<CharacterBuildScore>, AppError> {
-    connection
-        .query_row(
+fn hydrate_teams_batch(connection: &Connection, rows: Vec<TeamRow>) -> Result<Vec<Team>, AppError> {
+    if rows.is_empty() {
+        return Ok(Vec::new());
+    }
+    let unique_ids: Vec<u32> = rows
+        .iter()
+        .flat_map(|row| row.slots.into_iter().flatten())
+        .collect::<HashSet<_>>()
+        .into_iter()
+        .collect();
+    let mut scores_by_char = HashMap::<u32, CharacterBuildScore>::new();
+    let mut chars_by_id = HashMap::<u32, (String, String, u32)>::new();
+    if !unique_ids.is_empty() {
+        let placeholders = std::iter::repeat_n("?", unique_ids.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let id_values: Vec<SqlValue> = unique_ids
+            .iter()
+            .map(|id| SqlValue::Integer(*id as i64))
+            .collect();
+        let mut score_stmt = connection.prepare(&format!(
             "SELECT character_id, letter_grade, potential_pct, completion_pct,
                     relic_count, has_plan, computed_at
-             FROM character_build_scores WHERE character_id = ?1",
-            [character_id],
-            |row| {
-                Ok(CharacterBuildScore {
-                    character_id: row.get(0)?,
-                    letter_grade: row.get(1)?,
-                    potential_pct: row.get(2)?,
-                    completion_pct: row.get(3)?,
-                    relic_count: row.get(4)?,
-                    has_plan: row.get(5)?,
-                    computed_at: row.get(6)?,
-                })
-            },
-        )
-        .optional()
-        .map_err(AppError::from)
+             FROM character_build_scores
+             WHERE character_id IN ({placeholders})"
+        ))?;
+        for row in score_stmt.query_map(params_from_iter(id_values.iter()), |row| {
+            Ok(CharacterBuildScore {
+                character_id: row.get(0)?,
+                letter_grade: row.get(1)?,
+                potential_pct: row.get(2)?,
+                completion_pct: row.get(3)?,
+                relic_count: row.get(4)?,
+                has_plan: row.get(5)?,
+                computed_at: row.get(6)?,
+            })
+        })? {
+            let score = row?;
+            scores_by_char.insert(score.character_id, score);
+        }
+
+        let mut char_stmt = connection.prepare(&format!(
+            "SELECT character_id, name, path, level
+             FROM characters
+             WHERE character_id IN ({placeholders})"
+        ))?;
+        for row in char_stmt.query_map(params_from_iter(id_values.iter()), |row| {
+            Ok((
+                row.get::<_, u32>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, u32>(3)?,
+            ))
+        })? {
+            let (character_id, name, path, level) = row?;
+            chars_by_id.insert(character_id, (name, path, level));
+        }
+    }
+
+    let mut teams = Vec::with_capacity(rows.len());
+    for row in rows {
+        let mut members = Vec::with_capacity(TEAM_SLOT_COUNT);
+        for slot in row.slots {
+            members.push(
+                slot.map(|character_id| match chars_by_id.get(&character_id) {
+                    Some((name, path, level)) => TeamMember {
+                        character_id,
+                        name: name.clone(),
+                        path: path.clone(),
+                        level: *level,
+                        owned: true,
+                        score: scores_by_char.get(&character_id).cloned(),
+                    },
+                    None => TeamMember {
+                        character_id,
+                        name: format!("未知角色 #{character_id}"),
+                        path: String::new(),
+                        level: 0,
+                        owned: false,
+                        score: None,
+                    },
+                }),
+            );
+        }
+        teams.push(Team {
+            team_id: row.team_id,
+            name: row.name,
+            note: row.note,
+            members,
+            created_at: row.created_at,
+            updated_at: row.updated_at,
+        });
+    }
+    Ok(teams)
 }
 
 fn hydrate_team(connection: &Connection, row: TeamRow) -> Result<Team, AppError> {
-    let mut members = Vec::with_capacity(TEAM_SLOT_COUNT);
-    for slot in row.slots {
-        members.push(match slot {
-            None => None,
-            Some(character_id) => {
-                let score = load_character_build_score(connection, character_id)?;
-                let owned = connection
-                    .query_row(
-                        "SELECT name, path, level FROM characters WHERE character_id = ?1",
-                        [character_id],
-                        |character_row| {
-                            Ok(TeamMember {
-                                character_id,
-                                name: character_row.get(0)?,
-                                path: character_row.get(1)?,
-                                level: character_row.get(2)?,
-                                owned: true,
-                                score: score.clone(),
-                            })
-                        },
-                    )
-                    .optional()?;
-                Some(owned.unwrap_or(TeamMember {
-                    character_id,
-                    name: format!("未知角色 #{character_id}"),
-                    path: String::new(),
-                    level: 0,
-                    owned: false,
-                    score: None,
-                }))
-            }
-        });
-    }
-    Ok(Team {
-        team_id: row.team_id,
-        name: row.name,
-        note: row.note,
-        members,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-    })
+    hydrate_teams_batch(connection, vec![row])?
+        .into_iter()
+        .next()
+        .ok_or_else(|| AppError::Database("配队不存在".to_owned()))
 }
 
 fn list_team_sync_records(connection: &Connection) -> Result<Vec<TeamSyncRecord>, AppError> {
@@ -5603,5 +5884,144 @@ mod tests {
         let updated_march = restored_store.build_plan(1001).unwrap().unwrap();
         assert_eq!(updated_march.game_version, current_game_version());
         assert!(updated_march.updated_at >= 1_750_000_000_000);
+    }
+
+    #[test]
+    fn batched_queries_preserve_multi_path_equipment_substats_and_pool_reuse() {
+        let store = InventoryStore::test_store();
+        seed_characters(
+            &store,
+            &[(1001, "三月七", "Preservation"), (1224, "三月七", "Hunt")],
+        );
+        {
+            let conn = store.connect().unwrap();
+            conn.execute(
+                "INSERT INTO relics(
+                    item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
+                    location, equipped_character_id, locked, discard, source, updated_at
+                 ) VALUES
+                    (9001, 101, '存护头', '铁卫', 'Head', 5, 15, 'HP', 705.6, '三月七', 1001, 1, 0, 'test', 1),
+                    (9002, 102, '巡猎头', '快枪手', 'Head', 5, 15, 'HP', 705.6, '三月七', 1224, 0, 0, 'test', 1)",
+                [],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO relic_substats(relic_id, kind, position, stat_key, value, count, step) VALUES
+                    (9001, 'normal', 0, 'DEF%', 12.9, 3, 2),
+                    (9001, 'normal', 1, 'SPD', 4.6, 2, 1),
+                    (9001, 'reroll', 0, 'ATK%', 8.6, 2, 0),
+                    (9002, 'normal', 0, 'CRIT Rate', 9.7, 3, 2)",
+                [],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO light_cones(
+                    item_id, template_id, name, level, ascension, superimposition,
+                    location, equipped_character_id, locked, source, updated_at
+                 ) VALUES
+                    (8001, 21001, '朗道的选择', 80, 6, 5, '三月七', 1001, 1, 'test', 1),
+                    (8002, 24001, '星海巡航', 80, 6, 5, '三月七', 1224, 1, 'test', 1)",
+                [],
+            )
+            .unwrap();
+        }
+        // Pool should retain the returned connection for reuse.
+        assert!(!store.pool.lock().unwrap().is_empty());
+
+        for (cid, set_a) in [(1001u32, 101u32), (1224u32, 102u32)] {
+            store
+                .save_build_plan(&CharacterBuildPlan {
+                    character_id: cid,
+                    cavern_mode: "fourPiece".to_owned(),
+                    cavern_set_a: set_a,
+                    cavern_set_b: None,
+                    planar_set_id: 301,
+                    main_stats: HashMap::new(),
+                    targets: vec![BuildTarget {
+                        stat_key: "SPD".to_owned(),
+                        target: 134.0,
+                        priority: 1,
+                        minimum: 130.0,
+                    }],
+                    effective_substats: vec!["SPD".to_owned()],
+                    note: String::new(),
+                    substat_weights: HashMap::new(),
+                    min_potential_pct: 40.0,
+                    spd_target: 134.0,
+                    game_version: String::new(),
+                    updated_at: 0,
+                })
+                .unwrap();
+        }
+
+        let dashboard = store.build_dashboard().unwrap();
+        assert_eq!(dashboard.len(), 2);
+        let march_pres = dashboard
+            .iter()
+            .find(|e| e.plan.character_id == 1001)
+            .expect("Preservation March");
+        let march_hunt = dashboard
+            .iter()
+            .find(|e| e.plan.character_id == 1224)
+            .expect("Hunt March");
+        assert_eq!(
+            march_pres.character["equippedRelics"][0]["itemId"],
+            json!(9001)
+        );
+        assert_eq!(
+            march_pres.character["equippedLightCone"]["templateId"],
+            json!(21001)
+        );
+        assert_eq!(
+            march_hunt.character["equippedRelics"][0]["itemId"],
+            json!(9002)
+        );
+        assert_eq!(
+            march_hunt.character["equippedLightCone"]["templateId"],
+            json!(24001)
+        );
+
+        let profiles = store.relic_set_farming_profiles().unwrap();
+        assert_eq!(profiles.len(), 2);
+
+        let listed_relics = store.list_relics(&RelicFilter::default()).unwrap();
+        assert_eq!(listed_relics.total, 2);
+        let r9001 = listed_relics
+            .items
+            .iter()
+            .find(|r| r.item_id == 9001)
+            .unwrap();
+        assert_eq!(r9001.substats.len(), 2);
+        assert_eq!(r9001.substats[0].key, "DEF%");
+        assert_eq!(r9001.substats[1].key, "SPD");
+
+        store
+            .save_team(&TeamInput {
+                team_id: None,
+                name: "双三月七测试队".to_owned(),
+                note: String::new(),
+                character_ids: vec![Some(1001), Some(1224), None, None],
+            })
+            .unwrap();
+        let teams = store.list_teams(&TeamFilter::default()).unwrap();
+        assert_eq!(teams.total, 1);
+        assert_eq!(
+            teams.items[0].members[0].as_ref().unwrap().path,
+            "Preservation"
+        );
+        assert_eq!(teams.items[0].members[1].as_ref().unwrap().path, "Hunt");
+
+        let snapshot = store.sync_snapshot().unwrap();
+        let exported_9001 = snapshot
+            .inventory
+            .relics
+            .iter()
+            .find(|r| r._uid == 9001)
+            .unwrap();
+        assert_eq!(exported_9001.substats.len(), 2);
+        assert_eq!(
+            exported_9001.reroll_substats.as_ref().map(|v| v.len()),
+            Some(1)
+        );
     }
 }

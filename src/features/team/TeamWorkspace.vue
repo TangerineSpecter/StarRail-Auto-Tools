@@ -3,6 +3,7 @@ import { ref } from "vue";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { Team } from "@/types";
 import TeamActionAxisDrawer from "./TeamActionAxisDrawer.vue";
 import TeamCard from "./TeamCard.vue";
@@ -94,6 +95,11 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
     </header>
 
     <div class="team-card-grid" @scroll="archive.onScroll">
+      <LoadingState
+        v-if="busy && !archive.appending.value && archive.result.value.items.length > 0"
+        variant="bar"
+        label="正在更新配队…"
+      />
       <TeamCard
         v-for="team in archive.result.value.items"
         :key="team.teamId"
@@ -105,30 +111,30 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
         @delete="onDelete(team)"
       />
       <div v-if="!archive.result.value.items.length" class="team-empty">
-        <div class="team-empty-symbol">◇</div>
-        <strong>{{ busy ? "正在读取配队…" : "还没有配队" }}</strong>
-        <small>新建一支配队，从已拥有角色中安排 4 人阵容</small>
-        <Button
-          v-if="!busy"
-          class="capture-action-btn team-create-btn"
-          type="button"
-          @click="openCreate"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          新建配队
-        </Button>
+        <LoadingState v-if="busy" variant="cards" label="正在读取配队…" :rows="3" />
+        <template v-else>
+          <div class="team-empty-symbol">◇</div>
+          <strong>还没有配队</strong>
+          <small>新建一支配队，从已拥有角色中安排 4 人阵容</small>
+          <Button class="capture-action-btn team-create-btn" type="button" @click="openCreate">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            新建配队
+          </Button>
+        </template>
       </div>
-      <div v-if="archive.appending.value" class="team-appending">加载更多…</div>
+      <div v-if="archive.appending.value" class="team-appending">
+        <LoadingState variant="inline" label="加载更多…" compact />
+      </div>
     </div>
   </article>
 

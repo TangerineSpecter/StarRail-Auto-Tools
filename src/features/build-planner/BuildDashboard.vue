@@ -4,13 +4,24 @@ import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useReadOnlyView } from "@/shared/contracts/view-mode";
 const readOnly = useReadOnlyView();
 const mobile = useMobileView();
-import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import Button from "primevue/button";
 import Drawer from "primevue/drawer";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import MobileFloatingSearch from "@/shared/ui/MobileFloatingSearch.vue";
 import MobileSegmentedControl from "@/shared/ui/MobileSegmentedControl.vue";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { buildPlanApi } from "@/shared/api/build-plan";
@@ -39,9 +50,12 @@ import BuildHoverTip from "./BuildHoverTip.vue";
 import RelicPotentialRadar from "./RelicPotentialRadar.vue";
 import { qualityMainStatTip, qualityPassCountTip } from "./quality-tips";
 import { useDashboardDrag } from "./useDashboardDrag";
-import lightConeCatalogueJson from "@/data/light-cones.json";
-import relicCatalogueJson from "@/data/relic-sets.json";
-import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
+import {
+  characterDisplayName,
+  lightConeById,
+  relicSetById,
+  resolveCharacterCatalogue,
+} from "@/shared/catalogue";
 import {
   extractGameVersion,
   formatPlanUpdatedDate,
@@ -50,15 +64,17 @@ import {
   isBuildPlanOutdated,
 } from "@/shared/utils/build-plan-meta";
 import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
-import type { BuildDashboardEntry, LightConeCatalogue, RelicSetCatalogue } from "@/types";
+import type { BuildDashboardEntry, RelicSetCatalogueEntry } from "@/types";
 
-const entries = ref<BuildDashboardEntry[]>([]);
+const entries = shallowRef<BuildDashboardEntry[]>([]);
 const loading = ref(true);
 const error = ref("");
+const exportingExcel = ref(false);
+const importingExcel = ref(false);
 const emit = defineEmits<{
   editBuild: [characterId: number];
 }>();
-const { notice, summary } = useRuntimeContext();
+const { notice, summary, inventoryRevision } = useRuntimeContext();
 const currentGameVersion = computed(() => extractGameVersion(summary?.value?.protocolVersion));
 type BuildSortMode = "urgent" | "complete" | "custom";
 type BuildStatusFilter = "all" | "pending" | "complete";
@@ -88,8 +104,6 @@ const { host: topHeaderHost, enabled: useTopHeader } = useMobileTopHeaderTarget(
 );
 const actionCharacterId = ref<number | null>(null);
 const dashboardElement = ref<HTMLElement | null>(null);
-const lightCones = lightConeCatalogueJson as LightConeCatalogue;
-const relicSets = relicCatalogueJson as RelicSetCatalogue;
 const disabledTraceNodes = loadDisabledTraceNodes();
 const selectedCharacterId = ref<number | null>(null);
 let dashboardRequestId = 0;
@@ -171,16 +185,15 @@ function planNote(plan: BuildDashboardEntry["plan"]) {
 }
 
 function recommendedSets(plan: BuildDashboardEntry["plan"]) {
-  const findSet = (setId: number) => relicSets.sets.find((set) => set.id === setId);
   const cavernSets =
     plan.cavernMode === "fourPiece"
-      ? [{ set: findSet(plan.cavernSetA), pieces: 4 }]
+      ? [{ set: relicSetById.get(plan.cavernSetA), pieces: 4 }]
       : [
-          { set: findSet(plan.cavernSetA), pieces: 2 },
-          ...(plan.cavernSetB ? [{ set: findSet(plan.cavernSetB), pieces: 2 }] : []),
+          { set: relicSetById.get(plan.cavernSetA), pieces: 2 },
+          ...(plan.cavernSetB ? [{ set: relicSetById.get(plan.cavernSetB), pieces: 2 }] : []),
         ];
-  return [...cavernSets, { set: findSet(plan.planarSetId), pieces: 2 }].filter(
-    (item): item is { set: RelicSetCatalogue["sets"][number]; pieces: number } => !!item.set,
+  return [...cavernSets, { set: relicSetById.get(plan.planarSetId), pieces: 2 }].filter(
+    (item): item is { set: RelicSetCatalogueEntry; pieces: number } => !!item.set,
   );
 }
 
@@ -203,7 +216,7 @@ function dashboardState(entry: BuildDashboardEntry) {
     name: character.name,
   });
   const cone = character.equippedLightCone;
-  const coneEntry = cone && lightCones.lightCones.find((item) => item.id === cone.templateId);
+  const coneEntry = cone ? lightConeById.get(cone.templateId) : undefined;
   const coneBase = coneEntry?.baseStats;
   if (!catalogue?.baseStats)
     return { available: false, reason: "该角色的满级基础属性尚未同步。", stats: [] };
@@ -228,10 +241,12 @@ function dashboardState(entry: BuildDashboardEntry) {
   const pieceCounts = new Map<number, number>();
   for (const relic of character.equippedRelics ?? [])
     pieceCounts.set(relic.setId, (pieceCounts.get(relic.setId) ?? 0) + 1);
-  const setEffects = relicSets.sets
-    .filter((set) => (pieceCounts.get(set.id) ?? 0) >= 2)
-    .map((set) => set.effects.twoPiece)
-    .filter(Boolean);
+  const setEffects: string[] = [];
+  for (const [setId, count] of pieceCounts) {
+    if (count < 2) continue;
+    const effect = relicSetById.get(setId)?.effects.twoPiece;
+    if (effect) setEffects.push(effect);
+  }
   const lightConeEffect = lightConeSkillEffect(coneEntry?.skill, cone.superimposition);
   return {
     available: true,
@@ -251,12 +266,93 @@ function dashboardState(entry: BuildDashboardEntry) {
 }
 
 const canDrag = computed(() => !readOnly && !search.value.trim() && !loading.value && !error.value);
-const standingWarnings = computed(() =>
-  entries.value.flatMap((entry) => {
+
+const evaluatedEntries = computed(() =>
+  entries.value.map((entry) => {
+    const character = entry.character;
+    const catalogue = resolveCharacterCatalogue({
+      characterId: character.characterId,
+      name: character.name,
+    });
     const state = dashboardState(entry);
-    return !state.available &&
-      (state.reason.startsWith("缺少属性输入：") ||
-        state.reason.startsWith("装备来源规则尚未审核："))
+    if (!state.available) {
+      return {
+        entry,
+        character,
+        state,
+        card: null,
+      };
+    }
+    const targets = buildTargetProgress(entry.plan.targets, state.stats);
+    const effective = effectiveSubstatCounts(
+      character.equippedRelics ?? [],
+      entry.plan.effectiveSubstats,
+    );
+    const equippedPieceCounts = relicPieceCounts(character.equippedRelics ?? []);
+    const completed = targets.filter(
+      (target) => target.percent !== null && target.percent >= 100,
+    ).length;
+    // Lightweight scoring only — full Estimated TBP enumeration is too slow for list load.
+    const weights = resolvePlanWeights({
+      substatWeights: entry.plan.substatWeights,
+      effectiveSubstats: entry.plan.effectiveSubstats,
+    });
+    const relicInputs = (character.equippedRelics ?? []).map((relic, index) => ({
+      slot:
+        relic.slot ??
+        (["Head", "Hands", "Body", "Feet", "PlanarSphere", "LinkRope"][index] || "Head"),
+      mainStat: relic.mainStat,
+      substats: relic.substats,
+    }));
+    const quality = planQualityCompletion(relicInputs, weights, {
+      allowedMainStats: entry.plan.mainStats,
+      minPotentialPct: entry.plan.minPotentialPct ?? 40,
+    });
+    const potential = averageCharacterPotential(relicInputs, weights, {
+      allowedMainStats: entry.plan.mainStats,
+    });
+    const cone = character.equippedLightCone;
+    const coneEntry = cone ? lightConeById.get(cone.templateId) : undefined;
+    return {
+      entry,
+      character,
+      state,
+      card: {
+        entry,
+        character,
+        displayName: characterDisplayName(character),
+        image: catalogue?.image,
+        equippedLightCone: cone
+          ? {
+              name: cone.name || coneEntry?.name || `光锥 #${cone.templateId}`,
+              image: coneEntry?.image ?? null,
+              level: cone.level,
+              superimposition: cone.superimposition ?? 1,
+            }
+          : null,
+        recommendedSets: recommendedSets(entry.plan).map((item) => ({
+          ...item,
+          matched: (equippedPieceCounts.get(item.set.id) ?? 0) >= item.pieces,
+        })),
+        state,
+        targets,
+        effective,
+        effectiveTotal: effective.reduce((sum, item) => sum + item.count, 0),
+        completed,
+        quality,
+        averagePotentialPct: potential.averagePotentialPct,
+        weakSlot: potential.weakSlot,
+        pieces: potential.pieces,
+        minPotentialPct: entry.plan.minPotentialPct ?? 40,
+      },
+    };
+  }),
+);
+
+const standingWarnings = computed(() =>
+  evaluatedEntries.value.flatMap(({ entry, state }) =>
+    !state.available &&
+    (state.reason.startsWith("缺少属性输入：") || state.reason.startsWith("装备来源规则尚未审核："))
       ? [
           {
             characterId: entry.character.characterId,
@@ -264,8 +360,8 @@ const standingWarnings = computed(() =>
             reason: state.reason,
           },
         ]
-      : [];
-  }),
+      : [],
+  ),
 );
 
 function compareCards(
@@ -295,102 +391,25 @@ function compareCards(
   );
 }
 
-const cards = computed(() =>
-  entries.value
-    .map((entry) => {
-      const character = entry.character;
-      const catalogue = resolveCharacterCatalogue({
-        characterId: character.characterId,
-        name: character.name,
-      });
-      const state = dashboardState(entry);
-      const targets = state.available
-        ? buildTargetProgress(entry.plan.targets, state.stats)
-        : entry.plan.targets.map((target) => ({
-            ...target,
-            current: null,
-            percent: null,
-            gap: null,
-          }));
-      const effective = effectiveSubstatCounts(
-        character.equippedRelics ?? [],
-        entry.plan.effectiveSubstats,
-      );
-      const equippedPieceCounts = relicPieceCounts(character.equippedRelics ?? []);
-      const completed = targets.filter(
-        (target) => target.percent !== null && target.percent >= 100,
-      ).length;
-      // Lightweight scoring only — full Estimated TBP enumeration is too slow for list load.
-      const weights = resolvePlanWeights({
-        substatWeights: entry.plan.substatWeights,
-        effectiveSubstats: entry.plan.effectiveSubstats,
-      });
-      const relicInputs = (character.equippedRelics ?? []).map((relic, index) => ({
-        slot:
-          relic.slot ??
-          (["Head", "Hands", "Body", "Feet", "PlanarSphere", "LinkRope"][index] || "Head"),
-        mainStat: relic.mainStat,
-        substats: relic.substats,
-      }));
-      const quality = planQualityCompletion(relicInputs, weights, {
-        allowedMainStats: entry.plan.mainStats,
-        minPotentialPct: entry.plan.minPotentialPct ?? 40,
-      });
-      const potential = averageCharacterPotential(relicInputs, weights, {
-        allowedMainStats: entry.plan.mainStats,
-      });
-      const cone = character.equippedLightCone;
-      const coneEntry = cone
-        ? lightCones.lightCones.find((item) => item.id === cone.templateId)
-        : undefined;
-      return {
-        entry,
-        character,
-        image: catalogue?.image,
-        equippedLightCone: cone
-          ? {
-              name: cone.name || coneEntry?.name || `光锥 #${cone.templateId}`,
-              image: coneEntry?.image ?? null,
-              level: cone.level,
-              superimposition: cone.superimposition ?? 1,
-            }
-          : null,
-        recommendedSets: recommendedSets(entry.plan).map((item) => ({
-          ...item,
-          matched: (equippedPieceCounts.get(item.set.id) ?? 0) >= item.pieces,
-        })),
-        state,
-        targets,
-        effective,
-        effectiveTotal: effective.reduce((sum, item) => sum + item.count, 0),
-        completed,
-        quality,
-        averagePotentialPct: potential.averagePotentialPct,
-        weakSlot: potential.weakSlot,
-        pieces: potential.pieces,
-        minPotentialPct: entry.plan.minPotentialPct ?? 40,
-      };
-    })
-    .filter((card) => card.state.available)
-    .filter((card) => {
-      const keyword = search.value.trim();
-      if (
-        keyword &&
-        !card.character.name.includes(keyword) &&
-        !characterDisplayName(card.character).includes(keyword)
-      ) {
-        return false;
-      }
-      if (statusFilter.value === "complete") {
-        return card.targets.length > 0 && card.completed >= card.targets.length;
-      }
-      if (statusFilter.value === "pending") {
-        return card.targets.length === 0 || card.completed < card.targets.length;
-      }
-      return true;
-    })
-    .sort(compareCards),
-);
+const cards = computed(() => {
+  const keyword = search.value.trim();
+  const status = statusFilter.value;
+  const filtered: NonNullable<(typeof evaluatedEntries.value)[number]["card"]>[] = [];
+  for (const item of evaluatedEntries.value) {
+    const card = item.card;
+    if (!card) continue;
+    if (keyword && !card.character.name.includes(keyword) && !card.displayName.includes(keyword)) {
+      continue;
+    }
+    if (status === "complete") {
+      if (!(card.targets.length > 0 && card.completed >= card.targets.length)) continue;
+    } else if (status === "pending") {
+      if (!(card.targets.length === 0 || card.completed < card.targets.length)) continue;
+    }
+    filtered.push(card);
+  }
+  return filtered.sort(compareCards);
+});
 
 function orderedEntryIds() {
   return [...entries.value]
@@ -475,15 +494,21 @@ async function loadDashboard() {
 }
 
 async function exportExcel() {
+  if (exportingExcel.value) return;
+  exportingExcel.value = true;
   try {
     const path = await buildPlanApi.exportExcel();
     if (path) notice.value = "操作完成";
   } catch (cause) {
     error.value = String(cause);
+  } finally {
+    exportingExcel.value = false;
   }
 }
 
 async function importExcel() {
+  if (importingExcel.value) return;
+  importingExcel.value = true;
   try {
     const result = await buildPlanApi.importExcel();
     if (result) {
@@ -492,10 +517,34 @@ async function importExcel() {
     }
   } catch (cause) {
     error.value = String(cause);
+  } finally {
+    importingExcel.value = false;
   }
 }
 
+let loadedRevision: number | undefined;
+if (inventoryRevision) {
+  watch(inventoryRevision, (rev) => {
+    if (loadedRevision !== undefined && rev !== loadedRevision && pageActive.value) {
+      loadedRevision = rev;
+      void loadDashboard();
+    }
+  });
+}
+
+onActivated(() => {
+  if (
+    inventoryRevision &&
+    loadedRevision !== undefined &&
+    inventoryRevision.value !== loadedRevision
+  ) {
+    loadedRevision = inventoryRevision.value;
+    void loadDashboard();
+  }
+});
+
 onMounted(() => {
+  loadedRevision = inventoryRevision?.value;
   void loadDashboard();
 });
 defineExpose({ reload: loadDashboard });
@@ -598,13 +647,25 @@ defineExpose({ reload: loadDashboard });
       </div>
       <div class="build-dashboard-tools">
         <div v-if="!readOnly" class="build-plan-transfer-actions" aria-label="角色目标 Excel 操作">
-          <button type="button" class="build-plan-transfer export" @click="exportExcel">
-            <span class="build-plan-transfer-icon" aria-hidden="true">↓</span>
-            <span>导出 Excel</span>
+          <button
+            type="button"
+            class="build-plan-transfer export"
+            :disabled="exportingExcel || importingExcel"
+            @click="exportExcel"
+          >
+            <InlineSpinner v-if="exportingExcel" size="xs" />
+            <span v-else class="build-plan-transfer-icon" aria-hidden="true">↓</span>
+            <span>{{ exportingExcel ? "导出中…" : "导出 Excel" }}</span>
           </button>
-          <button type="button" class="build-plan-transfer import" @click="importExcel">
-            <span class="build-plan-transfer-icon" aria-hidden="true">↑</span>
-            <span>导入 Excel</span>
+          <button
+            type="button"
+            class="build-plan-transfer import"
+            :disabled="exportingExcel || importingExcel"
+            @click="importExcel"
+          >
+            <InlineSpinner v-if="importingExcel" size="xs" />
+            <span v-else class="build-plan-transfer-icon" aria-hidden="true">↑</span>
+            <span>{{ importingExcel ? "导入中…" : "导入 Excel" }}</span>
           </button>
         </div>
         <InputText v-model="search" placeholder="搜索角色" /><Select
@@ -630,7 +691,7 @@ defineExpose({ reload: loadDashboard });
         </li>
       </ul>
     </aside>
-    <p v-if="loading" class="dashboard-state">正在汇总毕业进度…</p>
+    <LoadingState v-if="loading" variant="cards" label="正在汇总毕业进度…" :rows="4" />
     <p v-else-if="error" class="dashboard-state error">{{ error }}</p>
     <p v-else-if="!cards.length" class="dashboard-state">暂无具备完整站街属性的毕业方案。</p>
     <div v-else class="build-card-list" aria-label="毕业进度列表">
@@ -1390,19 +1451,6 @@ defineExpose({ reload: loadDashboard });
   background: linear-gradient(135deg, rgba(239, 245, 253, 0.88), rgba(248, 251, 255, 0.65));
   overflow-y: auto;
   box-shadow: 0 1px 4px rgba(36, 86, 166, 0.04);
-}
-.build-card-note::-webkit-scrollbar {
-  width: 4px;
-}
-.build-card-note::-webkit-scrollbar-track {
-  background: transparent;
-}
-.build-card-note::-webkit-scrollbar-thumb {
-  background: rgba(90, 149, 212, 0.25);
-  border-radius: 4px;
-}
-.build-card-note::-webkit-scrollbar-thumb:hover {
-  background: rgba(90, 149, 212, 0.45);
 }
 .build-card-note-icon {
   display: flex;

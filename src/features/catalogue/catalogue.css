@@ -96,7 +96,11 @@
 .character-catalogue-grid > .character-catalogue-card {
   animation: catalogue-card-spread 320ms cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
   animation-delay: calc(min(var(--row-i, 0), 6) * 45ms);
-  will-change: opacity, transform;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 110px;
+}
+.catalogue-grid > .catalogue-card {
+  contain-intrinsic-size: auto 156px;
 }
 
 @keyframes catalogue-card-spread {

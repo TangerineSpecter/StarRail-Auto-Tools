@@ -9,13 +9,18 @@ use super::{
 
 pub struct WebDavTransport {
     settings: WebDavSettings,
+    client: Client,
 }
 
 impl WebDavTransport {
     pub fn new(settings: &WebDavSettings) -> Result<Self, AppError> {
         settings.validate()?;
+        let client = Client::builder()
+            .build()
+            .map_err(|error| AppError::Sync(error.to_string()))?;
         Ok(Self {
             settings: settings.clone(),
+            client,
         })
     }
 
@@ -36,12 +41,6 @@ impl WebDavTransport {
     }
 }
 
-fn client() -> Result<Client, AppError> {
-    Client::builder()
-        .build()
-        .map_err(|error| AppError::Sync(error.to_string()))
-}
-
 fn describe_status(status: StatusCode) -> AppError {
     let message = match status {
         StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => "认证失败，请检查用户名和密码",
@@ -53,7 +52,8 @@ fn describe_status(status: StatusCode) -> AppError {
 
 impl RemoteTransport for WebDavTransport {
     async fn test(&self) -> Result<(), AppError> {
-        let response = client()?
+        let response = self
+            .client
             .head(self.directory_url()?)
             .basic_auth(&self.settings.username, Some(&self.settings.password))
             .send()
@@ -67,7 +67,8 @@ impl RemoteTransport for WebDavTransport {
     }
 
     async fn put(&self, file: &str, payload: Vec<u8>) -> Result<(), AppError> {
-        let response = client()?
+        let response = self
+            .client
             .put(self.file_url(file)?)
             .basic_auth(&self.settings.username, Some(&self.settings.password))
             .header("content-type", "application/json; charset=utf-8")
@@ -89,7 +90,8 @@ impl RemoteTransport for WebDavTransport {
     }
 
     async fn get_optional(&self, file: &str) -> Result<Option<Vec<u8>>, AppError> {
-        let response = client()?
+        let response = self
+            .client
             .get(self.file_url(file)?)
             .basic_auth(&self.settings.username, Some(&self.settings.password))
             .send()

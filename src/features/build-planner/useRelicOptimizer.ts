@@ -54,6 +54,16 @@ export function useRelicOptimizer(options: RelicOptimizerControllerOptions) {
       throw new Error("2+2 方案需要两个不同的隧洞套装。");
   }
 
+  function getOrCreateWorker(): Worker {
+    if (!worker) {
+      worker = new Worker(
+        new URL("../../shared/utils/relic-optimizer/optimizer.worker.ts", import.meta.url),
+        { type: "module" },
+      );
+    }
+    return worker;
+  }
+
   async function runInWorker(
     input: RelicOptimizerRunInput,
     id: number,
@@ -61,15 +71,9 @@ export function useRelicOptimizer(options: RelicOptimizerControllerOptions) {
     if (typeof Worker === "undefined") return optimizeRelics(input);
     return new Promise<RelicOptimizerResult>((resolve, reject) => {
       rejectRunning = reject;
-      const runningWorker = new Worker(
-        new URL("../../shared/utils/relic-optimizer/optimizer.worker.ts", import.meta.url),
-        { type: "module" },
-      );
-      worker = runningWorker;
+      const runningWorker = getOrCreateWorker();
       runningWorker.onmessage = (event: MessageEvent<WorkerResponse>) => {
         if (event.data.id !== id || id !== requestId || worker !== runningWorker) return;
-        runningWorker.terminate();
-        worker = null;
         rejectRunning = null;
         if (event.data.error) reject(new Error(event.data.error));
         else if (event.data.result) resolve(event.data.result);

@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import InputText from "primevue/inputtext";
 import { characterDisplayName, pathIconSrc, resolveCharacterCatalogue } from "@/shared/catalogue";
 import { pathLabel } from "@/shared/catalogue/relic-options";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { CharacterListItem } from "@/types";
 import { listAllOwnedCharacters } from "./list-owned-characters";
 import {
@@ -218,7 +219,9 @@ onMounted(() => void load());
               : "背包中暂无角色，请先同步角色档案"
         }}
       </div>
-      <div v-if="loading" class="team-picker-empty">正在加载角色…</div>
+      <div v-if="loading" class="team-picker-empty">
+        <LoadingState variant="list" label="正在加载角色…" :rows="4" compact />
+      </div>
     </div>
   </div>
 </template>

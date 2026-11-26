@@ -4,9 +4,19 @@ import { useMobileSubMode } from "@/shared/contracts/mobile-sub-mode";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
 import { useMobileListWindow } from "@/shared/ui/useMobileListWindow";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import MobileFarmingList from "./MobileFarmingList.vue";
 import { catalogueCapsuleHostKey } from "./catalogue-capsule-host";
-import { computed, inject, onActivated, onDeactivated, onUnmounted, ref, watch } from "vue";
+import {
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onUnmounted,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import type { RelicSetCatalogueEntry, RelicSetFarmingProfile, RelicSetTargetCount } from "@/types";
 import { ownedCountOf } from "./owned-counts";
@@ -21,13 +31,16 @@ import { sortRelicSetsByTargetCount } from "./relic-target-chart";
 
 defineOptions({ name: "RelicSetGrid" });
 
-const props = defineProps<{
-  sets: RelicSetCatalogueEntry[];
-  ownedCounts: Map<number, number>;
-  inventoryRevision?: number;
-  preview?: boolean;
-  active?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    sets: RelicSetCatalogueEntry[];
+    ownedCounts: Map<number, number>;
+    inventoryRevision?: number;
+    preview?: boolean;
+    active?: boolean;
+  }>(),
+  { inventoryRevision: undefined, preview: false, active: true },
+);
 const emit = defineEmits<{ select: [set: RelicSetCatalogueEntry] }>();
 
 const mobile = useMobileView();
@@ -95,11 +108,11 @@ const { dragStyle: capsuleDragStyle } = useCapsuleSwipe({
 });
 
 const revisited = ref(false);
-const targetCounts = ref<RelicSetTargetCount[]>([]);
+const targetCounts = shallowRef<RelicSetTargetCount[]>([]);
 const loadedTargetRevision = ref<number | undefined>(undefined);
 const chartLoading = ref(false);
 const chartError = ref("");
-const farmingProfiles = ref<RelicSetFarmingProfile[]>([]);
+const farmingProfiles = shallowRef<RelicSetFarmingProfile[]>([]);
 const loadedFarmingRevision = ref<number | undefined>(undefined);
 const farmingLoading = ref(false);
 const farmingError = ref("");
@@ -328,7 +341,12 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
             </div>
             <small>数量倒序 · 共 {{ chartItems.length }} 套</small>
           </div>
-          <p v-if="chartLoading" class="relic-target-chart-state">正在整理目标角色数据…</p>
+          <LoadingState
+            v-if="chartLoading"
+            variant="chart"
+            label="正在整理目标角色数据…"
+            :rows="6"
+          />
           <p v-else-if="chartError" class="relic-target-chart-state error">{{ chartError }}</p>
           <p v-else-if="!chartItems.length" class="relic-target-chart-state">
             当前分类暂无套装数据。
@@ -345,7 +363,13 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
             >
               <span class="relic-target-bar-rank">{{ String(index + 1).padStart(2, "0") }}</span>
               <span class="relic-target-bar-icon">
-                <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
+                <img
+                  v-if="item.set.image"
+                  :src="item.set.image"
+                  :alt="item.set.name"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <span v-else>◇</span>
               </span>
               <span class="relic-target-bar-name" :title="item.set.name">{{ item.set.name }}</span>
@@ -393,7 +417,12 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
             <p class="relic-farming-chart-note">
               低分表示目标角色更多、当前套装质量更低，优先提升收益更高；柱长代表收益机会。
             </p>
-            <p v-if="farmingLoading" class="relic-target-chart-state">正在评估当前穿戴质量…</p>
+            <LoadingState
+              v-if="farmingLoading"
+              variant="chart"
+              label="正在评估当前穿戴质量…"
+              :rows="6"
+            />
             <p v-else-if="farmingError" class="relic-target-chart-state error">
               {{ farmingError }}
             </p>
@@ -416,7 +445,13 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
               >
                 <span class="relic-target-bar-rank">{{ String(index + 1).padStart(2, "0") }}</span>
                 <span class="relic-target-bar-icon">
-                  <img v-if="item.set.image" :src="item.set.image" :alt="item.set.name" />
+                  <img
+                    v-if="item.set.image"
+                    :src="item.set.image"
+                    :alt="item.set.name"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <span v-else>◇</span>
                 </span>
                 <span class="relic-target-bar-name relic-farming-bar-name" :title="item.set.name">
@@ -461,7 +496,13 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
             <div class="catalogue-card-top">
               <div class="catalogue-card-media">
                 <div class="catalogue-media-box">
-                  <img v-if="set.image" :src="set.image" :alt="set.name" />
+                  <img
+                    v-if="set.image"
+                    :src="set.image"
+                    :alt="set.name"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <span v-else class="catalogue-placeholder">◇</span>
                 </div>
                 <div class="catalogue-title-wrap">
@@ -533,7 +574,23 @@ const ownedCount = (setId: number) => ownedCountOf(props.ownedCounts, setId);
           <Transition :name="`capsule-${viewTransitionDirection}`" mode="out-in">
             <div :key="viewMode" class="capsule-titles">
               <span class="capsule-title-main">{{ currentModeLabel }}</span>
-              <span class="capsule-title-sub">{{ currentModeSubLabel }}</span>
+              <span
+                class="capsule-title-sub"
+                :class="{
+                  'is-loading':
+                    (viewMode === 'chart' && chartLoading) ||
+                    (viewMode === 'farmingScore' && farmingLoading),
+                }"
+              >
+                <i
+                  v-if="
+                    (viewMode === 'chart' && chartLoading) ||
+                    (viewMode === 'farmingScore' && farmingLoading)
+                  "
+                  class="capsule-loading-dot"
+                  aria-hidden="true"
+                />{{ currentModeSubLabel }}
+              </span>
             </div>
           </Transition>
           <div class="capsule-dots" aria-hidden="true">

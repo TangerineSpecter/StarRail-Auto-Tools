@@ -75,7 +75,20 @@ const activeTabSummary = () => {
   };
 };
 
+const tabIndicatorPositions = ref<Partial<Record<TabKey, number>>>({});
+
+function measureTabIndicators() {
+  const next: Partial<Record<TabKey, number>> = {};
+  for (const key of tabOrder) {
+    const el = tabButtons.value[key];
+    if (el) next[key] = el.offsetLeft + (el.offsetWidth - 18) / 2;
+  }
+  tabIndicatorPositions.value = next;
+}
+
 function buttonIndicatorX(key: TabKey) {
+  const cached = tabIndicatorPositions.value[key];
+  if (cached !== undefined) return cached;
   const el = tabButtons.value[key];
   return el ? el.offsetLeft + (el.offsetWidth - 18) / 2 : 0;
 }
@@ -83,6 +96,7 @@ function buttonIndicatorX(key: TabKey) {
 const indicatorX = ref(0);
 const indicatorReady = ref(false);
 function updateIndicator() {
+  measureTabIndicators();
   if (tabButtons.value[tab.value]) {
     indicatorX.value = buttonIndicatorX(tab.value);
     if (!indicatorReady.value) {

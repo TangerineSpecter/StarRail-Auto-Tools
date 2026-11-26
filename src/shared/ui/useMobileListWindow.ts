@@ -37,26 +37,32 @@ export function useMobileListWindow<T>(options: {
   );
   const hasMore = computed(() => options.enabled.value && limit.value < options.items.value.length);
 
+  let observedTarget: HTMLElement | null = null;
+
   async function observe() {
     const id = ++generation;
-    observer?.disconnect();
-    observer = undefined;
     await nextTick();
     const isActive = options.active ? options.active.value : true;
+    const target = sentinel.value;
     if (
       id !== generation ||
       !alive ||
       !isActive ||
       !options.enabled.value ||
-      !sentinel.value ||
+      !target ||
       !hasMore.value
     ) {
+      observer?.disconnect();
+      observer = undefined;
+      observedTarget = null;
       return;
     }
     if (!window.IntersectionObserver) {
       limit.value = options.items.value.length;
       return;
     }
+    if (observer && observedTarget === target) return;
+    observer?.disconnect();
     observer = new IntersectionObserver(
       (entries) => {
         const stillActive = options.active ? options.active.value : true;
@@ -70,11 +76,16 @@ export function useMobileListWindow<T>(options: {
           return;
         }
         limit.value += step;
-        void observe();
+        if (!hasMore.value) {
+          observer?.disconnect();
+          observer = undefined;
+          observedTarget = null;
+        }
       },
       { root: null, rootMargin: "400px 0px" },
     );
-    observer.observe(sentinel.value);
+    observedTarget = target;
+    observer.observe(target);
   }
 
   watch(

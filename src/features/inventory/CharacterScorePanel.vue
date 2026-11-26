@@ -27,6 +27,7 @@ import type { CharacterBuildPlan, RelicListItem } from "@/types";
 import type { CharacterDetailData, RelicDetailData } from "./detail-types";
 import EquippedRelicPeekCard from "./EquippedRelicPeekCard.vue";
 import RelicReplaceComparePopover from "./RelicReplaceComparePopover.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 
 const props = defineProps<{
   detail: CharacterDetailData;
@@ -670,7 +671,15 @@ async function computeFarmPriority() {
           </button>
         </div>
 
-        <div v-if="!farmEnabled" class="score-notice-card">
+        <LoadingState
+          v-if="farmBusy"
+          variant="list"
+          compact
+          label="正在估算各部位期望刷本天数…"
+          :rows="4"
+        />
+
+        <div v-else-if="!farmEnabled" class="score-notice-card">
           <p>完整 Estimated TBP 计算量较大，点击「计算刷本成本」后估算各部位期望天数。</p>
         </div>
 
@@ -845,7 +854,15 @@ async function computeFarmPriority() {
           <span class="filter-tag"> 已限制目标套装：{{ replacementSetNames.join("、") }} </span>
         </div>
 
-        <ul v-if="replacements.length" class="score-replace-list">
+        <LoadingState
+          v-if="inventoryBusy"
+          variant="list"
+          compact
+          label="正在检索背包可替换遗器…"
+          :rows="3"
+        />
+
+        <ul v-else-if="replacements.length" class="score-replace-list">
           <li v-for="item in replacements" :key="item.relic.itemId">
             <button
               type="button"

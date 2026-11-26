@@ -127,14 +127,6 @@ pub(crate) struct CleanupItemUpdate<'a> {
 }
 
 impl InventoryStore {
-    fn cleanup_connection(&self) -> Result<Connection, AppError> {
-        let connection = Connection::open(&self.path)?;
-        connection.pragma_update(None, "foreign_keys", "ON")?;
-        connection.pragma_update(None, "journal_mode", "WAL")?;
-        connection.busy_timeout(std::time::Duration::from_secs(5))?;
-        Ok(connection)
-    }
-
     pub fn add_cleanup_candidates(
         &self,
         request: &CleanupCandidateRequest,
@@ -142,7 +134,7 @@ impl InventoryStore {
         if request.item_ids.is_empty() {
             return Err(AppError::RelicCleanup("请至少选择一件遗器".to_owned()));
         }
-        let mut connection = self.cleanup_connection()?;
+        let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
         let uid = cleanup_uid(&transaction)?;
         let now = cleanup_now_millis();
@@ -195,7 +187,7 @@ impl InventoryStore {
         if item_ids.is_empty() {
             return Ok(0);
         }
-        let connection = self.cleanup_connection()?;
+        let connection = self.connect()?;
         let uid = cleanup_uid(&connection)?;
         let placeholders = std::iter::repeat_n("?", item_ids.len())
             .collect::<Vec<_>>()
@@ -217,7 +209,7 @@ impl InventoryStore {
         let Some(uid) = self.current_uid()? else {
             return Ok(Vec::new());
         };
-        let connection = self.cleanup_connection()?;
+        let connection = self.connect()?;
         let mut statement = connection.prepare(
             "SELECT item_id, display_name, status, last_run_id, created_at, updated_at, fingerprint_json
              FROM cleanup_queue WHERE uid = ?1 ORDER BY created_at, item_id",
@@ -234,7 +226,7 @@ impl InventoryStore {
         model_revision: &str,
         template_revision: &str,
     ) -> Result<FrozenCleanupRun, AppError> {
-        let mut connection = self.cleanup_connection()?;
+        let mut connection = self.connect()?;
         let transaction = connection.transaction()?;
         let uid = cleanup_uid(&transaction)?;
         let mut queue_statement = transaction.prepare(
@@ -248,40 +240,41 @@ impl InventoryStore {
         if items.is_empty() {
             return Err(AppError::RelicCleanup("清理管理中没有候选遗器".to_owned()));
         }
+        let all_fingerprints = load_all_fingerprints(&transaction)?;
+        let fingerprint_by_id: HashMap<u32, &RelicFingerprint> =
+            all_fingerprints.iter().map(|fp| (fp.item_id, fp)).collect();
         for item in &items {
-            let current = load_fingerprint(&transaction, item.item_id)?.ok_or_else(|| {
-                AppError::RelicCleanup(format!(
-                    "候选遗器 {} 已不在当前背包，请移出后重新选择",
-                    item.display_name
-                ))
-            })?;
+            let current = fingerprint_by_id
+                .get(&item.item_id)
+                .copied()
+                .ok_or_else(|| {
+                    AppError::RelicCleanup(format!(
+                        "候选遗器 {} 已不在当前背包，请移出后重新选择",
+                        item.display_name
+                    ))
+                })?;
             if current.locked || current.equipped_character_id.is_some() {
                 return Err(AppError::RelicCleanup(format!(
                     "候选遗器 {} 当前已锁定或装备，请重新检查清理名单",
                     item.display_name
                 )));
             }
-            if current != item.fingerprint {
+            if current != &item.fingerprint {
                 return Err(AppError::RelicCleanup(format!(
                     "候选遗器 {} 的数据已变化，请移出并重新加入",
                     item.display_name
                 )));
             }
         }
-        let inventory_hash = cleanup_inventory_hash_from_connection(&transaction, uid)?;
+        let inventory_hash = hash_serializable(&serde_json::json!({
+            "uid": uid,
+            "relics": &all_fingerprints
+        }))?;
         let mut all_visual_counts = HashMap::<String, usize>::new();
-        let mut ids_statement =
-            transaction.prepare("SELECT item_id FROM relics ORDER BY item_id")?;
-        let inventory_ids = ids_statement
-            .query_map([], |row| row.get::<_, u32>(0))?
-            .collect::<Result<Vec<_>, _>>()?;
-        drop(ids_statement);
-        for item_id in inventory_ids {
-            if let Some(fingerprint) = load_fingerprint(&transaction, item_id)? {
-                *all_visual_counts
-                    .entry(fingerprint.visual_key()?)
-                    .or_default() += 1;
-            }
+        for fingerprint in &all_fingerprints {
+            *all_visual_counts
+                .entry(fingerprint.visual_key()?)
+                .or_default() += 1;
         }
         let mut selected_visual_counts = HashMap::<String, usize>::new();
         for item in &items {
@@ -346,7 +339,7 @@ impl InventoryStore {
         run_id: u64,
         directory: &str,
     ) -> Result<(), AppError> {
-        self.cleanup_connection()?.execute(
+        self.connect()?.execute(
             "UPDATE cleanup_runs SET directory = ?1, updated_at = ?2 WHERE run_id = ?3",
             params![directory, cleanup_now_millis(), run_id],
         )?;
@@ -361,7 +354,7 @@ impl InventoryStore {
         terminal: bool,
     ) -> Result<(), AppError> {
         let now = cleanup_now_millis();
-        self.cleanup_connection()?.execute(
+        self.connect()?.execute(
             "UPDATE cleanup_runs SET status = ?1, message = ?2, updated_at = ?3,
                     completed_at = CASE WHEN ?4 THEN ?3 ELSE completed_at END
              WHERE run_id = ?5",
@@ -376,7 +369,7 @@ impl InventoryStore {
         item_id: u32,
         update: CleanupItemUpdate<'_>,
     ) -> Result<(), AppError> {
-        let connection = self.cleanup_connection()?;
+        let connection = self.connect()?;
         connection.execute(
             "UPDATE cleanup_run_items SET preview_status = ?1, execution_status = ?2,
                     confidence = ?3, image_path = ?4, reason = ?5
@@ -399,14 +392,15 @@ impl InventoryStore {
         Ok(())
     }
 
+    #[cfg(test)]
     pub fn cleanup_inventory_hash(&self) -> Result<String, AppError> {
-        let connection = self.cleanup_connection()?;
-        let uid = self.current_uid()?.unwrap_or_default();
+        let connection = self.connect()?;
+        let uid = optional_cleanup_uid(&connection)?.unwrap_or_default();
         cleanup_inventory_hash_from_connection(&connection, uid)
     }
 
     pub fn list_cleanup_runs(&self) -> Result<Vec<CleanupRunSummary>, AppError> {
-        let connection = self.cleanup_connection()?;
+        let connection = self.connect()?;
         let mut statement =
             connection.prepare(&run_summary_sql("", "ORDER BY r.created_at DESC"))?;
         let mut runs = statement
@@ -416,7 +410,7 @@ impl InventoryStore {
         if !runs.iter().any(|run| run.status == "previewCompleted") {
             return Ok(runs);
         }
-        let current_uid = self.current_uid()?.unwrap_or_default();
+        let current_uid = optional_cleanup_uid(&connection)?.unwrap_or_default();
         let current_hash = cleanup_inventory_hash_from_connection(&connection, current_uid)?;
         for run in &mut runs {
             if run.status == "previewCompleted"
@@ -436,7 +430,7 @@ impl InventoryStore {
     }
 
     pub fn cleanup_run_detail(&self, run_id: u64) -> Result<CleanupRunDetail, AppError> {
-        let connection = self.cleanup_connection()?;
+        let connection = self.connect()?;
         let run = connection
             .query_row(
                 &run_summary_sql("WHERE r.run_id = ?1", ""),
@@ -469,8 +463,10 @@ impl InventoryStore {
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
-        let currently_valid = run.uid == self.current_uid()?.unwrap_or_default()
-            && run.inventory_hash == self.cleanup_inventory_hash()?;
+        let current_uid = optional_cleanup_uid(&connection)?.unwrap_or_default();
+        let currently_valid = run.uid == current_uid
+            && run.inventory_hash
+                == cleanup_inventory_hash_from_connection(&connection, current_uid)?;
         Ok(CleanupRunDetail {
             run,
             items,
@@ -479,7 +475,7 @@ impl InventoryStore {
     }
 
     pub fn delete_cleanup_run(&self, run_id: u64) -> Result<Option<String>, AppError> {
-        let connection = self.cleanup_connection()?;
+        let connection = self.connect()?;
         let directory = connection
             .query_row(
                 "SELECT directory FROM cleanup_runs WHERE run_id = ?1",
@@ -492,7 +488,7 @@ impl InventoryStore {
     }
 }
 
-fn cleanup_uid(connection: &Connection) -> Result<u32, AppError> {
+fn optional_cleanup_uid(connection: &Connection) -> Result<Option<u32>, AppError> {
     let value: Option<String> = connection
         .query_row(
             "SELECT value FROM app_state WHERE key = 'current_uid'",
@@ -500,12 +496,15 @@ fn cleanup_uid(connection: &Connection) -> Result<u32, AppError> {
             |row| row.get(0),
         )
         .optional()?;
-    value
+    Ok(value
         .and_then(|value| value.parse().ok())
-        .filter(|uid| *uid != 0)
-        .ok_or_else(|| {
-            AppError::RelicCleanup("尚未读取到游戏 UID，请先完成一次直读同步".to_owned())
-        })
+        .filter(|uid| *uid != 0))
+}
+
+fn cleanup_uid(connection: &Connection) -> Result<u32, AppError> {
+    optional_cleanup_uid(connection)?.ok_or_else(|| {
+        AppError::RelicCleanup("尚未读取到游戏 UID，请先完成一次直读同步".to_owned())
+    })
 }
 
 fn cleanup_inventory_hash_from_connection(

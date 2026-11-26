@@ -20,6 +20,7 @@ import { inventoryApi } from "@/shared/api/inventory";
 import MobileInventoryPage from "@/pages/MobileInventoryPage.vue";
 import { loadRelicMainStatScanner } from "@/pages/scanner-loaders";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import MobileAboutSheet from "./MobileAboutSheet.vue";
 import MobileSync from "./MobileSync.vue";
 import { useMobilePageTransition } from "./useMobilePageTransition";
@@ -140,17 +141,6 @@ onMounted(() => {
     });
   }
   synced();
-  const preloadPages = () => {
-    Object.values(pageLoaders).forEach((loader) => {
-      void loader().catch(() => {});
-    });
-    void loadRelicMainStatScanner().catch(() => {});
-  };
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(preloadPages, { timeout: 2000 });
-  } else {
-    setTimeout(preloadPages, 800);
-  }
 });
 onBeforeUnmount(() => {
   postureObserver?.disconnect();
@@ -159,6 +149,12 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <main class="mobile-shell" :class="{ 'has-top-primary': hasTopPrimary }">
+    <LoadingState
+      v-if="navigation.pending.value"
+      variant="bar"
+      class="mobile-route-progress"
+      label="正在切换页面…"
+    />
     <header ref="topHeaderEl" class="mobile-top-header" />
     <h1 class="mobile-page-title">{{ tabs.find((item) => item.id === tab)?.name }}</h1>
     <p v-if="runtime.error" class="feedback error" role="alert">
@@ -173,11 +169,7 @@ onBeforeUnmount(() => {
       :aria-busy="navigation.pending.value"
     >
       <KeepAlive
-        ><component
-          :is="currentPage"
-          :key="tab === 'build' ? `build-${runtime.inventoryRevision}` : tab"
-          @synced="synced"
-        >
+        ><component :is="currentPage" :key="tab" @synced="synced">
           <template #toolbar-actions>
             <MobileDevDataSwitch v-if="MobileDevDataSwitch" />
           </template>

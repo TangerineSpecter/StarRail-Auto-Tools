@@ -60,6 +60,8 @@ const planOutdated = computed(
         v-if="entry?.image"
         :src="entry.image"
         :alt="`${label} 头像`"
+        loading="lazy"
+        decoding="async"
         class="character-card-portrait"
       />
       <span v-else class="character-card-fallback" :style="{ background: fallbackColor }">
@@ -78,11 +80,17 @@ const planOutdated = computed(
 
       <div class="character-card-meta">
         <span v-if="entry?.element" :class="['character-card-element', `elem-${entry.element}`]">
-          <img v-if="entry.elementIcon" :src="entry.elementIcon" :alt="entry.element" />
+          <img
+            v-if="entry.elementIcon"
+            :src="entry.elementIcon"
+            :alt="entry.element"
+            loading="lazy"
+            decoding="async"
+          />
           <span>{{ entry.element }}</span>
         </span>
         <span class="character-card-path">
-          <img :src="pathIconSrc(item.path)" alt="" />
+          <img :src="pathIconSrc(item.path)" alt="" loading="lazy" decoding="async" />
           <span>{{ pathLabel(item.path) }}</span>
         </span>
         <span :class="['character-card-stars', `rarity-${rarity}`]" :aria-label="`${rarity} 星`">

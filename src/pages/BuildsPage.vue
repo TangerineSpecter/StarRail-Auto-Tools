@@ -10,6 +10,10 @@ const buildCharacterId = ref<number | null>(null);
 
 function closeBuildPlan() {
   buildCharacterId.value = null;
+}
+
+function reloadBuildPlan() {
+  buildCharacterId.value = null;
   void dashboard.value?.reload();
 }
 </script>
@@ -24,7 +28,8 @@ function closeBuildPlan() {
     v-if="buildCharacterId"
     :character-id="buildCharacterId"
     @close="closeBuildPlan"
-    @deleted="closeBuildPlan"
+    @saved="reloadBuildPlan"
+    @deleted="reloadBuildPlan"
     @error="error = $event"
     @notice="notice = $event"
   />

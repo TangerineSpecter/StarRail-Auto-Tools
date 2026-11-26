@@ -237,6 +237,8 @@ watch(
           class="lightcone-card-watermark"
           :src="pathIconSrc(item.path)"
           alt=""
+          loading="lazy"
+          decoding="async"
           aria-hidden="true"
         />
 
@@ -248,6 +250,8 @@ watch(
               class="lightcone-catalogue-art"
               :src="item.image"
               :alt="item.name"
+              loading="lazy"
+              decoding="async"
             />
             <span v-else class="lightcone-catalogue-art catalogue-placeholder">◇</span>
           </div>
@@ -275,6 +279,8 @@ watch(
                 class="lightcone-catalogue-path-icon"
                 :src="pathIconSrc(item.path)"
                 alt=""
+                loading="lazy"
+                decoding="async"
               />
               <span>{{ item.path }}</span>
             </p>

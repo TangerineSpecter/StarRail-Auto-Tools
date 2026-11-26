@@ -39,6 +39,16 @@ where
         .map_err(|error| AppError::RelicCleanup(format!("清理任务线程失败：{error}")))?
 }
 
+async fn run_db_blocking<T, F>(task: F) -> Result<T, AppError>
+where
+    T: Send + 'static,
+    F: FnOnce() -> Result<T, AppError> + Send + 'static,
+{
+    tauri::async_runtime::spawn_blocking(task)
+        .await
+        .map_err(|error| AppError::Database(format!("后台数据库任务失败：{error}")))?
+}
+
 #[cfg(desktop)]
 #[tauri::command]
 pub async fn export_diagnostic_log(
@@ -105,11 +115,12 @@ pub fn delete_ocr_model_cache(
 }
 
 #[tauri::command]
-pub fn add_cleanup_candidates(
+pub async fn add_cleanup_candidates(
     request: CleanupCandidateRequest,
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<CleanupQueueItem>, AppError> {
-    store.add_cleanup_candidates(&request)
+    let store = store.inner().clone();
+    run_cleanup_blocking(move || store.add_cleanup_candidates(&request)).await
 }
 
 #[tauri::command]
@@ -236,17 +247,23 @@ pub async fn upload_webdav_snapshot(
         webdav: settings,
         ..SyncSettings::default()
     };
-    let snapshot = inventory.sync_snapshot()?;
+    let inv = inventory.inner().clone();
+    let (snapshot, local_state) =
+        run_db_blocking(move || Ok((inv.sync_snapshot()?, inv.sync_local_state()?))).await?;
+    let generated_at = snapshot.generated_at;
     match sync::upload_snapshot_checked(
         &sync_settings,
         store.known_hosts_path(),
-        snapshot.clone(),
-        inventory.sync_local_state()?,
+        snapshot,
+        local_state,
         None,
     )
     .await?
     {
-        Ok(version) => inventory.mark_sync_uploaded(snapshot.generated_at, &version.revision),
+        Ok(version) => {
+            let inv = inventory.inner().clone();
+            run_db_blocking(move || inv.mark_sync_uploaded(generated_at, &version.revision)).await
+        }
         Err(_) => Err(AppError::Sync(
             "远端数据已变化，请在数据同步站确认后再覆盖".to_owned(),
         )),
@@ -264,7 +281,8 @@ pub async fn download_webdav_snapshot(
         webdav: settings,
         ..SyncSettings::default()
     };
-    let local_state = inventory.sync_local_state()?;
+    let inv = inventory.inner().clone();
+    let local_state = run_db_blocking(move || inv.sync_local_state()).await?;
     let expected_local_generated_at = local_state.generated_at;
     let downloaded = match sync::download_snapshot_checked(
         &sync_settings,
@@ -281,7 +299,13 @@ pub async fn download_webdav_snapshot(
             ));
         }
     };
-    publish_restored_snapshot(&app, &inventory, downloaded, expected_local_generated_at)
+    publish_restored_snapshot_async(
+        app,
+        inventory.inner().clone(),
+        downloaded,
+        expected_local_generated_at,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -315,18 +339,23 @@ pub async fn upload_sync_snapshot(
     expected_remote_revision: Option<String>,
 ) -> Result<SyncUploadResult, AppError> {
     let known_hosts = store.known_hosts_path().to_path_buf();
-    let snapshot = inventory.sync_snapshot()?;
+    let inv = inventory.inner().clone();
+    let (snapshot, local_state) =
+        run_db_blocking(move || Ok((inv.sync_snapshot()?, inv.sync_local_state()?))).await?;
+    let generated_at = snapshot.generated_at;
     match sync::upload_snapshot_checked(
         &settings,
         &known_hosts,
-        snapshot.clone(),
-        inventory.sync_local_state()?,
+        snapshot,
+        local_state,
         conflict_confirmation(expected_local_generated_at, expected_remote_revision),
     )
     .await?
     {
         Ok(version) => {
-            inventory.mark_sync_uploaded(snapshot.generated_at, &version.revision)?;
+            let inv = inventory.inner().clone();
+            run_db_blocking(move || inv.mark_sync_uploaded(generated_at, &version.revision))
+                .await?;
             Ok(SyncUploadResult::Completed)
         }
         Err(conflict) => Ok(SyncUploadResult::Conflict {
@@ -347,7 +376,8 @@ pub async fn download_sync_snapshot(
     expected_remote_revision: Option<String>,
 ) -> Result<SyncDownloadResult, AppError> {
     let known_hosts = store.known_hosts_path().to_path_buf();
-    let local_state = inventory.sync_local_state()?;
+    let inv = inventory.inner().clone();
+    let local_state = run_db_blocking(move || inv.sync_local_state()).await?;
     let checked_local_generated_at = local_state.generated_at;
     let downloaded = match sync::download_snapshot_checked(
         &settings,
@@ -367,27 +397,31 @@ pub async fn download_sync_snapshot(
         }
     };
     Ok(SyncDownloadResult::Completed {
-        summary: publish_restored_snapshot(
-            &app,
-            &inventory,
+        summary: publish_restored_snapshot_async(
+            app,
+            inventory.inner().clone(),
             downloaded,
             checked_local_generated_at,
-        )?,
+        )
+        .await?,
     })
 }
 
-fn publish_restored_snapshot(
-    app: &AppHandle,
-    inventory: &InventoryStore,
+async fn publish_restored_snapshot_async(
+    app: AppHandle,
+    inventory: InventoryStore,
     downloaded: DownloadedSnapshot,
     expected_local_generated_at: i64,
 ) -> Result<InventorySummary, AppError> {
-    let summary = inventory.replace_with_sync_snapshot_at_revision(
-        downloaded.snapshot,
-        Some(&downloaded.version.revision),
-        Some(expected_local_generated_at),
-    )?;
-    direct_read::inventory_changed(app, &summary, false)?;
+    let summary = run_db_blocking(move || {
+        inventory.replace_with_sync_snapshot_at_revision(
+            downloaded.snapshot,
+            Some(&downloaded.version.revision),
+            Some(expected_local_generated_at),
+        )
+    })
+    .await?;
+    direct_read::inventory_changed(&app, &summary, false)?;
     let _ = app.emit("inventory://changed", &summary);
     Ok(summary)
 }
@@ -563,18 +597,20 @@ pub fn get_inventory_summary(
 }
 
 #[tauri::command]
-pub fn list_relics(
+pub async fn list_relics(
     filter: RelicFilter,
     store: State<'_, InventoryStore>,
 ) -> Result<PagedResult<RelicListItem>, AppError> {
-    store.list_relics(&filter)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.list_relics(&filter)).await
 }
 
 #[tauri::command]
-pub fn get_inventory_equipment_counts(
+pub async fn get_inventory_equipment_counts(
     store: State<'_, InventoryStore>,
 ) -> Result<InventoryEquipmentCounts, AppError> {
-    store.equipment_counts()
+    let store = store.inner().clone();
+    run_db_blocking(move || store.equipment_counts()).await
 }
 
 #[tauri::command]
@@ -585,43 +621,48 @@ pub fn get_relic_main_stat_scan_plan_count(
 }
 
 #[tauri::command]
-pub fn scan_relics_by_main_stat(
+pub async fn scan_relics_by_main_stat(
     page: PageQuery,
     store: State<'_, InventoryStore>,
 ) -> Result<RelicMainStatScanResult, AppError> {
-    store.scan_relics_by_main_stat(&page)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.scan_relics_by_main_stat(&page)).await
 }
 
 #[tauri::command]
-pub fn scan_relics_by_main_stat_grouped(
+pub async fn scan_relics_by_main_stat_grouped(
     store: State<'_, InventoryStore>,
 ) -> Result<RelicMainStatGroupedResult, AppError> {
-    store.scan_relics_by_main_stat_grouped()
+    let store = store.inner().clone();
+    run_db_blocking(move || store.scan_relics_by_main_stat_grouped()).await
 }
 
 #[tauri::command]
-pub fn list_light_cones(
+pub async fn list_light_cones(
     filter: LightConeFilter,
     store: State<'_, InventoryStore>,
 ) -> Result<PagedResult<LightConeListItem>, AppError> {
-    store.list_light_cones(&filter)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.list_light_cones(&filter)).await
 }
 
 #[tauri::command]
-pub fn list_characters(
+pub async fn list_characters(
     filter: CharacterFilter,
     store: State<'_, InventoryStore>,
 ) -> Result<PagedResult<crate::inventory::CharacterListItem>, AppError> {
-    store.list_characters(&filter)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.list_characters(&filter)).await
 }
 
 #[tauri::command]
-pub fn get_inventory_detail(
+pub async fn get_inventory_detail(
     kind: InventoryKind,
     id: u32,
     store: State<'_, InventoryStore>,
 ) -> Result<InventoryDetail, AppError> {
-    store.detail(kind, id)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.detail(kind, id)).await
 }
 
 #[tauri::command]
@@ -640,10 +681,11 @@ pub fn get_character_build_plan(
 }
 
 #[tauri::command]
-pub fn get_build_dashboard(
+pub async fn get_build_dashboard(
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<crate::inventory::BuildDashboardEntry>, AppError> {
-    store.build_dashboard()
+    let store = store.inner().clone();
+    run_db_blocking(move || store.build_dashboard()).await
 }
 
 #[tauri::command]
@@ -664,25 +706,28 @@ pub fn set_build_dashboard_pinned(
 }
 
 #[tauri::command]
-pub fn list_relic_set_recommended_characters(
+pub async fn list_relic_set_recommended_characters(
     set_id: u32,
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<RelicSetRecommendedCharacter>, AppError> {
-    store.recommended_characters_for_relic_set(set_id)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.recommended_characters_for_relic_set(set_id)).await
 }
 
 #[tauri::command]
-pub fn list_relic_set_target_counts(
+pub async fn list_relic_set_target_counts(
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<RelicSetTargetCount>, AppError> {
-    store.relic_set_target_counts()
+    let store = store.inner().clone();
+    run_db_blocking(move || store.relic_set_target_counts()).await
 }
 
 #[tauri::command]
-pub fn list_relic_set_farming_profiles(
+pub async fn list_relic_set_farming_profiles(
     store: State<'_, InventoryStore>,
 ) -> Result<Vec<RelicSetFarmingProfile>, AppError> {
-    store.relic_set_farming_profiles()
+    let store = store.inner().clone();
+    run_db_blocking(move || store.relic_set_farming_profiles()).await
 }
 
 #[tauri::command]
@@ -715,8 +760,11 @@ pub async fn export_character_build_plans_excel(
     else {
         return Ok(None);
     };
-    store.export_build_plans_excel(file.path())?;
-    Ok(Some(file.path().to_string_lossy().into_owned()))
+    let path = file.path().to_path_buf();
+    let display = path.to_string_lossy().into_owned();
+    let store = store.inner().clone();
+    run_db_blocking(move || store.export_build_plans_excel(&path)).await?;
+    Ok(Some(display))
 }
 
 #[cfg(desktop)]
@@ -732,25 +780,28 @@ pub async fn import_character_build_plans_excel(
     else {
         return Ok(None);
     };
-    Ok(Some(BuildPlanExcelImportResult {
-        imported: store.import_build_plans_excel(file.path())?,
-    }))
+    let path = file.path().to_path_buf();
+    let store = store.inner().clone();
+    let imported = run_db_blocking(move || store.import_build_plans_excel(&path)).await?;
+    Ok(Some(BuildPlanExcelImportResult { imported }))
 }
 
 #[tauri::command]
-pub fn get_relic_optimizer_context(
+pub async fn get_relic_optimizer_context(
     character_id: u32,
     store: State<'_, InventoryStore>,
 ) -> Result<RelicOptimizerContext, AppError> {
-    store.relic_optimizer_context(character_id)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.relic_optimizer_context(character_id)).await
 }
 
 #[tauri::command]
-pub fn list_teams(
+pub async fn list_teams(
     filter: TeamFilter,
     store: State<'_, InventoryStore>,
 ) -> Result<PagedResult<Team>, AppError> {
-    store.list_teams(&filter)
+    let store = store.inner().clone();
+    run_db_blocking(move || store.list_teams(&filter)).await
 }
 
 #[tauri::command]
@@ -809,27 +860,32 @@ pub fn delete_team(
 }
 
 #[tauri::command]
-pub fn delete_inventory_items(
+pub async fn delete_inventory_items(
     request: DeleteItemsRequest,
     app: AppHandle,
     store: State<'_, InventoryStore>,
 ) -> Result<u64, AppError> {
-    let deleted = store.delete_items(&request)?;
-    let summary = store.summary()?;
+    let store = store.inner().clone();
+    let (deleted, summary) =
+        run_db_blocking(move || Ok((store.delete_items(&request)?, store.summary()?))).await?;
     direct_read::inventory_changed(&app, &summary, false)?;
     let _ = app.emit("inventory://changed", &summary);
     Ok(deleted)
 }
 
 #[tauri::command]
-pub fn clear_inventory(
+pub async fn clear_inventory(
     request: ClearInventoryRequest,
     app: AppHandle,
     store: State<'_, InventoryStore>,
 ) -> Result<InventorySummary, AppError> {
     let clear_account = request.kind.is_none();
-    store.clear(request.kind)?;
-    let summary = store.summary()?;
+    let store = store.inner().clone();
+    let summary = run_db_blocking(move || {
+        store.clear(request.kind)?;
+        store.summary()
+    })
+    .await?;
     direct_read::inventory_changed(&app, &summary, clear_account)?;
     let _ = app.emit("inventory://changed", &summary);
     Ok(summary)
@@ -849,9 +905,11 @@ pub async fn export_inventory(
     else {
         return Ok(None);
     };
-    let path = file.path();
-    store.export_to_path(path)?;
-    Ok(Some(path.to_string_lossy().into_owned()))
+    let path = file.path().to_path_buf();
+    let display = path.to_string_lossy().into_owned();
+    let store = store.inner().clone();
+    run_db_blocking(move || store.export_to_path(&path)).await?;
+    Ok(Some(display))
 }
 
 #[cfg(desktop)]
@@ -868,21 +926,24 @@ pub async fn import_inventory(
     else {
         return Ok(None);
     };
-    let path = file.path();
-    let file = std::fs::File::open(path)?;
-    let mut import: crate::inventory::InventoryImport = serde_json::from_reader(file)
-        .map_err(|error| AppError::Database(format!("JSON 格式无效：{error}")))?;
-    let report = crate::inventory::normalize_import(&mut import);
-    let summary = match store.apply_full_snapshot(&import)? {
-        Ok(summary) => summary,
-        Err(_) => return Err(AppError::AccountMismatch),
-    };
+    let path = file.path().to_path_buf();
+    let store = store.inner().clone();
+    let (summary, warnings) = run_db_blocking(move || {
+        let file = std::fs::File::open(&path)?;
+        let reader = std::io::BufReader::new(file);
+        let mut import: crate::inventory::InventoryImport = serde_json::from_reader(reader)
+            .map_err(|error| AppError::Database(format!("JSON 格式无效：{error}")))?;
+        let report = crate::inventory::normalize_import(&mut import);
+        let summary = match store.apply_full_snapshot(&import)? {
+            Ok(summary) => summary,
+            Err(_) => return Err(AppError::AccountMismatch),
+        };
+        Ok((summary, report.warnings()))
+    })
+    .await?;
     direct_read::inventory_changed(&app, &summary, false)?;
     let _ = app.emit("inventory://changed", &summary);
-    Ok(Some(InventoryImportResult {
-        summary,
-        warnings: report.warnings(),
-    }))
+    Ok(Some(InventoryImportResult { summary, warnings }))
 }
 
 #[tauri::command]

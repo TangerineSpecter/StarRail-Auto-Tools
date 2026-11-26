@@ -64,7 +64,7 @@ export function useMobilePageTransition<T extends string>(options: {
               { opacity: 1, transform: "translate3d(0, 0, 0)" },
               { opacity: 0, transform: `translate3d(${-direction * 24}px, 0, 0)` },
             ],
-            { duration: 100, easing: "cubic-bezier(0.4, 0, 1, 1)" },
+            { duration: 80, easing: "cubic-bezier(0.4, 0, 1, 1)" },
           )
         : Promise.resolve(undefined);
       try {
@@ -91,7 +91,7 @@ export function useMobilePageTransition<T extends string>(options: {
             { opacity: 0, transform: `translate3d(${direction * 28}px, 0, 0)` },
             { opacity: 1, transform: "translate3d(0, 0, 0)" },
           ],
-          { duration: 200, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+          { duration: 170, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
         );
         inMotion?.cancel();
       }

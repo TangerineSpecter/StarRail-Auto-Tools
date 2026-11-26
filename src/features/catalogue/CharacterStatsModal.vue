@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
 import { inventoryApi } from "@/shared/api/inventory";
-import {
-  catalogueCharacterId,
-  lightConeById,
-  pathIconSrc,
-  relicCatalogue,
-} from "@/shared/catalogue";
+import { catalogueCharacterId, lightConeById, pathIconSrc, relicImage } from "@/shared/catalogue";
 import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import { formatStatValue, pathLabel, slotLabel, statLabel } from "@/shared/catalogue/relic-options";
@@ -14,7 +9,12 @@ import { formatBaseStat } from "@/shared/utils/display";
 import type { CharacterCatalogueEntry } from "@/types";
 import type { CatalogueCharacterEquipment, CatalogueEquippedRelic } from "./equipped-items";
 import { useCloseOnEscape } from "./close-on-escape";
-import CharacterAbilities from "./CharacterAbilities.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
+
+const CharacterAbilities = defineAsyncComponent({
+  loader: () => import("./CharacterAbilities.vue"),
+  delay: 120,
+});
 
 const props = defineProps<{ character: CharacterCatalogueEntry }>();
 const mobile = useMobileView();
@@ -34,10 +34,7 @@ const lightConeImage = computed(() =>
     ? (lightConeById.get(equippedLightCone.value.templateId)?.image ?? undefined)
     : undefined,
 );
-const relicPieceImage = (relic: CatalogueEquippedRelic) =>
-  relicCatalogue.sets
-    .find((set) => set.id === relic.setId)
-    ?.pieces?.find((piece) => piece.slot === relic.slot)?.image;
+const relicPieceImage = (relic: CatalogueEquippedRelic) => relicImage(relic.setId, relic.slot);
 
 async function loadEquipment() {
   const currentRequest = ++requestId;
@@ -171,7 +168,13 @@ onBeforeUnmount(() => {
             </div>
             <small v-if="equipment">{{ equippedRelics.length }} / 6 件遗器</small>
           </header>
-          <p v-if="equipmentLoading" class="equipment-empty">正在读取本地背包装备…</p>
+          <LoadingState
+            v-if="equipmentLoading"
+            variant="list"
+            label="正在读取本地背包装备…"
+            :rows="2"
+            compact
+          />
           <p v-else-if="equipmentError" class="equipment-empty">
             本地背包读取失败，暂无法展示装备。
           </p>

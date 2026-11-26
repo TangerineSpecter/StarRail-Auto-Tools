@@ -13,6 +13,7 @@ import { useMobileView } from "@/shared/contracts/mobile-view";
 import { useMobileSubMode } from "@/shared/contracts/mobile-sub-mode";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import { useCapsuleSwipe } from "@/shared/ui/useCapsuleSwipe";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import Button from "primevue/button";
 import ScannerFilterButton from "./ScannerFilterButton.vue";
 import MainStatReviewCards from "./MainStatReviewCards.vue";
@@ -572,9 +573,12 @@ onBeforeUnmount(() => {
         <!-- UPGRADE MODE (替换推荐扫描) -->
         <div v-if="activeMode === 'upgrade'" key="upgrade" class="scanner-mode-pane">
           <p v-if="error" class="scanner-state error">{{ error }}</p>
-          <div v-else-if="usefulnessLoading" class="scanner-state">
-            正在检索优于当前穿戴的未装备遗器…
-          </div>
+          <LoadingState
+            v-else-if="usefulnessLoading"
+            variant="page"
+            label="正在检索优于当前穿戴的未装备遗器…"
+            hint="正在逐件比对所有培养方案的套装、主词条与加权副词条评分"
+          />
           <div v-else-if="usefulnessRows.length" class="scanner-usefulness">
             <div class="scanner-result-heading">
               <div>
@@ -716,7 +720,12 @@ onBeforeUnmount(() => {
         <!-- MAIN STAT MODE (主属性扫描) -->
         <div v-else key="mainStat" class="scanner-mode-pane">
           <p v-if="error" class="scanner-state error">{{ error }}</p>
-          <div v-else-if="planCount === null" class="scanner-state">正在读取培养方案…</div>
+          <LoadingState
+            v-else-if="planCount === null"
+            variant="page"
+            compact
+            label="正在读取培养方案…"
+          />
           <div v-else-if="planCount === 0" class="scanner-state">
             {{
               mobile
@@ -724,7 +733,12 @@ onBeforeUnmount(() => {
                 : "请先在数据管理的角色档案中保存至少一个“培养方案 / 毕业目标”。"
             }}
           </div>
-          <div v-else-if="loading" class="scanner-state">正在比对培养方案并检索遗器…</div>
+          <LoadingState
+            v-else-if="loading"
+            variant="page"
+            label="正在比对培养方案并检索遗器…"
+            hint="汇总无目标主词条的未装备遗器矩阵"
+          />
           <div v-else-if="!result" class="scanner-intro">
             <div class="scanner-radar" aria-hidden="true"><i /><b>◈</b></div>
             <div>

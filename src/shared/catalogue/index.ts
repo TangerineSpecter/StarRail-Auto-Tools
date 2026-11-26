@@ -65,11 +65,17 @@ export function resolveCharacterCatalogue(
 }
 
 /** Display names that map to multiple path variants in the catalogue. */
-const multiPathDisplayNames = new Set(
-  characterCatalogue.characters
-    .map((item) => item.name)
-    .filter((name, _, names) => names.filter((other) => other === name).length > 1),
-);
+const multiPathDisplayNames = (() => {
+  const counts = new Map<string, number>();
+  for (const item of characterCatalogue.characters) {
+    counts.set(item.name, (counts.get(item.name) ?? 0) + 1);
+  }
+  const duplicates = new Set<string>();
+  for (const [name, count] of counts) {
+    if (count > 1) duplicates.add(name);
+  }
+  return duplicates;
+})();
 
 export interface CharacterDisplayNameInput {
   name: string;
@@ -121,6 +127,7 @@ export const relicPieceImages = new Map(
     (set.pieces ?? []).map((piece) => [`${set.id}_${piece.slot}`, piece.image] as const),
   ),
 );
+export const relicSetById = new Map(relicCatalogue.sets.map((set) => [set.id, set]));
 export const lightConeById = new Map(lightConeCatalogue.lightCones.map((item) => [item.id, item]));
 
 export const relicImage = (setId: number, slot: string): string | undefined =>

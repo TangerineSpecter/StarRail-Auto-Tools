@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onActivated, ref } from "vue";
 import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { useMobileData } from "./useMobileData";
 const { teams, loading, error, total, load } = useMobileData();
 const search = ref("");
@@ -16,13 +18,23 @@ onActivated(() => load("team", search.value));
         ><span class="visually-hidden">搜索配队</span
         ><input v-model="search" type="search" placeholder="搜索配队" enterkeyhint="search"
       /></label>
-      <button class="mobile-tool-button" :disabled="loading">搜索</button>
+      <button class="mobile-tool-button" :disabled="loading">
+        <InlineSpinner v-if="loading" size="xs" />
+        <span>搜索</span>
+      </button>
     </form>
     <p v-if="error" role="alert" class="feedback error">
       {{ error }} <button class="text-button" @click="load('team', search)">重试</button>
     </p>
-    <p v-if="loading">正在读取配队…</p>
-    <p v-else-if="!teams.length" class="state">暂无配队，请先从电脑同步。</p>
+    <LoadingState
+      v-if="loading && !teams.length"
+      variant="cards"
+      label="正在读取配队…"
+      :rows="3"
+      compact
+    />
+    <LoadingState v-else-if="loading" variant="bar" label="正在刷新配队…" />
+    <p v-if="!loading && !teams.length" class="state">暂无配队，请先从电脑同步。</p>
     <div class="mobile-team-list">
       <article v-for="team in teams" :key="team.teamId" class="mobile-team">
         <h2>{{ team.name }}</h2>
@@ -50,7 +62,8 @@ onActivated(() => load("team", search.value));
       :disabled="loading"
       @click="load('team', search, true)"
     >
-      加载更多
+      <InlineSpinner v-if="loading" size="xs" />
+      <span>{{ loading ? "加载中…" : "加载更多" }}</span>
     </button>
   </section>
 </template>

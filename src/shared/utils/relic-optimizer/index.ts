@@ -121,10 +121,9 @@ function statTotals(relic: ScoredRelic["relic"]): Map<string, number> {
 
 function targetContribution(
   input: RelicOptimizerRunInput,
-  relic: ScoredRelic["relic"],
+  totals: Map<string, number>,
   key: string,
 ) {
-  const totals = statTotals(relic);
   const baseHp = input.characterBase.hp + input.lightConeBase.hp;
   const baseAttack = input.characterBase.attack + input.lightConeBase.attack;
   const baseDefense = input.characterBase.defense + input.lightConeBase.defense;
@@ -138,14 +137,44 @@ function targetContribution(
   return totals.get(key) ?? 0;
 }
 
-function activeSetData(relics: ScoredRelic["relic"][], sets: RelicSetCatalogueEntry[]) {
+interface PreparedEvalContext {
+  setById: Map<number, RelicSetCatalogueEntry>;
+  currentBySlot: Map<string, number>;
+  sortedTargets: CharacterBuildPlan["targets"];
+}
+
+function buildPreparedEvalContext(input: RelicOptimizerRunInput): PreparedEvalContext {
+  const setById = new Map<number, RelicSetCatalogueEntry>();
+  for (const set of input.sets) setById.set(set.id, set);
+  const currentBySlot = new Map<string, number>();
+  const characterId = input.context.character.characterId;
+  for (const relic of input.context.relics) {
+    if (relic.equippedCharacterId === characterId) {
+      currentBySlot.set(relic.slot, relic.itemId);
+    }
+  }
+  const sortedTargets = [...input.plan.targets].sort(
+    (left, right) => left.priority - right.priority,
+  );
+  return { setById, currentBySlot, sortedTargets };
+}
+
+const SLOT_ORDER_MAP = new Map<string, number>(
+  RELIC_OPTIMIZER_SLOTS.map((slot, index) => [slot, index]),
+);
+
+function activeSetData(
+  relics: ScoredRelic["relic"][],
+  setById: Map<number, RelicSetCatalogueEntry>,
+) {
   const counts = new Map<number, number>();
   for (const relic of relics) counts.set(relic.setId, (counts.get(relic.setId) ?? 0) + 1);
   const effects: string[] = [];
   const activeSets: OptimizedRelicBuild["activeSets"] = [];
-  for (const set of sets) {
-    const pieces = counts.get(set.id) ?? 0;
+  for (const [setId, pieces] of counts) {
     if (pieces < 2) continue;
+    const set = setById.get(setId);
+    if (!set) continue;
     activeSets.push({ setId: set.id, name: set.name, pieces });
     if (set.effects.twoPiece) effects.push(set.effects.twoPiece);
     if (set.kind === "cavern" && pieces >= 4 && set.effects.fourPiece)
@@ -155,30 +184,29 @@ function activeSetData(relics: ScoredRelic["relic"][], sets: RelicSetCatalogueEn
 }
 
 function targetProgress(
-  plan: CharacterBuildPlan,
+  sortedTargets: CharacterBuildPlan["targets"],
   stats: RelicOptimizerStandingStat[],
 ): RelicOptimizerTargetProgress[] {
   const values = new Map(stats.map((stat) => [stat.key, stat.value]));
-  return [...plan.targets]
-    .sort((left, right) => left.priority - right.priority)
-    .map((target) => {
-      const current = values.get(standingKeyByBuildKey[target.statKey]) ?? null;
-      const gap = current === null ? null : Math.max(0, target.target - current);
-      return {
-        ...target,
-        current,
-        gap,
-        satisfied: target.minimum <= 0 || (current !== null && current + EPSILON >= target.minimum),
-      };
-    });
+  return sortedTargets.map((target) => {
+    const current = values.get(standingKeyByBuildKey[target.statKey]) ?? null;
+    const gap = current === null ? null : Math.max(0, target.target - current);
+    return {
+      ...target,
+      current,
+      gap,
+      satisfied: target.minimum <= 0 || (current !== null && current + EPSILON >= target.minimum),
+    };
+  });
 }
 
 function evaluateBuild(
   input: RelicOptimizerRunInput,
   selected: ScoredRelic[],
+  evalCtx: PreparedEvalContext,
 ): OptimizedRelicBuild {
   const relics = selected.map((item) => item.relic);
-  const { effects, activeSets } = activeSetData(relics, input.sets);
+  const { effects, activeSets } = activeSetData(relics, evalCtx.setById);
   const standingStats = calculateStandingStats({
     characterBase: input.characterBase,
     lightConeBase: input.lightConeBase,
@@ -195,11 +223,6 @@ function evaluateBuild(
           )
         : undefined,
   });
-  const currentBySlot = new Map(
-    input.context.relics
-      .filter((relic) => relic.equippedCharacterId === input.context.character.characterId)
-      .map((relic) => [relic.slot, relic.itemId]),
-  );
   const choices: OptimizedRelicChoice[] = relics
     .map((relic) => ({
       ...relic,
@@ -207,25 +230,39 @@ function evaluateBuild(
         relic.equippedCharacterId !== null &&
         relic.equippedCharacterId !== input.context.character.characterId,
       unfinished: relic.rarity < 5 || relic.level < 15,
-      changed: currentBySlot.get(relic.slot) !== relic.itemId,
+      changed: evalCtx.currentBySlot.get(relic.slot) !== relic.itemId,
     }))
     .sort(
       (left, right) =>
-        RELIC_OPTIMIZER_SLOTS.indexOf(left.slot as (typeof RELIC_OPTIMIZER_SLOTS)[number]) -
-        RELIC_OPTIMIZER_SLOTS.indexOf(right.slot as (typeof RELIC_OPTIMIZER_SLOTS)[number]),
+        (SLOT_ORDER_MAP.get(left.slot) ?? 99) - (SLOT_ORDER_MAP.get(right.slot) ?? 99),
     );
+  let weightedRolls = 0;
+  let potentialSum = 0;
+  for (const item of selected) {
+    weightedRolls += item.weightedRolls;
+    potentialSum += item.potentialPct;
+  }
+  let borrowedCount = 0;
+  let unfinishedCount = 0;
+  let discardedCount = 0;
+  let changedCount = 0;
+  for (const item of choices) {
+    if (item.borrowed) borrowedCount += 1;
+    if (item.unfinished) unfinishedCount += 1;
+    if (item.discard) discardedCount += 1;
+    if (item.changed) changedCount += 1;
+  }
   return {
     relics: choices,
-    weightedRolls: selected.reduce((sum, item) => sum + item.weightedRolls, 0),
-    averagePotentialPct:
-      selected.reduce((sum, item) => sum + item.potentialPct, 0) / Math.max(selected.length, 1),
+    weightedRolls,
+    averagePotentialPct: potentialSum / Math.max(selected.length, 1),
     standingStats,
-    targetProgress: targetProgress(input.plan, standingStats),
+    targetProgress: targetProgress(evalCtx.sortedTargets, standingStats),
     activeSets,
-    borrowedCount: choices.filter((item) => item.borrowed).length,
-    unfinishedCount: choices.filter((item) => item.unfinished).length,
-    discardedCount: choices.filter((item) => item.discard).length,
-    changedCount: choices.filter((item) => item.changed).length,
+    borrowedCount,
+    unfinishedCount,
+    discardedCount,
+    changedCount,
   };
 }
 
@@ -284,7 +321,12 @@ function paretoPrune(input: RelicOptimizerRunInput, items: ScoredRelic[]) {
   const groups = new Map<string, ScoredRelic[]>();
   for (const item of items) {
     const key = groupKey(input, item);
-    groups.set(key, [...(groups.get(key) ?? []), item]);
+    let bucket = groups.get(key);
+    if (!bucket) {
+      bucket = [];
+      groups.set(key, bucket);
+    }
+    bucket.push(item);
   }
   const output: ScoredRelic[] = [];
   for (const group of groups.values()) {
@@ -461,11 +503,15 @@ function selectedKey(build: PartialBuild) {
   return build.key;
 }
 
-function topFiveAndNearest(input: RelicOptimizerRunInput, states: PartialBuild[]) {
+function topFiveAndNearest(
+  input: RelicOptimizerRunInput,
+  states: PartialBuild[],
+  evalCtx: PreparedEvalContext,
+) {
   const feasible: OptimizedRelicBuild[] = [];
   let nearest: OptimizedRelicBuild | null = null;
   for (const state of states) {
-    const build = evaluateBuild(input, state.selected);
+    const build = evaluateBuild(input, state.selected, evalCtx);
     if (build.targetProgress.every((target) => target.satisfied)) feasible.push(build);
     else if (
       !nearest ||
@@ -489,6 +535,7 @@ function search(
   input: RelicOptimizerRunInput,
   all: ScoredRelic[],
   strict: boolean,
+  evalCtx: PreparedEvalContext,
 ): RelicOptimizerSearchResult {
   const startedAt = performance.now();
   const originalCandidates = all.length;
@@ -521,7 +568,7 @@ function search(
   let exactNearest: OptimizedRelicBuild | null = null;
 
   const considerExact = (state: PartialBuild) => {
-    const build = evaluateBuild(input, state.selected);
+    const build = evaluateBuild(input, state.selected, evalCtx);
     if (build.targetProgress.every((target) => target.satisfied)) {
       exactBuilds.push(build);
       exactBuilds.sort(buildComparator);
@@ -589,7 +636,7 @@ function search(
 
   const output = exact
     ? { builds: exactBuilds, nearest: exactNearest }
-    : topFiveAndNearest(input, finals);
+    : topFiveAndNearest(input, finals, evalCtx);
   return {
     ...output,
     diagnostics: {
@@ -627,6 +674,7 @@ export function optimizeRelics(input: RelicOptimizerRunInput): RelicOptimizerRes
 
   const currentCharacterId = input.context.character.characterId;
   const hardTargets = input.plan.targets;
+  const evalCtx = buildPreparedEvalContext(input);
   const scoreItem = (relic: RelicOptimizerContext["relics"][number]): ScoredRelic => {
     const score = scoreRelic(relic, weights, { allowedMainStats: input.plan.mainStats });
     const totals = statTotals(relic);
@@ -635,7 +683,7 @@ export function optimizeRelics(input: RelicOptimizerRunInput): RelicOptimizerRes
       weightedRolls: score.weightedRolls,
       potentialPct: score.potentialPct,
       targetContributions: hardTargets.map((target) =>
-        targetContribution(input, relic, target.statKey),
+        targetContribution(input, totals, target.statKey),
       ),
       dominanceContributions: DOMINANCE_STAT_KEYS.map((key) => totals.get(key) ?? 0),
     };
@@ -663,12 +711,13 @@ export function optimizeRelics(input: RelicOptimizerRunInput): RelicOptimizerRes
     ? evaluateBuild(
         input,
         RELIC_OPTIMIZER_SLOTS.map((slot) => currentItems.find((item) => item.relic.slot === slot)!),
+        evalCtx,
       )
     : null;
 
   return {
     current,
-    strict: search(input, scored, true),
-    relaxed: input.options.includeRelaxed ? search(input, scored, false) : null,
+    strict: search(input, scored, true, evalCtx),
+    relaxed: input.options.includeRelaxed ? search(input, scored, false, evalCtx) : null,
   };
 }

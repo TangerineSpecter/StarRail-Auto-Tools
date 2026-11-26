@@ -3,6 +3,7 @@ import { computed } from "vue";
 import type { InventoryKind, InventoryListItem, PagedResult } from "@/types";
 import InventoryList from "./InventoryList.vue";
 import MobileInventoryControls from "./MobileInventoryControls.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 
 const props = defineProps<{
   kind: InventoryKind;
@@ -33,7 +34,10 @@ const selected = new Set<number>();
       hide-categories
       preview
     />
-    <p v-if="!result" class="mobile-inventory-preview-state">{{ error || "正在加载…" }}</p>
+    <p v-if="!result && error" class="mobile-inventory-preview-state">{{ error }}</p>
+    <div v-else-if="!result" class="mobile-inventory-preview-loading">
+      <LoadingState variant="list" label="正在加载…" :rows="4" compact />
+    </div>
     <InventoryList
       v-else
       :kind="kind"

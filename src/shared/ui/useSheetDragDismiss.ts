@@ -1,6 +1,9 @@
 import { onBeforeUnmount } from "vue";
 
-/** Enables downward drag-to-dismiss gestures on a PrimeVue bottom sheet header. */
+const SHEET_SELECTOR =
+  ".p-drawer, .mobile-detail-sheet, .catalogue-character-modal, .lightcone-catalogue-modal, .set-recommendation-modal";
+
+/** Enables downward drag-to-dismiss gestures on a bottom sheet or mobile modal header. */
 export function useSheetDragDismiss(onDismiss: () => void, threshold = 56) {
   let startX = 0;
   let startY = 0;
@@ -15,6 +18,7 @@ export function useSheetDragDismiss(onDismiss: () => void, threshold = 56) {
     if (!target) return;
     target.style.transition = "";
     target.style.transform = "";
+    target.style.willChange = "";
   }
 
   function reset() {
@@ -32,7 +36,7 @@ export function useSheetDragDismiss(onDismiss: () => void, threshold = 56) {
     startY = touch.clientY;
     deltaY = 0;
     dragging = false;
-    drawerEl = ((event.currentTarget as HTMLElement | null)?.closest(".p-drawer") ??
+    drawerEl = ((event.currentTarget as HTMLElement | null)?.closest(SHEET_SELECTOR) ??
       null) as HTMLElement | null;
   }
 
@@ -45,6 +49,7 @@ export function useSheetDragDismiss(onDismiss: () => void, threshold = 56) {
       if (dy > 8 && dy > dx) {
         dragging = true;
         drawerEl.style.transition = "none";
+        drawerEl.style.willChange = "transform";
       } else {
         return;
       }

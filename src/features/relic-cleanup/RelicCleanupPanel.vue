@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import Button from "primevue/button";
 import ProgressBar from "primevue/progressbar";
 import { relicCleanupApi } from "@/shared/api/relic-cleanup";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import { relicImage } from "@/shared/catalogue";
 import { formatStatValue, slotLabel, statLabel } from "@/shared/catalogue/relic-options";
@@ -328,7 +329,8 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="model-body">
-          <p class="model-status-text">{{ model?.message ?? "正在读取模型状态…" }}</p>
+          <LoadingState v-if="!model" variant="inline" label="正在读取模型状态…" compact />
+          <p v-else class="model-status-text">{{ model.message }}</p>
 
           <div v-if="model?.state === 'downloading'" class="model-download-bar">
             <div class="download-meta">
@@ -559,7 +561,14 @@ onBeforeUnmount(() => {
 
           <!-- 模式 2：未选中 Run 时的历史批次列表 -->
           <div v-else class="runs-history-container">
-            <div v-if="!runs.length" class="cleanup-empty-box">
+            <LoadingState
+              v-if="!capabilities"
+              variant="list"
+              label="正在读取历史预览记录…"
+              :rows="3"
+              compact
+            />
+            <div v-else-if="!runs.length" class="cleanup-empty-box">
               <div class="empty-icon-ring">
                 <span class="empty-glyph">◇</span>
               </div>
@@ -619,7 +628,8 @@ onBeforeUnmount(() => {
         >
       </div>
       <div class="safety-right">
-        <span class="platform-tip">{{ capabilities?.message ?? "正在读取清理能力状态…" }}</span>
+        <LoadingState v-if="!capabilities" variant="inline" label="正在读取清理能力状态…" compact />
+        <span v-else class="platform-tip">{{ capabilities.message }}</span>
       </div>
     </footer>
   </div>

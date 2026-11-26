@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
 import { protocolLabel } from "./sync-settings";
 import type { SyncProtocol } from "@/types";
 
@@ -28,7 +29,9 @@ const destination = computed(() => `你的 ${protocolLabel(props.protocol)}`);
       <span>本地数据</span><i>⇄</i><span>{{ destination }}</span>
     </div>
     <button class="transfer-action upload" type="button" :disabled="busy" @click="$emit('upload')">
-      <span class="transfer-icon">↑</span
+      <span class="transfer-icon">
+        <InlineSpinner v-if="activeTransfer === 'upload'" size="sm" />
+        <template v-else>↑</template> </span
       ><span
         ><b>{{ activeTransfer === "upload" ? "正在上传…" : "上传本地数据" }}</b
         ><small>备份当前录入与培养方案</small></span
@@ -40,7 +43,9 @@ const destination = computed(() => `你的 ${protocolLabel(props.protocol)}`);
       :disabled="busy"
       @click="$emit('download')"
     >
-      <span class="transfer-icon">↓</span
+      <span class="transfer-icon">
+        <InlineSpinner v-if="activeTransfer === 'download'" size="sm" />
+        <template v-else>↓</template> </span
       ><span
         ><b>{{ activeTransfer === "download" ? "正在下载…" : "下载远端快照" }}</b
         ><small>确认后完整覆盖本地数据</small></span

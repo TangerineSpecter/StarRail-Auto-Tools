@@ -76,12 +76,17 @@ function drawSparkleStar(
   }
   ctx.closePath();
 
-  ctx.shadowColor = color;
-  ctx.shadowBlur = outerRadius * 1.5;
   ctx.fillStyle = color;
   ctx.fill();
 
+  // 柔和星辉外圈（用轻叠加替代高开销 shadowBlur）
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha * 0.28));
+  ctx.beginPath();
+  ctx.arc(0, 0, outerRadius * 1.15, 0, Math.PI * 2);
+  ctx.fill();
+
   // 核心微亮点
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
   ctx.beginPath();
   ctx.arc(0, 0, Math.max(0.6, outerRadius * 0.2), 0, Math.PI * 2);
   ctx.fillStyle = "#ffffff";
@@ -169,7 +174,35 @@ function spawnParticles(engineX: number, engineY: number, dir: number) {
   }
 }
 
+let laneWidth = 0;
+let laneHeight = 0;
+let laneLeft = 0;
+let laneTop = 0;
+let resizeObserver: ResizeObserver | undefined;
+
+function measureLane() {
+  const laneEl = lane.value;
+  if (!laneEl) return;
+  const rect = laneEl.getBoundingClientRect();
+  laneWidth = Math.floor(rect.width);
+  laneHeight = Math.floor(rect.height);
+  laneLeft = rect.left;
+  laneTop = rect.top;
+}
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
 function render() {
+  if (document.hidden || prefersReducedMotion()) {
+    animFrameId = undefined;
+    return;
+  }
   const cvs = canvas.value;
   const laneEl = lane.value;
   const trainEl = train.value;
@@ -182,13 +215,12 @@ function render() {
   const ctx = cvs.getContext("2d");
   if (!ctx) return;
 
-  // 处理 Canvas 视口大小与 Retina 缩放
-  const rect = laneEl.getBoundingClientRect();
+  if (laneWidth <= 0 || laneHeight <= 0) measureLane();
   const dpr = window.devicePixelRatio || 1;
-  const width = Math.floor(rect.width);
-  const height = Math.floor(rect.height);
+  const width = laneWidth;
+  const height = laneHeight;
 
-  if (cvs.width !== width * dpr || cvs.height !== height * dpr) {
+  if (width > 0 && height > 0 && (cvs.width !== width * dpr || cvs.height !== height * dpr)) {
     cvs.width = width * dpr;
     cvs.height = height * dpr;
   }
@@ -210,19 +242,18 @@ function render() {
 
   if (isMoving) {
     const trainRect = trainEl.getBoundingClientRect();
-    const laneRect = rect;
 
     const engine = movingLeft
       ? {
           // 向左行驶，尾巴在右侧 (trainRect.right)
-          x: trainRect.right - laneRect.left,
-          y: trainRect.top - laneRect.top + trainRect.height * 0.5,
+          x: trainRect.right - laneLeft,
+          y: trainRect.top - laneTop + trainRect.height * 0.5,
           dir: 1,
         }
       : {
           // 向右行驶，尾巴在左侧 (trainRect.left)
-          x: trainRect.left - laneRect.left,
-          y: trainRect.top - laneRect.top + trainRect.height * 0.5,
+          x: trainRect.left - laneLeft,
+          y: trainRect.top - laneTop + trainRect.height * 0.5,
           dir: -1,
         };
 
@@ -278,18 +309,18 @@ function render() {
         p.alpha,
       );
     } else if (p.type === "dust") {
-      // 飘散星尘点
+      // 飘散星尘点（双层圆点替代 shadowBlur 提升帧率）
       const curSize = p.size + (p.maxSize - p.size) * Math.sin(progress * Math.PI);
-      ctx.save();
-      ctx.globalAlpha = p.alpha;
       ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 4;
+      ctx.globalAlpha = p.alpha * 0.3;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, curSize * 2.1, 0, Math.PI * 2);
+      ctx.fill();
 
+      ctx.globalAlpha = p.alpha;
       ctx.beginPath();
       ctx.arc(p.x, p.y, curSize, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
     }
   }
 
@@ -300,7 +331,8 @@ function render() {
 }
 
 function startRendering() {
-  if (animFrameId !== undefined) return;
+  if (animFrameId !== undefined || document.hidden || prefersReducedMotion()) return;
+  measureLane();
   animFrameId = requestAnimationFrame(render);
 }
 
@@ -310,10 +342,30 @@ function stopRendering() {
   animFrameId = undefined;
 }
 
-onMounted(startRendering);
+function handleVisibilityChange() {
+  if (document.hidden) stopRendering();
+  else startRendering();
+}
+
+onMounted(() => {
+  measureLane();
+  if (typeof ResizeObserver !== "undefined" && lane.value) {
+    resizeObserver = new ResizeObserver(measureLane);
+    resizeObserver.observe(lane.value);
+  }
+  window.addEventListener("resize", measureLane, { passive: true });
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  startRendering();
+});
 onActivated(startRendering);
 onDeactivated(stopRendering);
-onUnmounted(stopRendering);
+onUnmounted(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = undefined;
+  window.removeEventListener("resize", measureLane);
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
+  stopRendering();
+});
 </script>
 
 <template>

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import Select from "primevue/select";
 import { modelProviderApi } from "@/shared/api/model-provider";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { ModelProviderSettings } from "@/types";
 import {
   DEEPSEEK_MODELS,
@@ -85,7 +86,9 @@ onMounted(async () => {
         <span>✦</span>请在 DeepSeek 开放平台创建 API
         Key。保存配置不会发起模型请求，也不会验证额度或连通性。
       </p>
-      <div v-if="loading" class="settings-loading">正在读取大模型配置…</div>
+      <div v-if="loading" class="settings-loading">
+        <LoadingState variant="form" label="正在读取大模型配置…" :rows="4" compact />
+      </div>
       <form v-else class="model-settings-form" @submit.prevent="save">
         <label>
           <span>服务商</span>

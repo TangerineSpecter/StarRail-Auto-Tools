@@ -5,6 +5,7 @@ import { APP_NAME, APP_SLUG, APP_VERSION, PROJECT_URL } from "@/shared/app-info"
 import { diagnosticsApi } from "@/shared/api/diagnostics";
 import type { AppUpdaterContext } from "@/shared/contracts/updater";
 import { frontendDiagnostics } from "@/shared/diagnostics/frontend";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
 import { openExternalUrl } from "@/shared/utils/open-external-url";
 
 const props = defineProps<{
@@ -122,7 +123,8 @@ async function exportDiagnostics() {
       <div class="diagnostic-action">
         <span>FRONTEND · IPC · RUST</span>
         <button type="button" :disabled="exporting" @click="exportDiagnostics">
-          {{ exporting ? "整理中…" : "导出分析日志" }}
+          <InlineSpinner v-if="exporting" size="xs" />
+          <span>{{ exporting ? "整理中…" : "导出分析日志" }}</span>
         </button>
         <small v-if="exportStatus" role="status">{{ exportStatus }}</small>
       </div>
@@ -407,6 +409,10 @@ h2 {
   letter-spacing: 0.12em;
 }
 .diagnostic-action button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 35px;
   padding: 0 14px;
   border: 1px solid var(--blue-deep);

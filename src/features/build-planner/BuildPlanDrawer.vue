@@ -17,6 +17,7 @@ import {
 } from "@/shared/catalogue/relic-options";
 import RelicOptimizerResults from "./RelicOptimizerResults.vue";
 import BuildPlanAdvicePanel from "./BuildPlanAdvicePanel.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { useBuildPlanAdvice } from "./useBuildPlanAdvice";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import {
@@ -128,7 +129,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
           </div>
           <button type="button" aria-label="关闭培养方案" @click="emit('close')">×</button>
         </header>
-        <div v-if="editor.loading.value" class="detail-loading">正在读取培养方案…</div>
+        <div v-if="editor.loading.value" class="detail-loading">
+          <LoadingState variant="detail" label="正在读取培养方案…" :rows="4" />
+        </div>
         <div v-else class="build-scroll">
           <section class="build-section">
             <h3>套装结构</h3>
@@ -334,6 +337,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             class="filter-reset build-advice-query"
             type="button"
             outlined
+            :loading="planAdvice.loading.value"
             :disabled="
               editor.loading.value ||
               planAdvice.loading.value ||
@@ -351,12 +355,14 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
           ><Button
             class="filter-submit"
             type="button"
+            :loading="editor.saving.value"
             :disabled="editor.saving.value || editor.calculating.value"
             @click="editor.save"
             >{{ editor.saving.value ? "保存中…" : "保存" }}</Button
           ><Button
             class="filter-submit"
             type="button"
+            :loading="editor.calculating.value"
             :disabled="!editor.plan.characterId || editor.saving.value || editor.calculating.value"
             @click="editor.calculate"
             >{{ editor.calculating.value ? "计算中…" : "全局优化" }}</Button

@@ -236,6 +236,8 @@ watch(
           class="character-card-watermark"
           :src="character.pathIcon || pathIconSrc(character.path)"
           alt=""
+          loading="lazy"
+          decoding="async"
           aria-hidden="true"
         />
 
@@ -247,6 +249,8 @@ watch(
               class="character-portrait-img"
               :src="character.image"
               :alt="character.name"
+              loading="lazy"
+              decoding="async"
             />
             <span v-else class="character-portrait-placeholder">◇</span>
           </div>
@@ -271,6 +275,8 @@ watch(
                 class="character-path-icon"
                 :src="character.pathIcon || pathIconSrc(character.path)"
                 alt=""
+                loading="lazy"
+                decoding="async"
               />
               <span>{{ character.path }}</span>
             </p>
@@ -280,6 +286,8 @@ watch(
                 class="character-element-tag-icon"
                 :src="character.elementIcon"
                 :alt="character.element"
+                loading="lazy"
+                decoding="async"
               />
               <span class="character-element-tag-text">{{ character.element }}</span>
             </span>

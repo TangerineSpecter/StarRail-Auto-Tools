@@ -3,6 +3,8 @@ import Checkbox from "primevue/checkbox";
 import InputNumber from "primevue/inputnumber";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
+import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import { SYNC_PROTOCOLS } from "./sync-settings";
 import type { SyncSettings } from "@/types";
 
@@ -30,7 +32,9 @@ defineEmits<{
     <p class="settings-tip">
       <span>✦</span> 连接信息仅保存在本机应用数据目录。此目录内的同步文件由应用自动管理。
     </p>
-    <div v-if="loading" class="settings-loading">正在读取同步设置…</div>
+    <div v-if="loading" class="settings-loading">
+      <LoadingState variant="form" label="正在读取同步设置…" :rows="4" compact />
+    </div>
     <form v-else class="settings-form" @submit.prevent="$emit('save')">
       <div class="protocol-switch" role="radiogroup" aria-label="同步协议">
         <button
@@ -141,14 +145,16 @@ defineEmits<{
       </template>
       <div class="settings-actions">
         <button class="settings-button settings-button-primary" type="submit" :disabled="busy">
-          保存连接</button
+          <InlineSpinner v-if="busy" size="xs" />
+          <span>保存连接</span></button
         ><button
           class="settings-button settings-button-secondary"
           type="button"
           :disabled="busy"
           @click="$emit('test')"
         >
-          测试连接
+          <InlineSpinner v-if="busy" size="xs" />
+          <span>测试连接</span>
         </button>
       </div>
     </form>
@@ -284,6 +290,10 @@ defineEmits<{
   margin-top: 8px;
 }
 .settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 38px;
   padding: 0 15px;
   border: 1px solid transparent;

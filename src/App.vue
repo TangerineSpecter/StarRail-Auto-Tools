@@ -26,23 +26,39 @@ import { windowApi } from "@/shared/api/window";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import { appUpdaterContextKey, describeDownloadProgress } from "@/shared/contracts/updater";
 import { frontendDiagnostics } from "@/shared/diagnostics/frontend";
+import AsyncViewLoading from "@/shared/ui/AsyncViewLoading.vue";
 
-const loadScannerPage = () => import("@/pages/ScannerPage.vue");
+const viewLoaders: Partial<Record<AppView, () => Promise<unknown>>> = {
+  archive: () => import("@/pages/InventoryPage.vue"),
+  catalogue: () => import("@/pages/CataloguePage.vue"),
+  builds: () => import("@/pages/BuildsPage.vue"),
+  scanner: () => import("@/pages/ScannerPage.vue"),
+  settings: () => import("@/pages/SettingsPage.vue"),
+  about: () => import("@/pages/AboutPage.vue"),
+};
+
+function asyncPage(loader: () => Promise<unknown>): Component {
+  return defineAsyncComponent({
+    loader: loader as () => Promise<{ default: Component }>,
+    loadingComponent: AsyncViewLoading,
+    delay: 120,
+  });
+}
 
 const pages: Record<AppView, Component> = {
   capture: CapturePage,
-  archive: defineAsyncComponent(() => import("@/pages/InventoryPage.vue")),
-  catalogue: defineAsyncComponent(() => import("@/pages/CataloguePage.vue")),
-  builds: defineAsyncComponent(() => import("@/pages/BuildsPage.vue")),
-  scanner: defineAsyncComponent(loadScannerPage),
-  settings: defineAsyncComponent(() => import("@/pages/SettingsPage.vue")),
-  about: defineAsyncComponent(() => import("@/pages/AboutPage.vue")),
+  archive: asyncPage(viewLoaders.archive!),
+  catalogue: asyncPage(viewLoaders.catalogue!),
+  builds: asyncPage(viewLoaders.builds!),
+  scanner: asyncPage(viewLoaders.scanner!),
+  settings: asyncPage(viewLoaders.settings!),
+  about: asyncPage(viewLoaders.about!),
 };
 
 let scannerPreloadHandle: number | undefined;
 
 function preloadScanner() {
-  void Promise.all([loadScannerPage(), preloadScannerDefaultMode()]).catch(() => undefined);
+  void Promise.all([viewLoaders.scanner?.(), preloadScannerDefaultMode()]).catch(() => undefined);
 }
 
 onMounted(() => {
@@ -159,7 +175,12 @@ async function toggleMaximize() {
 }
 
 function preloadView(view: AppView) {
-  if (view === "scanner") preloadScanner();
+  if (view === "scanner") {
+    preloadScanner();
+    return;
+  }
+  const loader = viewLoaders[view];
+  if (loader) void loader().catch(() => undefined);
 }
 </script>
 

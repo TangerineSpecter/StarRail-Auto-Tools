@@ -1,9 +1,29 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import type { DirectReadSnapshot } from "@/types";
+
+const timeFormatter = new Intl.DateTimeFormat("zh-CN", {
+  hour12: false,
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+});
 
 const props = defineProps<{ direct: DirectReadSnapshot; running: boolean }>();
 const logView = ref<HTMLElement | null>(null);
+
+const formattedLogs = computed(() =>
+  (props.direct.logs ?? []).map((entry, index) => {
+    const date = new Date(entry.at);
+    return {
+      key: `${entry.at}-${index}`,
+      level: entry.level,
+      message: entry.message,
+      iso: date.toISOString(),
+      timeLabel: timeFormatter.format(date),
+    };
+  }),
+);
 
 onMounted(() => {
   if (logView.value) logView.value.scrollTop = logView.value.scrollHeight;
@@ -38,17 +58,15 @@ watch(
       aria-live="polite"
       aria-relevant="additions text"
     >
-      <p v-if="!direct.logs?.length" class="direct-log-empty">
+      <p v-if="!formattedLogs.length" class="direct-log-empty">
         {{ direct.message || "等待启动监听…" }}
       </p>
       <p
-        v-for="(entry, index) in direct.logs"
-        :key="`${entry.at}-${index}`"
+        v-for="entry in formattedLogs"
+        :key="entry.key"
         :class="['direct-log-line', `direct-log-${entry.level}`]"
       >
-        <time :datetime="new Date(entry.at).toISOString()">{{
-          new Date(entry.at).toLocaleTimeString("zh-CN", { hour12: false })
-        }}</time
+        <time :datetime="entry.iso">{{ entry.timeLabel }}</time
         ><span>{{ entry.message }}</span>
       </p>
     </div>

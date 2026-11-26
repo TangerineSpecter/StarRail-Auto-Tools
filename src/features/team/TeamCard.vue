@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import Button from "primevue/button";
 import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { Team, TeamMember } from "@/types";
 import type { CharacterBuildScore } from "@/types";
 import { formatScorePct } from "./team-member-score";
@@ -284,9 +285,13 @@ const teamTopGrade = computed(() => {
                 </div>
               </div>
             </div>
-            <small v-else-if="slot.member.owned" class="team-slot-score-empty">
-              {{ scoresReady === false ? "评分加载中…" : "未装备遗器" }}
-            </small>
+            <div
+              v-else-if="slot.member.owned && scoresReady === false"
+              class="team-slot-score-empty"
+            >
+              <LoadingState variant="inline" label="评分加载中…" compact />
+            </div>
+            <small v-else-if="slot.member.owned" class="team-slot-score-empty">未装备遗器</small>
           </div>
         </div>
 

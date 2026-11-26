@@ -16,7 +16,7 @@ import {
   probabilityOfMain,
   type SubstatKey,
 } from "./tables";
-import { maxWeightedRolls, scoreRelic, type ScoreRelicInput } from "./score";
+import { maxWeightedRolls, scoreRelic, type RelicScoreResult, type ScoreRelicInput } from "./score";
 
 export interface EstTbpResult {
   pMain: number;
@@ -51,25 +51,79 @@ function combinations<T>(items: T[], k: number): T[][] {
   return result;
 }
 
-function combinationsWithReplacement(n: number, k: number): number[][] {
-  // Multisets of size k from indices 0..n-1
-  if (k === 0) return [[]];
-  if (n <= 0) return [];
-  const result: number[][] = [];
-  const walk = (start: number, path: number[]) => {
-    if (path.length === k) {
-      result.push(path.slice());
-      return;
+function multinomialCoefficient(counts: readonly number[]): number {
+  let result = 1;
+  let filled = 0;
+  for (const count of counts) {
+    for (let i = 1; i <= count; i += 1) {
+      filled += 1;
+      result = (result * filled) / i;
     }
-    for (let i = start; i < n; i += 1) {
-      path.push(i);
-      walk(i, path);
-      path.pop();
-    }
-  };
-  walk(0, []);
+  }
   return result;
 }
+
+interface PrecomputedUpgradePattern {
+  r0: number;
+  r1: number;
+  r2: number;
+  r3: number;
+  weightedProb: number;
+}
+
+function buildUpgradePatterns(upgrades: number, pLine: number): PrecomputedUpgradePattern[] {
+  const denom = 4 ** upgrades;
+  const patterns: PrecomputedUpgradePattern[] = [];
+  for (let c0 = 0; c0 <= upgrades; c0 += 1) {
+    for (let c1 = 0; c1 <= upgrades - c0; c1 += 1) {
+      for (let c2 = 0; c2 <= upgrades - c0 - c1; c2 += 1) {
+        const c3 = upgrades - c0 - c1 - c2;
+        const prob = (pLine * multinomialCoefficient([c0, c1, c2, c3])) / denom;
+        patterns.push({
+          r0: (1 + c0) * 0.9,
+          r1: (1 + c1) * 0.9,
+          r2: (1 + c2) * 0.9,
+          r3: (1 + c3) * 0.9,
+          weightedProb: prob,
+        });
+      }
+    }
+  }
+  return patterns;
+}
+
+// Combined 4-liner (5 upgrades) + 3-liner (4 upgrades) multiset roll tables, computed once.
+const ALL_UPGRADE_PATTERNS: readonly PrecomputedUpgradePattern[] = [
+  ...buildUpgradePatterns(5, P_FOUR_LINER),
+  ...buildUpgradePatterns(4, P_THREE_LINER),
+];
+
+const PERM_INDICES_4: ReadonlyArray<readonly [number, number, number, number]> = [
+  [0, 1, 2, 3],
+  [0, 1, 3, 2],
+  [0, 2, 1, 3],
+  [0, 2, 3, 1],
+  [0, 3, 1, 2],
+  [0, 3, 2, 1],
+  [1, 0, 2, 3],
+  [1, 0, 3, 2],
+  [1, 2, 0, 3],
+  [1, 2, 3, 0],
+  [1, 3, 0, 2],
+  [1, 3, 2, 0],
+  [2, 0, 1, 3],
+  [2, 0, 3, 1],
+  [2, 1, 0, 3],
+  [2, 1, 3, 0],
+  [2, 3, 0, 1],
+  [2, 3, 1, 0],
+  [3, 0, 1, 2],
+  [3, 0, 2, 1],
+  [3, 1, 0, 2],
+  [3, 1, 2, 0],
+  [3, 2, 0, 1],
+  [3, 2, 1, 0],
+];
 
 function permutations<T>(items: T[]): T[][] {
   if (items.length <= 1) return [items.slice()];
@@ -84,10 +138,33 @@ function permutations<T>(items: T[]): T[][] {
 }
 
 export function probabilityOfInitialSubs(mainStat: string, subs: string[]): number {
-  let total = 0;
   const lineWeight = (key: string) => SUBSTAT_LINE_WEIGHT[key as SubstatKey] ?? 0;
-  for (const perm of permutations(subs.slice(0, Math.min(4, subs.length)))) {
-    let remaining = TOTAL_SUBSTAT_LINE_WEIGHT - lineWeight(mainStat);
+  const startRemaining = TOTAL_SUBSTAT_LINE_WEIGHT - lineWeight(mainStat);
+  if (subs.length >= 4) {
+    const w0 = lineWeight(subs[0]!);
+    const w1 = lineWeight(subs[1]!);
+    const w2 = lineWeight(subs[2]!);
+    const w3 = lineWeight(subs[3]!);
+    if (w0 <= 0 || w1 <= 0 || w2 <= 0 || w3 <= 0) return 0;
+    const weights = [w0, w1, w2, w3];
+    let total = 0;
+    for (const [i0, i1, i2, i3] of PERM_INDICES_4) {
+      const a = weights[i0]!;
+      const b = weights[i1]!;
+      const c = weights[i2]!;
+      const d = weights[i3]!;
+      const r0 = startRemaining;
+      const r1 = r0 - a;
+      const r2 = r1 - b;
+      const r3 = r2 - c;
+      if (r0 <= 0 || r1 <= 0 || r2 <= 0 || r3 <= 0) continue;
+      total += (a / r0) * (b / r1) * (c / r2) * (d / r3);
+    }
+    return total;
+  }
+  let total = 0;
+  for (const perm of permutations(subs)) {
+    let remaining = startRemaining;
     let p = 1;
     for (const sub of perm) {
       const weight = lineWeight(sub);
@@ -103,42 +180,30 @@ export function probabilityOfInitialSubs(mainStat: string, subs: string[]): numb
   return total;
 }
 
-function multinomialCoefficient(counts: number[]): number {
-  let result = 1;
-  let filled = 0;
-  for (const count of counts) {
-    for (let i = 1; i <= count; i += 1) {
-      filled += 1;
-      result = (result * filled) / i;
-    }
-  }
-  return result;
+interface CachedOpener {
+  k0: SubstatKey;
+  k1: SubstatKey;
+  k2: SubstatKey;
+  k3: SubstatKey;
+  pInitial: number;
 }
 
-function upgradePatternProbability(upgradeCount: number, pattern: number[]): number {
-  // pattern: array of upgrade indices length = upgradeCount; uniform among 4 lines
-  // P = (upgradeCount)! / (n0! n1! n2! n3!) / 4^upgradeCount
-  if (upgradeCount === 0) return 1;
-  const counts = [0, 0, 0, 0];
-  for (const index of pattern) counts[index] = (counts[index] ?? 0) + 1;
-  return multinomialCoefficient(counts) / 4 ** upgradeCount;
-}
+const openersByMainStatCache = new Map<string, readonly CachedOpener[]>();
 
-function scoreFromLines(
-  mainStat: string,
-  lines: Array<{ key: string; rolls: number }>,
-  weights: Record<string, number>,
-): number {
-  // Mid quality 0.9 for each roll (documented approximation without full convolution).
-  let total = 0;
-  for (const line of lines) {
-    const weight = effectiveWeight(line.key, weights);
-    if (weight <= 0) continue;
-    total += weight * line.rolls * 0.9;
-  }
-  // Ensure main is excluded already by generator.
-  void mainStat;
-  return total;
+function getOpenersForMainStat(mainStat: string): readonly CachedOpener[] {
+  const cached = openersByMainStatCache.get(mainStat);
+  if (cached) return cached;
+  const pool = SUBSTAT_KEYS.filter((key) => key !== mainStat);
+  const initialCombos = combinations([...pool], 4);
+  const openers: CachedOpener[] = initialCombos.map((opener) => ({
+    k0: opener[0]!,
+    k1: opener[1]!,
+    k2: opener[2]!,
+    k3: opener[3]!,
+    pInitial: probabilityOfInitialSubs(mainStat, opener),
+  }));
+  openersByMainStatCache.set(mainStat, openers);
+  return openers;
 }
 
 /**
@@ -149,42 +214,50 @@ export function probabilitySubAboveScore(
   weights: Record<string, number>,
   scoreToBeat: number,
 ): number {
-  const pool = SUBSTAT_KEYS.filter((key) => key !== mainStat);
-  // Force 4 initial lines for enumeration (3-liner fills one upgrade into a new line first).
-  const initialCombos = combinations([...pool], 4);
+  const openers = getOpenersForMainStat(mainStat);
+  const threshold = scoreToBeat + 1e-9;
+  const weightByKey: Record<string, number> = {};
+  for (const key of SUBSTAT_KEYS) {
+    const w = effectiveWeight(key, weights);
+    weightByKey[key] = w > 0 ? w : 0;
+  }
+
   let totalP = 0;
+  for (const opener of openers) {
+    const w0 = weightByKey[opener.k0] ?? 0;
+    const w1 = weightByKey[opener.k1] ?? 0;
+    const w2 = weightByKey[opener.k2] ?? 0;
+    const w3 = weightByKey[opener.k3] ?? 0;
 
-  for (const opener of initialCombos) {
-    const pInitial = probabilityOfInitialSubs(mainStat, opener);
+    // Fast upper-bound prune: best possible score puts all 5 upgrades on the max-weighted line.
+    const maxW = Math.max(w0, w1, w2, w3);
+    if ((w0 + w1 + w2 + w3 + 5 * maxW) * 0.9 <= threshold) continue;
 
-    // 4-liner: 5 upgrades; 3-liner: 4 upgrades (after filling 4th line is already in opener model
-    // — we approximate both by scoring openers with 4 or 5 upgrade multisets).
-    for (const { pLine, upgrades } of [
-      { pLine: P_FOUR_LINER, upgrades: 5 },
-      { pLine: P_THREE_LINER, upgrades: 4 },
-    ]) {
-      const patterns = combinationsWithReplacement(4, upgrades);
-      for (const pattern of patterns) {
-        const rolls = opener.map(() => 1);
-        for (const index of pattern) rolls[index] = (rolls[index] ?? 0) + 1;
-        const lines = opener.map((key, i) => ({ key, rolls: rolls[i] ?? 1 }));
-        const score = scoreFromLines(mainStat, lines, weights);
-        if (score > scoreToBeat + 1e-9) {
-          totalP += pLine * pInitial * upgradePatternProbability(upgrades, pattern);
-        }
+    // Fast lower-bound accept: even 4 upgrades on the min-weighted line beat threshold.
+    const minW = Math.min(w0, w1, w2, w3);
+    if ((w0 + w1 + w2 + w3 + 4 * minW) * 0.9 > threshold) {
+      totalP += opener.pInitial;
+      continue;
+    }
+
+    let openerProb = 0;
+    for (const pattern of ALL_UPGRADE_PATTERNS) {
+      const score = w0 * pattern.r0 + w1 * pattern.r1 + w2 * pattern.r2 + w3 * pattern.r3;
+      if (score > threshold) {
+        openerProb += pattern.weightedProb;
       }
     }
+    totalP += opener.pInitial * openerProb;
   }
 
   return Math.min(1, Math.max(0, totalP));
 }
 
-export function estimateTbp(
+function estimateTbpFromScore(
   relic: ScoreRelicInput,
   weights: Record<string, number>,
-  options?: { allowedMainStats?: Record<string, string[]> },
+  scored: RelicScoreResult,
 ): EstTbpResult {
-  const scored = scoreRelic(relic, weights, options);
   const scoreToBeat = scored.weightedRolls;
   const pMain = probabilityOfMain(relic.slot, relic.mainStat);
   const pSub = probabilitySubAboveScore(relic.mainStat, weights, scoreToBeat);
@@ -211,6 +284,15 @@ export function estimateTbp(
     perfectionPct: scored.perfectionPct,
     advice,
   };
+}
+
+export function estimateTbp(
+  relic: ScoreRelicInput,
+  weights: Record<string, number>,
+  options?: { allowedMainStats?: Record<string, string[]> },
+): EstTbpResult {
+  const scored = scoreRelic(relic, weights, options);
+  return estimateTbpFromScore(relic, weights, scored);
 }
 
 export function characterFarmInvestment(slotEstimates: Array<{ slot: string; days: number }>): {
@@ -276,7 +358,7 @@ export function farmingPriorityRows(
 }> {
   return relics.map((relic) => {
     const score = scoreRelic(relic, weights, options);
-    const tbp = estimateTbp(relic, weights, options);
+    const tbp = estimateTbpFromScore(relic, weights, score);
     return {
       slot: relic.slot,
       mainStat: relic.mainStat,

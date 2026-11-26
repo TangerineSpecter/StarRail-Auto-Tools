@@ -47,7 +47,11 @@ function isSlotForSetKind(slot: string | undefined, kind: RelicSetCatalogueEntry
   return Boolean(slot && (kind === "planar" ? PLANAR_SLOTS : CAVERN_SLOTS).has(slot));
 }
 
-function scoreEquippedPiece(relic: BuildDashboardRelic, plan: CharacterBuildPlan): number {
+function scoreEquippedPiece(
+  relic: BuildDashboardRelic,
+  plan: CharacterBuildPlan,
+  weights: Record<string, number>,
+): number {
   // The backend includes slot on every inventory relic. Treat legacy/malformed records as
   // missing rather than letting an unknown slot bypass the plan's main-stat requirements.
   if (!relic.slot) return 0;
@@ -56,7 +60,7 @@ function scoreEquippedPiece(relic: BuildDashboardRelic, plan: CharacterBuildPlan
       ...relic,
       slot: relic.slot,
     },
-    resolvePlanWeights(plan),
+    weights,
     { allowedMainStats: plan.mainStats },
   );
   if (score.mainStatCorrect === false) return 0;
@@ -68,14 +72,20 @@ interface CharacterSetQuality {
   equippedPieceCount: number;
 }
 
+interface PreparedFarmingProfile {
+  profile: RelicSetFarmingProfile;
+  weights: Record<string, number>;
+}
+
 function qualityForCharacterSet(
-  profile: RelicSetFarmingProfile,
+  prepared: PreparedFarmingProfile,
   set: RelicSetCatalogueEntry,
   expectedPieces: number,
 ): CharacterSetQuality {
+  const { profile, weights } = prepared;
   const matchingPieces = (profile.character.equippedRelics ?? [])
     .filter((relic) => relic.setId === set.id && isSlotForSetKind(relic.slot, set.kind))
-    .map((relic) => scoreEquippedPiece(relic, profile.plan))
+    .map((relic) => scoreEquippedPiece(relic, profile.plan, weights))
     // A 2+2 set can have more than two matching pieces during a transition. Only the best
     // expected pieces should represent the set's current quality in that case.
     .sort((left, right) => right - left)
@@ -115,19 +125,22 @@ export function scoreRelicSetsForFarming(
   sets: RelicSetCatalogueEntry[],
   profiles: RelicSetFarmingProfile[],
 ): RelicSetFarmingItem[] {
-  const unique = uniqueProfiles(profiles);
+  const unique: PreparedFarmingProfile[] = uniqueProfiles(profiles).map((profile) => ({
+    profile,
+    weights: resolvePlanWeights(profile.plan),
+  }));
   const aggregates = sets.map((set) => {
     let targetCount = 0;
     let expectedPieceCount = 0;
     let qualitySum = 0;
     let equippedPieceCount = 0;
 
-    for (const profile of unique) {
-      const expectedPieces = expectedPiecesForSet(profile.plan, set);
+    for (const prepared of unique) {
+      const expectedPieces = expectedPiecesForSet(prepared.profile.plan, set);
       if (expectedPieces <= 0) continue;
       targetCount += 1;
       expectedPieceCount += expectedPieces;
-      const quality = qualityForCharacterSet(profile, set, expectedPieces);
+      const quality = qualityForCharacterSet(prepared, set, expectedPieces);
       qualitySum += quality.qualitySum;
       equippedPieceCount += quality.equippedPieceCount;
     }
