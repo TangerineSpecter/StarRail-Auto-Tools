@@ -2,9 +2,9 @@ name: Quality
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
+    tags:
+      - "v*"
+  workflow_dispatch:
 
 jobs:
   frontend:
