@@ -5,12 +5,10 @@ import {
   catalogueAbilityLevels,
   defaultCatalogueAbilityLevel,
   catalogueAbilitySlotLabel,
-  catalogueAbilityMechanicStatus,
 } from "@/shared/catalogue/mechanics";
 import { resolveAbility } from "@/shared/utils/catalogue-rules";
 import type { CatalogueAbility } from "@/shared/contracts/catalogue-rules";
 import type { CharacterCatalogueEntry } from "@/types";
-import AbilityExplanation from "./AbilityExplanation.vue";
 
 interface AbilityDescriptionSegment {
   text: string;
@@ -20,14 +18,24 @@ interface AbilityDescriptionSegment {
 const props = defineProps<{ character: CharacterCatalogueEntry }>();
 const selectedLevels = ref<Record<string, number>>({});
 
+function hasVisibleDescription(ability: CatalogueAbility): boolean {
+  return (ability.descriptionTemplate ?? "").trim().length > 0;
+}
+
 const groups = computed(() =>
-  characterAbilityGroups(props.character).filter(
-    (group) =>
-      group.sourceKind !== "trace" &&
-      !group.abilities.every(
-        (ability) => ability.slot === "trace" || ability.groupId.startsWith("servant-traces"),
-      ),
-  ),
+  characterAbilityGroups(props.character)
+    .filter(
+      (group) =>
+        group.sourceKind !== "trace" &&
+        !group.abilities.every(
+          (ability) => ability.slot === "trace" || ability.groupId.startsWith("servant-traces"),
+        ),
+    )
+    .map((group) => ({
+      ...group,
+      abilities: group.abilities.filter(hasVisibleDescription),
+    }))
+    .filter((group) => group.abilities.length > 0),
 );
 
 const availableCategories = computed(() => {
@@ -150,7 +158,6 @@ const displayedGroups = computed(() =>
         eidolonRank,
         description,
         segments,
-        mechanicStatus: catalogueAbilityMechanicStatus(ability),
       };
     }),
   })),
@@ -268,16 +275,6 @@ function stepLevel(
                       <template v-else>{{ seg.text }}</template>
                     </template>
                   </p>
-
-                  <footer class="ability-footer">
-                    <small
-                      class="catalogue-ability-audit"
-                      :title="item.mechanicStatus.detail"
-                      :data-stage="item.mechanicStatus.stage"
-                      >{{ item.mechanicStatus.label }}</small
-                    >
-                  </footer>
-                  <AbilityExplanation :ability="item.ability" :level="item.level" />
                 </div>
               </div>
             </template>
@@ -372,16 +369,6 @@ function stepLevel(
                   <template v-else>{{ seg.text }}</template>
                 </template>
               </p>
-
-              <footer class="ability-footer">
-                <small
-                  class="catalogue-ability-audit"
-                  :title="item.mechanicStatus.detail"
-                  :data-stage="item.mechanicStatus.stage"
-                  >{{ item.mechanicStatus.label }}</small
-                >
-              </footer>
-              <AbilityExplanation :ability="item.ability" :level="item.level" />
             </template>
           </article>
         </div>
@@ -753,18 +740,6 @@ function stepLevel(
   color: #1e40af;
   line-height: 1.35;
   vertical-align: baseline;
-}
-
-/* 底部状态 */
-.ability-footer {
-  margin-top: 6px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.catalogue-ability-audit {
-  color: #94a3b8;
-  font-size: 10.5px;
 }
 
 /* ============================

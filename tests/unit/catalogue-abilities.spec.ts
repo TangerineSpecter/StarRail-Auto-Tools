@@ -69,12 +69,18 @@ function catalogue(abilities: CatalogueAbility[] = [ability()]): OwnedMechanicCa
 afterEach(() => vi.restoreAllMocks());
 
 describe("mechanic catalogue ownership and levels", () => {
-  it("bundles reviewed rule records without implying a complete mechanism audit", () => {
+  it("bundles reviewed rule records without exposing raw compiler diagnostics in CharacterAbilities", () => {
     expect(bundledCatalogueRules.length).toBeGreaterThan(0);
     const rule = bundledCatalogueRules.find((entry) => entry.status === "reviewed")!;
     const source = mechanicCatalogue.abilities.find((entry) => entry.id === rule.sourceRef)!;
     expect(reviewedCatalogueAbilityRuleCount(source)).toBeGreaterThan(0);
     expect(reviewedCatalogueAbilityRuleCount({ ...source, sourceHash: "changed-source" })).toBe(0);
+    expect(mechanics.catalogueAbilityMechanicStatus(source).label).toBe(
+      `部分机制可计算（${reviewedCatalogueAbilityRuleCount(source)} 条规则）`,
+    );
+    expect(mechanics.catalogueAbilityMechanicStatus(ability()).label).toBe(
+      "数值已同步，计算规则未标注",
+    );
     vi.spyOn(mechanics, "characterAbilityGroups").mockReturnValue([
       {
         id: "reviewed",
@@ -85,19 +91,19 @@ describe("mechanic catalogue ownership and levels", () => {
       },
     ]);
     const wrapper = mount(CharacterAbilities, { props: { character } });
-    expect(wrapper.findAll(".catalogue-ability-audit")[0]!.text()).toBe(
-      `部分机制可计算（${reviewedCatalogueAbilityRuleCount(source)} 条规则）`,
-    );
-    expect(wrapper.findAll(".catalogue-ability-audit")[1]!.text()).toBe(
-      "数值已同步，计算规则未标注",
-    );
+    expect(wrapper.find(".catalogue-ability-audit").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("查看参数与条款拆解");
+    expect(wrapper.text()).not.toContain("数值已同步，计算规则未标注");
     wrapper.unmount();
   });
-  it("shows a complete clause audit separately from data synchronization", () => {
+  it("tracks clause audit status in mechanics metadata while rendering clean skill descriptions", () => {
     const source = mechanicCatalogue.abilities.find(
       (entry) => entry.id === "character:1211:skills:947065",
     )!;
-    expect(mechanics.catalogueAbilityMechanicStatus(source).stage).toBe("reviewed");
+    const status = mechanics.catalogueAbilityMechanicStatus(source);
+    expect(status.stage).toBe("reviewed");
+    expect(status.label).toBe("机制已审核（1 条规则）");
+    expect(status.detail).toContain("不代表自动战斗模拟");
     expect(
       mechanics.catalogueAbilityMechanicStatus({ ...source, sourceHash: "changed" }).stage,
     ).toBe("parameters");
@@ -111,13 +117,10 @@ describe("mechanic catalogue ownership and levels", () => {
       },
     ]);
     const wrapper = mount(CharacterAbilities, { props: { character } });
-    const badge = wrapper.find(".catalogue-ability-audit");
-    expect(badge.text()).toBe("机制已审核（1 条规则）");
-    expect(badge.attributes("title")).toContain("不代表自动战斗模拟");
     expect(wrapper.text()).toContain("7.8%");
     wrapper.unmount();
   });
-  it("integrates real source owners, grouped skill forms and summons", () => {
+  it("integrates real source owners, grouped skill forms and summons while filtering empty sub-skills", () => {
     const groups = characterAbilityGroups(character);
     expect(groups.find((group) => group.id.includes("skills:0"))?.label).toBe("主要技能 · 普攻");
     expect(groups.some((group) => group.label === "衣匠 · 行迹")).toBe(true);
@@ -139,12 +142,28 @@ describe("mechanic catalogue ownership and levels", () => {
     expect(wrapper.findAll("article").length).toBe(
       groups
         .filter((group) => group.sourceKind !== "trace" && !group.id.includes("servant-traces"))
-        .reduce((count, group) => count + group.abilities.length, 0),
+        .reduce(
+          (count, group) =>
+            count +
+            group.abilities.filter((item) => (item.descriptionTemplate ?? "").trim().length > 0)
+              .length,
+          0,
+        ),
     );
     expect(
       wrapper.findAll("article p").every((description) => !description.text().includes("{p")),
     ).toBe(true);
     wrapper.unmount();
+
+    const acheron = { slug: "acheron", name: "黄泉", path: "虚无", element: "雷", image: null };
+    const acheronWrapper = mount(CharacterAbilities, { props: { character: acheron } });
+    expect(acheronWrapper.text()).toContain("残梦尽染，一刀缭断");
+    expect(
+      acheronWrapper
+        .findAll(".catalogue-ability h5")
+        .filter((title) => title.text() === "啼泽雨斩" || title.text() === "黄泉返渡"),
+    ).toHaveLength(0);
+    acheronWrapper.unmount();
   });
   it("resolves exact source slug without inferring owner ID or translated name", () => {
     expect(characterMechanicOwner(character, catalogue())?.id).toBe("character:1402");
