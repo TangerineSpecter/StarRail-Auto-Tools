@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import AboutUpdateCard from "@/features/about/AboutUpdateCard.vue";
 import { APP_NAME, APP_SLUG, APP_VERSION, PROJECT_URL } from "@/shared/app-info";
 import { diagnosticsApi } from "@/shared/api/diagnostics";
+import type { AppUpdaterContext } from "@/shared/contracts/updater";
 import { frontendDiagnostics } from "@/shared/diagnostics/frontend";
 import { openExternalUrl } from "@/shared/utils/open-external-url";
 
-const props = defineProps<{ protocolVersion: string }>();
+const props = defineProps<{
+  protocolVersion: string;
+  updater?: AppUpdaterContext | null;
+}>();
 const supportedGameVersion = computed(
   () => props.protocolVersion.match(/HSR-(\d+(?:\.\d+)*)/)?.[1] ?? "未知",
 );
@@ -102,6 +107,8 @@ async function exportDiagnostics() {
         </div>
       </article>
     </section>
+
+    <AboutUpdateCard :updater="updater" />
 
     <section class="diagnostic-card" aria-labelledby="diagnostic-title">
       <div class="diagnostic-copy">

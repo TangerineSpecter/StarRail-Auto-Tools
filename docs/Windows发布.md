@@ -30,4 +30,6 @@ bash release-desktop.sh 1.0.1
 
 脚本会同步 `package.json`、`package-lock.json`、Rust/Tauri 配置、客户端版本展示与 README 徽章，提交当前分支并推送 `v1.0.1` tag。工作流会校验 tag 与 Tauri 版本一致，防止错发版本。
 
-发布后的首次安装请从 GitHub Release 下载 `.exe`。之后的版本，客户端会自动检测并提供“立即更新”；也可以继续下载 Release 中的安装包覆盖安装，用户数据不会因正常升级而清除。
+发布后的首次安装请从 GitHub Release 下载 `.exe`。之后的版本，客户端会在启动时自动检测新版本，也支持在「关于」页手动点击“检查更新”，并提供下载进度展示、失败重试与前往 GitHub Release 手动下载的兜底入口；用户数据不会因正常升级而清除。
+
+> 注意：通过 `build-windows.ps1` 在本地构建的安装包默认不包含 `tauri.release.conf.json` 中的更新公钥和清单地址，只有通过 GitHub Actions 发版工作流构建的安装包才支持应用内自动更新。

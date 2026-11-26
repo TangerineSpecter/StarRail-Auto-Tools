@@ -12,9 +12,13 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-start-dragging",
     "core:window:allow-close",
+    "updater:default",
     {
       "identifier": "opener:allow-open-url",
-      "allow": [{ "url": "https://github.com/TangerineSpecter/StarRail-Auto-Tools" }]
+      "allow": [
+        { "url": "https://github.com/TangerineSpecter/StarRail-Auto-Tools" },
+        { "url": "https://github.com/TangerineSpecter/StarRail-Auto-Tools/releases/latest" }
+      ]
     }
   ]
 }

@@ -315,7 +315,8 @@
 .app-update-content {
   display: grid;
   gap: 8px;
-  min-width: 244px;
+  min-width: 264px;
+  max-width: 340px;
   color: #285f66;
 }
 .app-update-content strong {
@@ -326,14 +327,58 @@
   font-size: 10px;
   line-height: 1.5;
 }
+.app-update-progress {
+  display: grid;
+  gap: 4px;
+}
+.app-update-progress-track {
+  position: relative;
+  height: 5px;
+  overflow: hidden;
+  background: rgba(62, 139, 147, 0.16);
+}
+.app-update-progress-bar {
+  display: block;
+  height: 100%;
+  background: #3e969f;
+  transition: width 140ms ease;
+}
+.app-update-progress-bar.indeterminate {
+  width: 38%;
+  animation: app-update-indeterminate 1.2s ease-in-out infinite;
+}
+@keyframes app-update-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+.app-update-progress small {
+  color: #285f66;
+  font-size: 10px;
+}
+.app-update-error {
+  color: #9e3d33;
+}
+.app-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .app-update-content button {
-  justify-self: start;
   padding: 6px 10px;
   border: 1px solid rgba(62, 139, 147, 0.32);
   color: #fff;
   background: #3e969f;
   font: inherit;
+  font-size: 11px;
   cursor: pointer;
+}
+.app-update-content button.app-update-secondary {
+  color: #285f66;
+  background: rgba(255, 255, 255, 0.82);
 }
 .app-update-content button:disabled {
   cursor: wait;

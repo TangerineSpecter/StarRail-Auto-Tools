@@ -24,6 +24,7 @@ import { preloadScannerDefaultMode } from "@/pages/scanner-loaders";
 import { APP_VERSION } from "@/shared/app-info";
 import { windowApi } from "@/shared/api/window";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
+import { appUpdaterContextKey, describeDownloadProgress } from "@/shared/contracts/updater";
 import { frontendDiagnostics } from "@/shared/diagnostics/frontend";
 
 const loadScannerPage = () => import("@/pages/ScannerPage.vue");
@@ -70,7 +71,24 @@ const { frameRate } = useFrameRate();
 provide(runtimeContextKey, { direct, summary, busy, error, notice, inventoryRevision });
 useCleanupEmergencyStop({ error, notice });
 const { capabilities } = useRuntimeLifecycle();
-const { update, isInstalling, installAvailableUpdate } = useAppUpdater();
+const updater = useAppUpdater();
+provide(appUpdaterContextKey, updater);
+const {
+  status: updateStatus,
+  update,
+  progress: updateProgress,
+  errorMessage: updateError,
+  isInstalling,
+  installAvailableUpdate,
+  openManualDownload,
+} = updater;
+const updateProgressText = computed(() => describeDownloadProgress(updateProgress.value));
+const updateActionLabel = computed(() => {
+  if (updateStatus.value === "installing") return "正在启动安装…";
+  if (updateStatus.value === "downloading") return "正在下载…";
+  if (updateStatus.value === "error") return "重试更新";
+  return "立即更新";
+});
 const currentPage = computed(() => pages[activeView.value]);
 const directRunning = computed(() =>
   ["starting", "waitingForLogin", "connected", "syncing", "ready"].includes(direct.value.phase),
@@ -117,17 +135,22 @@ watch(error, (message) => {
   error.value = "";
 });
 
-watch(update, (availableUpdate) => {
-  if (!availableUpdate) return;
-  toast.add({
-    group: "app-update",
-    severity: "info",
-    summary: `发现新版本 v${availableUpdate.version}`,
-    detail: availableUpdate.notes ?? "新版本已准备就绪，可直接下载安装。",
-    life: 0,
-    closable: true,
-  });
-});
+watch(
+  () => update.value?.version ?? null,
+  (version, previousVersion) => {
+    const availableUpdate = update.value;
+    if (!version || !availableUpdate || version === previousVersion) return;
+    toast.removeGroup("app-update");
+    toast.add({
+      group: "app-update",
+      severity: "info",
+      summary: `发现新版本 v${availableUpdate.version}`,
+      detail: availableUpdate.notes ?? "新版本已准备就绪，可直接下载安装。",
+      life: 0,
+      closable: true,
+    });
+  },
+);
 
 async function toggleMaximize() {
   if (isMaximized.value) await windowApi.unmaximize();
@@ -216,9 +239,38 @@ function preloadView(view: AppView) {
         <div class="app-update-content">
           <strong>{{ message.summary }}</strong>
           <p>{{ message.detail }}</p>
-          <button type="button" :disabled="isInstalling" @click="installAvailableUpdate">
-            {{ isInstalling ? "正在下载并安装…" : "立即更新" }}
-          </button>
+          <div v-if="isInstalling" class="app-update-progress">
+            <div class="app-update-progress-track">
+              <span
+                :class="[
+                  'app-update-progress-bar',
+                  { indeterminate: updateProgress?.percent == null },
+                ]"
+                :style="
+                  updateProgress?.percent != null
+                    ? { width: `${updateProgress.percent}%` }
+                    : undefined
+                "
+              />
+            </div>
+            <small>{{ updateProgressText }}</small>
+          </div>
+          <p v-else-if="updateStatus === 'error' && updateError" class="app-update-error">
+            {{ updateError }}
+          </p>
+          <div class="app-update-actions">
+            <button type="button" :disabled="isInstalling" @click="installAvailableUpdate">
+              {{ updateActionLabel }}
+            </button>
+            <button
+              type="button"
+              class="app-update-secondary"
+              :disabled="isInstalling"
+              @click="openManualDownload"
+            >
+              手动下载
+            </button>
+          </div>
         </div>
       </template>
     </Toast>
