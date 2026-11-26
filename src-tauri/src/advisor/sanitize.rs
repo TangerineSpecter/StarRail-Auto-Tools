@@ -10,11 +10,20 @@ struct RelicSetFile {
     sets: Vec<RelicSetEntry>,
 }
 
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RelicSetEffects {
+    #[serde(default)]
+    four_piece: String,
+}
+
 #[derive(Debug, Clone, Deserialize)]
 struct RelicSetEntry {
     id: u32,
     name: String,
     kind: String,
+    #[serde(default)]
+    effects: RelicSetEffects,
 }
 
 const SUBSTAT_KEYS: &[&str] = &[
@@ -276,44 +285,16 @@ pub fn sanitize_plan(raw: &Value) -> AdvicePlanDraft {
     plan
 }
 
-const DOT_CHARACTERS: &[&str] = &["卡芙卡", "黑天鹅", "桑博", "桂乃芬", "卢卡"];
-
-pub fn correct_plan_for_character(plan: &mut AdvicePlanDraft, name: &str) {
-    if !DOT_CHARACTERS.contains(&name) {
-        return;
-    }
-    let crit = plan
-        .substat_weights
-        .get("CRIT Rate")
-        .copied()
-        .unwrap_or(0.0)
-        + plan.substat_weights.get("CRIT DMG").copied().unwrap_or(0.0);
-    let brk = plan
-        .substat_weights
-        .get("Break Effect")
-        .copied()
-        .unwrap_or(0.0);
-    let ehr = plan
-        .substat_weights
-        .get("Effect Hit Rate")
-        .copied()
-        .unwrap_or(0.0);
-    let atk = plan.substat_weights.get("ATK%").copied().unwrap_or(0.0);
-    let off_role = plan
-        .effective_substats
-        .iter()
-        .any(|stat| stat == "CRIT Rate" || stat == "CRIT DMG" || stat == "Break Effect");
-    if crit > 0.0 || brk > 0.0 || off_role || (ehr <= 0.0 && atk <= 0.0) {
-        plan.substat_weights = HashMap::from([
-            ("SPD".to_owned(), 1.0),
-            ("ATK%".to_owned(), 1.0),
-            ("Effect Hit Rate".to_owned(), 1.0),
-        ]);
-        align_effective_substats(plan);
-    }
+pub fn is_low_speed_cavern_set(set_id: u32) -> bool {
+    relic_sets().iter().any(|set| {
+        set.id == set_id
+            && set.kind == "cavern"
+            && set.effects.four_piece.contains("速度降低")
+            && set.effects.four_piece.contains("速度小于")
+    })
 }
 
-fn align_effective_substats(plan: &mut AdvicePlanDraft) {
+pub fn align_effective_substats(plan: &mut AdvicePlanDraft) {
     let mut weights: Vec<(String, f64)> = plan
         .substat_weights
         .iter()
@@ -488,24 +469,5 @@ mod tests {
         assert_eq!(plan.targets[0].stat_key, "SPD");
         assert_eq!(plan.targets[0].minimum, 134.0);
         assert_eq!(plan.effective_substats[0], "SPD");
-    }
-
-    #[test]
-    fn corrects_kafka_off_role_substats() {
-        let mut plan = sanitize_plan(&json!({
-            "substatWeights": { "CRIT DMG": 1, "Break Effect": 1, "SPD": 0.5 },
-            "effectiveSubstats": ["CRIT DMG", "Break Effect"]
-        }));
-        correct_plan_for_character(&mut plan, "卡芙卡");
-        assert_eq!(plan.substat_weights.get("Effect Hit Rate"), Some(&1.0));
-        assert_eq!(plan.substat_weights.get("ATK%"), Some(&1.0));
-        assert!(!plan
-            .effective_substats
-            .iter()
-            .any(|stat| stat == "CRIT DMG"));
-        assert!(!plan
-            .effective_substats
-            .iter()
-            .any(|stat| stat == "Break Effect"));
     }
 }

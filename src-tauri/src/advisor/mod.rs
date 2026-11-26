@@ -3,9 +3,11 @@ mod deepseek;
 mod fetch;
 mod http;
 mod parse;
+mod profile;
 mod prompt;
 mod sanitize;
 mod search;
+mod validate;
 
 use std::collections::HashSet;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -69,7 +71,13 @@ async fn advise_with_client<C: AdvisorHttp>(
     settings: &ModelProviderSettings,
     snapshot: context::CharacterAdviceSnapshot,
 ) -> Result<CharacterBuildAdvice, AppError> {
-    let query = context::search_query(&snapshot.display_name);
+    let profile = profile::resolve_profile(
+        snapshot.character_id,
+        &snapshot.name,
+        &snapshot.slug,
+        &snapshot.element,
+    );
+    let query = context::search_query(&snapshot.display_name, &profile.search_hints);
     let mut warnings = Vec::new();
     let hits = match search_web(client, settings, &query).await {
         Ok(hits) => hits,
@@ -125,6 +133,7 @@ async fn advise_with_client<C: AdvisorHttp>(
 
     let user = prompt::user_prompt(
         &snapshot,
+        &profile,
         &hits,
         &pages,
         warnings.first().map(String::as_str),
@@ -133,11 +142,11 @@ async fn advise_with_client<C: AdvisorHttp>(
     let content =
         deepseek::complete_json(client, settings, &prompt::system_prompt(), &user).await?;
     let mut advice = parse::parse_model_advice(&content)?;
-    sanitize::correct_plan_for_character(&mut advice.plan, &snapshot.name);
+    let validation_notes = validate::validate_and_correct_plan(&mut advice.plan, &profile);
     advice.character_id = snapshot.character_id;
     advice.display_name = snapshot.display_name;
     advice.searched_at = now_millis();
-    for warning in warnings {
+    for warning in validation_notes.into_iter().chain(warnings) {
         if !advice.warnings.iter().any(|item| item == &warning) {
             advice.warnings.push(warning);
         }

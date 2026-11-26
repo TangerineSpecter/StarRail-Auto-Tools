@@ -33,7 +33,7 @@ pub fn reference_urls(name: &str, slug: &str) -> Vec<(String, String)> {
     if !slug.trim().is_empty() {
         pages.push((
             format!("Star Rail Station · {slug}"),
-            format!("https://starrailstation.com/cn/characters/{}", slug.trim()),
+            format!("https://starrailstation.com/cn/character/{}", slug.trim()),
         ));
     }
     pages
@@ -201,7 +201,7 @@ mod tests {
             .any(|(_, url)| url.contains("wiki.biligame.com") && url.contains("%")));
         assert!(pages
             .iter()
-            .any(|(_, url)| url == "https://starrailstation.com/cn/characters/feixiao"));
+            .any(|(_, url)| url == "https://starrailstation.com/cn/character/feixiao"));
     }
 
     #[test]

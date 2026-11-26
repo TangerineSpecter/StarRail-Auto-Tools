@@ -13,6 +13,7 @@ pub struct SearchHit {
     pub url: String,
     pub snippet: String,
     pub content: Option<String>,
+    pub published_at: Option<String>,
 }
 
 pub async fn search_web<C: AdvisorHttp>(
@@ -167,11 +168,16 @@ pub fn parse_deepseek_search_value(value: &Value) -> Vec<SearchHit> {
                 .chars()
                 .take(400)
                 .collect();
+            let published_at = item
+                .get("date")
+                .and_then(Value::as_str)
+                .and_then(normalize_date_prefix);
             Some(SearchHit {
                 title,
                 url: url.to_owned(),
                 snippet,
                 content,
+                published_at,
             })
         })
         .take(8)
@@ -214,11 +220,16 @@ pub fn parse_tavily_value(value: &Value) -> Vec<SearchHit> {
                 .chars()
                 .take(400)
                 .collect();
+            let published_at = item
+                .get("published_date")
+                .and_then(Value::as_str)
+                .and_then(normalize_date_prefix);
             Some(SearchHit {
                 title,
                 url: url.to_owned(),
                 snippet,
                 content: raw_content,
+                published_at,
             })
         })
         .take(8)
@@ -237,6 +248,11 @@ pub fn parse_bocha_value(value: &Value) -> Vec<SearchHit> {
             if url.is_empty() {
                 return None;
             }
+            let published_at = item
+                .get("datePublished")
+                .or_else(|| item.get("dateLastCrawled"))
+                .and_then(Value::as_str)
+                .and_then(normalize_date_prefix);
             Some(SearchHit {
                 title: item
                     .get("name")
@@ -256,10 +272,28 @@ pub fn parse_bocha_value(value: &Value) -> Vec<SearchHit> {
                     .take(400)
                     .collect(),
                 content: None,
+                published_at,
             })
         })
         .take(8)
         .collect()
+}
+
+fn normalize_date_prefix(raw: &str) -> Option<String> {
+    let trimmed = raw.trim();
+    if trimmed.len() >= 10 {
+        let prefix = &trimmed[..10];
+        let bytes = prefix.as_bytes();
+        if bytes[4] == b'-'
+            && bytes[7] == b'-'
+            && bytes[..4].iter().all(u8::is_ascii_digit)
+            && bytes[5..7].iter().all(u8::is_ascii_digit)
+            && bytes[8..10].iter().all(u8::is_ascii_digit)
+        {
+            return Some(prefix.to_owned());
+        }
+    }
+    None
 }
 
 #[cfg(test)]

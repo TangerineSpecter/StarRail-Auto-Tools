@@ -137,8 +137,23 @@ pub fn character_display_name(name: &str, path: &str) -> String {
     }
 }
 
-pub fn search_query(display_name: &str) -> String {
-    format!("崩坏星穹铁道 {display_name} 遗器 配装 套装 主词条 副词条 毕业面板")
+pub fn search_query(display_name: &str, hints: &[&str]) -> String {
+    let mut parts = vec!["崩坏星穹铁道", display_name];
+    for hint in hints {
+        if !hint.trim().is_empty() {
+            parts.push(hint.trim());
+        }
+    }
+    parts.extend([
+        "最新",
+        "遗器",
+        "配装",
+        "套装",
+        "主词条",
+        "副词条",
+        "毕业面板",
+    ]);
+    parts.join(" ")
 }
 
 pub fn path_zh(path: &str) -> &str {
@@ -316,8 +331,12 @@ mod tests {
         assert_eq!(character_display_name("开拓者", "Harmony"), "开拓者·同谐");
         assert_eq!(character_display_name("飞霄", "Hunt"), "飞霄");
         assert_eq!(
-            search_query("开拓者·同谐"),
-            "崩坏星穹铁道 开拓者·同谐 遗器 配装 套装 主词条 副词条 毕业面板"
+            search_query("开拓者·同谐", &[]),
+            "崩坏星穹铁道 开拓者·同谐 最新 遗器 配装 套装 主词条 副词条 毕业面板"
+        );
+        assert_eq!(
+            search_query("镜流", &["加强后"]),
+            "崩坏星穹铁道 镜流 加强后 最新 遗器 配装 套装 主词条 副词条 毕业面板"
         );
     }
 
