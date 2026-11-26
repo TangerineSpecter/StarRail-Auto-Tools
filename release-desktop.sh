@@ -1,33 +1,114 @@
 #!/usr/bin/env bash
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 cd "$ROOT"
 
-VERSION_RAW="${1:-}"
-YES="${2:-}"
+SEMVER_REGEX='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
 
-if [[ -z "$VERSION_RAW" || "$VERSION_RAW" == "-h" || "$VERSION_RAW" == "--help" ]]; then
+usage() {
   cat <<'EOF'
-用法: bash release-desktop.sh <version> [-y]
+用法: bash release-desktop.sh [version] [-y]
 
 示例:
+  bash release-desktop.sh
   bash release-desktop.sh 1.0.1
   bash release-desktop.sh v1.0.1 -y
 
+未传 version 时会交互式提示输入版本号（可直接回车采用建议的下一修订号）。
 该命令会同步项目中的版本展示，提交并推送当前分支，随后推送 vX.Y.Z tag。
 GitHub Actions 会生成 Windows NSIS 安装包、GitHub Release 和自动更新清单。
 EOF
-  [[ -n "$VERSION_RAW" ]] && exit 0
-  exit 1
+}
+
+VERSION_RAW=""
+YES=""
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -y|--yes)
+      YES="-y"
+      ;;
+    -*)
+      echo "未知参数：$arg" >&2
+      usage >&2
+      exit 1
+      ;;
+    *)
+      if [[ -n "$VERSION_RAW" ]]; then
+        echo "多余参数：$arg" >&2
+        usage >&2
+        exit 1
+      fi
+      VERSION_RAW="$arg"
+      ;;
+  esac
+done
+
+CURRENT_VERSION="$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' package.json | head -n 1 || true)"
+SUGGESTED_VERSION=""
+if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+  SUGGESTED_VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
+fi
+
+if [[ -z "$VERSION_RAW" ]]; then
+  if [[ -t 0 ]]; then
+    if [[ -n "$CURRENT_VERSION" ]]; then
+      echo "当前版本: ${CURRENT_VERSION}"
+    fi
+    while true; do
+      if [[ -n "$SUGGESTED_VERSION" ]]; then
+        if ! read -r -p "请输入发布版本号（默认 ${SUGGESTED_VERSION}，支持 v 前缀，回车使用默认）: " input; then
+          echo
+          echo "已取消。"
+          exit 0
+        fi
+      else
+        if ! read -r -p "请输入发布版本号（SemVer，例如 1.0.1）: " input; then
+          echo
+          echo "已取消。"
+          exit 0
+        fi
+      fi
+      input="${input#"${input%%[![:space:]]*}"}"
+      input="${input%"${input##*[![:space:]]}"}"
+      if [[ -z "$input" && -n "$SUGGESTED_VERSION" ]]; then
+        VERSION_RAW="$SUGGESTED_VERSION"
+      else
+        VERSION_RAW="$input"
+      fi
+      candidate="${VERSION_RAW#v}"
+      if [[ "$candidate" =~ $SEMVER_REGEX ]]; then
+        break
+      fi
+      echo "版本号无效：${VERSION_RAW:-<空>}（需要 SemVer，例如 1.0.1）" >&2
+    done
+  else
+    if IFS= read -r input; then
+      input="${input#"${input%%[![:space:]]*}"}"
+      input="${input%"${input##*[![:space:]]}"}"
+      VERSION_RAW="$input"
+    fi
+    if [[ -z "$VERSION_RAW" ]]; then
+      usage >&2
+      exit 1
+    fi
+  fi
 fi
 
 VERSION="${VERSION_RAW#v}"
 TAG="v${VERSION}"
 
-if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
-  echo "版本号无效：$VERSION_RAW（需要 SemVer，例如 1.0.1）" >&2
+if ! [[ "$VERSION" =~ $SEMVER_REGEX ]]; then
+  echo "版本号无效：${VERSION_RAW}（需要 SemVer，例如 1.0.1）" >&2
   exit 1
 fi
 
