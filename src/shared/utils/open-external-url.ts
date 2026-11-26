@@ -1,5 +1,5 @@
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { openerApi } from "@/shared/api/opener";
 
 export function openExternalUrl(url: string): Promise<void> {
-  return openUrl(url);
+  return openerApi.openUrl(url);
 }

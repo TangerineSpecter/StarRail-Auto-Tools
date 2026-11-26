@@ -9,7 +9,7 @@ import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";
 import type { InventoryKind } from "@/types";
 import type { InventoryFilterForm } from "./filter";
 import { relicMainStats, relicSlots, relicSubStats, statLabel } from "./options";
-import FilterCheckIcon from "./FilterCheckIcon.vue";
+import FilterCheckIcon from "@/shared/ui/FilterCheckIcon.vue";
 
 const mobile = useMobileView();
 const props = withDefaults(

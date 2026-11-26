@@ -2,7 +2,8 @@ import { defineComponent, h, KeepAlive, nextTick, ref } from "vue";
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { InventoryKind } from "@/types";
-import { useInventoryCategorySwipe } from "@/features/inventory/useInventoryCategorySwipe";
+import { mobileInventoryCategories } from "@/features/inventory/mobile-inventory-categories";
+import { useHorizontalSwipe } from "@/shared/ui/useHorizontalSwipe";
 
 afterEach(() => vi.restoreAllMocks());
 const point = (x: number, y = 200, identifier = 1) => ({ clientX: x, clientY: y, identifier });
@@ -35,7 +36,15 @@ async function fixture() {
   const detail = vi.fn();
   const View = defineComponent({
     setup() {
-      useInventoryCategorySwipe({ surface, kind, enabled, switchTo });
+      useHorizontalSwipe({
+        surface,
+        enabled,
+        onSwipe(direction) {
+          const index = mobileInventoryCategories.findIndex((item) => item.id === kind.value);
+          const next = mobileInventoryCategories[index + (direction === "left" ? 1 : -1)];
+          if (next) switchTo(next.id);
+        },
+      });
       return () =>
         h("div", { ref: surface }, [
           h("article", { onClick: detail }, "卡片"),

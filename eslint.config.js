@@ -28,20 +28,71 @@ export default [
     plugins: { boundaries },
     settings: {
       "boundaries/elements": [
-        { type: "app", pattern: "src/app/*" },
-        { type: "features", pattern: "src/features/*" },
-        { type: "shared", pattern: "src/shared/*" },
+        { type: "app", pattern: "src/app/**" },
+        { type: "mobile", pattern: "src/mobile/**" },
+        { type: "pages", pattern: "src/pages/**" },
+        { type: "feature", pattern: "src/features/(*)/**", capture: ["featureName"] },
+        { type: "shared", pattern: "src/shared/**" },
       ],
     },
     rules: {
-      "boundaries/element-types": [
+      "boundaries/dependencies": [
         "error",
         {
           default: "disallow",
-          rules: [
-            { from: "app", allow: ["app", "features", "shared"] },
-            { from: "features", allow: ["features", "shared"] },
-            { from: "shared", allow: ["shared"] },
+          policies: [
+            {
+              from: { element: { type: "app" } },
+              allow: {
+                to: { element: { types: { anyOf: ["app", "pages", "feature", "shared"] } } },
+              },
+            },
+            {
+              from: { element: { type: "mobile" } },
+              allow: {
+                to: {
+                  element: { types: { anyOf: ["mobile", "app", "pages", "feature", "shared"] } },
+                },
+              },
+            },
+            {
+              from: { element: { type: "pages" } },
+              allow: { to: { element: { types: { anyOf: ["pages", "feature", "shared"] } } } },
+            },
+            {
+              from: { element: { type: "feature" } },
+              allow: [
+                { to: { element: { type: "shared" } } },
+                {
+                  to: {
+                    element: {
+                      type: "feature",
+                      captured: { featureName: "{{ from.captured.featureName }}" },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              from: { element: { type: "shared" } },
+              allow: { to: { element: { type: "shared" } } },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/{pages,features,mobile}/**/*.{ts,vue}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@tauri-apps/*"],
+              message: "请通过 @/shared/api/<domain> 调用 Tauri API，不要直接导入 @tauri-apps/*。",
+            },
           ],
         },
       ],

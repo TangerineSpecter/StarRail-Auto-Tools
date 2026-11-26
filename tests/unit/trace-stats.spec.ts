@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { primaryTraceNodes } from "@/features/inventory/trace-stats";
+import { primaryTraceNodes } from "@/shared/utils/trace-stats";
 
 describe("primaryTraceNodes", () => {
   it("drops the mirrored trace tree returned by some character pages", () => {

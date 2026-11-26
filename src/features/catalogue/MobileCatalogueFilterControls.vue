@@ -3,7 +3,7 @@ import { computed, inject, onDeactivated, reactive, ref, toRef, watch } from "vu
 import Button from "primevue/button";
 import Drawer from "primevue/drawer";
 import { pathIconSrc } from "@/shared/catalogue";
-import FilterCheckIcon from "@/features/inventory/FilterCheckIcon.vue";
+import FilterCheckIcon from "@/shared/ui/FilterCheckIcon.vue";
 import { useMobileTopHeaderTarget } from "@/shared/contracts/mobile-top-header";
 import MobileSegmentedControl from "@/shared/ui/MobileSegmentedControl.vue";
 import { useSheetDragDismiss } from "@/shared/ui/useSheetDragDismiss";

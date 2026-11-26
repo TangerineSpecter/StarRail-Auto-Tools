@@ -3,8 +3,6 @@ import { ref } from "vue";
 import { describe, expect, it } from "vitest";
 import DirectReadPanel from "@/features/capture/DirectReadPanel.vue";
 import DirectReadLogPanel from "@/features/capture/DirectReadLogPanel.vue";
-import OcrPanel from "@/features/capture/OcrPanel.vue";
-import ScreenshotCropOverlay from "@/features/capture/ScreenshotCropOverlay.vue";
 import CapturePage from "@/pages/CapturePage.vue";
 import { runtimeContextKey } from "@/shared/contracts/runtime";
 import type { DirectReadSnapshot, InventorySummary } from "@/types";
@@ -91,7 +89,5 @@ describe("CapturePage", () => {
 
     expect(wrapper.findComponent(DirectReadPanel).exists()).toBe(true);
     expect(wrapper.findComponent(DirectReadLogPanel).props("direct")).toEqual(snapshot);
-    expect(wrapper.findComponent(OcrPanel).exists()).toBe(false);
-    expect(wrapper.findComponent(ScreenshotCropOverlay).exists()).toBe(false);
   });
 });

@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { useReadOnlyView } from "@/shared/contracts/view-mode";
-import { useMobileView } from "@/shared/contracts/mobile-view";
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import InputNumber from "primevue/inputnumber";
 import { inventoryApi } from "@/shared/api/inventory";
 import { relicCatalogue } from "@/shared/catalogue";
 import { slotLabel, statLabel } from "@/shared/catalogue/relic-options";
-import { useRuntimeStore } from "@/app/stores/runtime";
+import { useMobileView } from "@/shared/contracts/mobile-view";
+import { useOptionalRuntimeContext } from "@/shared/contracts/runtime";
+import { useReadOnlyView } from "@/shared/contracts/view-mode";
+import LoadingState from "@/shared/ui/LoadingState.vue";
 import {
   averageCharacterPotential,
   characterFarmInvestment,
@@ -17,9 +18,6 @@ import {
   rankSlotReplacements,
   resolvePlanWeights,
   scoreEquippedRelics,
-  scoreRelic,
-  spdBreakpointHelper,
-  type RelicScoreResult,
   type ScoreRelicInput,
 } from "@/shared/utils/relic-score";
 import { persistCharacterScoreSummary } from "@/shared/utils/relic-score/persist-character-score";
@@ -27,7 +25,14 @@ import type { CharacterBuildPlan, RelicListItem } from "@/types";
 import type { CharacterDetailData, RelicDetailData } from "./detail-types";
 import EquippedRelicPeekCard from "./EquippedRelicPeekCard.vue";
 import RelicReplaceComparePopover from "./RelicReplaceComparePopover.vue";
-import LoadingState from "@/shared/ui/LoadingState.vue";
+import {
+  adviceClass,
+  buildSpdHelp,
+  equippedRelicSpdBonus,
+  formatDays,
+  gradeBadgeClass,
+} from "./score-panel-helpers";
+import { useCharacterScoreOverlays } from "./useCharacterScoreOverlays";
 
 const props = defineProps<{
   detail: CharacterDetailData;
@@ -37,6 +42,9 @@ const props = defineProps<{
 }>();
 
 const mobile = useMobileView();
+const readOnly = useReadOnlyView();
+const runtime = useOptionalRuntimeContext();
+const inventoryRevision = computed(() => runtime?.inventoryRevision.value ?? 0);
 
 const inventoryRelics = ref<RelicListItem[]>([]);
 const inventoryLoaded = ref(false);
@@ -58,106 +66,8 @@ const farmInvestment = ref<{
   bottleneckDays: number;
   estimateDays: number;
 } | null>(null);
-const peek = ref<{
-  slot: string;
-  relic: RelicDetailData;
-  letterGrade: string | null;
-  potentialPct: number;
-  weightedRolls: number;
-} | null>(null);
-const peekPopoverEl = ref<HTMLElement | null>(null);
-const replaceCompare = ref<{
-  itemId: number;
-  current: RelicDetailData;
-  currentScore: RelicScoreResult;
-  candidate: RelicDetailData;
-  candidateScore: RelicScoreResult;
-  deltaWeightedRolls: number;
-} | null>(null);
 let farmRequestId = 0;
-
-function listItemToDetail(item: RelicListItem): RelicDetailData {
-  return {
-    itemId: item.itemId,
-    setId: item.setId,
-    name: item.name,
-    setName: item.setName,
-    slot: item.slot,
-    rarity: item.rarity,
-    level: item.level,
-    mainStat: item.mainStat,
-    mainStatValue: item.mainStatValue,
-    location: item.location,
-    equippedCharacterId: item.equippedCharacterId,
-    locked: item.locked,
-    discard: item.discard,
-    updatedAt: item.updatedAt,
-    substats: item.substats,
-  };
-}
-
-function candidateToDetail(
-  relic: ScoreRelicInput & {
-    itemId?: number;
-    name?: string;
-    setName?: string;
-    setId?: number;
-    mainStatValue?: number;
-    location?: string;
-    equippedCharacterId?: number | null;
-    locked?: boolean;
-    discard?: boolean;
-    updatedAt?: number;
-  },
-): RelicDetailData {
-  return {
-    itemId: relic.itemId ?? 0,
-    setId: relic.setId ?? 0,
-    name: relic.name ?? "未知遗器",
-    setName: relic.setName ?? "",
-    slot: relic.slot,
-    rarity: relic.rarity ?? 5,
-    level: relic.level ?? 0,
-    mainStat: relic.mainStat,
-    mainStatValue: relic.mainStatValue ?? 0,
-    location: relic.location ?? "",
-    equippedCharacterId: relic.equippedCharacterId ?? null,
-    locked: relic.locked ?? false,
-    discard: relic.discard ?? false,
-    updatedAt: relic.updatedAt ?? 0,
-    substats: (relic.substats ?? []).map((stat, index) => ({
-      kind: stat.kind ?? "normal",
-      position: index,
-      key: stat.key,
-      value: stat.value ?? 0,
-      count: stat.count ?? 0,
-      step: stat.step ?? 0,
-    })),
-  };
-}
-
-watch(
-  () => props.plan?.spdTarget,
-  (value) => {
-    localSpdTarget.value = value && value > 0 ? value : 0;
-  },
-  { immediate: true },
-);
-
-watch(
-  () => props.detail.characterId,
-  () => {
-    farmRequestId += 1;
-    farmEnabled.value = false;
-    farmBusy.value = false;
-    farmRows.value = [];
-    farmInvestment.value = null;
-    inventoryLoaded.value = false;
-    inventoryRelics.value = [];
-    closePeek();
-    closeReplaceCompare();
-  },
-);
+let persistRequestId = 0;
 
 const weights = computed(() =>
   resolvePlanWeights({
@@ -194,9 +104,52 @@ const completion = computed(() =>
   }),
 );
 
-const readOnly = useReadOnlyView();
-const runtime = useRuntimeStore();
-let persistRequestId = 0;
+const equippedBySlot = computed(() => {
+  const map = new Map<string, RelicDetailData>();
+  for (const relic of props.detail.equippedRelics ?? []) {
+    if (relic.slot) map.set(relic.slot, relic);
+  }
+  return map;
+});
+
+const {
+  peek,
+  peekPopoverEl,
+  replaceCompare,
+  closePeek,
+  closeReplaceCompare,
+  closeAllOverlays,
+  openPeek,
+  openReplaceCompare,
+} = useCharacterScoreOverlays({
+  equippedBySlot,
+  weakSlot: computed(() => summary.value.weakSlot),
+  weights,
+  plan: computed(() => props.plan),
+  inventoryRelics,
+});
+
+watch(
+  () => props.plan?.spdTarget,
+  (value) => {
+    localSpdTarget.value = value && value > 0 ? value : 0;
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.detail.characterId,
+  () => {
+    farmRequestId += 1;
+    farmEnabled.value = false;
+    farmBusy.value = false;
+    farmRows.value = [];
+    farmInvestment.value = null;
+    inventoryLoaded.value = false;
+    inventoryRelics.value = [];
+    closeAllOverlays();
+  },
+);
 
 // Persist derived scores so team list / other views can read without recomputing.
 // Guarded by local request id + inventoryRevision so stale panel writes cannot
@@ -214,20 +167,20 @@ watch(
       props.detail.equippedRelics
         ?.map((relic) => `${relic.itemId}:${relic.level}:${relic.mainStat}`)
         .join("|") ?? "",
-      runtime.inventoryRevision,
+      inventoryRevision.value,
     ] as const,
   async () => {
     if (readOnly) return;
     const requestId = ++persistRequestId;
     const characterId = props.detail.characterId;
-    const startRevision = runtime.inventoryRevision;
+    const startRevision = inventoryRevision.value;
     const isCurrent = () =>
       requestId === persistRequestId &&
-      runtime.inventoryRevision === startRevision &&
+      inventoryRevision.value === startRevision &&
       props.detail.characterId === characterId;
     try {
-      const summary = scoreEquippedRelics(props.detail.equippedRelics, props.plan);
-      await persistCharacterScoreSummary(characterId, summary, { isCurrent });
+      const scoreSummary = scoreEquippedRelics(props.detail.equippedRelics, props.plan);
+      await persistCharacterScoreSummary(characterId, scoreSummary, { isCurrent });
     } catch {
       // Persistence is best-effort; UI scoring still works offline of the cache.
     }
@@ -235,214 +188,19 @@ watch(
   { immediate: true },
 );
 
-const equippedBySlot = computed(() => {
-  const map = new Map<string, RelicDetailData>();
-  for (const relic of props.detail.equippedRelics ?? []) {
-    if (relic.slot) map.set(relic.slot, relic);
-  }
-  return map;
+onBeforeUnmount(() => {
+  persistRequestId += 1;
+  farmRequestId += 1;
 });
-
-function closePeek() {
-  peek.value = null;
-}
-
-function closeReplaceCompare() {
-  replaceCompare.value = null;
-}
 
 function applySpdPreset(preset: number) {
   localSpdTarget.value = preset;
 }
 
-function gradeBadgeClass(grade: string | null): string {
-  if (!grade) return "grade-none";
-  if (grade.startsWith("SSS")) return "grade-sss";
-  if (grade.startsWith("SS")) return "grade-ss";
-  if (grade.startsWith("S+")) return "grade-sp";
-  if (grade.startsWith("S")) return "grade-s";
-  if (grade.startsWith("A")) return "grade-a";
-  if (grade.startsWith("B")) return "grade-b";
-  return "grade-c";
-}
-
-function adviceClass(advice: string): string {
-  if (advice === "可停刷") return "is-stop";
-  if (advice === "主属性不符") return "is-mismatch";
-  if (advice === "优先刷") return "is-priority";
-  return "is-continue";
-}
-
-const spdHelpIsMet = computed(() => {
-  if (!spdHelp.value) return false;
-  return spdHelp.value.note.includes("已达到") || spdHelp.value.note.includes("超过");
-});
-
-const spdHelpStatusClass = computed(() => {
-  if (!spdHelp.value) return "";
-  return spdHelpIsMet.value ? "is-met" : "is-gap";
-});
-
-function closeAllOverlays() {
-  closePeek();
-  closeReplaceCompare();
-}
-
-async function openPeek(
-  event: MouseEvent,
-  piece: {
-    slot: string;
-    letterGrade: string | null;
-    potentialPct: number;
-    weightedRolls: number;
-  },
-) {
-  const relic = equippedBySlot.value.get(piece.slot);
-  if (!relic) return;
-  if (peek.value?.slot === piece.slot) {
-    closePeek();
-    return;
-  }
-
-  closeReplaceCompare();
-  peek.value = {
-    slot: piece.slot,
-    relic,
-    letterGrade: piece.letterGrade,
-    potentialPct: piece.potentialPct,
-    weightedRolls: piece.weightedRolls,
-  };
-}
-
-function openReplaceCompare(item: {
-  relic: ScoreRelicInput & {
-    itemId?: number;
-    name?: string;
-    setName?: string;
-    setId?: number;
-    mainStatValue?: number;
-    location?: string;
-    equippedCharacterId?: number | null;
-    locked?: boolean;
-    discard?: boolean;
-    updatedAt?: number;
-  };
-  score: RelicScoreResult;
-  deltaWeightedRolls: number;
-}) {
-  const itemId = item.relic.itemId;
-  if (itemId == null) return;
-  if (replaceCompare.value?.itemId === itemId) {
-    closeReplaceCompare();
-    return;
-  }
-
-  const weakSlot = summary.value.weakSlot;
-  if (!weakSlot) return;
-  const current = equippedBySlot.value.get(weakSlot);
-  if (!current) return;
-
-  closePeek();
-  const scoreOptions = { allowedMainStats: props.plan?.mainStats };
-  const currentScore = scoreRelic(
-    {
-      slot: current.slot,
-      mainStat: current.mainStat,
-      rarity: current.rarity,
-      level: current.level,
-      setId: current.setId,
-      substats: current.substats,
-    },
-    weights.value,
-    scoreOptions,
-  );
-
-  // Prefer full list row when available (richer display fields).
-  const listRow = inventoryRelics.value.find((row) => row.itemId === itemId);
-  const candidate = listRow ? listItemToDetail(listRow) : candidateToDetail(item.relic);
-
-  replaceCompare.value = {
-    itemId,
-    current,
-    currentScore,
-    candidate,
-    candidateScore: item.score,
-    deltaWeightedRolls: item.deltaWeightedRolls,
-  };
-}
-
-function onDocumentPointerDown(event: PointerEvent) {
-  if (!peek.value && !replaceCompare.value) return;
-  const target = event.target as Element | null;
-  if (
-    target?.closest(
-      ".score-piece, .score-replace-item, .equipped-relic-peek-popover, .relic-replace-compare-popover",
-    )
-  ) {
-    return;
-  }
-  // Backdrop of the centered compare modal.
-  if (target?.closest(".relic-replace-compare-root")) {
-    closeReplaceCompare();
-    return;
-  }
-  closeAllOverlays();
-}
-
-function onDocumentKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape" && !event.isComposing) {
-    if (peek.value || replaceCompare.value) {
-      event.stopPropagation();
-      closeAllOverlays();
-    }
-  }
-}
-
-function onWindowScrollOrResize(event: Event) {
-  // Centered compare modal stays put; only the equip-peek popover tracks viewport.
-  if (!peek.value) return;
-  // Capture-phase scroll fires for any scroller; keep popover open when scrolling its content.
-  if (event.type === "scroll") {
-    const target = event.target;
-    if (target instanceof Element && target.closest(".equipped-relic-peek-popover")) {
-      return;
-    }
-    if (target instanceof Node && peekPopoverEl.value?.contains(target)) {
-      return;
-    }
-  }
-  closePeek();
-}
-
-onMounted(() => {
-  document.addEventListener("pointerdown", onDocumentPointerDown);
-  document.addEventListener("keydown", onDocumentKeydown);
-  window.addEventListener("scroll", onWindowScrollOrResize, true);
-  window.addEventListener("resize", onWindowScrollOrResize);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("pointerdown", onDocumentPointerDown);
-  document.removeEventListener("keydown", onDocumentKeydown);
-  window.removeEventListener("scroll", onWindowScrollOrResize, true);
-  window.removeEventListener("resize", onWindowScrollOrResize);
-});
-
-const relicSpdBonus = computed(() => {
-  let spd = 0;
-  for (const relic of props.detail.equippedRelics ?? []) {
-    if (relic.mainStat === "SPD") spd += relic.mainStatValue ?? 0;
-    for (const sub of relic.substats ?? []) {
-      if ((!sub.kind || sub.kind === "normal") && sub.key === "SPD") spd += sub.value ?? 0;
-    }
-  }
-  return spd;
-});
-
+const relicSpdBonus = computed(() => equippedRelicSpdBonus(props.detail.equippedRelics));
 const hasFullSpd = computed(
   () => typeof props.currentSpd === "number" && Number.isFinite(props.currentSpd),
 );
-
 const currentSpdForHelper = computed(() =>
   hasFullSpd.value ? (props.currentSpd as number) : relicSpdBonus.value,
 );
@@ -452,18 +210,17 @@ const spdHelp = computed(() => {
     localSpdTarget.value > 0
       ? localSpdTarget.value
       : (props.plan?.targets.find((t) => t.statKey === "SPD")?.target ?? 0);
-  if (target <= 0) return null;
-  if (hasFullSpd.value) {
-    return {
-      ...spdBreakpointHelper(currentSpdForHelper.value, target),
-      mode: "total" as const,
-    };
-  }
-  return {
-    ...spdBreakpointHelper(0, target),
-    mode: "gap-only" as const,
-    note: `站街速度不可用：按「还差 ${target.toFixed(1)} 速」估算（约 ${Math.ceil(target / 2.6)} 条高 roll）。请装备满级光锥并同步基础属性以使用总速度对比。`,
-  };
+  return buildSpdHelp(props.currentSpd, target);
+});
+
+const spdHelpIsMet = computed(() => {
+  if (!spdHelp.value) return false;
+  return spdHelp.value.note.includes("已达到") || spdHelp.value.note.includes("超过");
+});
+
+const spdHelpStatusClass = computed(() => {
+  if (!spdHelp.value) return "";
+  return spdHelpIsMet.value ? "is-met" : "is-gap";
 });
 
 const replacementSetFilter = computed(() => {
@@ -526,11 +283,6 @@ async function loadInventoryPool() {
   } finally {
     inventoryBusy.value = false;
   }
-}
-
-function formatDays(days: number): string {
-  if (!Number.isFinite(days)) return "∞";
-  return `${days.toFixed(1)} 天`;
 }
 
 /** Expensive Estimated TBP — only on demand so opening character detail stays fast. */

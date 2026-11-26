@@ -6,7 +6,7 @@ import {
   isMaxStandingEquipment,
   lightConeSkillEffect,
   staticSetStats,
-} from "@/features/inventory/standing-stats";
+} from "@/shared/utils/standing-stats";
 import type { LightConeCatalogue } from "@/types";
 
 const lightConeCatalogue = lightConesJson as LightConeCatalogue;

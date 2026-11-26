@@ -1,31 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { mount } from "@vue/test-utils";
 import { foldLayout } from "@/mobile/layout-regions";
-import AdaptiveDisclosure from "@/shared/ui/AdaptiveDisclosure.vue";
-import { mobileViewKey } from "@/shared/contracts/mobile-view";
 import type { MobileLayoutRegions } from "@/shared/api/mobile-layout";
 
 const frame = { left: 24, right: 859, width: 951, height: 669 };
 const regions: MobileLayoutRegions = { width: 951, height: 669, division: [], occlusion: [] };
 
 describe("mobile content adaptation", () => {
-  it("keeps desktop content directly visible and folds mobile secondary tools", () => {
-    const desktop = mount(AdaptiveDisclosure, {
-      props: { title: "筛选" },
-      slots: { default: '<input value="保留条件" />' },
-    });
-    expect(desktop.find("details").exists()).toBe(false);
-    const mobile = mount(AdaptiveDisclosure, {
-      props: { title: "筛选", summary: "同谐 · 五星" },
-      slots: { default: '<input value="保留条件" />' },
-      global: { provide: { [mobileViewKey as symbol]: true } },
-    });
-    expect(mobile.get("summary").text()).toContain("同谐 · 五星");
-    expect(mobile.get("details").attributes("open")).toBeUndefined();
-    mobile.get("details").element.open = true;
-    mobile.get("details").element.open = false;
-    expect((mobile.get("input").element as HTMLInputElement).value).toBe("保留条件");
-  });
   it("uses real division geometry without changing navigation posture", () => {
     const layout = foldLayout(
       { ...regions, division: [{ x: 455, y: 0, width: 35, height: 669 }] },

@@ -5,16 +5,6 @@ export interface SystemCapabilities {
   note: string;
 }
 
-export interface OcrTextRegion {
-  text: string;
-}
-
-export interface OcrImageResult {
-  imagePath: string;
-  regions: OcrTextRegion[];
-  elapsedMs: number;
-}
-
 export type DirectReadPhase =
   | "unsupported"
   | "starting"

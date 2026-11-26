@@ -2,21 +2,11 @@ use serde::Serialize;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
-    #[error("扫描任务已经在运行")]
-    AlreadyScanning,
-    #[error("目标窗口名称不能为空")]
-    EmptyWindowTitle,
-    #[error("采样间隔必须在 200 到 5000 毫秒之间")]
-    InvalidInterval,
-    #[error("画面变化阈值必须在 0 到 1 之间")]
-    InvalidThreshold,
-    #[allow(dead_code)]
+    #[cfg_attr(not(feature = "ocr"), allow(dead_code))]
     #[error("找不到文件：{0}")]
     MissingFile(String),
     #[error("OCR 初始化或推理失败：{0}")]
     Ocr(String),
-    #[error("Windows 游戏窗口采集尚未在当前平台启用")]
-    CaptureUnavailable,
     #[error("截图失败：{0}")]
     Capture(String),
     #[error("内部状态不可用")]

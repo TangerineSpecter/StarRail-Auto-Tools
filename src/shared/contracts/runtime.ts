@@ -17,3 +17,7 @@ export function useRuntimeContext(): RuntimeContext {
   if (!context) throw new Error("Runtime context is not available");
   return context;
 }
+
+export function useOptionalRuntimeContext(): RuntimeContext | null {
+  return inject(runtimeContextKey, null);
+}

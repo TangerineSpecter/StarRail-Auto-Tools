@@ -16,7 +16,6 @@ mod model_provider;
 mod ocr;
 mod ocr_model;
 mod relic_cleanup;
-mod scanner;
 mod screenshot;
 mod sync;
 
@@ -26,8 +25,6 @@ use inventory::InventoryStore;
 use ocr_model::OcrModelManager;
 #[cfg(not(mobile))]
 use relic_cleanup::RelicCleanupRuntime;
-#[cfg(not(mobile))]
-use scanner::ScannerState;
 use tauri::Manager;
 
 #[cfg(not(mobile))]
@@ -41,7 +38,6 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
 
     builder
-        .manage(ScannerState::default())
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
@@ -94,9 +90,6 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_system_capabilities,
-            commands::get_scanner_snapshot,
-            commands::start_scanner,
-            commands::stop_scanner,
             commands::recognize_image,
             commands::recognize_screenshot,
             commands::get_ocr_model_status,

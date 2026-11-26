@@ -125,48 +125,6 @@ html.mobile-view :is(.p-drawer, .detail-drawer) :is(input, textarea, select) {
   font-size: 12px;
   color: var(--blue);
 }
-.mobile-content .mobile-disclosure {
-  margin: 0 0 14px;
-  border: 1px solid #dce2e9;
-  border-radius: 12px;
-  background: white;
-  overflow: hidden;
-}
-.mobile-content .mobile-disclosure > summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 48px;
-  padding: 10px 12px;
-  list-style: none;
-  cursor: pointer;
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 600;
-}
-.mobile-content .mobile-disclosure > summary::-webkit-details-marker {
-  display: none;
-}
-.mobile-content .mobile-disclosure > summary small {
-  min-width: 0;
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--muted);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.mobile-disclosure-chevron {
-  flex-shrink: 0;
-  transition: transform 0.15s;
-}
-.mobile-disclosure[open] > summary .mobile-disclosure-chevron {
-  transform: rotate(180deg);
-}
-.mobile-disclosure-body {
-  padding: 0 12px 12px;
-}
 .mobile-archive .table-shell {
   overflow: visible;
   height: auto;
@@ -896,66 +854,6 @@ html.mobile-view .mobile-content .target-progress-label {
   flex-wrap: wrap;
   gap: 4px;
 }
-.mobile-teams-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-.mobile-teams-heading p {
-  color: var(--muted);
-  font-size: 14px;
-  margin: 0;
-}
-.mobile-team-list {
-  display: grid;
-  gap: 14px;
-}
-.mobile-team {
-  margin: 0;
-  border: 1px solid #e0e5eb;
-  border-radius: 12px;
-  padding: 16px;
-  background: white;
-  min-width: 0;
-}
-.mobile-team h2 {
-  font-size: 17px;
-  margin: 0;
-}
-.mobile-team-members {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 8px;
-  margin: 16px 0 0;
-}
-.mobile-team-members > div {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 4px;
-  font-size: 13px;
-}
-.mobile-team-members img {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-}
-.mobile-team-members small {
-  font-size: 12px;
-  color: var(--muted);
-}
-.mobile-team-note {
-  margin: 14px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid #edf0f2;
-  color: var(--ink-soft);
-  font-size: 14px;
-  overflow-wrap: anywhere;
-}
 .mobile-sync {
   display: grid;
   gap: 16px;
@@ -1661,9 +1559,6 @@ html.mobile-view .filter-drawer .filter-drawer-heading small {
   html.mobile-view .mobile-content :is(.character-catalogue-grid, .lightcone-catalogue-grid) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .mobile-team-members {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }
 @container mobile-content (min-width: 680px) {
   html.mobile-view .mobile-content .catalogue-grid,
@@ -1672,13 +1567,6 @@ html.mobile-view .filter-drawer .filter-drawer-heading small {
   }
   html.mobile-view .mobile-content :is(.character-catalogue-grid, .lightcone-catalogue-grid) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .mobile-team-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-  .mobile-team-members {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .mobile-sync {
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
@@ -1713,7 +1601,6 @@ html.mobile-view[data-content-fold="book"]
     .character-catalogue-grid,
     .character-card-grid,
     .build-card-list,
-    .mobile-team-list,
     .inventory-table tbody,
     .mobile-sync
   ) {
@@ -1730,23 +1617,16 @@ html.mobile-view[data-content-fold="book"]
     .mobile-segments,
     .mobile-list-tools,
     .mobile-list-meta,
-    .mobile-inventory-master > .mobile-disclosure,
     .mobile-catalogue-status,
-    .character-catalogue-section > .mobile-disclosure,
-    .lightcone-catalogue-section > .mobile-disclosure,
     .build-dashboard-heading,
     .mobile-build-toolbar,
-    .mobile-build-status,
-    .mobile-teams-heading
+    .mobile-build-status
   ) {
   max-width: var(--content-fold-left);
 }
 html.mobile-view[data-content-fold="book"] .mobile-content .build-card-body {
   display: flex;
   flex-direction: column;
-}
-html.mobile-view[data-content-fold="book"] .mobile-team-members {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"]) .detail-drawer {
   position: fixed;
@@ -1775,11 +1655,6 @@ html.mobile-view:is([data-content-fold="book"], [data-content-fold="tabletop"])
   height: min(760px, 82dvh, var(--content-sheet-height));
   max-height: var(--content-sheet-height);
 }
-@media (max-height: 500px) {
-  .mobile-content .mobile-disclosure > summary {
-    min-height: 44px;
-  }
-}
 html.mobile-view :is(.mobile-content, .mobile-top-header) .catalogue-tabs {
   flex-wrap: nowrap;
 }
@@ -1790,9 +1665,6 @@ html.mobile-view .mobile-content .table-empty {
   min-height: 0;
   padding: 32px 16px;
   font-size: 14px;
-}
-.mobile-teams > .mobile-list-tools {
-  margin-bottom: 14px;
 }
 /* Catalogue dialogs use a different portal from inventory drawers. */
 html.mobile-view .catalogue-character-modal-backdrop {
