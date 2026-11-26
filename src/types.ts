@@ -149,7 +149,7 @@ export interface GameLaunchDetection {
 }
 
 export type DeepSeekModel = "deepseek-flash" | "deepseek-v4-pro";
-export type SearchProvider = "duckduckgo" | "bocha";
+export type SearchProvider = "deepseek" | "tavily" | "bocha";
 
 /** Local configuration for the currently supported OpenAI-compatible model provider. */
 export interface ModelProviderSettings {

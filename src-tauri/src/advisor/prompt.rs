@@ -6,7 +6,7 @@ use super::search::SearchHit;
 pub fn system_prompt() -> String {
     "你是崩坏：星穹铁道的培养方案助手。根据检索到的公开攻略和用户当前装备，生成一份能直接填进毕业目标表单的 JSON。\
 开拓者、三月七必须按命途区分，不得把不同命途的套装或词条混到同一个角色上。\
-只依据提供的材料作答；没有依据时写入 warnings。只输出一个 JSON 对象，不要 Markdown。\n\n"
+优先依据提供的攻略材料确定套装、主词条、副词条权重和毕业目标；只有在明显缺少攻略依据或存在流派分歧需要玩家留意时，才在 warnings 中给出 1～2 句简短提醒，不要逐项写免责声明。只输出一个 JSON 对象，不要 Markdown。\n\n"
         .to_owned()
         + &form_contract_text()
 }

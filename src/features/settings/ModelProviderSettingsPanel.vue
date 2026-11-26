@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import Select from "primevue/select";
 import { modelProviderApi } from "@/shared/api/model-provider";
 import type { ModelProviderSettings } from "@/types";
 import {
   DEEPSEEK_MODELS,
   SEARCH_PROVIDERS,
+  findDeepSeekModel,
+  findSearchProvider,
   maskApiKey,
   mergeModelProviderSettings,
   validateModelProviderSettings,
@@ -23,6 +26,8 @@ const revealKey = ref(false);
 const apiKeyDisplay = computed(() =>
   revealKey.value ? settings.value.apiKey : maskApiKey(settings.value.apiKey),
 );
+const activeModel = computed(() => findDeepSeekModel(settings.value.model));
+const activeSearchProvider = computed(() => findSearchProvider(settings.value.searchProvider));
 
 async function run<T>(action: () => Promise<T>, success?: string): Promise<T | undefined> {
   emit("busy", true);
@@ -89,14 +94,37 @@ onMounted(async () => {
         </label>
         <label>
           <span>模型</span>
-          <select v-model="settings.model" :disabled="busy">
-            <option v-for="item in DEEPSEEK_MODELS" :key="item.id" :value="item.id">
-              {{ item.label }} · {{ item.id }}
-            </option>
-          </select>
-          <small>{{
-            DEEPSEEK_MODELS.find((item) => item.id === settings.model)?.description
-          }}</small>
+          <Select
+            v-model="settings.model"
+            :options="DEEPSEEK_MODELS"
+            option-label="label"
+            option-value="id"
+            :disabled="busy"
+            scroll-height="28rem"
+            class="model-settings-select"
+            overlay-class="model-settings-select-overlay"
+            aria-label="模型"
+          >
+            <template #value="{ value }">
+              <span class="model-select-value">
+                <span class="model-select-value-label">{{ findDeepSeekModel(value).label }}</span>
+                <span class="model-select-value-badge">{{ findDeepSeekModel(value).badge }}</span>
+              </span>
+            </template>
+            <template #option="{ option, selected }">
+              <div class="model-select-option">
+                <div class="model-select-option-head">
+                  <span class="model-select-option-title">{{ option.label }}</span>
+                  <span class="model-select-option-badge">{{ option.badge }}</span>
+                  <span v-if="selected" class="model-select-option-check" aria-hidden="true"
+                    >✓</span
+                  >
+                </div>
+                <p class="model-select-option-desc">{{ option.description }}</p>
+              </div>
+            </template>
+          </Select>
+          <small>{{ activeModel.description }}</small>
         </label>
         <label class="wide-field">
           <span>接口地址</span>
@@ -130,29 +158,48 @@ onMounted(async () => {
         </label>
         <label>
           <span>检索后端</span>
-          <select v-model="settings.searchProvider" :disabled="busy">
-            <option v-for="item in SEARCH_PROVIDERS" :key="item.id" :value="item.id">
-              {{ item.label }}
-            </option>
-          </select>
-          <small>{{
-            SEARCH_PROVIDERS.find((item) => item.id === settings.searchProvider)?.description
-          }}</small>
+          <Select
+            v-model="settings.searchProvider"
+            :options="SEARCH_PROVIDERS"
+            option-label="label"
+            option-value="id"
+            :disabled="busy"
+            scroll-height="28rem"
+            class="model-settings-select"
+            overlay-class="model-settings-select-overlay"
+            aria-label="检索后端"
+          >
+            <template #value="{ value }">
+              <span class="model-select-value">
+                <span class="model-select-value-label">{{ findSearchProvider(value).label }}</span>
+                <span class="model-select-value-badge">{{ findSearchProvider(value).badge }}</span>
+              </span>
+            </template>
+            <template #option="{ option, selected }">
+              <div class="model-select-option">
+                <div class="model-select-option-head">
+                  <span class="model-select-option-title">{{ option.label }}</span>
+                  <span class="model-select-option-badge">{{ option.badge }}</span>
+                  <span v-if="selected" class="model-select-option-check" aria-hidden="true"
+                    >✓</span
+                  >
+                </div>
+                <p class="model-select-option-desc">{{ option.description }}</p>
+              </div>
+            </template>
+          </Select>
+          <small>{{ activeSearchProvider.description }}</small>
         </label>
         <label>
           <span>搜索 API Key</span>
           <input
             v-model="settings.searchApiKey"
-            :disabled="busy || settings.searchProvider !== 'bocha'"
+            :disabled="busy || !activeSearchProvider.requiresSearchKey"
             type="password"
             autocomplete="off"
-            :placeholder="settings.searchProvider === 'bocha' ? 'sk-...' : '当前后端无需填写'"
+            :placeholder="activeSearchProvider.keyPlaceholder"
           />
-          <small>{{
-            settings.searchProvider === "bocha"
-              ? "在博查开放平台创建并粘贴。"
-              : "DuckDuckGo 无需搜索 Key，此项保持为空。"
-          }}</small>
+          <small>{{ activeSearchProvider.keyHint }}</small>
         </label>
         <div class="settings-actions">
           <button class="settings-button settings-button-primary" type="submit" :disabled="busy">
@@ -257,16 +304,15 @@ onMounted(async () => {
   font-weight: 700;
 }
 .model-settings-form input,
-.model-settings-form select,
-.model-settings-form .key-row {
+.model-settings-form .key-row,
+.model-settings-select {
   box-sizing: border-box;
   width: 100%;
   height: 40px;
   min-height: 40px;
   min-width: 0;
 }
-.model-settings-form input,
-.model-settings-form select {
+.model-settings-form input {
   padding: 0 11px;
   border: 1px solid rgba(41, 76, 120, 0.2);
   border-radius: var(--control-radius);
@@ -274,12 +320,69 @@ onMounted(async () => {
   color: var(--ink);
   font: 400 13px/38px var(--font-ui);
 }
-.model-settings-form select {
-  appearance: none;
-  padding-right: 32px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23344a68' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' d='m1.2 1.6 4.8 4.8 4.8-4.8'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
+.model-settings-form input:disabled {
+  background: rgba(242, 246, 251, 0.72);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.model-settings-select {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(41, 76, 120, 0.2);
+  border-radius: var(--control-radius);
+  background: rgba(255, 255, 255, 0.86);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+.model-settings-select:hover:not(.p-disabled) {
+  border-color: rgba(36, 86, 166, 0.42);
+  background: #ffffff;
+}
+.model-settings-select:deep(.p-select-label) {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 8px 0 11px;
+  color: var(--ink);
+  font: 400 13px/1.2 var(--font-ui);
+}
+.model-settings-select:deep(.p-select-dropdown) {
+  width: 34px;
+  color: var(--ink-soft);
+}
+.model-settings-select.p-focus,
+.model-settings-select.p-select-open {
+  border-color: var(--blue);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(36, 86, 166, 0.14);
+}
+.model-select-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+.model-select-value-label {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.model-select-value-badge {
+  padding: 2px 6px;
+  border: 1px solid rgba(41, 76, 120, 0.16);
+  border-radius: 4px;
+  background: rgba(232, 240, 251, 0.55);
+  color: var(--blue);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .wide-field,
 .settings-actions {

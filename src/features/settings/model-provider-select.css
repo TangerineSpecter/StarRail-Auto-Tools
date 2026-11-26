@@ -1,0 +1,112 @@
+/* Teleported dropdown overlay for ModelProviderSettingsPanel PrimeVue Select controls. */
+.model-settings-select-overlay.p-select-overlay {
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid rgba(41, 76, 120, 0.2);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow:
+    0 18px 40px rgba(23, 38, 67, 0.14),
+    0 2px 8px rgba(23, 38, 67, 0.06);
+  font-family: var(--font-ui);
+}
+
+.model-settings-select-overlay .p-select-list-container {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.model-settings-select-overlay .p-select-list-container::-webkit-scrollbar {
+  display: none;
+}
+
+.model-settings-select-overlay .p-select-list {
+  display: grid;
+  gap: 3px;
+  padding: 0;
+}
+
+.model-settings-select-overlay .p-select-option {
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--ink);
+  background: transparent;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.model-settings-select-overlay
+  .p-select-option:not(.p-select-option-selected):not(.p-disabled):hover,
+.model-settings-select-overlay .p-select-option.p-focus:not(.p-select-option-selected) {
+  border-color: rgba(36, 86, 166, 0.14);
+  background: rgba(36, 86, 166, 0.06);
+}
+
+.model-settings-select-overlay .p-select-option.p-select-option-selected {
+  border-color: rgba(36, 86, 166, 0.28);
+  background: #edf3fc;
+  color: var(--blue-deep);
+}
+
+.model-settings-select-overlay .model-select-option {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+}
+
+.model-settings-select-overlay .model-select-option-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.model-settings-select-overlay .model-select-option-title {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.model-settings-select-overlay .p-select-option-selected .model-select-option-title {
+  color: var(--blue-deep);
+}
+
+.model-settings-select-overlay .model-select-option-badge {
+  padding: 2px 6px;
+  border: 1px solid rgba(41, 76, 120, 0.16);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.model-settings-select-overlay .p-select-option-selected .model-select-option-badge {
+  border-color: rgba(36, 86, 166, 0.28);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--blue);
+}
+
+.model-settings-select-overlay .model-select-option-check {
+  margin-left: auto;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.model-settings-select-overlay .model-select-option-desc {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.45;
+  white-space: normal;
+}

@@ -138,7 +138,7 @@ pub fn character_display_name(name: &str, path: &str) -> String {
 }
 
 pub fn search_query(display_name: &str) -> String {
-    format!("崩坏星穹铁道 {display_name} 遗器 配装 主流套装")
+    format!("崩坏星穹铁道 {display_name} 遗器 配装 套装 主词条 副词条 毕业面板")
 }
 
 pub fn path_zh(path: &str) -> &str {
@@ -317,7 +317,7 @@ mod tests {
         assert_eq!(character_display_name("飞霄", "Hunt"), "飞霄");
         assert_eq!(
             search_query("开拓者·同谐"),
-            "崩坏星穹铁道 开拓者·同谐 遗器 配装 主流套装"
+            "崩坏星穹铁道 开拓者·同谐 遗器 配装 套装 主词条 副词条 毕业面板"
         );
     }
 

@@ -7,7 +7,7 @@ use crate::error::AppError;
 const SETTINGS_FILE: &str = "model-provider-settings.json";
 const DEEPSEEK_BASE_URL: &str = "https://api.deepseek.com";
 const DEEPSEEK_DEFAULT_MODEL: &str = "deepseek-flash";
-const DEFAULT_SEARCH_PROVIDER: &str = "duckduckgo";
+const DEFAULT_SEARCH_PROVIDER: &str = "deepseek";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -55,9 +55,12 @@ impl ModelProviderSettings {
                 "当前仅支持 Flash 或 Pro 模型。".to_owned(),
             ));
         }
-        if !matches!(self.search_provider.as_str(), "duckduckgo" | "bocha") {
+        if !matches!(
+            self.search_provider.as_str(),
+            "deepseek" | "tavily" | "bocha"
+        ) {
             return Err(AppError::ModelProvider(
-                "检索后端仅支持 DuckDuckGo 或博查。".to_owned(),
+                "检索后端仅支持 DeepSeek 搜索、Tavily 或博查。".to_owned(),
             ));
         }
         Ok(())
@@ -70,10 +73,18 @@ impl ModelProviderSettings {
                 "请先在设置 → 大模型配置中填写 DeepSeek API Key。".to_owned(),
             ));
         }
-        if self.search_provider == "bocha" && self.search_api_key.trim().is_empty() {
-            return Err(AppError::ModelProvider(
-                "已选择博查搜索，请填写搜索 API Key。".to_owned(),
-            ));
+        match self.search_provider.as_str() {
+            "bocha" if self.search_api_key.trim().is_empty() => {
+                return Err(AppError::ModelProvider(
+                    "已选择博查搜索，请填写搜索 API Key。".to_owned(),
+                ));
+            }
+            "tavily" if self.search_api_key.trim().is_empty() => {
+                return Err(AppError::ModelProvider(
+                    "已选择 Tavily 搜索，请填写搜索 API Key。".to_owned(),
+                ));
+            }
+            _ => {}
         }
         Ok(())
     }
@@ -107,6 +118,9 @@ impl ModelProviderStore {
         }
         if settings.base_url == "https://api.deepseek.com/v1" {
             settings.base_url = deepseek_base_url();
+        }
+        if settings.search_provider == "duckduckgo" {
+            settings.search_provider = default_search_provider();
         }
         settings.validate()?;
         Ok(settings)
@@ -174,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn defaults_to_duckduckgo_search() {
+    fn defaults_to_deepseek_search() {
         assert_eq!(
             ModelProviderSettings::default().search_provider,
             DEFAULT_SEARCH_PROVIDER
@@ -184,7 +198,7 @@ mod tests {
     #[test]
     fn rejects_an_unknown_search_provider() {
         let settings = ModelProviderSettings {
-            search_provider: "google".to_owned(),
+            search_provider: "duckduckgo".to_owned(),
             ..ModelProviderSettings::default()
         };
         assert!(settings.validate().is_err());
@@ -199,5 +213,26 @@ mod tests {
         };
         let error = settings.require_ready().unwrap_err().to_string();
         assert!(error.contains("博查"));
+    }
+
+    #[test]
+    fn require_ready_accepts_deepseek_search_with_main_api_key() {
+        let settings = ModelProviderSettings {
+            api_key: "sk-test".to_owned(),
+            search_provider: "deepseek".to_owned(),
+            ..ModelProviderSettings::default()
+        };
+        assert!(settings.require_ready().is_ok());
+    }
+
+    #[test]
+    fn require_ready_asks_for_tavily_key() {
+        let settings = ModelProviderSettings {
+            api_key: "sk-test".to_owned(),
+            search_provider: "tavily".to_owned(),
+            ..ModelProviderSettings::default()
+        };
+        let error = settings.require_ready().unwrap_err().to_string();
+        assert!(error.contains("Tavily"));
     }
 }

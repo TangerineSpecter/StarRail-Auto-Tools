@@ -74,7 +74,7 @@ async fn advise_with_client<C: AdvisorHttp>(
     let hits = match search_web(client, settings, &query).await {
         Ok(hits) => hits,
         Err(error) => {
-            warnings.push(error.to_string());
+            warnings.push(advisor_warning(&error));
             Vec::new()
         }
     };
@@ -87,7 +87,10 @@ async fn advise_with_client<C: AdvisorHttp>(
         }
         match fetch_page(client, &title, &url).await {
             Ok(page) => pages.push(page),
-            Err(error) => warnings.push(error.to_string()),
+            Err(error) => warnings.push(format!(
+                "参考页面《{title}》抓取失败：{}",
+                advisor_warning(&error)
+            )),
         }
     }
     for hit in hits.iter().take(3) {
@@ -97,9 +100,21 @@ async fn advise_with_client<C: AdvisorHttp>(
         if pages.len() >= 4 {
             break;
         }
+        if let Some(content) = &hit.content {
+            pages.push(FetchedPage {
+                title: hit.title.clone(),
+                url: hit.url.clone(),
+                text: content.clone(),
+            });
+            continue;
+        }
         match fetch_page(client, &hit.title, &hit.url).await {
             Ok(page) => pages.push(page),
-            Err(error) => warnings.push(error.to_string()),
+            Err(error) => warnings.push(format!(
+                "攻略页面《{}》抓取失败：{}",
+                hit.title,
+                advisor_warning(&error)
+            )),
         }
     }
 
@@ -146,6 +161,13 @@ fn default_sources(hits: &[SearchHit], pages: &[FetchedPage]) -> Vec<parse::Advi
         }))
         .take(6)
         .collect()
+}
+
+fn advisor_warning(error: &AppError) -> String {
+    match error {
+        AppError::Advisor(message) => message.clone(),
+        other => other.to_string(),
+    }
 }
 
 fn now_millis() -> i64 {
@@ -222,11 +244,10 @@ mod tests {
 
     #[tokio::test]
     async fn combines_search_pages_and_model_json() {
-        let ddg = r#"<a class="result__a" href="https://www.miyoushe.com/sr/article/1">飞霄配装</a><a class="result__snippet">4奔狼</a>"#;
+        let search_json = r#"{"results":[{"title":"飞霄配装","url":"https://www.miyoushe.com/sr/article/1","snippet":"4奔狼"}]}"#;
         let model = r#"{"choices":[{"message":{"content":"{\"summary\":\"穿过客\",\"plan\":{\"cavernMode\":\"fourPiece\",\"cavernSetA\":101,\"planarSetId\":301,\"substatWeights\":{\"CRIT Rate\":1}},\"sources\":[{\"title\":\"飞霄配装\",\"url\":\"https://www.miyoushe.com/sr/article/1\"}]}"}}]}"#;
         let client = MockHttp {
             get: Mutex::new(vec![
-                ("html.duckduckgo.com".into(), ddg.into()),
                 (
                     "wiki.biligame.com".into(),
                     "飞霄 遗器 奔狼的功勋 四件套推荐。正文足够长用于通过最小长度检查。".into(),
@@ -241,7 +262,10 @@ mod tests {
                     "米游社攻略：飞霄主流四件套奔狼。正文足够长用于通过最小长度检查。".into(),
                 ),
             ]),
-            post: Mutex::new(vec![("chat/completions".into(), model.into())]),
+            post: Mutex::new(vec![
+                ("v1/tools/search".into(), search_json.into()),
+                ("chat/completions".into(), model.into()),
+            ]),
         };
         let settings = ModelProviderSettings {
             api_key: "sk-test".to_owned(),

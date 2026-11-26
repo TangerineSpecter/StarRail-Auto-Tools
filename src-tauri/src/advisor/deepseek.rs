@@ -27,13 +27,10 @@ pub async fn complete_json<C: AdvisorHttp>(
     let raw = client
         .post_json(
             &url,
-            &[
-                (
-                    "Authorization",
-                    &format!("Bearer {}", settings.api_key.trim()),
-                ),
-                ("Content-Type", "application/json"),
-            ],
+            &[(
+                "Authorization",
+                &format!("Bearer {}", settings.api_key.trim()),
+            )],
             &body,
         )
         .await?;
