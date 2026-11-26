@@ -185,23 +185,6 @@ impl InventoryStore {
                 reason TEXT,
                 PRIMARY KEY (run_id, item_id)
             );
-
-            CREATE INDEX IF NOT EXISTS idx_relics_set_slot ON relics(set_id, slot);
-            CREATE INDEX IF NOT EXISTS idx_relics_rarity_level ON relics(rarity, level);
-            CREATE INDEX IF NOT EXISTS idx_relics_rarity_level_id ON relics(rarity DESC, level DESC, item_id DESC);
-            CREATE INDEX IF NOT EXISTS idx_relics_main_stat ON relics(main_stat);
-            CREATE INDEX IF NOT EXISTS idx_relics_location ON relics(location);
-            CREATE INDEX IF NOT EXISTS idx_relics_equipped_char ON relics(equipped_character_id);
-            CREATE INDEX IF NOT EXISTS idx_relic_substats_key_value ON relic_substats(stat_key, value);
-            CREATE INDEX IF NOT EXISTS idx_light_cones_level ON light_cones(level, ascension);
-            CREATE INDEX IF NOT EXISTS idx_light_cones_location ON light_cones(location);
-            CREATE INDEX IF NOT EXISTS idx_light_cones_equipped_char ON light_cones(equipped_character_id);
-            CREATE INDEX IF NOT EXISTS idx_light_cones_template_id ON light_cones(template_id);
-            CREATE INDEX IF NOT EXISTS idx_characters_path_level ON characters(path, level);
-            CREATE INDEX IF NOT EXISTS idx_teams_updated_at ON teams(updated_at DESC);
-            CREATE INDEX IF NOT EXISTS idx_cleanup_queue_uid_created ON cleanup_queue(uid, created_at, item_id);
-            CREATE INDEX IF NOT EXISTS idx_cleanup_runs_created_at ON cleanup_runs(created_at DESC);
-            CREATE INDEX IF NOT EXISTS idx_cleanup_run_items_status ON cleanup_run_items(run_id, preview_status, execution_status);
             "#,
         )?;
         let schema_version =
@@ -277,6 +260,28 @@ impl InventoryStore {
             migrate_percentage_build_targets(connection)?;
             connection.execute("UPDATE schema_meta SET version = ?1", [SCHEMA_VERSION])?;
         }
+        // Create indexes after column migrations so upgrades from older schemas that lacked
+        // columns like equipped_character_id or cleanup_queue.uid never fail before ALTER TABLE.
+        connection.execute_batch(
+            r#"
+            CREATE INDEX IF NOT EXISTS idx_relics_set_slot ON relics(set_id, slot);
+            CREATE INDEX IF NOT EXISTS idx_relics_rarity_level ON relics(rarity, level);
+            CREATE INDEX IF NOT EXISTS idx_relics_rarity_level_id ON relics(rarity DESC, level DESC, item_id DESC);
+            CREATE INDEX IF NOT EXISTS idx_relics_main_stat ON relics(main_stat);
+            CREATE INDEX IF NOT EXISTS idx_relics_location ON relics(location);
+            CREATE INDEX IF NOT EXISTS idx_relics_equipped_char ON relics(equipped_character_id);
+            CREATE INDEX IF NOT EXISTS idx_relic_substats_key_value ON relic_substats(stat_key, value);
+            CREATE INDEX IF NOT EXISTS idx_light_cones_level ON light_cones(level, ascension);
+            CREATE INDEX IF NOT EXISTS idx_light_cones_location ON light_cones(location);
+            CREATE INDEX IF NOT EXISTS idx_light_cones_equipped_char ON light_cones(equipped_character_id);
+            CREATE INDEX IF NOT EXISTS idx_light_cones_template_id ON light_cones(template_id);
+            CREATE INDEX IF NOT EXISTS idx_characters_path_level ON characters(path, level);
+            CREATE INDEX IF NOT EXISTS idx_teams_updated_at ON teams(updated_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_cleanup_queue_uid_created ON cleanup_queue(uid, created_at, item_id);
+            CREATE INDEX IF NOT EXISTS idx_cleanup_runs_created_at ON cleanup_runs(created_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_cleanup_run_items_status ON cleanup_run_items(run_id, preview_status, execution_status);
+            "#,
+        )?;
         Ok(())
     }
 }

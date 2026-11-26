@@ -10,7 +10,7 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) const SCHEMA_VERSION: i64 = 15;
+pub(crate) const SCHEMA_VERSION: i64 = 16;
 pub const PROTOCOL_VERSION: &str = "reliquary-v25.0.0 / HSR-4.7";
 
 /// Extract the HSR game version suffix from `PROTOCOL_VERSION` (e.g. `"4.7"`).

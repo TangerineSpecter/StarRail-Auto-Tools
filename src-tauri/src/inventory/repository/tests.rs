@@ -2482,3 +2482,135 @@ fn batched_queries_preserve_multi_path_equipment_substats_and_pool_reuse() {
         Some(1)
     );
 }
+
+#[test]
+fn migration_upgrades_schema_v15_missing_game_version_for_sync_snapshot() {
+    let path = std::env::temp_dir().join(format!(
+        "starrail-auto-tools-v15-migration-{}-{}.sqlite3",
+        std::process::id(),
+        now_millis()
+    ));
+    {
+        let connection = rusqlite::Connection::open(&path).unwrap();
+        connection
+            .execute_batch(
+                r#"
+                CREATE TABLE schema_meta (version INTEGER NOT NULL);
+                INSERT INTO schema_meta(version) VALUES (15);
+
+                CREATE TABLE relics (
+                    item_id INTEGER PRIMARY KEY,
+                    set_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    set_name TEXT NOT NULL,
+                    slot TEXT NOT NULL,
+                    rarity INTEGER NOT NULL,
+                    level INTEGER NOT NULL,
+                    main_stat TEXT NOT NULL,
+                    location TEXT NOT NULL,
+                    locked INTEGER NOT NULL,
+                    discard INTEGER NOT NULL,
+                    source TEXT NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    last_seen_run INTEGER
+                );
+
+                CREATE TABLE light_cones (
+                    item_id INTEGER PRIMARY KEY,
+                    template_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    level INTEGER NOT NULL,
+                    ascension INTEGER NOT NULL,
+                    superimposition INTEGER NOT NULL,
+                    location TEXT NOT NULL,
+                    locked INTEGER NOT NULL,
+                    source TEXT NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    last_seen_run INTEGER
+                );
+
+                CREATE TABLE characters (
+                    character_id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    path TEXT NOT NULL,
+                    level INTEGER NOT NULL,
+                    ascension INTEGER NOT NULL,
+                    eidolon INTEGER NOT NULL,
+                    rarity INTEGER NOT NULL DEFAULT 5,
+                    skills_json TEXT NOT NULL,
+                    traces_json TEXT NOT NULL,
+                    memosprite_json TEXT,
+                    ability_version INTEGER NOT NULL,
+                    source TEXT NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    last_seen_run INTEGER
+                );
+
+                CREATE TABLE character_build_plans (
+                    character_id INTEGER PRIMARY KEY,
+                    cavern_mode TEXT NOT NULL,
+                    cavern_set_a INTEGER NOT NULL,
+                    cavern_set_b INTEGER,
+                    planar_set_id INTEGER NOT NULL,
+                    main_stats_json TEXT NOT NULL,
+                    effective_substats_json TEXT NOT NULL DEFAULT '[]',
+                    note TEXT NOT NULL DEFAULT '',
+                    substat_weights_json TEXT NOT NULL DEFAULT '{}',
+                    min_potential_pct REAL NOT NULL DEFAULT 40,
+                    spd_target REAL NOT NULL DEFAULT 0,
+                    updated_at INTEGER NOT NULL,
+                    display_order INTEGER NOT NULL DEFAULT 0,
+                    pinned INTEGER NOT NULL DEFAULT 0
+                );
+
+                CREATE TABLE cleanup_queue (
+                    item_id INTEGER PRIMARY KEY,
+                    fingerprint_json TEXT NOT NULL,
+                    display_name TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    last_run_id INTEGER,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL
+                );
+
+                INSERT INTO characters(
+                    character_id, name, path, level, ascension, eidolon, rarity,
+                    skills_json, traces_json, memosprite_json, ability_version,
+                    source, updated_at, last_seen_run
+                ) VALUES (1001, '三月七', 'Preservation', 80, 6, 6, 4, '{}', '{}', NULL, 1, 'test', 1000, NULL);
+
+                INSERT INTO character_build_plans(
+                    character_id, cavern_mode, cavern_set_a, cavern_set_b, planar_set_id,
+                    main_stats_json, effective_substats_json, note, substat_weights_json,
+                    min_potential_pct, spd_target, updated_at, display_order, pinned
+                ) VALUES (1001, 'fourPiece', 101, NULL, 301, '{}', '[]', 'legacy', '{}', 40, 0, 1735689600000, 0, 0);
+                "#,
+            )
+            .unwrap();
+    }
+
+    let store = InventoryStore::initialize(path.clone()).unwrap();
+    let version: i64 = store
+        .connect()
+        .unwrap()
+        .query_row("SELECT version FROM schema_meta LIMIT 1", [], |row| {
+            row.get(0)
+        })
+        .unwrap();
+    assert_eq!(version, SCHEMA_VERSION);
+
+    let plan = store.build_plan(1001).unwrap().expect("migrated plan");
+    assert_eq!(plan.game_version, "");
+    assert_eq!(plan.note, "legacy");
+
+    let snapshot = store.sync_snapshot().unwrap();
+    assert_eq!(snapshot.build_plans.len(), 1);
+    assert_eq!(snapshot.build_plans[0].game_version, "");
+
+    let listed = store.list_characters(&CharacterFilter::default()).unwrap();
+    assert_eq!(listed.items.len(), 1);
+    assert!(listed.items[0].has_build_plan);
+    assert_eq!(listed.items[0].build_plan_game_version, None);
+
+    let _ = std::fs::remove_file(path);
+}
