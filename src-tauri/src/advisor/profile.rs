@@ -151,9 +151,7 @@ pub fn resolve_profile(
     let resolved_element = if !element.trim().is_empty() {
         element.trim().to_owned()
     } else {
-        entry
-            .map(|item| item.element.clone())
-            .unwrap_or_default()
+        entry.map(|item| item.element.clone()).unwrap_or_default()
     };
     let base_speed = entry
         .and_then(|item| item.base_stats.as_ref())
@@ -178,7 +176,8 @@ pub fn resolve_profile(
         guidance_notes.push(override_rule.note.to_owned());
     }
     if low_speed_preferred {
-        guidance_notes.push("该角色偏低速或反击机制，常规流派不堆速度断点（spdTarget 填 0）。".to_owned());
+        guidance_notes
+            .push("该角色偏低速或反击机制，常规流派不堆速度断点（spdTarget 填 0）。".to_owned());
     }
 
     let (disallowed_substats, disallowed_main_stats) = disallowed_stats_for(scaling_mode);
@@ -260,10 +259,9 @@ fn detect_reworked_character(abilities: &[&MechanicAbility]) -> bool {
         if ability.slot != "trace" || ability.name.ends_with("强化") || ability.name.is_empty() {
             continue;
         }
-        if let Some(previous) = seen.insert(
-            ability.name.as_str(),
-            ability.description_template.as_str(),
-        ) {
+        if let Some(previous) =
+            seen.insert(ability.name.as_str(), ability.description_template.as_str())
+        {
             if previous != ability.description_template {
                 return true;
             }
@@ -330,7 +328,10 @@ fn infer_low_speed_preferred(abilities: &[&MechanicAbility], base_speed: Option<
         return false;
     }
     let core_text = join_descriptions(abilities, |slot| {
-        matches!(slot, "skill" | "ult" | "talent" | "memospriteSkill" | "memospriteTalent")
+        matches!(
+            slot,
+            "skill" | "ult" | "talent" | "memospriteSkill" | "memospriteTalent"
+        )
     });
     // Low-speed counter-attackers (e.g., Clara, Yunli) or slow HP-scaling
     // Remembrance/Quantum kits designed for Poet of Mourning Collapse.
