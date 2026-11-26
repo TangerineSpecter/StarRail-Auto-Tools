@@ -436,7 +436,7 @@ mod tests {
 #[cfg(windows)]
 mod windows_capture {
     use std::collections::HashMap;
-    use std::time::{Duration, Instant};
+    use std::time::Instant;
 
     use futures::StreamExt;
     use pktmon::{

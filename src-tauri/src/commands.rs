@@ -428,11 +428,9 @@ pub async fn recognize_image(
     #[cfg(feature = "ocr")]
     {
         let paths = models.paths()?;
-        return tauri::async_runtime::spawn_blocking(move || {
-            ocr::recognize_image(image_path, paths)
-        })
-        .await
-        .map_err(|error| AppError::Ocr(error.to_string()))?;
+        tauri::async_runtime::spawn_blocking(move || ocr::recognize_image(image_path, paths))
+            .await
+            .map_err(|error| AppError::Ocr(error.to_string()))?
     }
 
     #[cfg(not(feature = "ocr"))]
@@ -452,11 +450,9 @@ pub async fn recognize_screenshot(
     #[cfg(feature = "ocr")]
     {
         let paths = models.paths()?;
-        return tauri::async_runtime::spawn_blocking(move || {
-            ocr::recognize_screenshot(image_bytes, paths)
-        })
-        .await
-        .map_err(|error| AppError::Ocr(error.to_string()))?;
+        tauri::async_runtime::spawn_blocking(move || ocr::recognize_screenshot(image_bytes, paths))
+            .await
+            .map_err(|error| AppError::Ocr(error.to_string()))?
     }
 
     #[cfg(not(feature = "ocr"))]

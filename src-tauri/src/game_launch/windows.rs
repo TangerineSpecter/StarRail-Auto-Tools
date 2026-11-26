@@ -34,28 +34,6 @@ use windows::{
     },
 };
 
-const ENTER_TEMPLATE: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/assets/game-enter-template.png"
-));
-const ENTER_REGION_X: f32 = 616.0 / 1362.0;
-const ENTER_REGION_Y: f32 = 735.0 / 800.0;
-const ENTER_REGION_WIDTH: f32 = 130.0 / 1362.0;
-const ENTER_REGION_HEIGHT: f32 = 42.0 / 800.0;
-// The bundled template was taken from a remote desktop image. Only compare the glyph area:
-// the surrounding login animation changes continuously and is not a stable signal.
-const ENTER_TEXT_LEFT: u32 = 34;
-const ENTER_TEXT_RIGHT: u32 = 100;
-const ENTER_TEXT_TOP: u32 = 8;
-const ENTER_TEXT_BOTTOM: u32 = 32;
-const TEMPLATE_TEXT_BRIGHTNESS: u8 = 215;
-const CANDIDATE_TEXT_BRIGHTNESS: u8 = 190;
-const ENTER_TEXT_SIMILARITY: f32 = 0.58;
-const ENTER_READY_TIMEOUT: Duration = Duration::from_secs(45);
-const ENTER_RETRY_DELAY: Duration = Duration::from_secs(5);
-const MAX_ENTER_CLICKS: u8 = 3;
-const UNRECOGNIZED_ENTER_FALLBACK_AFTER: u8 = 5;
-
 #[derive(Clone, Copy)]
 pub struct GameWindow {
     hwnd: isize,
@@ -125,57 +103,6 @@ pub async fn wait_for_game_window(timeout: Duration) -> Result<GameWindow, Strin
     }
 }
 
-pub async fn wait_for_enter_screen_and_click(game: GameWindow) -> Result<(), String> {
-    // 游戏窗口出现后仍需加载一段时间，先避免在黑屏或动画早期误点。
-    tokio::time::sleep(Duration::from_secs(8)).await;
-    let deadline = tokio::time::Instant::now() + ENTER_READY_TIMEOUT;
-    let mut clicks = 0;
-    let mut unmatched_checks = 0;
-    loop {
-        if !is_current_game_window(game) {
-            return Err("游戏窗口已关闭或不再属于本次启动的客户端。".to_owned());
-        }
-        match enter_screen_visible(game.hwnd()) {
-            Ok(true) => {
-                click_game_enter_at_window(game.hwnd())?;
-                clicks += 1;
-                tokio::time::sleep(ENTER_RETRY_DELAY).await;
-                match enter_screen_visible(game.hwnd()) {
-                    Ok(false) => return Ok(()),
-                    Ok(true) => {}
-                    Err(error) => {
-                        return Err(format!("点击后无法确认“点击进入”界面是否消失：{error}"));
-                    }
-                }
-                if clicks >= MAX_ENTER_CLICKS {
-                    return Err("已识别到“点击进入”界面，但连续 3 次点击后界面仍未消失。可能是游戏以管理员身份运行，或远程控制软件拦截了输入。".to_owned());
-                }
-            }
-            Ok(false) => {
-                unmatched_checks += 1;
-                if unmatched_checks >= UNRECOGNIZED_ENTER_FALLBACK_AFTER {
-                    // The window identity and foreground are verified again inside the click
-                    // helper. This is a single fallback for remote-desktop scaling or animation
-                    // changes that make the visual template unavailable; it is never retried
-                    // blindly on later game screens.
-                    click_game_enter_at_window(game.hwnd())?;
-                    return Ok(());
-                }
-                if tokio::time::Instant::now() >= deadline {
-                    return Err("等待“点击进入”界面超时。请确认游戏已正常加载到登录页。".to_owned());
-                }
-                tokio::time::sleep(Duration::from_secs(2)).await;
-            }
-            Err(error) => {
-                if tokio::time::Instant::now() >= deadline {
-                    return Err(format!("无法识别“点击进入”界面：{error}"));
-                }
-                tokio::time::sleep(Duration::from_secs(2)).await;
-            }
-        }
-    }
-}
-
 pub fn click_game_enter(game: GameWindow) -> Result<(), String> {
     // The caller has just verified that this exact process still owns a visible game window.
     // Do not repeat the check here: foreground activation can be denied transiently between
@@ -215,67 +142,6 @@ fn activate_game_window(hwnd: HWND) -> bool {
         let _ = BringWindowToTop(hwnd);
         SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd
     }
-}
-
-fn enter_screen_visible(hwnd: HWND) -> Result<bool, String> {
-    let image = image::load_from_memory(&capture_window_png(hwnd)?)
-        .map_err(|error| format!("无法解析游戏窗口截图：{error}"))?;
-    let template = image::load_from_memory(ENTER_TEMPLATE)
-        .map_err(|error| format!("无法加载“点击进入”模板：{error}"))?
-        .to_luma8();
-    let width = image.width();
-    let height = image.height();
-    let crop_width = (width as f32 * ENTER_REGION_WIDTH).round() as u32;
-    let crop_height = (height as f32 * ENTER_REGION_HEIGHT).round() as u32;
-    if crop_width < 20 || crop_height < 12 {
-        return Err("游戏窗口尺寸过小，无法识别“点击进入”界面。".to_owned());
-    }
-    let center_x = (width as f32 * ENTER_REGION_X).round() as i32;
-    let center_y = (height as f32 * ENTER_REGION_Y).round() as i32;
-    for offset_y in [-2, -1, 0, 1, 2] {
-        for offset_x in [-2, -1, 0, 1, 2] {
-            let x = (center_x + offset_x * (crop_width as i32 / 8))
-                .clamp(0, width as i32 - crop_width as i32) as u32;
-            let y = (center_y + offset_y * (crop_height as i32 / 5))
-                .clamp(0, height as i32 - crop_height as i32) as u32;
-            let candidate = image
-                .crop_imm(x, y, crop_width, crop_height)
-                .resize_exact(
-                    template.width(),
-                    template.height(),
-                    image::imageops::FilterType::Triangle,
-                )
-                .to_luma8();
-            if text_template_similarity(&template, &candidate) >= ENTER_TEXT_SIMILARITY {
-                return Ok(true);
-            }
-        }
-    }
-    Ok(false)
-}
-
-fn text_template_similarity(template: &image::GrayImage, candidate: &image::GrayImage) -> f32 {
-    let mut template_text_pixels = 0_u32;
-    let mut candidate_text_pixels = 0_u32;
-    let mut matching_text_pixels = 0_u32;
-    let right = ENTER_TEXT_RIGHT.min(template.width());
-    let bottom = ENTER_TEXT_BOTTOM.min(template.height());
-    for y in ENTER_TEXT_TOP.min(bottom)..bottom {
-        for x in ENTER_TEXT_LEFT.min(right)..right {
-            let template_is_text = template.get_pixel(x, y)[0] >= TEMPLATE_TEXT_BRIGHTNESS;
-            let candidate_is_text = candidate.get_pixel(x, y)[0] >= CANDIDATE_TEXT_BRIGHTNESS;
-            if template_is_text {
-                template_text_pixels += 1;
-            }
-            if candidate_is_text {
-                candidate_text_pixels += 1;
-            }
-            if template_is_text && candidate_is_text {
-                matching_text_pixels += 1;
-            }
-        }
-    }
-    2.0 * matching_text_pixels as f32 / (template_text_pixels + candidate_text_pixels).max(1) as f32
 }
 
 fn capture_window_png(hwnd: HWND) -> Result<Vec<u8>, String> {
@@ -560,23 +426,5 @@ fn window_title(hwnd: HWND) -> String {
         let mut text = vec![0u16; (length + 1) as usize];
         let _ = GetWindowTextW(hwnd, &mut text);
         String::from_utf16_lossy(&text[..length as usize])
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn template_similarity_requires_the_text_shape_not_just_brightness() {
-        let mut template = image::GrayImage::new(130, 42);
-        for x in 40..90 {
-            template.put_pixel(x, 20, image::Luma([255]));
-        }
-        let matching = template.clone();
-        let bright_background = image::GrayImage::from_pixel(130, 42, image::Luma([255]));
-
-        assert!(text_template_similarity(&template, &matching) >= ENTER_TEXT_SIMILARITY);
-        assert!(text_template_similarity(&template, &bright_background) < ENTER_TEXT_SIMILARITY);
     }
 }
