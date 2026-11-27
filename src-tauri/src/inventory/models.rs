@@ -196,6 +196,7 @@ pub struct RelicFilter {
     #[serde(flatten)]
     pub page: PageQuery,
     pub search: Option<String>,
+    pub set_ids: Option<Vec<u32>>,
     pub slots: Option<Vec<String>>,
     pub rarities: Option<Vec<u32>>,
     pub min_level: Option<u32>,

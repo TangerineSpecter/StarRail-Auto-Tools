@@ -2614,3 +2614,40 @@ fn migration_upgrades_schema_v15_missing_game_version_for_sync_snapshot() {
 
     let _ = std::fs::remove_file(path);
 }
+
+#[test]
+fn list_relics_filters_by_set_ids() {
+    let store = InventoryStore::test_store();
+    {
+        let conn = store.connect().unwrap();
+        conn.execute(
+            "INSERT INTO relics(
+                item_id, set_id, name, set_name, slot, rarity, level, main_stat, main_stat_value,
+                location, equipped_character_id, locked, discard, source, updated_at
+             ) VALUES
+                (9101, 133, '伶人手', '戏梦点星的伶人', 'Hands', 5, 15, 'ATK', 352.8, '', NULL, 0, 0, 'test', 1),
+                (9102, 133, '伶人头', '戏梦点星的伶人', 'Head', 5, 15, 'HP', 705.6, '', NULL, 0, 0, 'test', 1),
+                (9103, 329, '欢愉绳', '神的瞬息欢愉', 'LinkRope', 5, 15, 'HP%', 43.2, '', NULL, 0, 0, 'test', 1)",
+            [],
+        )
+        .unwrap();
+    }
+
+    let only_133 = store
+        .list_relics(&RelicFilter {
+            set_ids: Some(vec![133]),
+            ..RelicFilter::default()
+        })
+        .unwrap();
+    assert_eq!(only_133.total, 2);
+    assert!(only_133.items.iter().all(|item| item.set_id == 133));
+
+    let only_329 = store
+        .list_relics(&RelicFilter {
+            set_ids: Some(vec![329]),
+            ..RelicFilter::default()
+        })
+        .unwrap();
+    assert_eq!(only_329.total, 1);
+    assert_eq!(only_329.items[0].item_id, 9103);
+}

@@ -7,6 +7,7 @@ import InventoryFilterDrawer from "@/features/inventory/InventoryFilterDrawer.vu
 import InventoryList from "@/features/inventory/InventoryList.vue";
 import InventoryDetailDrawer from "@/features/inventory/InventoryDetailDrawer.vue";
 import RelicQualityToolbar from "@/features/inventory/RelicQualityToolbar.vue";
+import RelicSetFilterSelect from "@/features/inventory/RelicSetFilterSelect.vue";
 import BuildPlanDrawer from "@/features/build-planner/BuildPlanDrawer.vue";
 import TeamWorkspace from "@/features/team/TeamWorkspace.vue";
 import { useInventoryArchive } from "@/features/inventory/useInventoryArchive";
@@ -164,6 +165,12 @@ onBeforeUnmount(removeEscapeListener);
               <path d="M4 6.25 8 10.25 12 6.25" />
             </svg>
           </Button>
+          <RelicSetFilterSelect
+            v-if="archive.kind.value === 'relic'"
+            v-model:set-ids="archive.filters.value.setIds"
+            :revision="inventoryRevision"
+            @change="archive.applyFilters"
+          />
           <Button
             v-if="archive.kind.value === 'relic' && !qualityOpen && archive.selectedIds.value.size"
             class="toolbar-cleanup-action"

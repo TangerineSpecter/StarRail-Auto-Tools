@@ -2,10 +2,11 @@
 .clear-filter {
   position: relative;
   display: flex;
+  flex-shrink: 0;
   height: 34px;
   align-items: center;
   justify-content: center;
-  min-width: 88px;
+  min-width: 82px;
   gap: 6px;
   padding: 0 12px;
   border: 1px solid rgba(46, 78, 119, 0.15);
@@ -13,6 +14,7 @@
   background: #fff;
   font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
   border-radius: 6px;
   transition: all 0.2s;
 }
@@ -79,6 +81,66 @@
 .quality-toggle[aria-expanded="true"] .quality-toggle-chevron {
   transform: rotate(180deg);
   color: var(--blue);
+}
+
+.relic-set-filter-panel {
+  min-width: 268px !important;
+}
+
+.relic-set-filter-panel .p-select-option {
+  width: 100%;
+  padding: 6px 10px;
+}
+
+.relic-set-filter-panel .relic-set-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.relic-set-filter-panel .relic-set-filter-option.is-empty {
+  opacity: 0.56;
+}
+
+.relic-set-filter-panel .relic-set-filter-option img {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.relic-set-filter-panel .relic-set-filter-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.relic-set-filter-panel .relic-set-filter-count {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(36, 86, 166, 0.09);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.relic-set-filter-panel .relic-set-filter-option.is-empty .relic-set-filter-count {
+  background: rgba(46, 78, 119, 0.07);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.relic-set-filter-panel .p-select-option-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .toolbar-cleanup-action {

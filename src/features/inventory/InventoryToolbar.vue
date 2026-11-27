@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import Button from "primevue/button";
+import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import type { InventoryKind } from "@/types";
 import type { InventoryFilterForm } from "./filter";
@@ -20,6 +22,14 @@ const searchPlaceholder = () =>
     : props.kind === "lightCone"
       ? "搜索名称或装备角色"
       : "搜索角色名称";
+
+const onlyMissingBuildPlan = computed({
+  get: () => filters.value.buildPlan === "false",
+  set: (checked: boolean) => {
+    filters.value.buildPlan = checked ? "false" : "";
+    emit("search");
+  },
+});
 </script>
 
 <template>
@@ -49,6 +59,14 @@ const searchPlaceholder = () =>
           /></svg
         ><span>筛选</span><b v-if="activeFilterCount">{{ activeFilterCount }}</b>
       </Button>
+      <label
+        v-if="kind === 'character'"
+        class="toolbar-missing-plan-toggle"
+        :class="{ 'is-active': onlyMissingBuildPlan }"
+      >
+        <Checkbox v-model="onlyMissingBuildPlan" binary input-id="character-missing-plan-only" />
+        <span>未设置目标</span>
+      </label>
       <slot name="actions" />
       <Button v-if="hasFilters" class="clear-filter" type="button" text @click="emit('reset')"
         >清空</Button
@@ -57,3 +75,32 @@ const searchPlaceholder = () =>
     </div>
   </header>
 </template>
+
+<style scoped>
+.toolbar-missing-plan-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(46, 78, 119, 0.15);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+}
+.toolbar-missing-plan-toggle:hover {
+  background: #f8fbff;
+  border-color: rgba(46, 78, 119, 0.25);
+}
+.toolbar-missing-plan-toggle.is-active {
+  border-color: rgba(36, 86, 166, 0.34);
+  background: #f2f7fe;
+  color: var(--blue);
+}
+</style>

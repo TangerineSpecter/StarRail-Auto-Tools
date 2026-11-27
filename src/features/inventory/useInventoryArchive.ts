@@ -74,7 +74,10 @@ export function useInventoryArchive(options: ArchiveOptions) {
   }
   const activeFilterCount = computed(() => activeFilterCountFor(kind.value));
   const hasActiveSearchOrFilters = computed(
-    () => filters.value.search.trim().length > 0 || activeFilterCount.value > 0,
+    () =>
+      filters.value.search.trim().length > 0 ||
+      (kind.value === "relic" && filters.value.setIds.length > 0) ||
+      activeFilterCount.value > 0,
   );
   let requestId = 0;
   let preparedRequestId: number | null = null;

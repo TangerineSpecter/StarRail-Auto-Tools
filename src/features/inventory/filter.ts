@@ -3,6 +3,7 @@ import type { CharacterFilter, InventoryKind, LightConeFilter, RelicFilter } fro
 
 export interface InventoryFilterForm {
   search: string;
+  setIds: number[];
   slots: string[];
   rarities: number[];
   minLevel: string;
@@ -24,6 +25,7 @@ export interface InventoryFilterForm {
 
 export const createInventoryFilterForm = (): InventoryFilterForm => ({
   search: "",
+  setIds: [],
   slots: [],
   rarities: [],
   minLevel: "",
@@ -66,6 +68,7 @@ export function buildInventoryFilter(
   if (kind === "relic") {
     return compact({
       ...shared,
+      setIds: form.setIds.length ? form.setIds : undefined,
       slots: form.slots.length ? form.slots : undefined,
       rarities: form.rarities.length ? form.rarities : undefined,
       mainStats: form.mainStats.length ? form.mainStats : undefined,

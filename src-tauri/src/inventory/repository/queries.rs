@@ -83,6 +83,7 @@ impl InventoryStore {
                 3,
             )?;
         }
+        push_number_filters(&mut clauses, &mut values, "set_id", &filter.set_ids);
         push_text_filters(&mut clauses, &mut values, "slot", &filter.slots);
         push_number_filters(&mut clauses, &mut values, "rarity", &filter.rarities);
         push_number_filter(&mut clauses, &mut values, "level", ">=", filter.min_level);
