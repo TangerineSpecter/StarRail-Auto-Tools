@@ -39,6 +39,7 @@ describe("relic quality filtering", () => {
     const wrapper = mount(RelicQualityToolbar, {
       props: { items: [high, low], actionsOnly: true, previewPlan: null },
     });
+    expect(wrapper.find(".score-toolbar-toggle").exists()).toBe(false);
     expect(wrapper.find(".score-toolbar-fields").exists()).toBe(false);
     expect(wrapper.emitted("update:display-items")).toBeUndefined();
     expect(getDashboard).not.toHaveBeenCalled();
@@ -48,6 +49,46 @@ describe("relic quality filtering", () => {
     await wrapper.get(".score-toolbar-confirm button").trigger("click");
     expect(wrapper.emitted("notice")).toHaveLength(2);
     expect(wrapper.emitted("update:display-items")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("collapses desktop quality filters by default and preserves active filters while hidden", async () => {
+    getDashboard.mockResolvedValueOnce(dashboard);
+    const wrapper = mount(RelicQualityToolbar, {
+      props: { items: [high, low], selectedCount: 2, open: false },
+    });
+    await flushPromises();
+
+    // Collapsed by default: renders no extra row in the DOM while still mounted.
+    expect(wrapper.find(".score-toolbar").exists()).toBe(false);
+    expect(wrapper.emitted("update:active-summary")?.at(-1)).toEqual([[]]);
+
+    // Expand via prop (driven by toolbar toggle button) and adjust sort/grade filters.
+    await wrapper.setProps({ open: true });
+    expect(wrapper.find(".score-toolbar").exists()).toBe(true);
+    expect(wrapper.find(".score-toolbar-fields").exists()).toBe(true);
+    expect(wrapper.find(".score-toolbar-actions").exists()).toBe(true);
+
+    const selects = wrapper.findAll(".score-toolbar-fields select");
+    await selects[1]!.setValue("score-asc");
+    await selects[2]!.setValue("F");
+
+    expect(wrapper.emitted("update:active-summary")?.at(-1)).toEqual([["加权分从低到高", "≥ F"]]);
+
+    // Open confirm box, then collapse — confirm box resets while filters stay active.
+    await wrapper.get(".score-toolbar-actions button.score-action").trigger("click");
+    await wrapper.findAll(".score-toolbar-actions button.score-action")[1]!.trigger("click");
+    expect(wrapper.find(".score-toolbar-confirm").exists()).toBe(true);
+
+    await wrapper.setProps({ open: false });
+    expect(wrapper.find(".score-toolbar").exists()).toBe(false);
+
+    // Filtering/sorting continues to track incoming items even while collapsed.
+    await wrapper.setProps({ items: [high, low] });
+    expect(wrapper.emitted("update:display-items")?.at(-1)?.[0]).toEqual([low, high]);
+
+    await wrapper.setProps({ open: true });
+    expect(wrapper.find(".score-toolbar-confirm").exists()).toBe(false);
     wrapper.unmount();
   });
 

@@ -96,13 +96,18 @@
 }
 
 .archive-main {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   position: relative;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
   padding: 21px 22px 15px;
+}
+
+.archive-main > .table-shell {
+  flex: 1;
+  min-height: 0;
 }
 
 .archive-actions {

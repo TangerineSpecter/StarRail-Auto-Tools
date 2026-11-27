@@ -49,6 +49,7 @@ const searchPlaceholder = () =>
           /></svg
         ><span>筛选</span><b v-if="activeFilterCount">{{ activeFilterCount }}</b>
       </Button>
+      <slot name="actions" />
       <Button v-if="hasFilters" class="clear-filter" type="button" text @click="emit('reset')"
         >清空</Button
       >

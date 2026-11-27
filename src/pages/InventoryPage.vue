@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from "vue";
+import Button from "primevue/button";
 import InventorySidebar from "@/features/inventory/InventorySidebar.vue";
 import InventoryToolbar from "@/features/inventory/InventoryToolbar.vue";
 import InventoryFilterDrawer from "@/features/inventory/InventoryFilterDrawer.vue";
@@ -30,6 +31,8 @@ const detail = useInventoryDetail(feedback.setError);
 const archiveView = ref<ArchiveView>("relic");
 const buildCharacterId = ref<number | null>(null);
 const scoredRelicItems = ref<RelicListItem[] | null>(null);
+const qualityOpen = ref(false);
+const qualitySummary = ref<string[]>([]);
 const isTeamView = computed(() => archiveView.value === "team");
 const currentGameVersion = computed(() => extractGameVersion(summary.value.protocolVersion));
 const listItems = computed<InventoryListItem[]>(() => {
@@ -70,7 +73,11 @@ function switchArchiveView(view: ArchiveView) {
 watch(
   () => archive.kind.value,
   (kind) => {
-    if (kind !== "relic") scoredRelicItems.value = null;
+    if (kind !== "relic") {
+      scoredRelicItems.value = null;
+      qualityOpen.value = false;
+      qualitySummary.value = [];
+    }
   },
 );
 
@@ -106,7 +113,69 @@ onBeforeUnmount(removeEscapeListener);
         @search="archive.applyFilters"
         @filter="archive.filterOpen.value = true"
         @reset="archive.resetFilters"
-      />
+      >
+        <template #actions>
+          <Button
+            v-if="archive.kind.value === 'relic'"
+            class="filter-toggle quality-toggle"
+            :class="{ 'is-active': qualitySummary.length > 0 }"
+            type="button"
+            outlined
+            :aria-expanded="qualityOpen"
+            :title="
+              qualitySummary.length
+                ? `评分筛选：${qualitySummary.join(' · ')}`
+                : qualityOpen
+                  ? '收起评分筛选与质量标签'
+                  : '展开评分筛选与质量标签'
+            "
+            @click="qualityOpen = !qualityOpen"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="1em"
+              height="1em"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 6h16M4 12h8M4 18h6" />
+              <path
+                d="M17.5 11.8 18.6 14.4 21.2 15.5 18.6 16.6 17.5 19.2 16.4 16.6 13.8 15.5 16.4 14.4Z"
+              />
+            </svg>
+            <span>评分筛选</span>
+            <b v-if="qualitySummary.length">{{ qualitySummary.length }}</b>
+            <svg
+              class="quality-toggle-chevron"
+              viewBox="0 0 16 16"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 6.25 8 10.25 12 6.25" />
+            </svg>
+          </Button>
+          <Button
+            v-if="archive.kind.value === 'relic' && !qualityOpen && archive.selectedIds.value.size"
+            class="toolbar-cleanup-action"
+            type="button"
+            :disabled="busy"
+            title="已锁定或已装备的遗器不会被加入"
+            @click="addSelectedToCleanup"
+          >
+            加入清理管理（{{ archive.selectedIds.value.size }}）
+          </Button>
+        </template>
+      </InventoryToolbar>
       <InventoryFilterDrawer
         v-model="archive.filterOpen.value"
         v-model:filters="archive.filters.value"
@@ -120,7 +189,9 @@ onBeforeUnmount(removeEscapeListener);
         :items="archive.result.value.items as RelicListItem[]"
         :selected-count="archive.selectedIds.value.size"
         :cleanup-busy="busy"
+        :open="qualityOpen"
         @update:display-items="scoredRelicItems = $event"
+        @update:active-summary="qualitySummary = $event"
         @add-to-cleanup="addSelectedToCleanup"
         @notice="notice = $event"
         @error="error = $event"

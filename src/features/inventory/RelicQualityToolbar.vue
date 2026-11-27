@@ -7,6 +7,7 @@ import {
   filterRelicQuality,
   relicQualityGradeOptions as gradeOptions,
   relicQualitySortOptions as sortOptions,
+  summarizeRelicQualityFilter,
 } from "./relic-quality-filter";
 
 const props = defineProps<{
@@ -15,10 +16,12 @@ const props = defineProps<{
   cleanupBusy?: boolean;
   actionsOnly?: boolean;
   previewPlan?: CharacterBuildPlan | null;
+  open?: boolean;
 }>();
 
 const emit = defineEmits<{
   "update:display-items": [items: RelicListItem[]];
+  "update:active-summary": [summary: string[]];
   notice: [message: string];
   error: [message: string];
   "add-to-cleanup": [];
@@ -38,6 +41,32 @@ const planOptions = computed(() =>
     label: entry.character.name,
     value: entry.character.characterId,
   })),
+);
+
+const selectedPlanLabel = computed(
+  () => planOptions.value.find((opt) => opt.value === selectedCharacterId.value)?.label ?? null,
+);
+
+const activeSummary = computed(() =>
+  summarizeRelicQualityFilter(
+    { sortMode: sortMode.value, minGrade: minGrade.value },
+    selectedPlanLabel.value,
+  ),
+);
+
+watch(
+  activeSummary,
+  (summary) => {
+    if (!props.actionsOnly) emit("update:active-summary", summary);
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.open,
+  (open) => {
+    if (!open) confirmAction.value = null;
+  },
 );
 
 const activePlan = computed<CharacterBuildPlan | null>(() => {
@@ -150,7 +179,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="score-toolbar" aria-label="词条质量排序与标签">
+  <section v-if="actionsOnly || open" class="score-toolbar" aria-label="词条质量排序与标签">
     <div v-if="!actionsOnly" class="score-toolbar-fields">
       <label>
         <span>评分方案</span>

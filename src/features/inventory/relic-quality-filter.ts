@@ -74,3 +74,17 @@ export function filterRelicQuality(
   }
   return rows.map((row) => row.item);
 }
+
+export function summarizeRelicQualityFilter(
+  filter: Pick<RelicQualityFilter, "sortMode" | "minGrade">,
+  planLabel?: string | null,
+): string[] {
+  const parts: string[] = [];
+  if (planLabel) parts.push(planLabel);
+  if (filter.sortMode !== "default") {
+    const sortOption = relicQualitySortOptions.find((opt) => opt.value === filter.sortMode);
+    if (sortOption) parts.push(sortOption.label);
+  }
+  if (filter.minGrade) parts.push(`≥ ${filter.minGrade}`);
+  return parts;
+}
