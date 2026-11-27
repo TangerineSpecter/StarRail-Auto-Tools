@@ -124,9 +124,10 @@ onDeactivated(detail.close);
   min-width: 0;
 }
 .mobile-analysis :deep(.search-input),
-.mobile-analysis :deep(.slot-filter-select) {
-  min-height: 44px;
-  font-size: 14px;
+.mobile-analysis :deep(.scanner-select.p-select) {
+  min-height: 36px;
+  height: 36px;
+  font-size: 13px;
 }
 .mobile-analysis :deep(.category-tabs-group) {
   flex-wrap: wrap;

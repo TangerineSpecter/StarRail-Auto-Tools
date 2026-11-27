@@ -1,0 +1,106 @@
+/* Teleported dropdown overlay for RelicMainStatScanner PrimeVue Select controls. */
+.scanner-select-overlay.p-select-overlay {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid rgba(41, 76, 120, 0.2);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow:
+    0 16px 36px rgba(23, 38, 67, 0.14),
+    0 2px 8px rgba(23, 38, 67, 0.06);
+  font-family: var(--font-ui);
+}
+
+.scanner-select-overlay .p-select-list-container {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scanner-select-overlay .p-select-list-container::-webkit-scrollbar {
+  display: none;
+}
+
+.scanner-select-overlay .p-select-list {
+  display: grid;
+  gap: 2px;
+  padding: 0;
+}
+
+.scanner-select-overlay .p-select-option {
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 12px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.scanner-select-overlay .p-select-option:not(.p-select-option-selected):not(.p-disabled):hover,
+.scanner-select-overlay .p-select-option.p-focus:not(.p-select-option-selected) {
+  border-color: rgba(36, 86, 166, 0.14);
+  background: rgba(36, 86, 166, 0.06);
+}
+
+.scanner-select-overlay .p-select-option.p-select-option-selected {
+  border-color: rgba(36, 86, 166, 0.28);
+  background: #edf3fc;
+  color: var(--blue-deep);
+}
+
+.scanner-select-overlay .scanner-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.scanner-select-overlay .scanner-select-option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.scanner-select-overlay .p-select-option-selected .scanner-select-option-label {
+  color: var(--blue-deep);
+  font-weight: 600;
+}
+
+.scanner-select-overlay .scanner-select-option-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.scanner-select-overlay .scanner-select-option-count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(46, 79, 126, 0.08);
+  color: var(--ink-soft);
+  font:
+    700 10.5px/1.3 "Bahnschrift",
+    sans-serif;
+  text-align: center;
+}
+
+.scanner-select-overlay .p-select-option-selected .scanner-select-option-count {
+  background: rgba(28, 75, 147, 0.14);
+  color: var(--blue-deep);
+}
+
+.scanner-select-overlay .scanner-select-option-check {
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}

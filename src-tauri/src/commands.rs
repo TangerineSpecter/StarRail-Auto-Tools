@@ -2,7 +2,7 @@ use tauri::{AppHandle, Emitter, State};
 
 use crate::{
     advisor::{self, AdviseCharacterRequest, CharacterBuildAdvice},
-    diagnostics::{BackendDiagnostics, DiagnosticExportRequest},
+    diagnostics::{BackendDiagnostics, DiagnosticExportRequest, DiagnosticLogStatus},
     direct_read::{self, DirectReadSnapshot, DirectReadState},
     domain::{OcrImageResult, SystemCapabilities},
     error::AppError,
@@ -75,6 +75,24 @@ pub async fn export_diagnostic_log(
         .map_err(|error| AppError::Export(format!("写入诊断日志失败：{error}")))?;
     diagnostics.record("info", "diagnostics", "diagnostic report exported");
     Ok(Some(file.path().display().to_string()))
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+pub fn get_diagnostic_log_status(
+    diagnostics: State<'_, BackendDiagnostics>,
+) -> DiagnosticLogStatus {
+    diagnostics.status()
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+pub fn clear_diagnostic_log(
+    diagnostics: State<'_, BackendDiagnostics>,
+) -> Result<DiagnosticLogStatus, AppError> {
+    diagnostics
+        .clear()
+        .map_err(|error| AppError::Diagnostics(format!("清理诊断日志失败：{error}")))
 }
 
 #[tauri::command]

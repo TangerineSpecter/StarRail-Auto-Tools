@@ -1,5 +1,5 @@
 import { characterDisplayName, relicImage, resolveCharacterCatalogue } from "@/shared/catalogue";
-import { scanUpgradeRecommendations } from "@/shared/utils/relic-score";
+import { LETTER_GRADES, scanUpgradeRecommendations } from "@/shared/utils/relic-score";
 import type { BuildDashboardEntry, RelicListItem, RelicMainStatGroupedResult } from "@/types";
 
 export const SCANNER_SLOTS = [
@@ -19,10 +19,101 @@ export interface ScannerUsefulnessRow {
   characterAvatar: string | null;
   characterElement: string | null;
   grade: string | null;
+  potentialPct: number;
   weightedRolls: number;
   equippedWeightedRolls: number | null;
   deltaWeightedRolls: number;
   effectiveSubstatWeights: Record<string, number>;
+}
+
+export type UpgradeSortMode = "delta" | "grade";
+
+export interface UpgradeFilterOption {
+  value: string;
+  label: string;
+  count: number;
+}
+
+const GRADE_RANK_MAP = new Map<string, number>(
+  LETTER_GRADES.map((entry, idx) => [entry.grade, LETTER_GRADES.length - idx]),
+);
+
+export function gradeSortRank(grade: string | null): number {
+  if (!grade) return 0;
+  return GRADE_RANK_MAP.get(grade) ?? 0;
+}
+
+export function extractUpgradeFilterOptions(rows: readonly ScannerUsefulnessRow[]): {
+  characters: UpgradeFilterOption[];
+  sets: UpgradeFilterOption[];
+} {
+  const charMap = new Map<string, UpgradeFilterOption>();
+  const setMap = new Map<string, UpgradeFilterOption>();
+
+  for (const row of rows) {
+    const charKey =
+      row.bestCharacterId != null ? String(row.bestCharacterId) : row.characterDisplayLabel;
+    const existingChar = charMap.get(charKey);
+    if (existingChar) {
+      existingChar.count += 1;
+    } else {
+      charMap.set(charKey, { value: charKey, label: row.characterDisplayLabel, count: 1 });
+    }
+
+    const setKey = String(row.item.setId);
+    const existingSet = setMap.get(setKey);
+    if (existingSet) {
+      existingSet.count += 1;
+    } else {
+      setMap.set(setKey, { value: setKey, label: row.item.setName, count: 1 });
+    }
+  }
+
+  const sortOptions = (a: UpgradeFilterOption, b: UpgradeFilterOption) =>
+    b.count - a.count || a.label.localeCompare(b.label, "zh-CN");
+
+  return {
+    characters: [...charMap.values()].sort(sortOptions),
+    sets: [...setMap.values()].sort(sortOptions),
+  };
+}
+
+export function filterAndSortUsefulnessRows(
+  rows: readonly ScannerUsefulnessRow[],
+  options: {
+    characterId: string;
+    setId: string;
+    sortBy: UpgradeSortMode;
+  },
+): ScannerUsefulnessRow[] {
+  const filtered = rows.filter((row) => {
+    if (options.characterId !== "all") {
+      const charKey =
+        row.bestCharacterId != null ? String(row.bestCharacterId) : row.characterDisplayLabel;
+      if (charKey !== options.characterId) return false;
+    }
+    if (options.setId !== "all" && String(row.item.setId) !== options.setId) {
+      return false;
+    }
+    return true;
+  });
+
+  if (options.sortBy === "grade") {
+    return [...filtered].sort(
+      (a, b) =>
+        gradeSortRank(b.grade) - gradeSortRank(a.grade) ||
+        b.deltaWeightedRolls - a.deltaWeightedRolls ||
+        b.potentialPct - a.potentialPct ||
+        b.weightedRolls - a.weightedRolls,
+    );
+  }
+
+  return [...filtered].sort(
+    (a, b) =>
+      b.deltaWeightedRolls - a.deltaWeightedRolls ||
+      gradeSortRank(b.grade) - gradeSortRank(a.grade) ||
+      b.weightedRolls - a.weightedRolls,
+  );
 }
 
 export type SubstatEffectiveTier = "core" | "minor" | "none";
@@ -250,6 +341,7 @@ export function buildUsefulnessRows(
         characterAvatar: catalogueEntry?.image ?? null,
         characterElement: catalogueEntry?.element ?? null,
         grade: row.candidateScore.letterGrade,
+        potentialPct: row.candidateScore.potentialPct,
         weightedRolls: row.candidateScore.weightedRolls,
         equippedWeightedRolls: row.equippedScore?.weightedRolls ?? null,
         deltaWeightedRolls: row.deltaWeightedRolls,

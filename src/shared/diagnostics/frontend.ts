@@ -23,8 +23,22 @@ const SENSITIVE_VALUE_PATTERN =
 const AUTHENTICATED_URL_PATTERN = /(https?:\/\/)[^\s:@/]+:[^\s@/]+@/gi;
 
 const entries: string[] = [];
+const utf8Encoder = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
 let currentFrameRate: number | null = null;
 let installed = false;
+
+export function formatDiagnosticBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  const decimals = unitIndex >= 1 ? 1 : 0;
+  return `${value.toFixed(decimals)} ${units[unitIndex]}`;
+}
 
 function nowIso() {
   return new Date().toISOString();
@@ -79,6 +93,16 @@ export const frontendDiagnostics = {
 
   snapshot() {
     return entries.join("\n");
+  },
+
+  byteLength() {
+    const content = this.snapshot();
+    if (!content) return 0;
+    return utf8Encoder ? utf8Encoder.encode(content).length : content.length;
+  },
+
+  clear() {
+    entries.length = 0;
   },
 
   environment(appVersion: string): DiagnosticEnvironment {

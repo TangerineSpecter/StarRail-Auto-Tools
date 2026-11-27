@@ -10,3 +10,4 @@
 @import "./features/team/styles/team.css";
 @import "./features/catalogue/catalogue.css";
 @import "./features/settings/model-provider-select.css";
+@import "./features/relic-scanner/scanner-select.css";

@@ -35,6 +35,26 @@ const buttonStub = {
   template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
 };
 
+const selectStub = {
+  props: ["modelValue", "options", "optionLabel", "optionValue"],
+  emits: ["update:modelValue"],
+  template: `
+    <select
+      v-bind="$attrs"
+      :value="modelValue"
+      @change="$emit('update:modelValue', $event.target.value)"
+    >
+      <option
+        v-for="opt in options"
+        :key="opt[optionValue ?? 'value']"
+        :value="opt[optionValue ?? 'value']"
+      >
+        {{ opt[optionLabel ?? 'label'] }}
+      </option>
+    </select>
+  `,
+};
+
 describe("RelicMainStatScanner", () => {
   beforeEach(() => {
     relicMainStatScanPlanCount.mockReset();
@@ -69,7 +89,7 @@ describe("RelicMainStatScanner", () => {
     dashboard.mockResolvedValue([]);
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
-      global: { stubs: { Button: buttonStub } },
+      global: { stubs: { Button: buttonStub, Select: selectStub } },
     });
     await flushPromises();
 
@@ -119,7 +139,7 @@ describe("RelicMainStatScanner", () => {
     });
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
-      global: { stubs: { Button: buttonStub } },
+      global: { stubs: { Button: buttonStub, Select: selectStub } },
     });
     await flushPromises();
 
@@ -161,7 +181,7 @@ describe("RelicMainStatScanner", () => {
     });
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
-      global: { stubs: { Button: buttonStub } },
+      global: { stubs: { Button: buttonStub, Select: selectStub } },
     });
     await flushPromises();
 
@@ -243,7 +263,7 @@ describe("RelicMainStatScanner", () => {
 
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
-      global: { stubs: { Button: buttonStub } },
+      global: { stubs: { Button: buttonStub, Select: selectStub } },
     });
     await flushPromises();
 
@@ -315,7 +335,7 @@ describe("RelicMainStatScanner", () => {
     document.body.appendChild(host);
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined, desktopToolbarHost: host },
-      global: { stubs: { Button: buttonStub } },
+      global: { stubs: { Button: buttonStub, Select: selectStub } },
     });
     await flushPromises();
 
@@ -422,7 +442,7 @@ describe("RelicMainStatScanner", () => {
 
     const wrapper = mount(RelicMainStatScanner, {
       props: { imageFor: () => undefined },
-      global: { stubs: { Button: buttonStub } },
+      global: { stubs: { Button: buttonStub, Select: selectStub } },
     });
     await flushPromises();
 
@@ -456,6 +476,174 @@ describe("RelicMainStatScanner", () => {
     await flushPromises();
     expect(wrapper.findAll(".upgrade-card")).toHaveLength(70);
     expect(wrapper.find(".upgrade-scroll-sentinel").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("filters upgrade recommendations by present characters and sets and toggles grade-first sorting", async () => {
+    relicMainStatScanPlanCount.mockResolvedValue(2);
+    scanRelicsByMainStatGrouped.mockResolvedValue({
+      groups: [],
+      total: 0,
+      planCount: 2,
+      allowedMainStats: {},
+    });
+    dashboard.mockResolvedValue([
+      {
+        plan: {
+          characterId: 1001,
+          cavernMode: "fourPiece",
+          cavernSetA: 101,
+          cavernSetB: null,
+          planarSetId: 301,
+          mainStats: { Head: ["HP"] },
+          targets: [],
+          effectiveSubstats: ["CRIT Rate", "CRIT DMG"],
+          note: "",
+          substatWeights: { "CRIT Rate": 1, "CRIT DMG": 1 },
+          minPotentialPct: 40,
+          spdTarget: 0,
+        },
+        character: {
+          characterId: 1001,
+          name: "三月七",
+          level: 80,
+          ascension: 6,
+          equippedRelics: [
+            {
+              itemId: 500,
+              setId: 101,
+              slot: "Head",
+              mainStat: "HP",
+              substats: [{ key: "CRIT Rate", value: 17.4, count: 6, step: 0 }],
+            },
+          ],
+        },
+        displayOrder: 0,
+        pinned: false,
+      },
+      {
+        plan: {
+          characterId: 1002,
+          cavernMode: "fourPiece",
+          cavernSetA: 102,
+          cavernSetB: null,
+          planarSetId: 301,
+          mainStats: { Head: ["HP"] },
+          targets: [],
+          effectiveSubstats: ["CRIT Rate", "CRIT DMG"],
+          note: "",
+          substatWeights: { "CRIT Rate": 1, "CRIT DMG": 1 },
+          minPotentialPct: 40,
+          spdTarget: 0,
+        },
+        character: {
+          characterId: 1002,
+          name: "丹恒",
+          level: 80,
+          ascension: 6,
+          equippedRelics: [],
+        },
+        displayOrder: 1,
+        pinned: false,
+      },
+    ]);
+
+    listRelics.mockResolvedValue({
+      items: [
+        // High grade (high rolls) for March 7th, but smaller delta (+1.6 vs equipped 3.2)
+        {
+          itemId: 701,
+          setId: 101,
+          name: "高评级头",
+          setName: "套装甲",
+          slot: "Head",
+          rarity: 5,
+          level: 15,
+          mainStat: "HP",
+          mainStatValue: 705,
+          location: "",
+          equippedCharacterId: null,
+          locked: false,
+          discard: false,
+          source: "test",
+          updatedAt: 0,
+          substats: [
+            { key: "CRIT Rate", stat: "CRIT Rate", value: 14.5, count: 5, step: 8 },
+            { key: "CRIT DMG", stat: "CRIT DMG", value: 12.9, count: 2, step: 2 },
+          ],
+        },
+        // Lower grade for Dan Heng, but larger delta (+2.4 vs empty slot 0)
+        {
+          itemId: 702,
+          setId: 102,
+          name: "高增量头",
+          setName: "套装乙",
+          slot: "Head",
+          rarity: 5,
+          level: 15,
+          mainStat: "HP",
+          mainStatValue: 705,
+          location: "",
+          equippedCharacterId: null,
+          locked: false,
+          discard: false,
+          source: "test",
+          updatedAt: 0,
+          substats: [{ key: "CRIT Rate", stat: "CRIT Rate", value: 8.7, count: 3, step: 0 }],
+        },
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 200,
+    });
+
+    const wrapper = mount(RelicMainStatScanner, {
+      props: { imageFor: () => undefined },
+      global: { stubs: { Button: buttonStub, Select: selectStub } },
+    });
+    await flushPromises();
+
+    const upgradeBtn = wrapper.findAll("button").find((b) => b.text().includes("替换推荐扫描"));
+    await upgradeBtn!.trigger("click");
+    await flushPromises();
+
+    // Default sort: delta first -> Dan Heng's piece (套装乙) comes first.
+    const cardsByDelta = wrapper.findAll(".upgrade-card");
+    expect(cardsByDelta).toHaveLength(2);
+    expect(cardsByDelta[0].text()).toContain("套装乙");
+    expect(cardsByDelta[1].text()).toContain("套装甲");
+
+    // Switch to grade-first -> March 7th's higher-grade piece (套装甲) comes first.
+    const gradeSortBtn = wrapper
+      .findAll(".upgrade-sort-btn")
+      .find((b) => b.text().includes("评级优先"));
+    expect(gradeSortBtn).toBeDefined();
+    await gradeSortBtn!.trigger("click");
+    await flushPromises();
+    expect(gradeSortBtn!.classes()).toContain("active");
+    const cardsByGrade = wrapper.findAll(".upgrade-card");
+    expect(cardsByGrade[0].text()).toContain("套装甲");
+    expect(cardsByGrade[1].text()).toContain("套装乙");
+
+    // Character & set filter dropdowns only list options present in results.
+    const charSelect = wrapper.get('select[aria-label="按适配角色筛选"]');
+    const setSelect = wrapper.get('select[aria-label="按套装筛选"]');
+    expect(charSelect.findAll("option")).toHaveLength(3);
+    expect(setSelect.findAll("option")).toHaveLength(3);
+
+    await charSelect.setValue("1001");
+    await flushPromises();
+    expect(wrapper.findAll(".upgrade-card")).toHaveLength(1);
+    expect(wrapper.find(".upgrade-card").text()).toContain("套装甲");
+
+    // Conflicting character + set filter shows empty state with reset button.
+    await setSelect.setValue("102");
+    await flushPromises();
+    expect(wrapper.findAll(".upgrade-card")).toHaveLength(0);
+    await wrapper.get(".upgrade-reset-btn").trigger("click");
+    await flushPromises();
+    expect(wrapper.findAll(".upgrade-card")).toHaveLength(2);
+
     wrapper.unmount();
   });
 });

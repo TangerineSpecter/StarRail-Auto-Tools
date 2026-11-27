@@ -169,6 +169,8 @@ pub fn run() {
             commands::detect_game_launcher,
             commands::pick_game_launcher,
             commands::export_diagnostic_log,
+            commands::get_diagnostic_log_status,
+            commands::clear_diagnostic_log,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run StarRail-Auto-Tools");

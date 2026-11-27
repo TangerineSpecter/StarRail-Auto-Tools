@@ -37,6 +37,9 @@ pub enum AppError {
     ModelProvider(String),
     #[error("配装建议失败：{0}")]
     Advisor(String),
+    #[cfg_attr(mobile, allow(dead_code))]
+    #[error("诊断日志失败：{0}")]
+    Diagnostics(String),
 }
 
 impl Serialize for AppError {

@@ -37,6 +37,12 @@ pub struct DiagnosticExportRequest {
     pub frontend_log: String,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DiagnosticLogStatus {
+    pub backend_bytes: u64,
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct DiagnosticReport {
@@ -93,6 +99,39 @@ impl BackendDiagnostics {
         serde_json::to_string_pretty(&report)
     }
 
+    pub fn status(&self) -> DiagnosticLogStatus {
+        let Ok(_file) = self.file.lock() else {
+            return DiagnosticLogStatus { backend_bytes: 0 };
+        };
+        let backend_bytes = fs::metadata(&self.path)
+            .map(|metadata| metadata.len())
+            .unwrap_or(0);
+        DiagnosticLogStatus { backend_bytes }
+    }
+
+    pub fn clear(&self) -> Result<DiagnosticLogStatus, std::io::Error> {
+        let mut guard = self
+            .file
+            .lock()
+            .map_err(|_| std::io::Error::other("diagnostic log lock poisoned"))?;
+        // Release the current handle before truncating so Windows does not reject recreation.
+        *guard = None;
+        if let Some(parent) = self.path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        File::create(&self.path)?;
+        *guard = Some(
+            OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&self.path)?,
+        );
+        let backend_bytes = fs::metadata(&self.path)
+            .map(|metadata| metadata.len())
+            .unwrap_or(0);
+        Ok(DiagnosticLogStatus { backend_bytes })
+    }
+
     fn snapshot(&self) -> String {
         let Ok(_file) = self.file.lock() else {
             return String::new();
@@ -136,7 +175,22 @@ fn truncate_utf8(value: String, max_bytes: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::truncate_utf8;
+    use std::{
+        env, fs,
+        sync::atomic::{AtomicU64, Ordering},
+    };
+
+    use super::{truncate_utf8, BackendDiagnostics, DiagnosticLogStatus};
+
+    static TEST_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+    fn temp_data_dir() -> std::path::PathBuf {
+        let unique = TEST_COUNTER.fetch_add(1, Ordering::Relaxed);
+        env::temp_dir().join(format!(
+            "starrail-auto-tools-diagnostics-{}-{unique}",
+            std::process::id()
+        ))
+    }
 
     #[test]
     fn truncates_frontend_log_at_a_utf8_boundary() {
@@ -146,5 +200,36 @@ mod tests {
     #[test]
     fn keeps_short_frontend_log_unchanged() {
         assert_eq!(truncate_utf8("fps=60".to_owned(), 100), "fps=60");
+    }
+
+    #[test]
+    fn reports_size_clears_backend_log_and_continues_recording() {
+        let data_dir = temp_data_dir();
+        let _ = fs::remove_dir_all(&data_dir);
+        let diagnostics = BackendDiagnostics::new(&data_dir);
+
+        assert_eq!(
+            diagnostics.status(),
+            DiagnosticLogStatus { backend_bytes: 0 }
+        );
+
+        diagnostics.record("info", "startup", "backend initialized");
+        let populated = diagnostics.status();
+        assert!(populated.backend_bytes > 0);
+        assert!(diagnostics.snapshot().contains("backend initialized"));
+
+        let cleared = diagnostics.clear().expect("clear backend diagnostic log");
+        assert_eq!(cleared, DiagnosticLogStatus { backend_bytes: 0 });
+        assert_eq!(
+            diagnostics.status(),
+            DiagnosticLogStatus { backend_bytes: 0 }
+        );
+        assert!(diagnostics.snapshot().is_empty());
+
+        diagnostics.record("info", "diagnostics", "after clear");
+        assert!(diagnostics.status().backend_bytes > 0);
+        assert!(diagnostics.snapshot().contains("after clear"));
+
+        let _ = fs::remove_dir_all(&data_dir);
     }
 }

@@ -10,6 +10,7 @@ import {
   watch,
 } from "vue";
 import Button from "primevue/button";
+import Select from "primevue/select";
 import { buildPlanApi } from "@/shared/api/build-plan";
 import { inventoryApi } from "@/shared/api/inventory";
 import { relicImage } from "@/shared/catalogue";
@@ -24,6 +25,8 @@ import MainStatReviewCards from "./MainStatReviewCards.vue";
 import type { ScanReviewFilters } from "./scan-review";
 import {
   buildUsefulnessRows,
+  extractUpgradeFilterOptions,
+  filterAndSortUsefulnessRows,
   filterMainStatGroups,
   formatSubstatWeightHint,
   getSetHeaderIcon,
@@ -34,6 +37,7 @@ import {
   substatEffectiveTier,
   summarizeMainStatGroups,
   type ScannerUsefulnessRow,
+  type UpgradeSortMode,
 } from "./scanner-grouping";
 import ScannerFilterButton from "./ScannerFilterButton.vue";
 
@@ -58,12 +62,63 @@ const USEFULNESS_PAGE_SIZE = 200;
 const USEFULNESS_FETCH_CONCURRENCY = 4;
 const UPGRADE_MIN_LEVEL = 15;
 const UPGRADE_RENDER_BATCH = 60;
+const upgradeCharacterFilter = ref("all");
+const upgradeSetFilter = ref("all");
+const upgradeSortMode = ref<UpgradeSortMode>("delta");
+const upgradeFilterOptions = computed(() => extractUpgradeFilterOptions(usefulnessRows.value));
+const upgradeCharacterSelectOptions = computed(() => [
+  {
+    value: "all",
+    label: "全部角色",
+    displayLabel: `全部角色 (${upgradeFilterOptions.value.characters.length})`,
+    count: upgradeFilterOptions.value.characters.length,
+  },
+  ...upgradeFilterOptions.value.characters.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+    displayLabel: `${opt.label} (${opt.count})`,
+    count: opt.count,
+  })),
+]);
+const upgradeSetSelectOptions = computed(() => [
+  {
+    value: "all",
+    label: "全部套装",
+    displayLabel: `全部套装 (${upgradeFilterOptions.value.sets.length})`,
+    count: upgradeFilterOptions.value.sets.length,
+  },
+  ...upgradeFilterOptions.value.sets.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+    displayLabel: `${opt.label} (${opt.count})`,
+    count: opt.count,
+  })),
+]);
+const slotSelectOptions = [
+  { value: "all", label: "所有部位" },
+  { value: "Body", label: "躯干" },
+  { value: "Feet", label: "脚部" },
+  { value: "PlanarSphere", label: "位面球" },
+  { value: "LinkRope", label: "连结绳" },
+  { value: "Head", label: "头部" },
+  { value: "Hands", label: "手部" },
+];
+const filteredUsefulnessRows = computed(() =>
+  filterAndSortUsefulnessRows(usefulnessRows.value, {
+    characterId: upgradeCharacterFilter.value,
+    setId: upgradeSetFilter.value,
+    sortBy: upgradeSortMode.value,
+  }),
+);
+const hasActiveUpgradeFilter = computed(
+  () => upgradeCharacterFilter.value !== "all" || upgradeSetFilter.value !== "all",
+);
 const visibleUpgradeCount = ref(UPGRADE_RENDER_BATCH);
 const visibleUsefulnessRows = computed(() =>
-  usefulnessRows.value.slice(0, visibleUpgradeCount.value),
+  filteredUsefulnessRows.value.slice(0, visibleUpgradeCount.value),
 );
 const remainingUpgradeCount = computed(() =>
-  Math.max(0, usefulnessRows.value.length - visibleUpgradeCount.value),
+  Math.max(0, filteredUsefulnessRows.value.length - visibleUpgradeCount.value),
 );
 const upgradeGridEl = ref<HTMLElement | null>(null);
 const upgradeSentinelEl = ref<HTMLElement | null>(null);
@@ -308,10 +363,37 @@ async function analyzeUsefulness() {
 function loadMoreUpgrades() {
   if (remainingUpgradeCount.value <= 0) return;
   visibleUpgradeCount.value = Math.min(
-    usefulnessRows.value.length,
+    filteredUsefulnessRows.value.length,
     visibleUpgradeCount.value + UPGRADE_RENDER_BATCH,
   );
 }
+
+function resetUpgradeFilters() {
+  upgradeCharacterFilter.value = "all";
+  upgradeSetFilter.value = "all";
+}
+
+watch(upgradeFilterOptions, (options) => {
+  if (
+    upgradeCharacterFilter.value !== "all" &&
+    !options.characters.some((opt) => opt.value === upgradeCharacterFilter.value)
+  ) {
+    upgradeCharacterFilter.value = "all";
+  }
+  if (
+    upgradeSetFilter.value !== "all" &&
+    !options.sets.some((opt) => opt.value === upgradeSetFilter.value)
+  ) {
+    upgradeSetFilter.value = "all";
+  }
+});
+
+watch([upgradeCharacterFilter, upgradeSetFilter, upgradeSortMode], () => {
+  visibleUpgradeCount.value = UPGRADE_RENDER_BATCH;
+  if (upgradeGridEl.value) {
+    upgradeGridEl.value.scrollTop = 0;
+  }
+});
 
 function disconnectUpgradeObserver() {
   upgradeObserver?.disconnect();
@@ -551,16 +633,100 @@ onBeforeUnmount(() => {
             <div class="scanner-result-heading">
               <div class="result-heading-left">
                 <p class="result-heading-summary">
-                  <b>{{ usefulnessRows.length }}</b> 件可替换推荐
+                  <b>{{ filteredUsefulnessRows.length }}</b>
+                  <span v-if="hasActiveUpgradeFilter" class="result-heading-total-cap">
+                    / {{ usefulnessRows.length }}</span
+                  >
+                  件可替换推荐
                   <span class="result-heading-criteria">（主属性 + 套装匹配且词条分更高）</span>
                 </p>
                 <span v-if="usefulnessScanned > 0" class="scanner-scanned-badge">
                   已全量分析 {{ usefulnessScanned }} 件 +15 未装备
                 </span>
+                <div class="upgrade-filter-controls">
+                  <Select
+                    v-model="upgradeCharacterFilter"
+                    :options="upgradeCharacterSelectOptions"
+                    option-label="displayLabel"
+                    option-value="value"
+                    class="scanner-select upgrade-filter-select"
+                    overlay-class="scanner-select-overlay"
+                    scroll-height="260px"
+                    aria-label="按适配角色筛选"
+                  >
+                    <template #option="{ option, selected }">
+                      <div class="scanner-select-option">
+                        <span class="scanner-select-option-label">{{ option.label }}</span>
+                        <span class="scanner-select-option-meta">
+                          <span class="scanner-select-option-count">{{ option.count }}</span>
+                          <span
+                            v-if="selected"
+                            class="scanner-select-option-check"
+                            aria-hidden="true"
+                            >✓</span
+                          >
+                        </span>
+                      </div>
+                    </template>
+                  </Select>
+                  <Select
+                    v-model="upgradeSetFilter"
+                    :options="upgradeSetSelectOptions"
+                    option-label="displayLabel"
+                    option-value="value"
+                    class="scanner-select upgrade-filter-select"
+                    overlay-class="scanner-select-overlay"
+                    scroll-height="260px"
+                    aria-label="按套装筛选"
+                  >
+                    <template #option="{ option, selected }">
+                      <div class="scanner-select-option">
+                        <span class="scanner-select-option-label">{{ option.label }}</span>
+                        <span class="scanner-select-option-meta">
+                          <span class="scanner-select-option-count">{{ option.count }}</span>
+                          <span
+                            v-if="selected"
+                            class="scanner-select-option-check"
+                            aria-hidden="true"
+                            >✓</span
+                          >
+                        </span>
+                      </div>
+                    </template>
+                  </Select>
+                </div>
               </div>
-              <p class="scanner-result-note">按相对当前穿戴的加权分增量排序</p>
+              <div class="upgrade-sort-switch" role="group" aria-label="替换推荐排序方式">
+                <button
+                  type="button"
+                  :class="['upgrade-sort-btn', { active: upgradeSortMode === 'delta' }]"
+                  :aria-pressed="upgradeSortMode === 'delta'"
+                  title="按相对当前穿戴的加权分增量降序"
+                  @click="upgradeSortMode = 'delta'"
+                >
+                  加权分优先
+                </button>
+                <button
+                  type="button"
+                  :class="['upgrade-sort-btn', { active: upgradeSortMode === 'grade' }]"
+                  :aria-pressed="upgradeSortMode === 'grade'"
+                  title="按遗器评级降序，同评级按加权分增量降序"
+                  @click="upgradeSortMode = 'grade'"
+                >
+                  评级优先
+                </button>
+              </div>
+            </div>
+            <div v-if="!filteredUsefulnessRows.length" class="scanner-state upgrade-filter-empty">
+              <div>
+                <p>没有匹配当前角色与套装条件的替换推荐。</p>
+                <button type="button" class="upgrade-reset-btn" @click="resetUpgradeFilters()">
+                  重置筛选
+                </button>
+              </div>
             </div>
             <div
+              v-else
               ref="upgradeGridEl"
               class="scanner-upgrade-grid"
               role="list"
@@ -802,17 +968,24 @@ onBeforeUnmount(() => {
 
               <div v-if="!mobile" class="compact-right">
                 <!-- Slot Segment Filter -->
-                <div class="slot-filter-select-wrapper">
-                  <select v-model="slotFilter" class="slot-filter-select">
-                    <option value="all">所有部位</option>
-                    <option value="Body">躯干</option>
-                    <option value="Feet">脚部</option>
-                    <option value="PlanarSphere">位面球</option>
-                    <option value="LinkRope">连结绳</option>
-                    <option value="Head">头部</option>
-                    <option value="Hands">手部</option>
-                  </select>
-                </div>
+                <Select
+                  v-model="slotFilter"
+                  :options="slotSelectOptions"
+                  option-label="label"
+                  option-value="value"
+                  class="scanner-select slot-filter-select"
+                  overlay-class="scanner-select-overlay"
+                  aria-label="按部位筛选"
+                >
+                  <template #option="{ option, selected }">
+                    <div class="scanner-select-option">
+                      <span class="scanner-select-option-label">{{ option.label }}</span>
+                      <span v-if="selected" class="scanner-select-option-check" aria-hidden="true"
+                        >✓</span
+                      >
+                    </div>
+                  </template>
+                </Select>
 
                 <!-- Quick Search -->
                 <div class="search-input-wrapper">
