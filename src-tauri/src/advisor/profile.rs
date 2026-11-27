@@ -4,6 +4,7 @@ use super::profile_data::{
     collect_character_abilities, find_catalogue_entry, render_ability_text, summarize_minor_traces,
     MechanicAbility,
 };
+use super::set_candidates::{infer_candidate_sets, CandidateSetHint};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScalingMode {
@@ -45,6 +46,7 @@ pub struct CharacterAdvisorProfile {
     pub search_hints: Vec<&'static str>,
     pub guidance_notes: Vec<String>,
     pub skill_summary: Vec<String>,
+    pub candidate_sets: Vec<CandidateSetHint>,
 }
 
 struct ReworkScalingOverride {
@@ -115,6 +117,14 @@ pub fn resolve_profile(
 
     let (disallowed_substats, disallowed_main_stats) = disallowed_stats_for(scaling_mode);
     let skill_summary = build_skill_summary(&abilities);
+    let candidate_sets = infer_candidate_sets(
+        &abilities,
+        &resolved_path,
+        scaling_mode,
+        is_elation,
+        low_speed_preferred,
+        base_speed,
+    );
     let minor_trace_summary = entry
         .map(|item| summarize_minor_traces(&item.trace_stats))
         .unwrap_or_default();
@@ -137,6 +147,7 @@ pub fn resolve_profile(
         search_hints,
         guidance_notes,
         skill_summary,
+        candidate_sets,
     }
 }
 
@@ -257,7 +268,7 @@ fn infer_low_speed_preferred(
     is_counter || is_slow_remembrance_hp
 }
 
-fn join_rendered_descriptions(
+pub(crate) fn join_rendered_descriptions(
     abilities: &[&MechanicAbility],
     predicate: impl Fn(&str) -> bool,
 ) -> String {

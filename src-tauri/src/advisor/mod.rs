@@ -9,6 +9,7 @@ mod prompt;
 mod sanitize;
 mod search;
 mod search_rank;
+mod set_candidates;
 mod stat_aliases;
 mod validate;
 

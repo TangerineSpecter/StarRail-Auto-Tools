@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, useId } from "vue";
 
-const props = defineProps<{
-  title: string;
-  text: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    text: string;
+    width?: number;
+  }>(),
+  {
+    width: 280,
+  },
+);
 
 const hostRef = ref<HTMLElement | null>(null);
 const cardRef = ref<HTMLElement | null>(null);
@@ -14,17 +20,17 @@ const top = ref(0);
 const left = ref(0);
 const tipId = useId();
 
-const TIP_WIDTH = 280;
 const GAP = 8;
 
 async function show() {
   const trigger = hostRef.value;
   if (!trigger) return;
   const rect = trigger.getBoundingClientRect();
-  left.value = Math.max(12, Math.min(rect.left, window.innerWidth - TIP_WIDTH - 12));
+  const effectiveWidth = Math.min(props.width, Math.max(200, window.innerWidth - 24));
+  left.value = Math.max(12, Math.min(rect.left, window.innerWidth - effectiveWidth - 12));
   const spaceBelow = window.innerHeight - rect.bottom - GAP;
   const spaceAbove = rect.top - GAP;
-  const preferredBelowHeight = 128;
+  const preferredBelowHeight = 148;
   placeAbove.value = spaceBelow < preferredBelowHeight && spaceAbove > spaceBelow;
   top.value = placeAbove.value ? rect.top - GAP : rect.bottom + GAP;
   open.value = true;
@@ -45,19 +51,33 @@ function hide() {
   open.value = false;
 }
 
+function toggle() {
+  if (open.value) hide();
+  else void show();
+}
+
 function onViewportChange() {
   if (open.value) hide();
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+  if (!open.value) return;
+  const target = event.target as Node | null;
+  if (target && hostRef.value?.contains(target)) return;
+  hide();
 }
 
 onMounted(() => {
   window.addEventListener("scroll", onViewportChange, true);
   window.addEventListener("resize", onViewportChange);
+  document.addEventListener("pointerdown", onDocumentPointerDown, true);
 });
 
 onBeforeUnmount(() => {
   hide();
   window.removeEventListener("scroll", onViewportChange, true);
   window.removeEventListener("resize", onViewportChange);
+  document.removeEventListener("pointerdown", onDocumentPointerDown, true);
 });
 </script>
 
@@ -68,6 +88,7 @@ onBeforeUnmount(() => {
     :aria-describedby="tipId"
     @mouseenter="show"
     @mouseleave="hide"
+    @click.stop="toggle"
   >
     <slot />
     <span :id="tipId" class="build-hover-tip-sr">{{ props.title }}：{{ props.text }}</span>
@@ -80,7 +101,11 @@ onBeforeUnmount(() => {
       :class="{ 'place-above': placeAbove }"
       role="tooltip"
       :aria-hidden="true"
-      :style="{ top: `${top}px`, left: `${left}px` }"
+      :style="{
+        top: `${top}px`,
+        left: `${left}px`,
+        width: `min(${props.width}px, calc(100vw - 24px))`,
+      }"
     >
       <p class="build-hover-tip-title">{{ props.title }}</p>
       <p class="build-hover-tip-body">{{ props.text }}</p>
@@ -133,5 +158,6 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 500;
   line-height: 1.55;
+  white-space: pre-line;
 }
 </style>

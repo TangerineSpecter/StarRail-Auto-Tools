@@ -71,6 +71,25 @@ const vertices = computed(() =>
   })),
 );
 
+function axisSubDetail(axis: {
+  missing: boolean;
+  mainStatCorrect?: boolean | null;
+  effectiveRolls?: number;
+  wastedRolls?: number;
+}): string | null {
+  if (axis.missing || axis.effectiveRolls === undefined || axis.wastedRolls === undefined) {
+    return null;
+  }
+  const rollsText =
+    axis.wastedRolls > 0
+      ? `有效 ${axis.effectiveRolls} 条 · 歪 ${axis.wastedRolls} 条`
+      : `有效 ${axis.effectiveRolls} 条 · 无歪词条`;
+  if (axis.mainStatCorrect === false) {
+    return `主词条不符 · ${rollsText}`;
+  }
+  return rollsText;
+}
+
 const labels = computed(() =>
   axes.value.map((axis, index) => {
     const point = polarPoint(CX, CY, LABEL_RADIUS, index);
@@ -83,12 +102,15 @@ const labels = computed(() =>
     ]
       .filter(Boolean)
       .join(" · ");
+    const subDetail = axisSubDetail(axis);
     return {
       ...axis,
       x: point.x,
       y: point.y,
       isWeak: props.weakSlot === axis.slot,
-      title: detail,
+      title: subDetail ? `${detail}\n${subDetail}` : detail,
+      headline: detail,
+      subDetail,
     };
   }),
 );
@@ -112,6 +134,12 @@ const breakdownItems = computed(() =>
     label: slotLabel(axis.slot),
     grade: axis.missing ? "—" : (axis.letterGrade ?? "—"),
     pctText: axis.missing ? "未装备" : `${Math.round(axis.potentialPct)}%`,
+    rollsHint:
+      !axis.missing && axis.effectiveRolls !== undefined && axis.wastedRolls !== undefined
+        ? axis.wastedRolls > 0
+          ? `有效${axis.effectiveRolls}/歪${axis.wastedRolls}`
+          : `有效${axis.effectiveRolls}`
+        : null,
     isWeak: props.weakSlot === axis.slot,
     missing: axis.missing,
     belowThreshold: !axis.missing && axis.potentialPct < (props.minPotentialPct ?? 40),
@@ -217,7 +245,15 @@ const hoveredSlot = ref<string | null>(null);
         aria-hidden="true"
       >
         <div class="tooltip-content">
-          {{ labels.find((item) => item.slot === vertex.slot)?.title }}
+          <div class="tooltip-headline">
+            {{ labels.find((item) => item.slot === vertex.slot)?.headline }}
+          </div>
+          <div
+            v-if="labels.find((item) => item.slot === vertex.slot)?.subDetail"
+            class="tooltip-subdetail"
+          >
+            {{ labels.find((item) => item.slot === vertex.slot)?.subDetail }}
+          </div>
         </div>
       </div>
     </div>
@@ -235,10 +271,13 @@ const hoveredSlot = ref<string | null>(null);
           },
         ]"
       >
-        <span class="radar-slot-chip-name">
-          {{ item.label }}
-          <em v-if="item.isWeak" class="radar-slot-weak-tag">短板</em>
-        </span>
+        <div class="radar-slot-chip-main">
+          <span class="radar-slot-chip-name">
+            {{ item.label }}
+            <em v-if="item.isWeak" class="radar-slot-weak-tag">短板</em>
+          </span>
+          <span v-if="item.rollsHint" class="radar-slot-chip-rolls">{{ item.rollsHint }}</span>
+        </div>
         <span class="radar-slot-chip-score">
           <b v-if="!item.missing">{{ item.grade }}</b>
           <small>{{ item.pctText }}</small>
@@ -288,6 +327,19 @@ const hoveredSlot = ref<string | null>(null);
 }
 .radar-slot-chip.is-missing {
   opacity: 0.65;
+}
+.radar-slot-chip-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.radar-slot-chip-rolls {
+  color: #7c91ab;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 .radar-slot-chip-name {
   display: inline-flex;
@@ -453,14 +505,24 @@ const hoveredSlot = ref<string | null>(null);
   transform: translate(-50%, -100%) scale(1);
 }
 .tooltip-content {
-  background: rgba(23, 38, 67, 0.85);
+  background: rgba(23, 38, 67, 0.9);
   color: #fff;
   font-size: 11px;
   font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 5px 9px;
+  border-radius: 6px;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
   backdrop-filter: blur(4px);
+}
+.tooltip-headline {
+  line-height: 1.3;
+}
+.tooltip-subdetail {
+  margin-top: 2px;
+  color: rgba(226, 238, 255, 0.88);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.25;
 }
 </style>

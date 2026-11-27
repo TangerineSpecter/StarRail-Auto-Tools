@@ -24,6 +24,7 @@ import {
   lowestTargetPercent,
   relicPieceCounts,
 } from "./progress";
+import { diagnoseBuildPotential } from "./potential-diagnosis";
 
 export type BuildSortMode = "urgent" | "complete" | "custom";
 export type BuildStatusFilter = "all" | "pending" | "complete";
@@ -179,6 +180,31 @@ export function evaluateDashboardEntry(
   const potential = averageCharacterPotential(relicInputs, weights, {
     allowedMainStats: entry.plan.mainStats,
   });
+  const recommended = recommendedSets(entry.plan).map((item) => ({
+    ...item,
+    matched: (equippedPieceCounts.get(item.set.id) ?? 0) >= item.pieces,
+  }));
+  const usingInferredWeights =
+    !entry.plan.substatWeights || Object.keys(entry.plan.substatWeights).length === 0;
+  const diagnosis = diagnoseBuildPotential({
+    relics: relicInputs,
+    pieces: potential.pieces,
+    weights,
+    usingInferredWeights,
+    recommendedSets: recommended,
+    targets,
+    averagePotentialPct: potential.averagePotentialPct,
+    minPotentialPct: entry.plan.minPotentialPct ?? 40,
+    weakSlot: potential.weakSlot,
+  });
+  const radarPieces = potential.pieces.map((piece) => {
+    const pieceDiag = diagnosis.piecesBySlot[piece.slot];
+    return {
+      ...piece,
+      effectiveRolls: pieceDiag?.effectiveRolls,
+      wastedRolls: pieceDiag?.wastedRolls,
+    };
+  });
   const cone = character.equippedLightCone;
   const coneEntry = cone ? lightConeById.get(cone.templateId) : undefined;
   return {
@@ -198,10 +224,7 @@ export function evaluateDashboardEntry(
             superimposition: cone.superimposition ?? 1,
           }
         : null,
-      recommendedSets: recommendedSets(entry.plan).map((item) => ({
-        ...item,
-        matched: (equippedPieceCounts.get(item.set.id) ?? 0) >= item.pieces,
-      })),
+      recommendedSets: recommended,
       state,
       targets,
       effective,
@@ -210,7 +233,8 @@ export function evaluateDashboardEntry(
       quality,
       averagePotentialPct: potential.averagePotentialPct,
       weakSlot: potential.weakSlot,
-      pieces: potential.pieces,
+      pieces: radarPieces,
+      diagnosis,
       minPotentialPct: entry.plan.minPotentialPct ?? 40,
     },
   };

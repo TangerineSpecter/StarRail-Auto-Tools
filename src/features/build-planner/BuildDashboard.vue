@@ -868,7 +868,18 @@ defineExpose({ reload: loadDashboard });
 
             <div class="build-card-radar-panel">
               <div class="build-card-section radar-section">
-                <h4 class="section-title">六件词条潜力</h4>
+                <div class="radar-section-heading">
+                  <BuildHoverTip
+                    title="六件词条潜力拆解"
+                    :text="card.diagnosis.explanationTip"
+                    :width="340"
+                  >
+                    <h4 class="section-title radar-title-tip">
+                      <span>六件词条潜力</span>
+                      <i class="radar-tip-badge" aria-hidden="true">?</i>
+                    </h4>
+                  </BuildHoverTip>
+                </div>
                 <RelicPotentialRadar
                   :pieces="card.pieces"
                   :weak-slot="card.weakSlot"
@@ -878,6 +889,23 @@ defineExpose({ reload: loadDashboard });
                 />
               </div>
             </div>
+          </div>
+          <div
+            v-if="card.diagnosis.suggestions.length"
+            class="build-card-suggestions"
+            aria-label="提升建议"
+          >
+            <span class="build-suggestions-heading">提升建议</span>
+            <ul class="build-suggestions-list">
+              <li
+                v-for="(item, idx) in card.diagnosis.suggestions"
+                :key="`${item.label}-${idx}`"
+                :class="['build-suggestion-item', `tone-${item.tone}`]"
+              >
+                <span class="build-suggestion-tag">{{ item.label }}</span>
+                <span class="build-suggestion-text">{{ item.text }}</span>
+              </li>
+            </ul>
           </div>
         </BuildCardDetails>
       </article>

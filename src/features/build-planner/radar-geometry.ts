@@ -28,6 +28,10 @@ export type RadarPieceInput = {
   slot: string;
   potentialPct: number;
   letterGrade?: string | null;
+  mainStat?: string;
+  mainStatCorrect?: boolean | null;
+  effectiveRolls?: number;
+  wastedRolls?: number;
 };
 
 export type NormalizedRadarAxis = {
@@ -38,6 +42,10 @@ export type NormalizedRadarAxis = {
   drawPct: number;
   letterGrade: string | null;
   missing: boolean;
+  mainStat?: string;
+  mainStatCorrect?: boolean | null;
+  effectiveRolls?: number;
+  wastedRolls?: number;
 };
 
 export type Point = { x: number; y: number };
@@ -65,6 +73,10 @@ export function normalizeRadarPieces(pieces: RadarPieceInput[]): NormalizedRadar
       drawPct: missing ? 0 : clampDrawPct(potentialPct),
       letterGrade: piece?.letterGrade ?? null,
       missing,
+      mainStat: piece?.mainStat,
+      mainStatCorrect: piece?.mainStatCorrect,
+      effectiveRolls: piece?.effectiveRolls,
+      wastedRolls: piece?.wastedRolls,
     };
   });
 }

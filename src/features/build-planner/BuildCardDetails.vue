@@ -418,6 +418,21 @@ html.mobile-view .mobile-build-detail-sheet .affix-tag {
 html.mobile-view .mobile-build-detail-sheet .affix-val {
   min-width: 24px;
 }
+html.mobile-view .mobile-build-detail-sheet .build-card-suggestions {
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 10px;
+  padding: 12px 13px;
+  border: 1px solid rgba(28, 49, 80, 0.07);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(24, 43, 74, 0.03);
+}
+html.mobile-view .mobile-build-detail-sheet .build-suggestions-heading {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #5b6d84;
+}
 @media (min-width: 640px) {
   html.mobile-view .mobile-build-detail-sheet .build-card-body {
     display: grid;

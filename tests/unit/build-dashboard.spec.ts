@@ -196,6 +196,18 @@ describe("BuildDashboard", () => {
     expect(passTip?.textContent).toContain("质量门槛");
     expect(passTip?.textContent).toContain("40%");
 
+    await hosts[1]!.trigger("mouseleave");
+    expect(document.querySelector(".build-hover-tip")).toBeNull();
+
+    const radarTipHost = wrapper.get(".radar-section .build-hover-tip-host");
+    await radarTipHost.trigger("mouseenter");
+    const radarTip = document.querySelector(".build-hover-tip");
+    expect(radarTip?.textContent).toContain("六件词条潜力拆解");
+    expect(radarTip?.textContent).toContain("权重");
+
+    expect(wrapper.find(".build-card-suggestions").exists()).toBe(true);
+    expect(wrapper.get(".build-card-suggestions").text()).toContain("提升建议");
+
     wrapper.unmount();
   });
 

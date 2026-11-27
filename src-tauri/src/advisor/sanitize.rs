@@ -45,6 +45,20 @@ fn compact_effect(text: &str) -> String {
         .join("")
 }
 
+pub(crate) fn format_relic_set_line(set_id: u32) -> Option<String> {
+    let set = relic_sets().iter().find(|entry| entry.id == set_id)?;
+    let two = compact_effect(&set.effects.two_piece);
+    if set.kind == "cavern" {
+        let four = compact_effect(&set.effects.four_piece);
+        Some(format!(
+            "{} {}（外圈 | 2件:{two} | 4件:{four}）",
+            set.id, set.name
+        ))
+    } else {
+        Some(format!("{} {}（内圈 | 2件:{two}）", set.id, set.name))
+    }
+}
+
 pub fn form_contract_text() -> String {
     let mut text = String::from("允许的洞窟套装 cavern（填 id，以下为当前版本实装效果）：\n");
     for set in relic_sets().iter().filter(|set| set.kind == "cavern") {
