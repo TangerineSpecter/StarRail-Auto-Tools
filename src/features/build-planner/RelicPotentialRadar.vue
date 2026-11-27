@@ -93,6 +93,24 @@ function axisSubDetail(axis: {
 const labels = computed(() =>
   axes.value.map((axis, index) => {
     const point = polarPoint(CX, CY, LABEL_RADIUS, index);
+    const hasWastedBadge = !axis.missing && axis.wastedUpgrades !== undefined;
+    const wasted = axis.wastedUpgrades ?? 0;
+    const wastedLevel = wasted === 0 ? "clean" : wasted === 1 ? "mild" : "heavy";
+    let textX = point.x;
+    let badgeX = point.x;
+    const y = index === 0 ? 14 : index === 3 ? 186 : point.y;
+    if (hasWastedBadge) {
+      if (index === 0 || index === 3) {
+        textX = 92.5;
+        badgeX = 108;
+      } else if (index === 1 || index === 2) {
+        textX = 172.5;
+        badgeX = 188;
+      } else {
+        textX = 12;
+        badgeX = 27.5;
+      }
+    }
     const detail = [
       slotLabel(axis.slot),
       axis.missing ? "未装备" : null,
@@ -105,8 +123,11 @@ const labels = computed(() =>
     const subDetail = axisSubDetail(axis);
     return {
       ...axis,
-      x: point.x,
-      y: point.y,
+      x: textX,
+      y,
+      badgeX,
+      hasWastedBadge,
+      wastedLevel,
       isWeak: props.weakSlot === axis.slot,
       title: subDetail ? `${detail}\n${subDetail}` : detail,
       headline: detail,
@@ -114,6 +135,8 @@ const labels = computed(() =>
     };
   }),
 );
+
+const hasWastedBadges = computed(() => labels.value.some((label) => label.hasWastedBadge));
 
 const ariaLabel = computed(() => {
   const parts = axes.value.map((axis) => {
@@ -216,13 +239,55 @@ const hoveredSlot = ref<string | null>(null);
           v-for="label in labels"
           :key="`label-${label.slot}`"
           class="radar-axis-label"
-          :class="{ 'is-weak': label.isWeak, 'is-missing': label.missing }"
+          :class="{
+            'is-weak': label.isWeak,
+            'is-missing': label.missing,
+            'is-hovered': hoveredSlot === label.slot,
+          }"
           @mouseenter="hoveredSlot = label.slot"
           @mouseleave="hoveredSlot = null"
         >
           <title>{{ label.title }}</title>
-          <text :x="label.x" :y="label.y" text-anchor="middle" dominant-baseline="middle">
+          <text
+            class="radar-axis-text"
+            :x="label.x"
+            :y="label.y"
+            text-anchor="middle"
+            dominant-baseline="central"
+          >
             {{ label.shortLabel }}
+          </text>
+          <circle
+            v-if="label.hasWastedBadge"
+            class="radar-label-badge"
+            :class="[
+              `wasted-${label.wastedLevel}`,
+              {
+                'is-weak': label.isWeak,
+                'is-ungraded': label.letterGrade === null,
+                'is-hovered': hoveredSlot === label.slot,
+              },
+            ]"
+            :cx="label.badgeX"
+            :cy="label.y"
+            r="6.2"
+          />
+          <text
+            v-if="label.hasWastedBadge"
+            class="radar-label-count"
+            :class="[
+              `wasted-${label.wastedLevel}`,
+              {
+                'is-weak': label.isWeak,
+                'is-ungraded': label.letterGrade === null,
+              },
+            ]"
+            :x="label.badgeX"
+            :y="label.y"
+            text-anchor="middle"
+            dominant-baseline="central"
+          >
+            {{ label.wastedUpgrades }}
           </text>
         </g>
       </svg>
@@ -257,6 +322,8 @@ const hoveredSlot = ref<string | null>(null);
         </div>
       </div>
     </div>
+
+    <p v-if="hasWastedBadges" class="radar-wasted-legend">角标数字为强化歪词条次数</p>
 
     <div v-if="showBreakdown" class="radar-slot-breakdown">
       <div
@@ -433,19 +500,75 @@ const hoveredSlot = ref<string | null>(null);
   stroke: #8aa3c0;
   stroke-width: 1.4;
 }
-.radar-axis-label text {
+.radar-axis-text {
   fill: #5d7696;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  pointer-events: none;
 }
-.radar-axis-label.is-weak text {
+.radar-axis-label.is-weak .radar-axis-text {
   fill: #c77b32;
 }
-.radar-axis-label.is-missing text {
+.radar-axis-label.is-missing .radar-axis-text {
   fill: #9aabc0;
   font-weight: 600;
+}
+.radar-label-badge {
+  stroke-width: 1.15;
+  transition: stroke-width 0.16s ease;
+}
+.radar-label-badge.wasted-clean {
+  fill: #e7f6f0;
+  stroke: #2e9675;
+}
+.radar-label-badge.wasted-mild {
+  fill: #eef5fd;
+  stroke: #3d7ec4;
+}
+.radar-label-badge.wasted-heavy {
+  fill: #fff3e4;
+  stroke: #c77b32;
+}
+.radar-label-badge.is-weak {
+  fill: #c77b32;
+  stroke: #fff8ef;
+}
+.radar-label-badge.is-ungraded {
+  fill: #fdf2f2;
+  stroke: #c74a4a;
+}
+.radar-label-badge.is-hovered {
+  stroke-width: 1.65;
+}
+.radar-label-count {
+  font-size: 8.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  user-select: none;
+}
+.radar-label-count.wasted-clean {
+  fill: #1f7457;
+}
+.radar-label-count.wasted-mild {
+  fill: #245ea6;
+}
+.radar-label-count.wasted-heavy {
+  fill: #b45a12;
+}
+.radar-label-count.is-weak {
+  fill: #ffffff;
+}
+.radar-label-count.is-ungraded {
+  fill: #b53b3b;
+}
+.radar-wasted-legend {
+  margin: -6px 0 0;
+  color: #849bb8;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
 }
 .radar-center {
   position: absolute;

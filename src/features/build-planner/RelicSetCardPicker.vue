@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import { relicCatalogue } from "@/shared/catalogue";
-import type { RelicSetOption } from "@/types";
+import { relicSetById } from "@/shared/catalogue";
+import type { RelicSetCatalogueEntry, RelicSetOption } from "@/types";
 import { filterRelicSetOptions } from "./relic-set-search";
+import RelicSetInfoModal from "./RelicSetInfoModal.vue";
 
 const props = defineProps<{
   modelValue: number | null;
@@ -16,12 +17,17 @@ const query = ref("");
 const trigger = ref<HTMLButtonElement>();
 const dialog = ref<HTMLElement>();
 const searchInput = ref<HTMLInputElement>();
-const setById = new Map(relicCatalogue.sets.map((set) => [set.id, set]));
+const inspectedSet = ref<RelicSetCatalogueEntry | null>(null);
+const inspectedFromDialog = ref(false);
+const infoReturnFocus = ref<HTMLElement | null>(null);
 const selectedSet = computed(() =>
-  props.modelValue === null ? undefined : setById.get(props.modelValue),
+  props.modelValue === null ? undefined : relicSetById.get(props.modelValue),
 );
 const optionDetails = computed(() =>
-  props.options.map((option) => ({ ...option, image: setById.get(option.setId)?.image })),
+  props.options.map((option) => {
+    const catalogue = relicSetById.get(option.setId);
+    return { ...option, image: catalogue?.image, catalogue };
+  }),
 );
 const filteredOptionDetails = computed(() => {
   const matchingIds = new Set(
@@ -33,6 +39,9 @@ const filteredOptionDetails = computed(() => {
 function close() {
   if (!open.value) return;
   open.value = false;
+  inspectedSet.value = null;
+  inspectedFromDialog.value = false;
+  infoReturnFocus.value = null;
   query.value = "";
   void nextTick(() => trigger.value?.focus());
 }
@@ -47,8 +56,34 @@ function select(setId: number) {
   close();
 }
 
+function openInfo(set: RelicSetCatalogueEntry, fromDialog: boolean, event: MouseEvent) {
+  infoReturnFocus.value = event.currentTarget as HTMLElement | null;
+  inspectedFromDialog.value = fromDialog;
+  inspectedSet.value = set;
+}
+
+function closeInfo() {
+  if (!inspectedSet.value) return;
+  const returnTarget = infoReturnFocus.value;
+  inspectedSet.value = null;
+  inspectedFromDialog.value = false;
+  infoReturnFocus.value = null;
+  void nextTick(() => {
+    if (returnTarget?.isConnected) returnTarget.focus();
+    else if (open.value) searchInput.value?.focus();
+    else trigger.value?.focus();
+  });
+}
+
+function selectFromInfo(setId: number) {
+  inspectedSet.value = null;
+  inspectedFromDialog.value = false;
+  infoReturnFocus.value = null;
+  select(setId);
+}
+
 function handleDocumentKeydown(event: KeyboardEvent) {
-  if (!open.value) return;
+  if (!open.value || inspectedSet.value) return;
   if (event.key === "Escape" && !event.isComposing) {
     event.preventDefault();
     event.stopPropagation();
@@ -85,19 +120,45 @@ onBeforeUnmount(() => {
 <template>
   <div class="build-set-picker">
     <span class="build-set-picker-label">{{ label }}</span>
-    <button
-      ref="trigger"
-      class="build-set-picker-trigger"
-      type="button"
-      :aria-expanded="open"
-      aria-haspopup="dialog"
-      @click="showDialog"
-    >
-      <img v-if="selectedSet?.image" :src="selectedSet.image" alt="" />
-      <span v-else class="build-set-picker-placeholder">◇</span>
-      <span>{{ selectedSet?.name ?? "请选择套装" }}</span>
-      <small>更换</small>
-    </button>
+    <div :class="['build-set-picker-control', { 'is-open': open }]">
+      <button
+        ref="trigger"
+        class="build-set-picker-trigger"
+        type="button"
+        :aria-expanded="open"
+        aria-haspopup="dialog"
+        @click="showDialog"
+      >
+        <img v-if="selectedSet?.image" :src="selectedSet.image" alt="" />
+        <span v-else class="build-set-picker-placeholder">◇</span>
+        <span>{{ selectedSet?.name ?? "请选择套装" }}</span>
+      </button>
+      <div class="build-set-picker-actions">
+        <button
+          v-if="selectedSet"
+          type="button"
+          class="build-set-info-btn build-set-picker-info"
+          aria-haspopup="dialog"
+          :aria-label="`查看${selectedSet.name}图鉴效果`"
+          title="查看套装图鉴效果"
+          @click="openInfo(selectedSet, false, $event)"
+        >
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+            <circle cx="8" cy="4.4" r="1.15" />
+            <rect x="7.1" y="7" width="1.8" height="5.4" rx="0.9" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="build-set-picker-change"
+          tabindex="-1"
+          aria-hidden="true"
+          @click="showDialog"
+        >
+          更换
+        </button>
+      </div>
+    </div>
   </div>
   <Teleport to="body">
     <div v-if="open" class="build-set-dialog-backdrop" @click.self="close">
@@ -135,21 +196,46 @@ onBeforeUnmount(() => {
           />
         </div>
         <div class="build-set-dialog-grid" role="listbox" :aria-label="`${label}选项`">
-          <button
+          <div
             v-for="set in filteredOptionDetails"
             :key="set.setId"
-            type="button"
-            class="build-set-dialog-option"
+            class="build-set-dialog-option-card"
             :class="{ selected: set.setId === modelValue }"
-            role="option"
-            :aria-selected="set.setId === modelValue"
-            @click="select(set.setId)"
           >
-            <img v-if="set.image" :src="set.image" alt="" />
-            <span v-else class="build-set-picker-placeholder">◇</span>
-            <span>{{ set.name }}</span>
-            <i v-if="set.setId === modelValue" aria-label="已选择">✓</i>
-          </button>
+            <button
+              type="button"
+              class="build-set-dialog-option"
+              :class="{ selected: set.setId === modelValue }"
+              role="option"
+              :aria-selected="set.setId === modelValue"
+              @click="select(set.setId)"
+            >
+              <img v-if="set.image" :src="set.image" alt="" />
+              <span v-else class="build-set-picker-placeholder">◇</span>
+              <span>{{ set.name }}</span>
+              <i v-if="set.setId === modelValue" aria-label="已选择">✓</i>
+            </button>
+            <button
+              v-if="set.catalogue"
+              type="button"
+              class="build-set-info-btn build-set-dialog-option-info"
+              aria-haspopup="dialog"
+              :aria-label="`查看${set.name}图鉴效果`"
+              title="查看套装图鉴效果"
+              @click="openInfo(set.catalogue, true, $event)"
+            >
+              <svg
+                viewBox="0 0 16 16"
+                width="12"
+                height="12"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <circle cx="8" cy="4.4" r="1.15" />
+                <rect x="7.1" y="7" width="1.8" height="5.4" rx="0.9" />
+              </svg>
+            </button>
+          </div>
           <p v-if="!filteredOptionDetails.length" class="build-set-dialog-empty" role="status">
             未找到匹配的套装
           </p>
@@ -157,4 +243,12 @@ onBeforeUnmount(() => {
       </section>
     </div>
   </Teleport>
+  <RelicSetInfoModal
+    v-if="inspectedSet"
+    :set="inspectedSet"
+    :selectable="inspectedFromDialog"
+    :selected="inspectedSet.id === modelValue"
+    @close="closeInfo"
+    @select="selectFromInfo"
+  />
 </template>

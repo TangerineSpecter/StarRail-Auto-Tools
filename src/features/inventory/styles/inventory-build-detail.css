@@ -93,29 +93,50 @@
   outline: 2px solid rgba(36, 86, 166, 0.4);
   outline-offset: -1px;
 }
-.build-set-picker-trigger {
-  display: grid;
+.build-set-picker-control {
+  display: flex;
+  align-items: center;
   width: 100%;
   height: 54px;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
-  padding: 6px 12px 6px 7px;
   border: 1px solid var(--line);
   border-radius: 5px;
-  color: var(--ink);
-  text-align: left;
   background: rgba(255, 255, 255, 0.74);
   transition:
     border-color 140ms ease,
     box-shadow 140ms ease,
     background 140ms ease;
 }
-.build-set-picker-trigger:hover,
-.build-set-picker-trigger[aria-expanded="true"] {
+.build-set-picker-control:hover,
+.build-set-picker-control.is-open {
   border-color: rgba(36, 86, 166, 0.55);
   background: #fff;
   box-shadow: 0 4px 14px rgba(36, 86, 166, 0.11);
+}
+.build-set-picker-control:focus-within {
+  border-color: rgba(36, 86, 166, 0.65);
+  box-shadow: 0 0 0 3px rgba(36, 86, 166, 0.14);
+}
+.build-set-picker-trigger {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px 6px 7px;
+  border: 0;
+  border-radius: inherit;
+  color: var(--ink);
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+.build-set-picker-trigger:focus-visible {
+  outline: none;
+}
+.build-set-picker-trigger:hover:not(:disabled) {
+  transform: none;
 }
 .build-set-picker-trigger > img,
 .build-set-picker-placeholder {
@@ -139,14 +160,67 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.build-set-picker-trigger small {
-  padding: 5px 7px;
+.build-set-picker-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding-right: 12px;
+}
+.build-set-picker-change {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
   border: 1px solid rgba(36, 86, 166, 0.2);
   border-radius: 3px;
   color: var(--blue);
+  background: transparent;
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.05em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease;
+}
+.build-set-picker-change:hover:not(:disabled) {
+  border-color: rgba(36, 86, 166, 0.5);
+  background: var(--blue-soft);
+  transform: none;
+}
+.build-set-info-btn {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(36, 86, 166, 0.2);
+  border-radius: 3px;
+  color: var(--blue);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease;
+}
+.build-set-info-btn:hover:not(:disabled),
+.build-set-info-btn:focus-visible {
+  border-color: var(--blue);
+  color: #fff;
+  background: var(--blue);
+  outline: none;
+  transform: none;
+}
+.build-set-info-btn:focus-visible {
+  outline: 2px solid rgba(36, 86, 166, 0.35);
+  outline-offset: 2px;
 }
 .build-set-dialog-backdrop {
   position: fixed;
@@ -248,27 +322,42 @@
   text-align: center;
   font-size: 11px;
 }
+.build-set-dialog-option-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 72px;
+}
 .build-set-dialog-option {
   position: relative;
   display: grid;
+  width: 100%;
   min-width: 0;
   min-height: 72px;
   grid-template-columns: 48px minmax(0, 1fr);
   gap: 11px;
   align-items: center;
-  padding: 10px;
+  padding: 10px 42px 10px 10px;
   border: 1px solid rgba(36, 86, 166, 0.13);
   border-radius: 6px;
   color: var(--ink);
   text-align: left;
   background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
 }
-.build-set-dialog-option:hover,
+.build-set-dialog-option-card:hover .build-set-dialog-option,
+.build-set-dialog-option:hover:not(:disabled),
 .build-set-dialog-option.selected {
   border-color: rgba(36, 86, 166, 0.45);
   background: #eef5fc;
+  transform: none;
 }
 .build-set-dialog-option.selected {
+  padding-right: 66px;
   box-shadow: inset 4px 0 var(--blue);
 }
 .build-set-dialog-option > img,
@@ -286,8 +375,9 @@
 }
 .build-set-dialog-option > i {
   position: absolute;
-  top: 6px;
-  right: 7px;
+  top: 50%;
+  right: 42px;
+  transform: translateY(-50%);
   display: grid;
   width: 16px;
   height: 16px;
@@ -297,6 +387,17 @@
   background: var(--blue);
   font-size: 10px;
   font-style: normal;
+}
+.build-set-dialog-option-info {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-50%);
+}
+.build-set-dialog-option-info:hover:not(:disabled),
+.build-set-dialog-option-info:focus-visible {
+  transform: translateY(-50%);
 }
 .target-column-headings,
 .target-row {
