@@ -63,9 +63,10 @@ const onlyMissingBuildPlan = computed({
         v-if="kind === 'character'"
         class="toolbar-missing-plan-toggle"
         :class="{ 'is-active': onlyMissingBuildPlan }"
+        title="仅显示未设置培养目标的角色"
       >
         <Checkbox v-model="onlyMissingBuildPlan" binary input-id="character-missing-plan-only" />
-        <span>未设置目标</span>
+        <span>无目标</span>
       </label>
       <slot name="actions" />
       <Button v-if="hasFilters" class="clear-filter" type="button" text @click="emit('reset')"

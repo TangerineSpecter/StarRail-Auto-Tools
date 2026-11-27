@@ -33,6 +33,7 @@ describe("InventoryToolbar", () => {
     });
 
     const toggle = charWrapper.get(".toolbar-missing-plan-toggle");
+    expect(toggle.text()).toBe("无目标");
     const checkbox = toggle.get('input[type="checkbox"]');
     expect((checkbox.element as HTMLInputElement).checked).toBe(false);
 
