@@ -1,0 +1,962 @@
+/* Scoped by unique .combat-sim-* prefix to avoid leaking into other domains. */
+
+.combat-sim-backdrop {
+  z-index: 60;
+}
+
+.combat-sim-drawer {
+  width: min(920px, 95vw);
+  max-width: 95vw;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: linear-gradient(180deg, #f7faff 0%, #eff5fc 100%);
+}
+
+.combat-sim-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(36, 86, 166, 0.1);
+}
+
+.combat-sim-header-copy h2 {
+  margin: 3px 0 4px;
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.combat-sim-header-copy small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.combat-sim-close-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(36, 86, 166, 0.16);
+  border-radius: 9px;
+  background: #f4f7fc;
+  color: #465d7b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.combat-sim-close-btn:hover {
+  background: #e6eefb;
+  color: #1c3d72;
+}
+
+.combat-sim-body {
+  padding: 16px 22px 26px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.combat-sim-loading,
+.combat-sim-error,
+.combat-sim-empty-panel {
+  padding: 24px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  color: var(--ink);
+}
+
+.combat-sim-error {
+  color: #b42318;
+  background: #fef3f2;
+  border-color: rgba(180, 35, 24, 0.25);
+}
+
+.combat-sim-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  box-shadow: 0 3px 10px rgba(24, 52, 94, 0.04);
+}
+
+.combat-sim-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.combat-sim-control-group > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5b708b;
+}
+
+.combat-sim-seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: #edf3fa;
+  border: 1px solid rgba(36, 86, 166, 0.1);
+}
+
+.combat-sim-seg button {
+  padding: 4px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #486182;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.combat-sim-seg button.active {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 1px 4px rgba(29, 78, 216, 0.16);
+}
+
+.combat-sim-toggle {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(36, 86, 166, 0.18);
+  background: #f4f7fc;
+  color: #466080;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.combat-sim-toggle.active {
+  background: #e6f4ea;
+  border-color: rgba(16, 122, 82, 0.35);
+  color: #0e6f4a;
+}
+
+.combat-sim-reroll-btn {
+  margin-left: auto;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  background: linear-gradient(135deg, #eef5ff, #e0edff);
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.combat-sim-reroll-btn:hover {
+  background: #dbeafe;
+}
+
+.combat-sim-warn-banner {
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: #92400e;
+  font-size: 12px;
+}
+
+.combat-sim-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.combat-sim-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  box-shadow: 0 4px 12px rgba(24, 52, 94, 0.04);
+}
+
+.combat-sim-kpi-card.is-primary {
+  background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+.combat-sim-kpi-card.is-accent {
+  background: linear-gradient(135deg, #ffffff 0%, #fff7eb 100%);
+  border-color: rgba(217, 119, 6, 0.24);
+}
+
+.combat-sim-kpi-card > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a708c;
+}
+
+.combat-sim-kpi-card > strong {
+  font-size: 24px;
+  font-weight: 800;
+  color: #13294b;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.combat-sim-kpi-card.is-accent > strong {
+  color: #b45309;
+}
+
+.combat-sim-kpi-card > small {
+  font-size: 11px;
+  color: #667c99;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-kind-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #edf2f8;
+  margin-top: 4px;
+}
+
+.combat-sim-kind-bar i {
+  display: block;
+  height: 100%;
+}
+
+.combat-sim-kind-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 11px;
+  color: #4f6480;
+  margin-top: 2px;
+}
+
+.combat-sim-kind-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.combat-sim-kind-legend i,
+.combat-sim-kind-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.combat-sim-kind-bar i.kind-superBreak,
+.combat-sim-kind-legend i.kind-superBreak,
+.combat-sim-kind-dot.kind-superBreak {
+  background: #ea580c;
+}
+.combat-sim-kind-bar i.kind-break,
+.combat-sim-kind-legend i.kind-break,
+.combat-sim-kind-dot.kind-break {
+  background: #f59e0b;
+}
+.combat-sim-kind-bar i.kind-direct,
+.combat-sim-kind-legend i.kind-direct,
+.combat-sim-kind-dot.kind-direct {
+  background: #2563eb;
+}
+.combat-sim-kind-bar i.kind-additional,
+.combat-sim-kind-legend i.kind-additional,
+.combat-sim-kind-dot.kind-additional {
+  background: #7c3aed;
+}
+.combat-sim-kind-bar i.kind-dot,
+.combat-sim-kind-legend i.kind-dot,
+.combat-sim-kind-dot.kind-dot {
+  background: #0d9488;
+}
+.combat-sim-kind-bar i.kind-elation,
+.combat-sim-kind-legend i.kind-elation,
+.combat-sim-kind-dot.kind-elation {
+  background: #db2777;
+}
+
+.combat-sim-cycles-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.combat-sim-cycle-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 11px 13px;
+  border-radius: 11px;
+  border: 1px solid rgba(36, 86, 166, 0.14);
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.combat-sim-cycle-tile:hover {
+  border-color: rgba(37, 99, 235, 0.4);
+  transform: translateY(-1px);
+}
+
+.combat-sim-cycle-tile.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+.combat-sim-cycle-tile-top {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 12px;
+  color: #4f6785;
+}
+
+.combat-sim-cycle-tile strong {
+  font-size: 18px;
+  color: #162c4f;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-cycle-range {
+  font-size: 11px;
+  color: #6b819e;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-contrib-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+}
+
+.combat-sim-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.combat-sim-section-head h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.combat-sim-section-head small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.combat-sim-contrib-list {
+  display: grid;
+  gap: 9px;
+}
+
+.combat-sim-contrib-row {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) 110px;
+  align-items: center;
+  gap: 12px;
+}
+
+.combat-sim-contrib-who {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.combat-sim-contrib-who img,
+.combat-sim-avatar-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(36, 86, 166, 0.16);
+}
+
+.combat-sim-avatar-fallback {
+  display: grid;
+  place-items: center;
+  background: #e8f0fc;
+  color: #2456a6;
+  font-weight: 700;
+}
+
+.combat-sim-contrib-who > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.combat-sim-contrib-who strong {
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combat-sim-contrib-who small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.combat-sim-contrib-track {
+  height: 9px;
+  border-radius: 999px;
+  background: #edf2fa;
+  overflow: hidden;
+}
+
+.combat-sim-contrib-track span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.combat-sim-contrib-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-contrib-val strong {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.combat-sim-contrib-val small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.combat-sim-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid rgba(36, 86, 166, 0.12);
+  padding-bottom: 8px;
+}
+
+.combat-sim-tabs button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4f6785;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.combat-sim-tabs button.active {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.28);
+  color: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+}
+
+/* Battle log */
+.combat-sim-log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.combat-sim-log-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.combat-sim-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.combat-sim-filter-pills button {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(36, 86, 166, 0.16);
+  background: #ffffff;
+  color: #4b6484;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.combat-sim-filter-pills button.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.combat-sim-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.combat-sim-log-item {
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  overflow: hidden;
+}
+
+.combat-sim-log-item.has-break {
+  border-left: 3px solid #ea580c;
+}
+
+.combat-sim-log-item.is-ult {
+  background: linear-gradient(90deg, rgba(239, 246, 255, 0.7), #ffffff 45%);
+}
+
+.combat-sim-log-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1.3fr) 150px minmax(120px, 0.9fr);
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.combat-sim-log-row:hover {
+  background: rgba(235, 243, 255, 0.45);
+}
+
+.combat-sim-log-time {
+  display: flex;
+  flex-direction: column;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-log-time b {
+  font-size: 12px;
+  color: #1d4ed8;
+}
+
+.combat-sim-log-time small {
+  font-size: 10px;
+  color: #6b819e;
+}
+
+.combat-sim-log-actor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.combat-sim-log-actor strong {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.combat-sim-ability-tag {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #edf2fa;
+  color: #486182;
+}
+
+.combat-sim-ability-tag.kind-ult {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.combat-sim-ability-tag.kind-skill {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.combat-sim-ability-tag.kind-fua {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.combat-sim-action-name {
+  font-style: normal;
+  font-size: 12px;
+  color: #4f6480;
+}
+
+.combat-sim-log-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 10px;
+  color: #6b819e;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-log-dmg {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-log-dmg strong {
+  display: block;
+  font-size: 14px;
+  color: #162c4f;
+}
+
+.combat-sim-log-dmg strong.is-big {
+  color: #c2410c;
+}
+
+.combat-sim-log-dmg small {
+  font-size: 10px;
+  color: #6b819e;
+}
+
+.combat-sim-log-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 12px 8px 98px;
+}
+
+.combat-sim-event-chip {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.combat-sim-event-chip.is-break {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.combat-sim-log-detail {
+  padding: 10px 14px 12px;
+  border-top: 1px dashed rgba(36, 86, 166, 0.14);
+  background: #f8fbff;
+}
+
+.combat-sim-detail-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.combat-sim-hit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-hit-table th,
+.combat-sim-hit-table td {
+  padding: 5px 6px;
+  text-align: left;
+  border-bottom: 1px solid rgba(36, 86, 166, 0.08);
+}
+
+.combat-sim-hit-table th {
+  color: #5b708b;
+  font-weight: 600;
+}
+
+.combat-sim-hit-val {
+  font-weight: 700;
+  color: #13294b;
+}
+
+.combat-sim-crit-flag,
+.combat-sim-break-flag {
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.combat-sim-crit-flag {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.combat-sim-break-flag {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+/* Skill breakdown tab */
+.combat-sim-breakdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.combat-sim-panel-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+}
+
+.combat-sim-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.combat-sim-panel-header strong {
+  font-size: 15px;
+  color: var(--ink);
+  margin-right: 8px;
+}
+
+.combat-sim-meta-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.combat-sim-depth-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.combat-sim-depth-badge.is-deep {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.combat-sim-depth-badge.is-generic {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.combat-sim-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.combat-sim-stat-grid > div {
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #f5f8fd;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.combat-sim-stat-grid span {
+  font-size: 11px;
+  color: #607591;
+}
+
+.combat-sim-stat-grid b {
+  font-size: 14px;
+  color: #162c4f;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-panel-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #526885;
+}
+
+.combat-sim-skill-list {
+  display: grid;
+  gap: 10px;
+}
+
+.combat-sim-skill-card {
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.combat-sim-skill-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.combat-sim-skill-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.combat-sim-skill-title strong {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.combat-sim-pattern-pill,
+.combat-sim-toughness-pill {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #eef4fc;
+  color: #2456a6;
+}
+
+.combat-sim-toughness-pill {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.combat-sim-skill-expected {
+  text-align: right;
+}
+
+.combat-sim-skill-expected span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.combat-sim-skill-expected strong {
+  font-size: 18px;
+  color: #1d4ed8;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-skill-triplets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.combat-sim-skill-triplets > div {
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #f6f9fe;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.combat-sim-skill-triplets > div.is-highlight {
+  background: #fff7ed;
+}
+
+.combat-sim-skill-triplets span {
+  font-size: 11px;
+  color: #5b708b;
+}
+
+.combat-sim-skill-triplets b {
+  font-size: 13px;
+  color: #162c4f;
+  font-variant-numeric: tabular-nums;
+}
+
+.combat-sim-multipliers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11px;
+  color: #5b708b;
+}
+
+.combat-sim-multipliers span {
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #f1f5f9;
+}
+
+.combat-sim-multipliers span.is-note {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* Rules tab */
+.combat-sim-rules-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.combat-sim-rules-block {
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(36, 86, 166, 0.12);
+}
+
+.combat-sim-rules-block.is-warn {
+  background: #fffdf5;
+  border-color: rgba(217, 119, 6, 0.24);
+}
+
+.combat-sim-rules-block h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.combat-sim-rules-block ul {
+  margin: 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  color: #465d7b;
+}
+
+@media (max-width: 780px) {
+  .combat-sim-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .combat-sim-cycles-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .combat-sim-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .combat-sim-log-row {
+    grid-template-columns: 64px minmax(0, 1fr) 90px;
+  }
+  .combat-sim-log-meta {
+    display: none;
+  }
+}

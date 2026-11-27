@@ -9,7 +9,9 @@ import InventoryDetailDrawer from "@/features/inventory/InventoryDetailDrawer.vu
 import RelicQualityToolbar from "@/features/inventory/RelicQualityToolbar.vue";
 import RelicSetFilterSelect from "@/features/inventory/RelicSetFilterSelect.vue";
 import BuildPlanDrawer from "@/features/build-planner/BuildPlanDrawer.vue";
-import TeamWorkspace from "@/features/team/TeamWorkspace.vue";
+import CombatSimulatorDrawer from "@/features/combat-simulator/CombatSimulatorDrawer.vue";
+import { useTeamCombatLoader } from "@/features/combat-simulator/useTeamCombatLoader";
+import TeamWorkspace, { type TeamCombatSimRequest } from "@/features/team/TeamWorkspace.vue";
 import { useInventoryArchive } from "@/features/inventory/useInventoryArchive";
 import { useInventoryDetail } from "@/features/inventory/useInventoryDetail";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
@@ -31,6 +33,7 @@ const archive = useInventoryArchive(feedback);
 const detail = useInventoryDetail(feedback.setError);
 const archiveView = ref<ArchiveView>("relic");
 const buildCharacterId = ref<number | null>(null);
+const teamCombat = useTeamCombatLoader();
 const scoredRelicItems = ref<RelicListItem[] | null>(null);
 const qualityOpen = ref(false);
 const qualitySummary = ref<string[]>([]);
@@ -87,10 +90,20 @@ function onEscape(event: KeyboardEvent) {
   if (buildCharacterId.value && !detail.detail.value && !detail.loading.value)
     buildCharacterId.value = null;
 }
+function openTeamCombatSim(req: TeamCombatSimRequest) {
+  void teamCombat.open(req.team, req.combatants, req.unavailableNotes, req.ready);
+}
+
 const removeEscapeListener = () => window.removeEventListener("keydown", onEscape);
 onActivated(() => window.addEventListener("keydown", onEscape));
-onDeactivated(removeEscapeListener);
-onBeforeUnmount(removeEscapeListener);
+onDeactivated(() => {
+  removeEscapeListener();
+  teamCombat.close();
+});
+onBeforeUnmount(() => {
+  removeEscapeListener();
+  teamCombat.close();
+});
 </script>
 
 <template>
@@ -103,7 +116,7 @@ onBeforeUnmount(removeEscapeListener);
       @export="archive.exportData"
       @import="archive.importData"
     />
-    <TeamWorkspace v-if="isTeamView" />
+    <TeamWorkspace v-if="isTeamView" @open-combat-sim="openTeamCombatSim" />
     <article v-else class="panel archive-main">
       <InventoryToolbar
         v-model:filters="archive.filters.value"
@@ -233,5 +246,15 @@ onBeforeUnmount(removeEscapeListener);
     @deleted="handleBuildPlanChanged"
     @error="error = $event"
     @notice="notice = $event"
+  />
+  <CombatSimulatorDrawer
+    v-if="teamCombat.state.value"
+    mode="team"
+    :title="`${teamCombat.state.value.team.name} · 配队战斗模拟`"
+    :combatants="teamCombat.state.value.combatants"
+    :unavailable-notes="teamCombat.state.value.unavailableNotes"
+    :loading="teamCombat.state.value.loading"
+    :error="teamCombat.state.value.error"
+    @close="teamCombat.close()"
   />
 </template>

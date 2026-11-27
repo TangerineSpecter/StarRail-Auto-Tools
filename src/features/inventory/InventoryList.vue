@@ -233,7 +233,27 @@ function avatarColor(name: string): string {
                       :aria-label="`${item.rarity} 星`"
                       >{{ "★".repeat(item.rarity) }}</span
                     >
-                    <span v-if="item.locked" class="relic-state-tag is-locked">已锁定</span>
+                    <span
+                      v-if="item.locked"
+                      class="relic-state-tag is-locked"
+                      role="img"
+                      aria-label="已锁定"
+                      title="已锁定"
+                    >
+                      <svg
+                        class="relic-lock-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="4" y="11" width="16" height="10" rx="2" />
+                        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                      </svg>
+                    </span>
                     <span v-else-if="item.discard" class="relic-state-tag is-discard">弃置</span>
                   </small>
                 </div>

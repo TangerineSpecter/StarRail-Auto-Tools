@@ -551,8 +551,13 @@ export interface BuildDashboardLightCone {
 export interface BuildDashboardCharacter {
   characterId: number;
   name: string;
+  path?: string;
   level: number;
   ascension: number;
+  eidolon?: number;
+  skills?: Record<string, number> | null;
+  traces?: Record<string, boolean> | null;
+  abilityVersion?: number;
   equippedRelics?: BuildDashboardRelic[];
   equippedLightCone?: BuildDashboardLightCone | null;
 }

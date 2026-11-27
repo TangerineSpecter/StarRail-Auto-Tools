@@ -4,11 +4,23 @@ import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import { useRuntimeContext } from "@/shared/contracts/runtime";
 import LoadingState from "@/shared/ui/LoadingState.vue";
+import type { CombatantInput } from "@/shared/utils/combat";
 import type { Team } from "@/types";
 import TeamActionAxisDrawer from "./TeamActionAxisDrawer.vue";
 import TeamCard from "./TeamCard.vue";
 import TeamEditorDrawer from "./TeamEditorDrawer.vue";
 import { useTeamArchive } from "./useTeamArchive";
+
+export interface TeamCombatSimRequest {
+  team: Team;
+  combatants: CombatantInput[];
+  unavailableNotes: string[];
+  ready: boolean;
+}
+
+const emit = defineEmits<{
+  openCombatSim: [request: TeamCombatSimRequest];
+}>();
 
 const { busy, error, notice, inventoryRevision } = useRuntimeContext();
 const archive = useTeamArchive({
@@ -27,6 +39,16 @@ function openCreate() {
 
 function openEdit(team: Team) {
   editing.value = team;
+}
+
+function openCombatSim(team: Team) {
+  const entry = archive.teamCombatSummaries.value.get(team.teamId);
+  emit("openCombatSim", {
+    team,
+    combatants: entry?.combatants ?? [],
+    unavailableNotes: entry?.unavailableNotes ?? [],
+    ready: archive.combatReady.value,
+  });
 }
 
 async function onDelete(team: Team) {
@@ -106,7 +128,10 @@ async function onSave(input: Parameters<typeof archive.saveTeam>[0]) {
         :team="team"
         :member-scores="archive.memberScores.value"
         :scores-ready="archive.scoresReady.value"
+        :combat-summary="archive.teamCombatSummaries.value.get(team.teamId) ?? null"
+        :combat-ready="archive.combatReady.value"
         @action-axis="axisTeam = team"
+        @combat-sim="openCombatSim(team)"
         @edit="openEdit(team)"
         @delete="onDelete(team)"
       />

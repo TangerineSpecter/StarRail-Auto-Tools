@@ -640,9 +640,9 @@ fn build_dashboard_returns_saved_plan_with_character_equipment() {
         path: "Hunt".to_owned(),
         level: 80,
         ascension: 6,
-        eidolon: 0,
-        skills: json!({}),
-        traces: json!({}),
+        eidolon: 2,
+        skills: json!({ "basic": 6, "skill": 10, "ult": 10, "talent": 10 }),
+        traces: json!({ "ability_1": true, "ability_2": true, "ability_3": true }),
         memosprite: None,
         ability_version: 1,
     }];
@@ -680,6 +680,10 @@ fn build_dashboard_returns_saved_plan_with_character_equipment() {
     assert_eq!(entries[0].display_order, 0);
     assert!(!entries[0].pinned);
     assert_eq!(entries[0].character["equippedRelics"][0]["itemId"], 1);
+    assert_eq!(entries[0].character["eidolon"], 2);
+    assert_eq!(entries[0].character["skills"]["skill"], 10);
+    assert_eq!(entries[0].character["traces"]["ability_1"], true);
+    assert_eq!(entries[0].character["abilityVersion"], 1);
 }
 
 #[test]

@@ -45,23 +45,23 @@ fn compact_effect(text: &str) -> String {
         .join("")
 }
 
-pub(crate) fn format_relic_set_line(set_id: u32) -> Option<String> {
-    let set = relic_sets().iter().find(|entry| entry.id == set_id)?;
-    let two = compact_effect(&set.effects.two_piece);
-    if set.kind == "cavern" {
-        let four = compact_effect(&set.effects.four_piece);
-        Some(format!(
-            "{} {}（外圈 | 2件:{two} | 4件:{four}）",
-            set.id, set.name
-        ))
-    } else {
-        Some(format!("{} {}（内圈 | 2件:{two}）", set.id, set.name))
-    }
-}
-
 pub fn form_contract_text() -> String {
-    let mut text = String::from("允许的洞窟套装 cavern（填 id，以下为当前版本实装效果）：\n");
-    for set in relic_sets().iter().filter(|set| set.kind == "cavern") {
+    let mut cavern: Vec<&RelicSetEntry> = relic_sets()
+        .iter()
+        .filter(|set| set.kind == "cavern")
+        .collect();
+    cavern.sort_by_key(|set| std::cmp::Reverse(set.id));
+
+    let mut planar: Vec<&RelicSetEntry> = relic_sets()
+        .iter()
+        .filter(|set| set.kind == "planar")
+        .collect();
+    planar.sort_by_key(|set| std::cmp::Reverse(set.id));
+
+    let mut text = String::from(
+        "允许的洞窟套装 cavern（按版本从新到旧排序，填 id，以下为当前版本实装效果）：\n",
+    );
+    for set in cavern {
         let two = compact_effect(&set.effects.two_piece);
         let four = compact_effect(&set.effects.four_piece);
         text.push_str(&format!(
@@ -69,8 +69,8 @@ pub fn form_contract_text() -> String {
             set.id, set.name
         ));
     }
-    text.push_str("允许的位面套装 planar（填 id，以下为当前版本实装效果）：\n");
-    for set in relic_sets().iter().filter(|set| set.kind == "planar") {
+    text.push_str("允许的位面套装 planar（按版本从新到旧排序，填 id，以下为当前版本实装效果）：\n");
+    for set in planar {
         let two = compact_effect(&set.effects.two_piece);
         text.push_str(&format!("{} {} | 2件:{two}\n", set.id, set.name));
     }

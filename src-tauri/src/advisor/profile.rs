@@ -4,7 +4,6 @@ use super::profile_data::{
     collect_character_abilities, find_catalogue_entry, render_ability_text, summarize_minor_traces,
     MechanicAbility,
 };
-use super::set_candidates::{infer_candidate_sets, CandidateSetHint};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScalingMode {
@@ -46,7 +45,6 @@ pub struct CharacterAdvisorProfile {
     pub search_hints: Vec<&'static str>,
     pub guidance_notes: Vec<String>,
     pub skill_summary: Vec<String>,
-    pub candidate_sets: Vec<CandidateSetHint>,
 }
 
 struct ReworkScalingOverride {
@@ -88,7 +86,21 @@ pub fn resolve_profile(
         resolved_path == "欢愉" || abilities.iter().any(|ability| ability.slot == "elation");
     let reworked = detect_reworked_character(&abilities);
     let mut scaling_mode = infer_scaling_mode(&abilities, &resolved_path);
-    let low_speed_preferred = infer_low_speed_preferred(&abilities, base_speed, &resolved_path);
+    let minor_trace_summary = entry
+        .map(|item| summarize_minor_traces(&item.trace_stats))
+        .unwrap_or_default();
+    let has_speed_minor_trace = entry.is_some_and(|item| {
+        item.trace_stats
+            .iter()
+            .flat_map(|node| node.stats.iter())
+            .any(|stat| stat.key.trim() == "速度" && stat.value > 0.0)
+    });
+    let low_speed_preferred = infer_low_speed_preferred(
+        &abilities,
+        base_speed,
+        &resolved_path,
+        has_speed_minor_trace,
+    );
     let mut search_hints = Vec::new();
     let mut guidance_notes = Vec::new();
 
@@ -117,17 +129,6 @@ pub fn resolve_profile(
 
     let (disallowed_substats, disallowed_main_stats) = disallowed_stats_for(scaling_mode);
     let skill_summary = build_skill_summary(&abilities);
-    let candidate_sets = infer_candidate_sets(
-        &abilities,
-        &resolved_path,
-        scaling_mode,
-        is_elation,
-        low_speed_preferred,
-        base_speed,
-    );
-    let minor_trace_summary = entry
-        .map(|item| summarize_minor_traces(&item.trace_stats))
-        .unwrap_or_default();
 
     CharacterAdvisorProfile {
         character_id,
@@ -147,7 +148,6 @@ pub fn resolve_profile(
         search_hints,
         guidance_notes,
         skill_summary,
-        candidate_sets,
     }
 }
 
@@ -244,11 +244,12 @@ fn infer_low_speed_preferred(
     abilities: &[&MechanicAbility],
     base_speed: Option<f64>,
     path_zh: &str,
+    has_speed_minor_trace: bool,
 ) -> bool {
     let Some(speed) = base_speed else {
         return false;
     };
-    if speed > 95.0 {
+    if speed > 95.0 || has_speed_minor_trace {
         return false;
     }
     let trace_text = join_rendered_descriptions(abilities, |slot| slot == "trace");
@@ -268,7 +269,7 @@ fn infer_low_speed_preferred(
     is_counter || is_slow_remembrance_hp
 }
 
-pub(crate) fn join_rendered_descriptions(
+fn join_rendered_descriptions(
     abilities: &[&MechanicAbility],
     predicate: impl Fn(&str) -> bool,
 ) -> String {
@@ -438,6 +439,13 @@ mod tests {
     fn keeps_multi_path_rework_and_counter_characters_accurate() {
         let clara = resolve_profile(1107, "克拉拉", "clara", "物理");
         assert!(clara.low_speed_preferred);
+
+        let robin_summer = resolve_profile(1512, "知更鸟•晴歌", "robinsummeretto", "风");
+        assert_eq!(robin_summer.scaling_mode, ScalingMode::HpOnly);
+        assert!(
+            !robin_summer.low_speed_preferred,
+            "Speed minor-trace characters must not be marked low_speed_preferred"
+        );
 
         let jingliu = resolve_profile(1212, "镜流", "jingliu", "冰");
         assert_eq!(jingliu.scaling_mode, ScalingMode::HpOnly);

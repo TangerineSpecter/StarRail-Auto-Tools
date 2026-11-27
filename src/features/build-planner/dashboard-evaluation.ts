@@ -11,6 +11,12 @@ import {
 } from "@/shared/utils/relic-score";
 import { reviewedStandingRules, standingEquipment } from "@/shared/utils/standing-rule-catalogue";
 import {
+  evaluateSingleCharacterSnapshot,
+  resolveCombatantFromCharacter,
+  type CharacterDamageSnapshot,
+  type CombatantInput,
+} from "@/shared/utils/combat";
+import {
   calculateStandingStats,
   isMaxStandingEquipment,
   lightConeSkillEffect,
@@ -207,6 +213,13 @@ export function evaluateDashboardEntry(
   });
   const cone = character.equippedLightCone;
   const coneEntry = cone ? lightConeById.get(cone.templateId) : undefined;
+  let combatant: CombatantInput | null = null;
+  let combatSnapshot: CharacterDamageSnapshot | null = null;
+  const resolvedCombat = resolveCombatantFromCharacter(character, disabledTraceNodes);
+  if (resolvedCombat.available && resolvedCombat.combatant) {
+    combatant = resolvedCombat.combatant;
+    combatSnapshot = evaluateSingleCharacterSnapshot(combatant);
+  }
   return {
     entry,
     character,
@@ -236,6 +249,8 @@ export function evaluateDashboardEntry(
       pieces: radarPieces,
       diagnosis,
       minPotentialPct: entry.plan.minPotentialPct ?? 40,
+      combatant,
+      combatSnapshot,
     },
   };
 }

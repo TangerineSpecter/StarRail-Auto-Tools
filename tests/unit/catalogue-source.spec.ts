@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 // @ts-expect-error The maintenance script intentionally has no TypeScript dependency.
 import {
   adaptOwner,
+  extractSkillCombatMeta,
   normalizeDescription,
   normalizeParams,
+  parseEnergySpec,
   parsePageConfig,
+  parseToughnessSpec,
   semanticHash,
   stripHtml,
   validateMechanicCatalogue,
@@ -246,5 +249,59 @@ describe("public PAGE_CONFIG mechanic normalization", () => {
       ])
         expect(Object.hasOwn(ability, alias)).toBe(false);
     }
+  });
+
+  it("parses upstream toughness, energy gain and maxEnergy without mutating semantic hashes", () => {
+    expect(parseToughnessSpec("30")).toEqual({ main: 10, perHit: false, raw: "30" });
+    expect(parseToughnessSpec("90 + 45/adjacent")).toEqual({
+      main: 30,
+      adjacent: 15,
+      perHit: false,
+      raw: "90 + 45/adjacent",
+    });
+    expect(parseToughnessSpec("30 + 15/subsequent")).toEqual({
+      main: 10,
+      subsequent: 5,
+      perHit: false,
+      raw: "30 + 15/subsequent",
+    });
+    expect(parseToughnessSpec("60/hit")).toEqual({ main: 20, perHit: true, raw: "60/hit" });
+    expect(() => parseToughnessSpec("bad-format")).toThrow("Unsupported toughness");
+
+    expect(parseEnergySpec("20")).toEqual({ amount: 20, perHit: false, raw: "20" });
+    expect(parseEnergySpec("6/hit")).toEqual({ amount: 6, perHit: true, raw: "6/hit" });
+    expect(() => parseEnergySpec("weird")).toThrow("Unsupported energy");
+
+    expect(
+      extractSkillCombatMeta({ break: "90 + 45/adjacent", energy: "0", ultimateCost: 0 }),
+    ).toEqual({
+      energyGain: 0,
+      energyGainPerHit: false,
+      toughness: { main: 30, adjacent: 15, perHit: false, raw: "90 + 45/adjacent" },
+    });
+
+    const adapted = adaptOwner(
+      "character",
+      entry,
+      {
+        spRequirement: 240,
+        skills: [{ ...skill, break: "60", energy: "20", ultimateCost: 240 }],
+      },
+      "https://example.test/aglaea",
+    );
+    expect(adapted.owner.maxEnergy).toBe(240);
+    expect(adapted.abilities[0].combat).toEqual({
+      energyGain: 20,
+      energyGainPerHit: false,
+      energyCost: 240,
+      toughness: { main: 20, perHit: false, raw: "60" },
+    });
+    const plain = adaptOwner(
+      "character",
+      entry,
+      { skills: [skill] },
+      "https://example.test/aglaea",
+    );
+    expect(adapted.abilities[0].sourceHash).toBe(plain.abilities[0].sourceHash);
   });
 });

@@ -82,6 +82,63 @@ export function semanticHash(ability) {
     .digest("hex");
 }
 
+export function parseToughnessSpec(raw) {
+  if (raw === null || raw === undefined) return null;
+  const text = String(raw).trim();
+  if (!text) return null;
+  const toDisplay = (v) => Number((Number(v) / 3).toFixed(4));
+  let m = /^(\d+(?:\.\d+)?)$/.exec(text);
+  if (m) {
+    const main = toDisplay(m[1]);
+    return { main, perHit: false, raw: text };
+  }
+  m = /^(\d+(?:\.\d+)?)\/hit$/.exec(text);
+  if (m) {
+    const main = toDisplay(m[1]);
+    return { main, perHit: true, raw: text };
+  }
+  m = /^(\d+(?:\.\d+)?)\s*\+\s*(\d+(?:\.\d+)?)\/adjacent$/.exec(text);
+  if (m) {
+    return { main: toDisplay(m[1]), adjacent: toDisplay(m[2]), perHit: false, raw: text };
+  }
+  m = /^(\d+(?:\.\d+)?)\s*\+\s*(\d+(?:\.\d+)?)\/subsequent$/.exec(text);
+  if (m) {
+    return { main: toDisplay(m[1]), subsequent: toDisplay(m[2]), perHit: false, raw: text };
+  }
+  throw new Error(`Unsupported toughness format: ${text}`);
+}
+
+export function parseEnergySpec(raw) {
+  if (raw === null || raw === undefined) return null;
+  const text = String(raw).trim();
+  if (!text) return null;
+  let m = /^(\d+(?:\.\d+)?)$/.exec(text);
+  if (m) {
+    return { amount: Number(m[1]), perHit: false, raw: text };
+  }
+  m = /^(\d+(?:\.\d+)?)\/hit$/.exec(text);
+  if (m) {
+    return { amount: Number(m[1]), perHit: true, raw: text };
+  }
+  throw new Error(`Unsupported energy format: ${text}`);
+}
+
+export function extractSkillCombatMeta(skill) {
+  if (!skill || typeof skill !== "object") return null;
+  const toughness = parseToughnessSpec(skill.break);
+  const energy = parseEnergySpec(skill.energy);
+  const energyCost =
+    typeof skill.ultimateCost === "number" && Number.isFinite(skill.ultimateCost)
+      ? skill.ultimateCost
+      : null;
+  if (!toughness && !energy && energyCost === null) return null;
+  return {
+    ...(energy ? { energyGain: energy.amount, energyGainPerHit: energy.perHit } : {}),
+    ...(energyCost !== null && energyCost > 0 ? { energyCost } : {}),
+    ...(toughness ? { toughness } : {}),
+  };
+}
+
 export function normalizeParams(skill) {
   const table = skill.levelData;
   const source = table ?? skill.params ?? [];
@@ -148,6 +205,9 @@ export function adaptOwner(kind, entry, config, url) {
     const path = paths[entry.baseTypeId];
     if (!path) throw new Error(`Unknown canonical path ${owner.id}`);
     owner.variantKey = `hsr/${gameId}/${path}/base`;
+    if (typeof config.spRequirement === "number" && Number.isFinite(config.spRequirement)) {
+      owner.maxEnergy = config.spRequirement;
+    }
   }
   const summon = config.servant
     ? {
@@ -243,6 +303,10 @@ export function adaptOwner(kind, entry, config, url) {
               : slot
             : null,
     };
+    const combatMeta = group === "skills" ? extractSkillCombatMeta(skill) : null;
+    if (combatMeta && Object.keys(combatMeta).length > 0) {
+      ability.combat = combatMeta;
+    }
     ability.sourceHash = semanticHash(ability);
     const previous = abilities.get(ability.id);
     if (previous && previous.sourceHash !== ability.sourceHash)
@@ -324,6 +388,14 @@ export function validateMechanicCatalogue(data) {
     if (owner.parentOwnerId && !owners.has(owner.parentOwnerId))
       throw new Error(`Invalid parent ${owner.id}`);
     if (
+      owner.maxEnergy !== undefined &&
+      owner.maxEnergy !== null &&
+      (typeof owner.maxEnergy !== "number" ||
+        !Number.isFinite(owner.maxEnergy) ||
+        owner.maxEnergy < 0)
+    )
+      throw new Error(`Invalid owner maxEnergy ${owner.id}`);
+    if (
       new Set(owner.abilityIds).size !== owner.abilityIds.length ||
       owner.abilityIds.some((id) => abilities.get(id)?.ownerId !== owner.id)
     )
@@ -367,6 +439,37 @@ export function validateMechanicCatalogue(data) {
     ))
       if (!Object.hasOwn(ability.parameters, token[1]))
         throw new Error(`Unbound template ${ability.id}`);
+    if (ability.combat !== undefined) {
+      const c = ability.combat;
+      if (!c || typeof c !== "object") throw new Error(`Invalid combat meta ${ability.id}`);
+      if (
+        c.energyGain !== undefined &&
+        (typeof c.energyGain !== "number" || !Number.isFinite(c.energyGain) || c.energyGain < 0)
+      )
+        throw new Error(`Invalid combat energyGain ${ability.id}`);
+      if (
+        c.energyCost !== undefined &&
+        (typeof c.energyCost !== "number" || !Number.isFinite(c.energyCost) || c.energyCost < 0)
+      )
+        throw new Error(`Invalid combat energyCost ${ability.id}`);
+      if (c.toughness !== undefined) {
+        const t = c.toughness;
+        if (
+          !t ||
+          typeof t !== "object" ||
+          typeof t.main !== "number" ||
+          !Number.isFinite(t.main) ||
+          t.main < 0 ||
+          (t.adjacent !== undefined &&
+            (typeof t.adjacent !== "number" || !Number.isFinite(t.adjacent) || t.adjacent < 0)) ||
+          (t.subsequent !== undefined &&
+            (typeof t.subsequent !== "number" ||
+              !Number.isFinite(t.subsequent) ||
+              t.subsequent < 0))
+        )
+          throw new Error(`Invalid combat toughness ${ability.id}`);
+      }
+    }
     if (ability.sourceHash !== semanticHash(ability))
       throw new Error(`Invalid source hash ${ability.id}`);
   }

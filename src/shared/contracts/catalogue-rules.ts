@@ -6,6 +6,25 @@ export type ParameterCurve =
   | { kind: "table"; levels: readonly number[]; values: readonly number[] };
 export type CatalogueSourceKind =
   "character" | "trace" | "eidolon" | "summon" | "lightCone" | "relic";
+export interface AbilityToughnessSpec {
+  /** Primary target toughness damage in display units (e.g. basic attack = 10). */
+  main: number;
+  /** Adjacent target toughness damage for blast skills in display units. */
+  adjacent?: number;
+  /** Subsequent bounce hit toughness damage in display units. */
+  subsequent?: number;
+  /** True when the upstream value is specified per-hit / per-target (e.g. AoE / multi-hit). */
+  perHit: boolean;
+  raw: string;
+}
+
+export interface AbilityCombatMeta {
+  energyGain?: number;
+  energyGainPerHit?: boolean;
+  energyCost?: number;
+  toughness?: AbilityToughnessSpec;
+}
+
 export interface CatalogueAbility {
   id: string;
   sourceNodeId: string;
@@ -13,12 +32,15 @@ export interface CatalogueAbility {
   groupId: string;
   slot: string;
   name: string;
+  type?: string;
+  tag?: string | null;
   descriptionTemplate: string;
   levelBinding: string | null;
   levels: readonly number[];
   sourceKind: CatalogueSourceKind;
   parameters: Readonly<Record<string, ParameterCurve>>;
   parameterUnits?: Readonly<Record<string, RuleUnit>>;
+  combat?: AbilityCombatMeta;
   sourceHash: string;
 }
 export interface MechanicCatalogue {
@@ -32,6 +54,9 @@ export interface CatalogueOwner {
   slug: string;
   name: string;
   gameId: string | number;
+  variantKey?: string;
+  /** Maximum energy (or special ultimate cost) synced from upstream spRequirement. */
+  maxEnergy?: number | null;
   parentOwnerId?: string;
   source: { url: string; mapping: { slug: string; gameId: string | number } };
   abilityIds: readonly string[];

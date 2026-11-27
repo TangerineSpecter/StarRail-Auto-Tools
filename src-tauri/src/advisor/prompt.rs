@@ -1,7 +1,7 @@
 use super::context::CharacterAdviceSnapshot;
 use super::fetch::FetchedPage;
 use super::profile::CharacterAdvisorProfile;
-use super::sanitize::{form_contract_text, format_relic_set_line};
+use super::sanitize::form_contract_text;
 use super::search::SearchHit;
 use super::set_candidates::{assess_guide_freshness, GuideFreshness};
 use crate::inventory::current_game_version;
@@ -82,16 +82,6 @@ pub fn user_prompt(
             body.push_str(&format!("  * {line}\n"));
         }
     }
-    if !profile.candidate_sets.is_empty() {
-        body.push_str(
-            "\n## 本角色机制匹配的当前版本高适配候选套装（请与检索攻略做实装数值对比）\n",
-        );
-        for candidate in &profile.candidate_sets {
-            if let Some(effect_line) = format_relic_set_line(candidate.set_id) {
-                body.push_str(&format!("- {effect_line} — 适配点：{}\n", candidate.reason));
-            }
-        }
-    }
 
     body.push_str("\n## 本地角色与装备（不含旧方案，避免锚定偏差）\n");
     body.push_str(&snapshot_json);
@@ -135,8 +125,9 @@ pub fn user_prompt(
     if assess_guide_freshness(hits, pages) == GuideFreshness::Pre4xOrLegacy {
         body.push_str(
             "\n## ⚠️ 检索攻略时效提醒（重要）\n\
-上方检索结果未覆盖 4.x 版本新遗器，属于早期版本旧攻略。**严禁盲目照抄旧攻略中的 1.x～2.x 旧套装！**\n\
-请以「角色机制与硬约束 + 上方高适配候选套装的实装数值」为主决策依据：将候选新套装与旧攻略旧套装逐项做有效词条/增伤对比，只要新套装在同机制下明显更强，就必须直接推荐新套装作为毕业目标，并在 `insights` 中增加一条 `套装替代` 说明旧套仍可过渡；同时注意切换纯暴伤新套（如 134 异端 + 324 天国）后的暴击率缺口，躯干主词条应保留暴击率。\n",
+上方检索结果未覆盖 4.x 版本新遗器。请先判断旧攻略推荐的是「被同机制上位全面取代的早期 1.x 旧套」还是「对应体系至今仍主流的专套」：\n\
+- 若旧攻略仍推荐 1.x 通用旧套（如快枪手 102、圣骑士 103、过客 101、早期属性 4 件套等），请对照系统提示顶部的最新 3.x～4.x 套装实装数值，在同机制明显更强时直接升级为新套装，并在 `insights` 中增加一条 `套装替代` 说明旧套可过渡；切换纯暴伤新套（如 134 异端 + 324 天国）时务必在躯干保留暴击率。\n\
+- 若旧攻略已推荐对应体系的专属毕业套（如击破队的 119 铁骑 / 316 劫火、白厄的 126 船长、追击队的 115 大公 / 120 勇烈、DoT 队的 116 系囚、单拐的 121 司铎等），请尊重其核心体系定位，**绝不跨体系强行替换**（例如击破奶灵砂/加拉赫保持击破体系，只在备选中提及直伤队的女武神，且可对比 330 亚空异容所等新击破内圈）。\n",
         );
     }
 
@@ -171,11 +162,11 @@ pub fn user_prompt(
   "warnings": []
 }
 关键规则（必须严格遵守）：
-1. 套装必须用系统提示清单里的 id，并核对其真实 2 件/4 件效果；英文攻略中的套装名请按效果准确对应到清单中的中文套装 id。若检索攻略已是当前版本且给出实测共识，以最新实测共识为准；若检索攻略偏旧，必须对照上方「高适配候选套装」与当前版本实装数值主动升级为明显上位的新套装：
+1. 套装必须用系统提示清单里的 id（已按版本从新到旧排序），并核对其真实 2 件/4 件效果；英文攻略中的套装名请按效果准确对应到清单中的中文套装 id。若检索攻略已是当前版本且给出实测共识，以最新实测共识为准；若检索攻略偏旧且仍推早期 1.x 旧套，请对照最新 3.x～4.x 套装实装数值在同机制下主动升级（不跨体系覆盖 2.x/3.x 体系专套）：
    - 强化普攻/普攻主 C（如丹恒•饮月、青雀）优先升级为「134 贪噬禁果的异端」（暴伤+16%、普攻+36%、攻击+20%，全面优于旧版「102 快枪手」）；若单回合消耗 ≥3 战技点，内圈优先对比「324 天国@直播间」（+48%暴伤）与「309 繁星竞技场」（暴击缺口大时繁星过渡），且穿 134+324 时务必在躯干主词条保留 CRIT Rate 防暴击不足；
    - 战技/终结技直伤主 C 优先对比「122 识海迷坠的学者」/「131 星如我见的领航员」而非早期 1.0 属性 4 件套；生命倍率 C 内圈优先对比「319 谧宁拾骨地」；
    - 召唤物/追击 C 优先对比「115 大公」/「120 勇烈」与「318 奇想蕉乐园」/「315 奔狼」/「326 千星荟萃之城」；DoT 队内圈优先对比「322 沉欢醉饮的海隅」；挂减防副 C 优先对比「132 叩问天工的名冶」；
-   - 存护护盾位（如砂金、丹恒•腾荒、杰帕德）优先「128 自匿星芒的隐士」而非旧版「103 圣骑士」，不堆命中的护盾位不用「304 贝洛伯格」，改用「310 龙骨」或「317 露莎卡」；治疗位优先「125 烈阳惊雷的女武神」+「320 巨树」/「317 露莎卡」；辅助向记忆主优先对比「127 再创天地的救世主」或高速 2+2。
+   - 存护护盾位（如砂金、丹恒•腾荒、杰帕德）优先「128 自匿星芒的隐士」而非旧版「103 圣骑士」，不堆命中的护盾位不用「304 贝洛伯格」，改用「310 龙骨」或「317 露莎卡」；常规治疗位（如藿藿、罗刹、风堇、白露）优先「125 烈阳惊雷的女武神」+「320 巨树」/「317 露莎卡」；**击破向治疗（如灵砂、加拉赫）主流进击破队，优先「119 荡除蠹灾的铁骑」+「316 劫火莲灯铸炼宫」/「330 亚空异容所」**（125 女武神仅作为进直伤队的替代方案在 insights 说明，勿喧宾夺主）；辅助向记忆主优先对比「127 再创天地的救世主」或高速 2+2。
    - **4 件套与 2+2 的取舍原则**：若角色已有高收益专属 4 件套（例如单体战技/终结技辅助如星期日/布洛妮娅/花火/停云穿「121 重循苦旅的司铎」4 件套可给主C叠 36% 暴伤；盾位穿「128 隐士」4；治疗穿「125 女武神」4；普攻 C 穿「134 异端」4），必须优先选 `"fourPiece"`；**只有**当角色确实缺乏高收益 4 件套、或 4 件套效果与机制冲突时（例如纯吃攻击转化且终结技全队立刻行动提前 100% 与信使 4 加速冲突的知更鸟，主流毕业为 `"twoPlusTwo"` 2 攻+2 攻如 116 系囚 + 102 快枪手），才果断将 `cavernMode` 设为 `"twoPlusTwo"` 并填写 `cavernSetA` 与 `cavernSetB`。
 2. 4 个主词条槽位（Body / Feet / PlanarSphere / LinkRope）每一项都必须至少填写 1 个可选主词条，严禁留空数组 []！充能绳请严格写 "Energy Regeneration Rate"，治疗衣请严格写 "Outgoing Healing Boost"，属性球请严格写 "<Element> DMG Boost"；若某部位攻略说「任意词条」，请填最通用的 2～3 个稳妥选项（如 ["HP%", "DEF%"]）。
 3. 严格保持自洽：summary 和 note 中推荐的套装、主词条、速度门槛必须与 plan 字段完全一致（例如 note 写了优先治疗衣，Body 就必须包含 Outgoing Healing Boost）。
@@ -242,7 +233,6 @@ mod tests {
         assert!(rendered.contains("禁止写入权重与有效词条的无效属性：ATK, ATK%"));
         assert!(rendered.contains("[2026-05-20] 遐蝶最新毕业攻略"));
         assert!(rendered.contains("小行迹自带属性加成"));
-        assert!(rendered.contains("高适配候选套装"));
         assert!(!rendered.contains("检索攻略时效提醒"));
 
         let legacy_hits = [SearchHit {
@@ -265,8 +255,6 @@ mod tests {
         };
         let dhil_prompt =
             user_prompt(&dhil_snapshot, &dhil_profile, &legacy_hits, &[], None).expect("prompt");
-        assert!(dhil_prompt.contains("134 贪噬禁果的异端"));
-        assert!(dhil_prompt.contains("324 天国@直播间"));
         assert!(dhil_prompt.contains("检索攻略时效提醒"));
     }
 }

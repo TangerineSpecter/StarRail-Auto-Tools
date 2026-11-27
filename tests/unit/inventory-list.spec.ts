@@ -343,7 +343,11 @@ it("keeps detail access but removes editing and selection in the mobile viewer",
   expect(relicWrapper.get(".relic-slot-tag").text()).toBe("头部");
   expect(relicWrapper.find(".relic-set-subtitle").exists()).toBe(false);
   expect(relicWrapper.get(".relic-rarity-stars").text()).toBe("★★★★★");
-  expect(relicWrapper.get(".relic-state-tag.is-locked").text()).toBe("已锁定");
+  const lockTag = relicWrapper.get(".relic-state-tag.is-locked");
+  expect(lockTag.attributes("aria-label")).toBe("已锁定");
+  expect(lockTag.attributes("title")).toBe("已锁定");
+  expect(lockTag.find("svg.relic-lock-icon").exists()).toBe(true);
+  expect(lockTag.text()).toBe("");
   expect(relicWrapper.find(".relic-cell-equip").exists()).toBe(false);
   expect(relicWrapper.find(".relic-cell-action").exists()).toBe(false);
 

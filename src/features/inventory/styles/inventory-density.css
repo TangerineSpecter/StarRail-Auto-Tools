@@ -202,14 +202,27 @@ td {
   letter-spacing: 0.5px;
 }
 .relic-state-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 1px 5px;
   border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
 }
 .relic-state-tag.is-locked {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 4px;
   background: #e8f0fb;
   color: var(--blue);
+}
+.relic-lock-icon {
+  display: block;
+  width: 12px;
+  height: 12px;
 }
 .relic-state-tag.is-discard {
   background: #fdeeed;

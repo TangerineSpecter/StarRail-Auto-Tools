@@ -65,12 +65,13 @@ describe("TeamCard", () => {
     expect(wrapper.text()).toContain("65%");
   });
 
-  it("emits action-axis, edit and delete", async () => {
+  it("emits combat-sim, action-axis, edit and delete", async () => {
     const wrapper = mountCard();
-    const buttons = wrapper.findAll("button");
-    await buttons[0].trigger("click");
-    await buttons[1].trigger("click");
-    await buttons[2].trigger("click");
+    await wrapper.find(".combat-btn").trigger("click");
+    await wrapper.find(".axis-btn").trigger("click");
+    await wrapper.find(".edit-btn").trigger("click");
+    await wrapper.find(".delete-btn").trigger("click");
+    expect(wrapper.emitted("combatSim")).toHaveLength(1);
     expect(wrapper.emitted("actionAxis")).toHaveLength(1);
     expect(wrapper.emitted("edit")).toHaveLength(1);
     expect(wrapper.emitted("delete")).toHaveLength(1);

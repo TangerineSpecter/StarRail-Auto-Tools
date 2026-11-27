@@ -295,6 +295,26 @@ describe("BuildDashboard", () => {
 
     wrapper.unmount();
   });
+
+  it("shows single-character expected damage strip and emits openCombatSim on click", async () => {
+    dashboard.mockResolvedValue([entry]);
+    const wrapper = mount(BuildDashboard, {
+      global: {
+        provide: { [runtimeContextKey as symbol]: { notice: ref("") } },
+        stubs: { InputText: true, Select: true },
+      },
+    });
+    await flushPromises();
+    const strip = wrapper.find(".build-card-combat-strip");
+    expect(strip.exists()).toBe(true);
+    expect(strip.text()).toContain("预期伤害");
+    expect(strip.text()).toContain("5轮单人预期");
+    await strip.get(".build-combat-open-btn").trigger("click");
+    const emitted = wrapper.emitted("openCombatSim");
+    expect(emitted).toHaveLength(1);
+    expect((emitted![0]![0] as { characterId: number }).characterId).toBe(1005);
+    wrapper.unmount();
+  });
 });
 
 it("shows graduation evidence without mutation controls in a read-only viewer", async () => {

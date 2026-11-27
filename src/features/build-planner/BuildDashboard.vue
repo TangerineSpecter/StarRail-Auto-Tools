@@ -33,6 +33,7 @@ import {
   isBuildPlanOutdated,
 } from "@/shared/utils/build-plan-meta";
 import { loadDisabledTraceNodes } from "@/shared/utils/trace-settings";
+import { formatDamageCompact, type CombatantInput } from "@/shared/utils/combat";
 import type { BuildDashboardEntry } from "@/types";
 import BuildCardDetails from "./BuildCardDetails.vue";
 import BuildHoverTip from "./BuildHoverTip.vue";
@@ -58,6 +59,7 @@ const readOnly = useReadOnlyView();
 const mobile = useMobileView();
 const emit = defineEmits<{
   editBuild: [characterId: number];
+  openCombatSim: [combatant: CombatantInput];
 }>();
 const { notice, summary, inventoryRevision } = useRuntimeContext();
 
@@ -889,6 +891,43 @@ defineExpose({ reload: loadDashboard });
                 />
               </div>
             </div>
+          </div>
+          <div
+            v-if="card.combatSnapshot && card.combatant"
+            class="build-card-combat-strip"
+            aria-label="单角色预期伤害"
+          >
+            <div class="build-combat-strip-head">
+              <span class="build-combat-heading">预期伤害</span>
+              <span :class="['build-combat-depth-tag', `is-${card.combatSnapshot.modelingDepth}`]">
+                {{ card.combatSnapshot.modelingBadge }}
+              </span>
+            </div>
+            <div class="build-combat-metrics">
+              <div class="build-combat-metric">
+                <span>{{ card.combatSnapshot.coreSkillName }}</span>
+                <strong>{{ formatDamageCompact(card.combatSnapshot.coreSkillExpected) }}</strong>
+              </div>
+              <div class="build-combat-metric">
+                <span>5轮单人预期</span>
+                <strong>{{ formatDamageCompact(card.combatSnapshot.fiveCycleMean) }}</strong>
+                <small>
+                  ({{ formatDamageCompact(card.combatSnapshot.fiveCycleP10) }}~{{
+                    formatDamageCompact(card.combatSnapshot.fiveCycleP90)
+                  }})
+                </small>
+              </div>
+            </div>
+            <button
+              v-if="!mobile"
+              type="button"
+              class="build-combat-open-btn"
+              :aria-label="`打开${card.character.name}的战斗模拟与伤害拆解`"
+              @click.stop="emit('openCombatSim', card.combatant)"
+            >
+              <span>伤害模拟 / 演播</span>
+              <span aria-hidden="true">▸</span>
+            </button>
           </div>
           <div
             v-if="card.diagnosis.suggestions.length"

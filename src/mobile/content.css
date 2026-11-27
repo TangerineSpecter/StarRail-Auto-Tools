@@ -2142,6 +2142,12 @@ html.mobile-view .mobile-content .inventory-table--relic .relic-state-tag {
   font-size: 11px;
   font-weight: 600;
 }
+html.mobile-view .mobile-content .inventory-table--relic .relic-state-tag.is-locked {
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+}
 html.mobile-view .mobile-content .inventory-table--relic .relic-level-badge {
   display: inline-flex;
   align-items: center;

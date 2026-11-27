@@ -47,4 +47,23 @@ describe("bundled complete source catalogue", () => {
       ).toBe(true);
     }
   });
+
+  it("includes synced maxEnergy and combat toughness/energy metadata for characters", () => {
+    const owners = mechanicCatalogue.owners ?? [];
+    const characters = owners.filter((owner) => owner.sourceKind === "character");
+    expect(characters.every((owner) => typeof owner.maxEnergy === "number")).toBe(true);
+    const firefly = characters.find((owner) => owner.id === "character:1310");
+    expect(firefly?.maxEnergy).toBe(240);
+    const enhancedSkill = mechanicCatalogue.abilities.find(
+      (ability) => ability.id === "character:1310:skills:109552",
+    );
+    expect(enhancedSkill?.combat?.toughness).toMatchObject({ main: 30, adjacent: 15 });
+    const lingshaSkill = mechanicCatalogue.abilities.find(
+      (ability) => ability.id === "character:1222:skills:28585",
+    );
+    expect(lingshaSkill?.combat).toMatchObject({
+      energyGain: 30,
+      toughness: { main: 10, perHit: true },
+    });
+  });
 });

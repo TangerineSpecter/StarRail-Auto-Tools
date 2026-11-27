@@ -899,6 +899,82 @@
 .dashboard-state.error {
   color: #b04d43;
 }
+.build-card-combat-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 10px 24px 10px 58px;
+  border-top: 1px solid rgba(46, 79, 126, 0.08);
+  background: linear-gradient(90deg, rgba(238, 245, 255, 0.65), rgba(255, 249, 240, 0.45));
+}
+.build-combat-strip-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.build-combat-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #29466e;
+}
+.build-combat-depth-tag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.build-combat-depth-tag.is-deep {
+  background: #dcfce7;
+  color: #15803d;
+}
+.build-combat-depth-tag.is-generic {
+  background: #eef2f7;
+  color: #5b708b;
+}
+.build-combat-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  flex: 1 1 auto;
+}
+.build-combat-metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  color: #546c8a;
+  font-variant-numeric: tabular-nums;
+}
+.build-combat-metric strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1b4d9b;
+}
+.build-combat-metric small {
+  font-size: 11px;
+  color: #6b819e;
+}
+.build-combat-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: #ffffff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.build-combat-open-btn:hover {
+  background: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.45);
+}
 @media (max-width: 1100px) {
   .build-card-body {
     grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr) auto;

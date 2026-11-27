@@ -3,22 +3,28 @@ import { computed } from "vue";
 import Button from "primevue/button";
 import { characterDisplayName, resolveCharacterCatalogue } from "@/shared/catalogue";
 import LoadingState from "@/shared/ui/LoadingState.vue";
+import { formatDamageCompact } from "@/shared/utils/combat";
 import type { Team, TeamMember } from "@/types";
 import type { CharacterBuildScore } from "@/types";
 import { formatScorePct } from "./team-member-score";
 import { filledSlotCount, gradeClass, memberInitial } from "./team-utils";
+import type { TeamCombatCardSummary } from "./useTeamArchive";
 
 const props = defineProps<{
   team: Team;
   memberScores?: Map<number, CharacterBuildScore>;
   /** When false, owned members without a score show a loading hint instead of「未装备遗器」. */
   scoresReady?: boolean;
+  combatSummary?: TeamCombatCardSummary | null;
+  combatReady?: boolean;
 }>();
 const emit = defineEmits<{
   actionAxis: [];
+  combatSim: [];
   edit: [];
   delete: [];
 }>();
+const combatBarColors = ["#2563eb", "#0891b2", "#d97706", "#7c3aed"];
 
 const avatarColors = ["#1ea2e8", "#e84a4a", "#8740e5", "#33b061", "#f0a21d", "#e0427f"];
 
@@ -107,6 +113,28 @@ const teamTopGrade = computed(() => {
             </svg>
             {{ filledCount }}/4
           </span>
+          <Button
+            type="button"
+            class="team-card-icon-btn combat-btn"
+            title="战斗模拟与伤害预期"
+            aria-label="战斗模拟与伤害预期"
+            text
+            rounded
+            @click="emit('combatSim')"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </Button>
           <Button
             type="button"
             class="team-card-icon-btn axis-btn"
@@ -300,6 +328,54 @@ const teamTopGrade = computed(() => {
           <span class="team-slot-empty-label">空位</span>
         </div>
       </template>
+    </div>
+
+    <div v-if="combatSummary?.summary" class="team-card-combat-bar" aria-label="配队预期伤害概览">
+      <div class="team-combat-numbers">
+        <div class="team-combat-kpi is-combo">
+          <span>打完一整套预期</span>
+          <strong>{{ formatDamageCompact(combatSummary.summary.comboDamage) }}</strong>
+        </div>
+        <div class="team-combat-kpi">
+          <span>5轮预期均值</span>
+          <strong>{{ formatDamageCompact(combatSummary.summary.meanDamage) }}</strong>
+          <small>
+            ({{ formatDamageCompact(combatSummary.summary.p10Damage) }}~{{
+              formatDamageCompact(combatSummary.summary.p90Damage)
+            }})
+          </small>
+        </div>
+      </div>
+
+      <div class="team-combat-shares">
+        <div class="team-combat-share-bar" aria-label="成员输出占比">
+          <i
+            v-for="(item, idx) in combatSummary.summary.contributionsMean"
+            :key="item.characterId"
+            :style="{
+              width: `${Math.max(4, item.share * 100)}%`,
+              background: combatBarColors[idx % combatBarColors.length],
+            }"
+            :title="`${item.name} ${(item.share * 100).toFixed(1)}%`"
+          />
+        </div>
+        <div class="team-combat-share-labels">
+          <span
+            v-for="(item, idx) in combatSummary.summary.contributionsMean"
+            :key="item.characterId"
+          >
+            <i :style="{ background: combatBarColors[idx % combatBarColors.length] }" />
+            {{ item.name }} <b>{{ (item.share * 100).toFixed(0) }}%</b>
+          </span>
+        </div>
+      </div>
+
+      <button type="button" class="team-combat-open-btn" @click="emit('combatSim')">
+        1/3/5/10 轮模拟 ▸
+      </button>
+    </div>
+    <div v-else-if="filledCount > 0 && combatReady === false" class="team-card-combat-loading">
+      <LoadingState variant="inline" label="正在估算配队预期伤害…" compact />
     </div>
   </article>
 </template>

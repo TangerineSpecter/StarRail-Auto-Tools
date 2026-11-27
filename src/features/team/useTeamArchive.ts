@@ -1,9 +1,26 @@
-import { onActivated, onDeactivated, onMounted, ref, watch, type Ref } from "vue";
+import { computed, onActivated, onDeactivated, onMounted, ref, watch, type Ref } from "vue";
 import { characterScoreApi } from "@/shared/api/character-score";
+import { inventoryApi } from "@/shared/api/inventory";
 import { teamApi } from "@/shared/api/team";
+import {
+  DEFAULT_ENEMY_PRESET,
+  resolveCombatantFromCharacter,
+  runMonteCarloSimulation,
+  type CharacterCombatSource,
+  type CombatantInput,
+  type CombatantResolveResult,
+  type MonteCarloSummary,
+} from "@/shared/utils/combat";
 import { recomputeAndPersistCharacterScore } from "@/shared/utils/relic-score/persist-character-score";
+import { loadDisabledTraceNodes } from "@/shared/utils/trace-settings";
 import type { CharacterBuildScore, PagedResult, Team, TeamInput } from "@/types";
 import { characterIdsFromTeam, emptyCharacterIds } from "./team-utils";
+
+export interface TeamCombatCardSummary {
+  combatants: CombatantInput[];
+  unavailableNotes: string[];
+  summary: MonteCarloSummary | null;
+}
 
 interface TeamArchiveOptions {
   busy: Ref<boolean>;
@@ -46,10 +63,13 @@ export function useTeamArchive(options: TeamArchiveOptions) {
   const result = ref<PagedResult<Team>>(emptyResult());
   const memberScores = ref<Map<number, CharacterBuildScore>>(new Map());
   const scoresReady = ref(false);
+  const memberCombatants = ref<Map<number, CombatantResolveResult>>(new Map());
+  const combatReady = ref(false);
   const search = ref("");
   const appending = ref(false);
   let requestId = 0;
   let scoreRequestId = 0;
+  let combatRequestId = 0;
   let loadedRevision = -1;
   let active = false;
 
@@ -140,6 +160,85 @@ export function useTeamArchive(options: TeamArchiveOptions) {
     scoresReady.value = true;
   }
 
+  async function ensureMemberCombatants(teams: Team[], options?: { soft?: boolean }) {
+    const soft = options?.soft === true;
+    const currentRequest = ++combatRequestId;
+    const startRevision = revision.value;
+    const isCurrent = () => currentRequest === combatRequestId && revision.value === startRevision;
+
+    if (!soft) combatReady.value = false;
+    const needed = ownedCharacterIds(teams);
+    if (!needed.length) {
+      if (!isCurrent()) return;
+      if (!soft) memberCombatants.value = new Map();
+      combatReady.value = true;
+      return;
+    }
+
+    const missing = needed.filter((id) => !memberCombatants.value.has(id));
+    if (missing.length) {
+      const disabledTraceNodes = loadDisabledTraceNodes();
+      const loaded = await mapPool(missing, MISS_FILL_CONCURRENCY, async (characterId) => {
+        try {
+          const detail = await inventoryApi.detail("character", characterId);
+          return [
+            characterId,
+            resolveCombatantFromCharacter(
+              detail.data as unknown as CharacterCombatSource,
+              disabledTraceNodes,
+            ),
+          ] as const;
+        } catch {
+          return [
+            characterId,
+            { available: false, reason: "读取角色详情失败", combatant: null },
+          ] as const;
+        }
+      });
+      if (!isCurrent()) return;
+      const next = new Map(memberCombatants.value);
+      for (const [id, resolved] of loaded) next.set(id, resolved);
+      memberCombatants.value = next;
+    }
+
+    if (!isCurrent()) return;
+    combatReady.value = true;
+  }
+
+  const teamCombatSummaries = computed(() => {
+    const map = new Map<number, TeamCombatCardSummary>();
+    for (const team of result.value.items) {
+      const combatants: CombatantInput[] = [];
+      const unavailableNotes: string[] = [];
+      for (const member of team.members) {
+        if (!member) continue;
+        if (!member.owned) {
+          unavailableNotes.push(`${member.name} 已不在档案`);
+          continue;
+        }
+        const resolved = memberCombatants.value.get(member.characterId);
+        if (!resolved) continue;
+        if (resolved.available && resolved.combatant) combatants.push(resolved.combatant);
+        else if (resolved.reason) unavailableNotes.push(resolved.reason);
+      }
+      const summary = combatants.length
+        ? runMonteCarloSimulation(
+            combatants,
+            {
+              cycles: 5,
+              enemy: DEFAULT_ENEMY_PRESET,
+              seed: (team.teamId * 131 + 17) >>> 0,
+              useTechniques: true,
+            },
+            12,
+            false,
+          )
+        : null;
+      map.set(team.teamId, { combatants, unavailableNotes, summary });
+    }
+    return map;
+  });
+
   async function load(append = false) {
     const currentRequest = ++requestId;
     busy.value = true;
@@ -160,6 +259,7 @@ export function useTeamArchive(options: TeamArchiveOptions) {
         // Keep existing scores visible; only fill gaps for newly listed members.
         mergeScores(scoresFromTeams(next.items));
         void ensureMemberScores(result.value.items, { soft: true });
+        void ensureMemberCombatants(result.value.items, { soft: true });
       } else {
         // Full reload (including inventory revision): drop possibly-stale in-memory scores.
         memberScores.value = scoresFromTeams(result.value.items);
@@ -167,6 +267,7 @@ export function useTeamArchive(options: TeamArchiveOptions) {
           memberScores.value.size > 0 &&
           ownedCharacterIds(result.value.items).every((id) => memberScores.value.has(id));
         void ensureMemberScores(result.value.items, { soft: scoresReady.value });
+        void ensureMemberCombatants(result.value.items, { soft: false });
       }
     } catch (cause) {
       if (currentRequest === requestId) setError(String(cause));
@@ -261,6 +362,8 @@ export function useTeamArchive(options: TeamArchiveOptions) {
       // Inventory mutation invalidated scores in SQLite; force a full list reload.
       memberScores.value = new Map();
       scoresReady.value = false;
+      memberCombatants.value = new Map();
+      combatReady.value = false;
       void load();
     }
   });
@@ -269,6 +372,8 @@ export function useTeamArchive(options: TeamArchiveOptions) {
     result,
     memberScores,
     scoresReady,
+    teamCombatSummaries,
+    combatReady,
     search,
     appending,
     load,

@@ -20,6 +20,7 @@
     "sync:all": "node scripts/sync-catalogues.mjs all",
     "sync:light-cone-catalog": "node scripts/sync-light-cone-catalog.mjs",
     "sync:mechanic-catalog": "node scripts/sync-mechanic-catalogue.mjs",
+    "sync:combat-meta": "node scripts/sync-combat-meta.mjs",
     "validate:mechanic-catalog": "node scripts/validate-mechanic-catalogue.mjs",
     "build:catalogue-rules": "node scripts/build-catalogue-rules.mjs",
     "compile:mechanisms": "node scripts/compile-mechanisms.mjs",
