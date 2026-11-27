@@ -75,15 +75,15 @@ function axisSubDetail(axis: {
   missing: boolean;
   mainStatCorrect?: boolean | null;
   effectiveRolls?: number;
-  wastedRolls?: number;
+  wastedUpgrades?: number;
 }): string | null {
-  if (axis.missing || axis.effectiveRolls === undefined || axis.wastedRolls === undefined) {
+  if (axis.missing || axis.effectiveRolls === undefined || axis.wastedUpgrades === undefined) {
     return null;
   }
   const rollsText =
-    axis.wastedRolls > 0
-      ? `有效 ${axis.effectiveRolls} 条 · 歪 ${axis.wastedRolls} 条`
-      : `有效 ${axis.effectiveRolls} 条 · 无歪词条`;
+    axis.wastedUpgrades > 0
+      ? `有效 ${axis.effectiveRolls} 条 · 强化歪 ${axis.wastedUpgrades} 次`
+      : `有效 ${axis.effectiveRolls} 条 · 强化未歪`;
   if (axis.mainStatCorrect === false) {
     return `主词条不符 · ${rollsText}`;
   }
@@ -135,10 +135,10 @@ const breakdownItems = computed(() =>
     grade: axis.missing ? "—" : (axis.letterGrade ?? "—"),
     pctText: axis.missing ? "未装备" : `${Math.round(axis.potentialPct)}%`,
     rollsHint:
-      !axis.missing && axis.effectiveRolls !== undefined && axis.wastedRolls !== undefined
-        ? axis.wastedRolls > 0
-          ? `有效${axis.effectiveRolls}/歪${axis.wastedRolls}`
-          : `有效${axis.effectiveRolls}`
+      !axis.missing && axis.effectiveRolls !== undefined && axis.wastedUpgrades !== undefined
+        ? axis.wastedUpgrades > 0
+          ? `有效${axis.effectiveRolls} · 歪+${axis.wastedUpgrades}`
+          : `有效${axis.effectiveRolls} · 未歪`
         : null,
     isWeak: props.weakSlot === axis.slot,
     missing: axis.missing,

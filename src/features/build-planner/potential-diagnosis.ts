@@ -4,6 +4,7 @@ import {
   GRADE5_SUBSTAT_ROLLS,
   SUBSTAT_KEYS,
   effectiveWeight,
+  enhancementHitsOnLine,
   letterGradeFromPotential,
   qualityUnitsOnLine,
   totalRollsOnLine,
@@ -30,6 +31,8 @@ export interface PieceDiagnosis {
   potentialPct: number;
   letterGrade: string | null;
   effectiveRolls: number;
+  /** Upgrade rolls (+3..+15 hits) that landed on zero-weight substats (excludes base opener lines). */
+  wastedUpgrades: number;
   wastedRolls: number;
   totalRolls: number;
   avgRollQuality: number | null;
@@ -43,6 +46,7 @@ export interface PotentialDiagnosis {
   weightSummary: string;
   weightSourceLabel: string;
   totalEffectiveRolls: number;
+  totalWastedUpgrades: number;
   totalWastedRolls: number;
   avgRollQuality: number | null;
   qualityLossPct: number;
@@ -142,6 +146,7 @@ export function diagnoseBuildPotential(input: DiagnoseBuildPotentialInput): Pote
   const lowWeightRollsByKey = new Map<string, { rolls: number; weight: number }>();
 
   let totalEffectiveRolls = 0;
+  let totalWastedUpgrades = 0;
   let totalWastedRolls = 0;
   let totalQualityUnits = 0;
   let qualityLossPctSum = 0;
@@ -160,6 +165,7 @@ export function diagnoseBuildPotential(input: DiagnoseBuildPotentialInput): Pote
     const rollOpts = { enhancementHits };
 
     let effectiveRolls = 0;
+    let wastedUpgrades = 0;
     let wastedRolls = 0;
     let pieceQualityUnits = 0;
     let qualityLossUnits = 0;
@@ -183,10 +189,12 @@ export function diagnoseBuildPotential(input: DiagnoseBuildPotentialInput): Pote
         }
       } else {
         wastedRolls += rolls;
+        wastedUpgrades += enhancementHitsOnLine(stat, rollOpts);
       }
     }
 
     totalEffectiveRolls += effectiveRolls;
+    totalWastedUpgrades += wastedUpgrades;
     totalWastedRolls += wastedRolls;
     totalQualityUnits += pieceQualityUnits;
 
@@ -202,6 +210,7 @@ export function diagnoseBuildPotential(input: DiagnoseBuildPotentialInput): Pote
       potentialPct: piece.potentialPct,
       letterGrade: piece.letterGrade,
       effectiveRolls,
+      wastedUpgrades,
       wastedRolls,
       totalRolls: effectiveRolls + wastedRolls,
       avgRollQuality: effectiveRolls > 0 ? pieceQualityUnits / effectiveRolls : null,
@@ -223,14 +232,14 @@ export function diagnoseBuildPotential(input: DiagnoseBuildPotentialInput): Pote
   } else {
     explanationLines.push(`权重（${weightSourceLabel}）：${weightSummary}`);
     explanationLines.push(
-      "算法：单件加权分 ÷ 同主属性满高档极限（4词条开局+5次全进最高权），六件取均值。",
+      "算法：单件加权分 ÷ 同主属性理论极限（仅按有效候选算分母，必占无效底词不扣满分），六件取均值。",
     );
-    if (totalWastedRolls > 0) {
+    if (totalWastedUpgrades > 0) {
       explanationLines.push(
-        `· 有效/歪词条：有效 ${totalEffectiveRolls} 条，歪无效 ${totalWastedRolls} 条（主要失分来源）`,
+        `· 强化歪词：有效 ${totalEffectiveRolls} 条，强化歪入无效词条 ${totalWastedUpgrades} 次（不含初始底词）`,
       );
     } else if (totalEffectiveRolls > 0) {
-      explanationLines.push(`· 词条命中：有效 ${totalEffectiveRolls} 条，无无效词条`);
+      explanationLines.push(`· 强化命中：有效 ${totalEffectiveRolls} 条，强化均未歪入无效词条`);
     }
     if (avgRollQuality !== null && qualityLossPct >= 0.5) {
       explanationLines.push(
@@ -263,6 +272,7 @@ export function diagnoseBuildPotential(input: DiagnoseBuildPotentialInput): Pote
     weightSummary,
     weightSourceLabel,
     totalEffectiveRolls,
+    totalWastedUpgrades,
     totalWastedRolls,
     avgRollQuality,
     qualityLossPct,
@@ -361,9 +371,11 @@ function buildUpgradeSuggestions({
         Math.round((targetSlotPct - weakDiag.potentialPct) / Math.max(input.pieces.length, 1)),
       );
       const reason =
-        weakDiag.wastedRolls >= 3
-          ? `歪 ${weakDiag.wastedRolls} 条无效词条`
-          : `有效 ${weakDiag.effectiveRolls} 条`;
+        weakDiag.wastedUpgrades >= 2
+          ? `强化歪 ${weakDiag.wastedUpgrades} 次`
+          : weakDiag.wastedUpgrades === 1
+            ? `有效 ${weakDiag.effectiveRolls} 条、强化歪 1 次`
+            : `有效仅 ${weakDiag.effectiveRolls} 条`;
       suggestions.push({
         tone: "done",
         label: statusLabel,
@@ -393,11 +405,13 @@ function buildUpgradeSuggestions({
       Math.round((targetSlotPct - weakDiag.potentialPct) / Math.max(input.pieces.length, 1)),
     );
     const reason =
-      weakDiag.wastedRolls >= 3
-        ? `歪了 ${weakDiag.wastedRolls} 条无效词条`
-        : weakDiag.totalRolls > 0
-          ? `有效仅 ${weakDiag.effectiveRolls} 条`
-          : "词条潜力偏低";
+      weakDiag.wastedUpgrades >= 2
+        ? `强化歪了 ${weakDiag.wastedUpgrades} 次`
+        : weakDiag.wastedUpgrades === 1
+          ? `有效 ${weakDiag.effectiveRolls} 条、强化歪了 1 次`
+          : weakDiag.totalRolls > 0
+            ? `有效仅 ${weakDiag.effectiveRolls} 条`
+            : "词条潜力偏低";
 
     suggestions.push({
       tone: belowMin ? "warn" : "info",

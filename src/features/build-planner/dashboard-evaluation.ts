@@ -202,7 +202,7 @@ export function evaluateDashboardEntry(
     return {
       ...piece,
       effectiveRolls: pieceDiag?.effectiveRolls,
-      wastedRolls: pieceDiag?.wastedRolls,
+      wastedUpgrades: pieceDiag?.wastedUpgrades,
     };
   });
   const cone = character.equippedLightCone;

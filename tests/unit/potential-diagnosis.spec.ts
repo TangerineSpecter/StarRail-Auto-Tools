@@ -91,19 +91,54 @@ describe("diagnoseBuildPotential", () => {
     expect(diag.weightSummary).toContain("小攻击 0.3");
     expect(diag.totalEffectiveRolls).toBe(32);
     expect(diag.totalWastedRolls).toBe(18);
+    expect(diag.totalWastedUpgrades).toBe(7);
     expect(diag.avgRollQuality).toBeCloseTo(0.9, 2);
     expect(diag.qualityLossPct).toBeGreaterThan(5);
     expect(diag.lowWeightLossPct).toBeGreaterThan(1.5);
     expect(diag.lowWeightLossPct).toBeLessThan(4);
+    expect(diag.explanationTip).toContain("必占无效底词不扣满分");
+    expect(diag.explanationTip).toContain("强化歪入无效词条 7 次");
     expect(diag.explanationTip).toContain("数值档位");
     expect(diag.explanationTip).toContain("次权词条");
     expect(diag.explanationTip).toContain("60% SS 毕业");
-    expect(diag.piecesBySlot.Head?.wastedRolls).toBe(5);
+    expect(diag.piecesBySlot.Head?.wastedUpgrades).toBe(3);
 
     expect(diag.suggestions).toHaveLength(1);
     expect(diag.suggestions[0]?.tone).toBe("done");
     expect(diag.suggestions[0]?.label).toBe("已毕业");
     expect(diag.suggestions[0]?.text).toContain("头部");
+    expect(diag.suggestions[0]?.text).toContain("强化歪 3 次");
+  });
+
+  it("does not count unavoidable dead base openers as wasted upgrades for two-stat kits", () => {
+    const weights = resolvePlanWeights({
+      substatWeights: { SPD: 1, "Break Effect": 1 },
+    });
+    const relics: ScoreRelicInput[] = [
+      makeBreakRelic("Head", "HP", [
+        { key: "Break Effect", count: 6, step: 12 },
+        { key: "SPD", count: 1, step: 2 },
+        { key: "DEF", count: 1, step: 0 },
+        { key: "Effect RES", count: 1, step: 0 },
+      ]),
+    ];
+    const potential = averageCharacterPotential(relics, weights);
+    const diag = diagnoseBuildPotential({
+      relics,
+      pieces: potential.pieces,
+      weights,
+      usingInferredWeights: false,
+      recommendedSets: [],
+      targets: [],
+      averagePotentialPct: potential.averagePotentialPct,
+      minPotentialPct: 40,
+      weakSlot: potential.weakSlot,
+    });
+
+    expect(potential.averagePotentialPct).toBeCloseTo(100, 3);
+    expect(diag.totalWastedUpgrades).toBe(0);
+    expect(diag.piecesBySlot.Head?.wastedUpgrades).toBe(0);
+    expect(diag.explanationTip).toContain("强化均未歪入无效词条");
   });
 
   it("prioritizes missing sets, wrong main stats, and unmet targets before weak-slot tuning", () => {

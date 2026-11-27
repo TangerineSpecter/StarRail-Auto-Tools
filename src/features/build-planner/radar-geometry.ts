@@ -31,7 +31,7 @@ export type RadarPieceInput = {
   mainStat?: string;
   mainStatCorrect?: boolean | null;
   effectiveRolls?: number;
-  wastedRolls?: number;
+  wastedUpgrades?: number;
 };
 
 export type NormalizedRadarAxis = {
@@ -45,7 +45,7 @@ export type NormalizedRadarAxis = {
   mainStat?: string;
   mainStatCorrect?: boolean | null;
   effectiveRolls?: number;
-  wastedRolls?: number;
+  wastedUpgrades?: number;
 };
 
 export type Point = { x: number; y: number };
@@ -76,7 +76,7 @@ export function normalizeRadarPieces(pieces: RadarPieceInput[]): NormalizedRadar
       mainStat: piece?.mainStat,
       mainStatCorrect: piece?.mainStatCorrect,
       effectiveRolls: piece?.effectiveRolls,
-      wastedRolls: piece?.wastedRolls,
+      wastedUpgrades: piece?.wastedUpgrades,
     };
   });
 }
