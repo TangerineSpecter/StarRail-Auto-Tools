@@ -343,4 +343,95 @@ describe("RelicMainStatScanner", () => {
     wrapper.unmount();
     host.remove();
   });
+
+  it("fetches all pages of unequipped relics for upgrade recommendations and batches card rendering", async () => {
+    relicMainStatScanPlanCount.mockResolvedValue(1);
+    scanRelicsByMainStatGrouped.mockResolvedValue({
+      groups: [],
+      total: 0,
+      planCount: 1,
+      allowedMainStats: {},
+    });
+    dashboard.mockResolvedValue([
+      {
+        plan: {
+          characterId: 1001,
+          cavernMode: "fourPiece",
+          cavernSetA: 101,
+          cavernSetB: null,
+          planarSetId: 301,
+          mainStats: { Head: ["HP"] },
+          targets: [],
+          effectiveSubstats: ["CRIT Rate", "CRIT DMG"],
+          note: "",
+          substatWeights: { "CRIT Rate": 1, "CRIT DMG": 1 },
+          minPotentialPct: 40,
+          spdTarget: 0,
+        },
+        character: {
+          characterId: 1001,
+          name: "三月七",
+          level: 80,
+          ascension: 6,
+          equippedRelics: [],
+        },
+        displayOrder: 0,
+        pinned: false,
+      },
+    ]);
+
+    const makeRelic = (itemId: number, critRate: number) => ({
+      itemId,
+      setId: 101,
+      name: `测试头部-${itemId}`,
+      setName: "测试套装",
+      slot: "Head",
+      rarity: 5,
+      level: 15,
+      mainStat: "HP",
+      mainStatValue: 705,
+      location: "",
+      equippedCharacterId: null,
+      locked: false,
+      discard: false,
+      source: "test",
+      updatedAt: 0,
+      substats: [{ key: "CRIT Rate", stat: "CRIT Rate", value: critRate, count: 1, step: 0 }],
+    });
+
+    const page1Items = Array.from({ length: 40 }, (_, i) => makeRelic(i + 1, 2.9));
+    const page2Items = Array.from({ length: 30 }, (_, i) => makeRelic(201 + i, 9.7));
+    listRelics.mockImplementation(async (filter: { page: number }) => {
+      if (filter.page === 1) {
+        return { items: page1Items, total: 230, page: 1, pageSize: 200 };
+      }
+      return { items: page2Items, total: 230, page: 2, pageSize: 200 };
+    });
+
+    const wrapper = mount(RelicMainStatScanner, {
+      props: { imageFor: () => undefined },
+      global: { stubs: { Button: buttonStub } },
+    });
+    await flushPromises();
+
+    const upgradeBtn = wrapper.findAll("button").find((b) => b.text().includes("替换推荐扫描"));
+    await upgradeBtn!.trigger("click");
+    await flushPromises();
+
+    expect(listRelics).toHaveBeenCalledTimes(2);
+    expect(wrapper.text()).toContain("70 件可替换推荐");
+    expect(wrapper.text()).toContain("已全量分析 70 件未装备");
+    expect(wrapper.findAll(".upgrade-card")).toHaveLength(60);
+    expect(wrapper.find(".upgrade-scroll-sentinel").exists()).toBe(true);
+
+    const grid = wrapper.get(".scanner-upgrade-grid");
+    Object.defineProperty(grid.element, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(grid.element, "clientHeight", { value: 600, configurable: true });
+    Object.defineProperty(grid.element, "scrollTop", { value: 1200, configurable: true });
+    await grid.trigger("scroll");
+    await flushPromises();
+    expect(wrapper.findAll(".upgrade-card")).toHaveLength(70);
+    expect(wrapper.find(".upgrade-scroll-sentinel").exists()).toBe(false);
+    wrapper.unmount();
+  });
 });

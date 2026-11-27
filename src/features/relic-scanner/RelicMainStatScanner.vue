@@ -49,13 +49,22 @@ const error = ref("");
 const result = ref<RelicMainStatGroupedResult | null>(null);
 const plans = ref<BuildDashboardEntry[]>([]);
 const usefulnessRows = ref<ScannerUsefulnessRow[]>([]);
-/** True when inventory has more unequipped relics than the scan page size. */
-const usefulnessTruncated = ref(false);
 const usefulnessScanned = ref(0);
-const usefulnessTotal = ref(0);
 /** True after upgrade scan finishes (used to show empty-success when no upgrades). */
 const usefulnessDone = ref(false);
 const USEFULNESS_PAGE_SIZE = 200;
+const USEFULNESS_FETCH_CONCURRENCY = 4;
+const UPGRADE_RENDER_BATCH = 60;
+const visibleUpgradeCount = ref(UPGRADE_RENDER_BATCH);
+const visibleUsefulnessRows = computed(() =>
+  usefulnessRows.value.slice(0, visibleUpgradeCount.value),
+);
+const remainingUpgradeCount = computed(() =>
+  Math.max(0, usefulnessRows.value.length - visibleUpgradeCount.value),
+);
+const upgradeGridEl = ref<HTMLElement | null>(null);
+const upgradeSentinelEl = ref<HTMLElement | null>(null);
+let upgradeObserver: IntersectionObserver | null = null;
 let usefulnessRequestId = 0;
 
 const canAnalyze = computed(
@@ -170,19 +179,23 @@ onMounted(() => {
   pageActive.value = true;
   registerSubMode();
   window.addEventListener("resize", updateScannerIndicator);
+  void syncUpgradeObserver();
 });
 onActivated(() => {
   pageActive.value = true;
   registerSubMode();
   window.addEventListener("resize", updateScannerIndicator);
+  void syncUpgradeObserver();
 });
 onDeactivated(() => {
   pageActive.value = false;
   unregisterSubMode();
+  disconnectUpgradeObserver();
   window.removeEventListener("resize", updateScannerIndicator);
 });
 onBeforeUnmount(() => {
   unregisterSubMode();
+  disconnectUpgradeObserver();
   window.removeEventListener("resize", updateScannerIndicator);
 });
 
@@ -209,37 +222,142 @@ async function analyzeUsefulness() {
   const requestId = ++usefulnessRequestId;
   usefulnessLoading.value = true;
   error.value = "";
-  usefulnessTruncated.value = false;
   usefulnessScanned.value = 0;
-  usefulnessTotal.value = 0;
   usefulnessDone.value = false;
   usefulnessRows.value = [];
+  visibleUpgradeCount.value = UPGRADE_RENDER_BATCH;
   try {
     plans.value = await buildPlanApi.dashboard();
-    if (requestId !== usefulnessRequestId) return;
+    if (disposed || requestId !== usefulnessRequestId) return;
     planCount.value = plans.value.length;
     if (!plans.value.length) {
       usefulnessRows.value = [];
       return;
     }
-    const page = await inventoryApi.listRelics({
+    const firstPage = await inventoryApi.listRelics({
       page: 1,
       pageSize: USEFULNESS_PAGE_SIZE,
       equipped: false,
     });
-    if (requestId !== usefulnessRequestId) return;
-    usefulnessScanned.value = page.items.length;
-    usefulnessTotal.value = page.total;
-    usefulnessTruncated.value = page.total > page.items.length;
-    usefulnessRows.value = buildUsefulnessRows(page.items, plans.value);
+    if (disposed || requestId !== usefulnessRequestId) return;
+
+    const seenIds = new Set<number>();
+    const allItems: RelicListItem[] = [];
+    const appendItems = (items: RelicListItem[]) => {
+      for (const item of items) {
+        if (!seenIds.has(item.itemId)) {
+          seenIds.add(item.itemId);
+          allItems.push(item);
+        }
+      }
+    };
+    appendItems(firstPage.items);
+
+    const totalPages = Math.ceil(firstPage.total / USEFULNESS_PAGE_SIZE);
+    for (
+      let startPage = 2;
+      startPage <= totalPages && firstPage.items.length > 0;
+      startPage += USEFULNESS_FETCH_CONCURRENCY
+    ) {
+      const pageNumbers: number[] = [];
+      for (
+        let p = startPage;
+        p < startPage + USEFULNESS_FETCH_CONCURRENCY && p <= totalPages;
+        p += 1
+      ) {
+        pageNumbers.push(p);
+      }
+      const pages = await Promise.all(
+        pageNumbers.map((page) =>
+          inventoryApi.listRelics({
+            page,
+            pageSize: USEFULNESS_PAGE_SIZE,
+            equipped: false,
+          }),
+        ),
+      );
+      if (disposed || requestId !== usefulnessRequestId) return;
+      let hitEmpty = false;
+      for (const nextPage of pages) {
+        if (!nextPage.items.length) {
+          hitEmpty = true;
+          continue;
+        }
+        appendItems(nextPage.items);
+      }
+      if (hitEmpty) break;
+    }
+
+    usefulnessScanned.value = allItems.length;
+    usefulnessRows.value = buildUsefulnessRows(allItems, plans.value);
     usefulnessDone.value = true;
   } catch (cause) {
-    if (requestId !== usefulnessRequestId) return;
+    if (disposed || requestId !== usefulnessRequestId) return;
     error.value = String(cause);
   } finally {
     if (requestId === usefulnessRequestId) usefulnessLoading.value = false;
   }
 }
+
+function loadMoreUpgrades() {
+  if (remainingUpgradeCount.value <= 0) return;
+  visibleUpgradeCount.value = Math.min(
+    usefulnessRows.value.length,
+    visibleUpgradeCount.value + UPGRADE_RENDER_BATCH,
+  );
+}
+
+function disconnectUpgradeObserver() {
+  upgradeObserver?.disconnect();
+  upgradeObserver = null;
+}
+
+async function syncUpgradeObserver() {
+  await nextTick();
+  disconnectUpgradeObserver();
+  if (
+    disposed ||
+    !pageActive.value ||
+    activeMode.value !== "upgrade" ||
+    remainingUpgradeCount.value <= 0
+  ) {
+    return;
+  }
+  const target = upgradeSentinelEl.value;
+  if (!target || typeof window.IntersectionObserver !== "function") return;
+  upgradeObserver = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      loadMoreUpgrades();
+      if (remainingUpgradeCount.value <= 0) {
+        disconnectUpgradeObserver();
+      }
+    },
+    {
+      root: mobile ? null : upgradeGridEl.value,
+      rootMargin: "320px 0px",
+    },
+  );
+  upgradeObserver.observe(target);
+}
+
+function onUpgradeGridScroll() {
+  if (remainingUpgradeCount.value <= 0) return;
+  const el = upgradeGridEl.value;
+  if (!el) return;
+  const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+  if (distanceToBottom <= 360) {
+    loadMoreUpgrades();
+  }
+}
+
+watch(
+  [upgradeGridEl, upgradeSentinelEl, activeMode, remainingUpgradeCount],
+  () => {
+    void syncUpgradeObserver();
+  },
+  { flush: "post" },
+);
 
 function applyReviewFilters(filters: ScanReviewFilters) {
   categoryFilter.value = filters.category;
@@ -430,19 +548,21 @@ onBeforeUnmount(() => {
                   <b>{{ usefulnessRows.length }}</b> 件可替换推荐
                   <span class="result-heading-criteria">（主属性 + 套装匹配且词条分更高）</span>
                 </p>
-                <span
-                  v-if="usefulnessTruncated"
-                  class="scanner-truncated-badge"
-                  :title="`仅分析前 ${usefulnessScanned} / ${usefulnessTotal} 件未装备遗器（性能上限），结果可能不完整。`"
-                >
-                  仅分析前 {{ usefulnessScanned }} / {{ usefulnessTotal }} 件
+                <span v-if="usefulnessScanned > 0" class="scanner-scanned-badge">
+                  已全量分析 {{ usefulnessScanned }} 件未装备
                 </span>
               </div>
               <p class="scanner-result-note">按相对当前穿戴的加权分增量排序</p>
             </div>
-            <div class="scanner-upgrade-grid" role="list" aria-label="替换推荐扫描">
+            <div
+              ref="upgradeGridEl"
+              class="scanner-upgrade-grid"
+              role="list"
+              aria-label="替换推荐扫描"
+              @scroll.passive="onUpgradeGridScroll"
+            >
               <article
-                v-for="row in usefulnessRows"
+                v-for="row in visibleUsefulnessRows"
                 :key="row.item.itemId"
                 class="upgrade-card"
                 role="listitem"
@@ -546,6 +666,14 @@ onBeforeUnmount(() => {
                   </span>
                 </div>
               </article>
+              <div
+                v-if="remainingUpgradeCount > 0"
+                ref="upgradeSentinelEl"
+                class="upgrade-scroll-sentinel"
+                aria-hidden="true"
+              >
+                向下滚动自动加载更多（剩余 {{ remainingUpgradeCount }} 件）
+              </div>
             </div>
           </div>
           <div v-else-if="usefulnessDone && usefulnessScanned > 0" class="scanner-state success">
