@@ -56,6 +56,7 @@ const usefulnessScanned = ref(0);
 const usefulnessDone = ref(false);
 const USEFULNESS_PAGE_SIZE = 200;
 const USEFULNESS_FETCH_CONCURRENCY = 4;
+const UPGRADE_MIN_LEVEL = 15;
 const UPGRADE_RENDER_BATCH = 60;
 const visibleUpgradeCount = ref(UPGRADE_RENDER_BATCH);
 const visibleUsefulnessRows = computed(() =>
@@ -240,6 +241,7 @@ async function analyzeUsefulness() {
       page: 1,
       pageSize: USEFULNESS_PAGE_SIZE,
       equipped: false,
+      minLevel: UPGRADE_MIN_LEVEL,
     });
     if (disposed || requestId !== usefulnessRequestId) return;
 
@@ -247,6 +249,7 @@ async function analyzeUsefulness() {
     const allItems: RelicListItem[] = [];
     const appendItems = (items: RelicListItem[]) => {
       for (const item of items) {
+        if (item.level < UPGRADE_MIN_LEVEL) continue;
         if (!seenIds.has(item.itemId)) {
           seenIds.add(item.itemId);
           allItems.push(item);
@@ -275,6 +278,7 @@ async function analyzeUsefulness() {
             page,
             pageSize: USEFULNESS_PAGE_SIZE,
             equipped: false,
+            minLevel: UPGRADE_MIN_LEVEL,
           }),
         ),
       );
@@ -540,7 +544,7 @@ onBeforeUnmount(() => {
           <LoadingState
             v-else-if="usefulnessLoading"
             variant="page"
-            label="正在检索优于当前穿戴的未装备遗器…"
+            label="正在检索优于当前穿戴的 +15 未装备遗器…"
             hint="正在逐件比对所有培养方案的套装、主词条与加权副词条评分"
           />
           <div v-else-if="usefulnessRows.length" class="scanner-usefulness">
@@ -551,7 +555,7 @@ onBeforeUnmount(() => {
                   <span class="result-heading-criteria">（主属性 + 套装匹配且词条分更高）</span>
                 </p>
                 <span v-if="usefulnessScanned > 0" class="scanner-scanned-badge">
-                  已全量分析 {{ usefulnessScanned }} 件未装备
+                  已全量分析 {{ usefulnessScanned }} 件 +15 未装备
                 </span>
               </div>
               <p class="scanner-result-note">按相对当前穿戴的加权分增量排序</p>
@@ -697,10 +701,10 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <div v-else-if="usefulnessDone && usefulnessScanned > 0" class="scanner-state success">
-            未发现优于当前穿戴的未装备遗器（主属性、套装均匹配且词条分更高）。
+            未发现优于当前穿戴的 +15 未装备遗器（主属性、套装均匹配且词条分更高）。
           </div>
           <div v-else-if="usefulnessDone && usefulnessScanned === 0" class="scanner-state success">
-            当前没有可分析的未装备遗器。
+            当前没有可分析的 +15 未装备遗器。
           </div>
           <div v-else class="scanner-intro">
             <div class="scanner-radar" aria-hidden="true"><i /><b>◈</b></div>

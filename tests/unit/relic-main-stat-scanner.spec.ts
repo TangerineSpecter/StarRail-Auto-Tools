@@ -389,14 +389,14 @@ describe("RelicMainStatScanner", () => {
       },
     ]);
 
-    const makeRelic = (itemId: number, critRate: number) => ({
+    const makeRelic = (itemId: number, critRate: number, level = 15) => ({
       itemId,
       setId: 101,
       name: `测试头部-${itemId}`,
       setName: "测试套装",
       slot: "Head",
       rarity: 5,
-      level: 15,
+      level,
       mainStat: "HP",
       mainStatValue: 705,
       location: "",
@@ -408,8 +408,11 @@ describe("RelicMainStatScanner", () => {
       substats: [{ key: "CRIT Rate", stat: "CRIT Rate", value: critRate, count: 1, step: 0 }],
     });
 
-    const page1Items = Array.from({ length: 40 }, (_, i) => makeRelic(i + 1, 2.9));
-    const page2Items = Array.from({ length: 30 }, (_, i) => makeRelic(201 + i, 9.7));
+    const page1Items = [
+      ...Array.from({ length: 40 }, (_, i) => makeRelic(i + 1, 2.9, 15)),
+      makeRelic(999, 12.0, 0),
+    ];
+    const page2Items = Array.from({ length: 30 }, (_, i) => makeRelic(201 + i, 9.7, 15));
     listRelics.mockImplementation(async (filter: { page: number }) => {
       if (filter.page === 1) {
         return { items: page1Items, total: 230, page: 1, pageSize: 200 };
@@ -428,8 +431,20 @@ describe("RelicMainStatScanner", () => {
     await flushPromises();
 
     expect(listRelics).toHaveBeenCalledTimes(2);
+    expect(listRelics).toHaveBeenNthCalledWith(1, {
+      page: 1,
+      pageSize: 200,
+      equipped: false,
+      minLevel: 15,
+    });
+    expect(listRelics).toHaveBeenNthCalledWith(2, {
+      page: 2,
+      pageSize: 200,
+      equipped: false,
+      minLevel: 15,
+    });
     expect(wrapper.text()).toContain("70 件可替换推荐");
-    expect(wrapper.text()).toContain("已全量分析 70 件未装备");
+    expect(wrapper.text()).toContain("已全量分析 70 件 +15 未装备");
     expect(wrapper.findAll(".upgrade-card")).toHaveLength(60);
     expect(wrapper.find(".upgrade-scroll-sentinel").exists()).toBe(true);
 
