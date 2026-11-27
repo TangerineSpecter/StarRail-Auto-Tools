@@ -50,24 +50,53 @@ const STAT_ALIASES: Record<string, string> = {
   击破特攻: "Break Effect",
   击破: "Break Effect",
   治疗量加成: "Outgoing Healing Boost",
+  治疗加成: "Outgoing Healing Boost",
+  治疗量: "Outgoing Healing Boost",
   治疗: "Outgoing Healing Boost",
+  "outgoing healing": "Outgoing Healing Boost",
+  "healing boost": "Outgoing Healing Boost",
+  healing: "Outgoing Healing Boost",
+  ohb: "Outgoing Healing Boost",
   能量恢复效率: "Energy Regeneration Rate",
-  充能: "Energy Regeneration Rate",
+  能量回复效率: "Energy Regeneration Rate",
+  能量恢复: "Energy Regeneration Rate",
   能量回复: "Energy Regeneration Rate",
+  充能效率: "Energy Regeneration Rate",
+  充能: "Energy Regeneration Rate",
+  "energy regen rate": "Energy Regeneration Rate",
+  "energy regen": "Energy Regeneration Rate",
+  "energy regeneration": "Energy Regeneration Rate",
+  err: "Energy Regeneration Rate",
+  er: "Energy Regeneration Rate",
+  speed: "SPD",
+  "crit damage": "CRIT DMG",
+  cdmg: "CRIT DMG",
+  ehr: "Effect Hit Rate",
+  "effect resistance": "Effect RES",
+  eres: "Effect RES",
+  break: "Break Effect",
   物理伤害提高: "Physical DMG Boost",
   物理伤害: "Physical DMG Boost",
+  物伤: "Physical DMG Boost",
+  "physical dmg": "Physical DMG Boost",
   火属性伤害提高: "Fire DMG Boost",
   火伤: "Fire DMG Boost",
+  "fire dmg": "Fire DMG Boost",
   冰属性伤害提高: "Ice DMG Boost",
   冰伤: "Ice DMG Boost",
+  "ice dmg": "Ice DMG Boost",
   雷属性伤害提高: "Lightning DMG Boost",
   雷伤: "Lightning DMG Boost",
+  "lightning dmg": "Lightning DMG Boost",
   风属性伤害提高: "Wind DMG Boost",
   风伤: "Wind DMG Boost",
+  "wind dmg": "Wind DMG Boost",
   量子伤害提高: "Quantum DMG Boost",
   量子伤害: "Quantum DMG Boost",
+  "quantum dmg": "Quantum DMG Boost",
   虚数伤害提高: "Imaginary DMG Boost",
   虚数伤害: "Imaginary DMG Boost",
+  "imaginary dmg": "Imaginary DMG Boost",
 };
 
 const SLOT_ALIASES: Record<string, string> = {
@@ -117,9 +146,13 @@ export function resolveStatKey(raw: string, allowed: readonly string[]): string 
   const trimmed = raw.trim();
   if (!trimmed) return null;
   if (allowed.includes(trimmed)) return trimmed;
-  const aliased = STAT_ALIASES[trimmed] ?? STAT_ALIASES[trimmed.replaceAll(" ", "")];
-  if (aliased && allowed.includes(aliased)) return aliased;
   const lower = trimmed.toLowerCase();
+  const aliased =
+    STAT_ALIASES[trimmed] ??
+    STAT_ALIASES[lower] ??
+    STAT_ALIASES[trimmed.replaceAll(" ", "")] ??
+    STAT_ALIASES[lower.replaceAll(" ", "")];
+  if (aliased && allowed.includes(aliased)) return aliased;
   return allowed.find((item) => item.toLowerCase() === lower) ?? null;
 }
 
@@ -145,7 +178,7 @@ export function resolveSetId(
   return contained.length === 1 ? contained[0].id : 0;
 }
 
-const DOT_CHARACTERS = new Set(["卡芙卡", "黑天鹅", "桑博", "桂乃芬", "卢卡"]);
+const DOT_CHARACTERS = new Set(["卡芙卡", "黑天鹅", "海瑟音", "桑博", "桂乃芬", "卢卡"]);
 
 export function clonePlan(plan: CharacterBuildPlan): CharacterBuildPlan {
   return {
@@ -494,6 +527,19 @@ export function buildAdviceCompareRows(
       emptyCurrent: current.spdTarget <= 0,
     },
   );
+  const currentNote = current.note.trim();
+  const aiNote = recommended.note.trim();
+  if (currentNote || aiNote) {
+    rows.push({
+      key: "note",
+      group: "misc",
+      label: "配装备注",
+      currentLabel: currentNote || "未设置",
+      aiLabel: aiNote || "未设置",
+      equal: currentNote === aiNote,
+      emptyCurrent: !currentNote,
+    });
+  }
   return rows;
 }
 
@@ -541,6 +587,7 @@ export function applyAdviceSelections(
       recommended.minPotentialPct,
     ),
     spdTarget: choose("spdTarget", current.spdTarget, recommended.spdTarget),
+    note: choose("note", current.note, recommended.note),
   };
   for (const slot of MAIN_STAT_SLOTS) {
     next.mainStats[slot] = canonicalizeStats(
@@ -603,6 +650,10 @@ export function applyAdviceField(
   }
   if (key === "spdTarget") {
     plan.spdTarget = source.spdTarget;
+    return;
+  }
+  if (key === "note") {
+    plan.note = source.note;
     return;
   }
   if (key.startsWith("mainStats.")) {

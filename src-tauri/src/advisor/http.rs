@@ -95,7 +95,7 @@ impl AdvisorHttp for ReqwestAdvisorHttp {
 
 fn format_request_error(error: &reqwest::Error) -> String {
     if error.is_timeout() {
-        return format!("网络请求超时：{error}");
+        return "网络请求超时，请检查网络连接或代理设置。".to_owned();
     }
     let mut detail = error.to_string();
     let mut current = error.source();
@@ -121,13 +121,68 @@ async fn read_text(response: reqwest::Response) -> Result<String, AppError> {
             "接口拒绝访问，请检查 API Key 或检索服务是否可用。".to_owned(),
         ));
     }
+    if status == StatusCode::TOO_MANY_REQUESTS {
+        return Err(AppError::Advisor(
+            "接口触发限流（HTTP 429），请稍后重试或检查配额。".to_owned(),
+        ));
+    }
     if !status.is_success() {
-        return Err(AppError::Advisor(format!(
-            "接口返回 {status}：{}",
-            text.chars().take(180).collect::<String>()
-        )));
+        return Err(AppError::Advisor(summarize_http_error(status, &text)));
     }
     Ok(text)
+}
+
+pub(crate) fn summarize_http_error(status: StatusCode, body: &str) -> String {
+    let trimmed = body.trim();
+    if trimmed.is_empty() {
+        return format!("接口返回 HTTP {}", status.as_u16());
+    }
+    if let Ok(json) = serde_json::from_str::<Value>(trimmed) {
+        let message = json
+            .pointer("/error/message")
+            .or_else(|| json.pointer("/detail/error"))
+            .or_else(|| json.get("detail"))
+            .or_else(|| json.get("message"))
+            .or_else(|| json.get("error"))
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .filter(|text| !text.is_empty());
+        if let Some(msg) = message {
+            let short: String = msg.chars().take(120).collect();
+            return format!("接口返回 HTTP {}：{short}", status.as_u16());
+        }
+    }
+    let lower = trimmed.to_ascii_lowercase();
+    if lower.starts_with("<!doctype") || lower.starts_with("<html") || lower.contains("<body") {
+        if let Some(title) = extract_html_title(trimmed) {
+            return format!("接口返回 HTTP {}（{title}）", status.as_u16());
+        }
+        return format!("接口返回 HTTP {}（目标服务暂时不可用）", status.as_u16());
+    }
+    let compact: String = trimmed
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .chars()
+        .take(120)
+        .collect();
+    format!("接口返回 HTTP {}：{compact}", status.as_u16())
+}
+
+fn extract_html_title(html: &str) -> Option<String> {
+    let lower = html.to_ascii_lowercase();
+    let start = lower.find("<title")?;
+    let tag_end = lower[start..].find('>')? + start + 1;
+    let end = lower[tag_end..].find("</title>")? + tag_end;
+    let title = html[tag_end..end]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    if title.is_empty() {
+        None
+    } else {
+        Some(title.chars().take(60).collect())
+    }
 }
 
 #[cfg(test)]
@@ -176,5 +231,22 @@ mod tests {
             .map(|value| value.to_str().expect("ascii header"))
             .collect();
         assert_eq!(content_types, vec!["application/json"]);
+    }
+
+    #[test]
+    fn strips_raw_html_from_http_error_messages() {
+        let html = r#"<html><head><meta http-equiv="content-type" content="text/html;charset=utf-8"><title>500 Server Error</title></head><body text=#000000><h1>Error: Server Error</h1></body></html>"#;
+        let msg = summarize_http_error(StatusCode::INTERNAL_SERVER_ERROR, html);
+        assert!(!msg.contains("<html"));
+        assert!(!msg.contains("<body"));
+        assert!(msg.contains("500"));
+        assert!(msg.contains("500 Server Error"));
+    }
+
+    #[test]
+    fn extracts_json_error_detail_cleanly() {
+        let json_body = r#"{"detail":{"error":"Invalid API key"}}"#;
+        let msg = summarize_http_error(StatusCode::BAD_REQUEST, json_body);
+        assert_eq!(msg, "接口返回 HTTP 400：Invalid API key");
     }
 }

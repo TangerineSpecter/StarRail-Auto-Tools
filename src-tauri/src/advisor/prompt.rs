@@ -6,10 +6,10 @@ use super::search::SearchHit;
 use crate::inventory::current_game_version;
 
 pub fn system_prompt() -> String {
-    "你是崩坏：星穹铁道的培养方案助手。根据当前版本角色机制、检索到的公开攻略和用户本地角色情况，生成一份能直接填进毕业目标表单的 JSON。\
-开拓者、三月七必须按命途区分，不得把不同命途的套装或词条混到同一个角色上。\
-角色机制与硬约束优先于一切旧攻略；若不同攻略存在版本差异或角色改版，一律以当前版本机制和较新攻略为准，不要沿用过时套装或改版前的旧倍率。\
-只有在明显缺少攻略依据或存在流派分歧需要玩家留意时，才在 warnings 中给出 1～2 句简短提醒，不要逐项写免责声明。只输出一个 JSON 对象，不要 Markdown。\n\n"
+    "你是崩坏：星穹铁道的培养方案助手。根据当前版本客户端实装技能/行迹/套装效果、检索到的公开攻略和用户本地角色情况，生成一份能直接填进毕业目标表单的 JSON。\
+开拓者、三月七、以及同名 SP/变体角色（如银狼 vs 银狼LV.999、丹恒 vs 丹恒•饮月/腾荒、砂金 vs 砂金•戏浪、知更鸟 vs 知更鸟•晴歌、刃 vs 千冶•刃）必须严格按当前角色与命途区分，绝不混用。\
+当前版本角色技能/大行迹实装数值与套装实装效果为最高优先级事实；若不同攻略存在版本差异或角色改版，一律以当前版本机制和较新攻略为准，不要沿用旧版套装、旧倍率或记错套装效果。\
+只有在存在主流备选套装、配速/流派分歧或需要玩家注意的配队条件时，才在 warnings 中给出 1～2 条简短提醒，不要写免责声明或技术抓取错误。只输出一个 JSON 对象，不要 Markdown。\n\n"
         .to_owned()
         + &form_contract_text()
 }
@@ -21,22 +21,43 @@ pub fn user_prompt(
     pages: &[FetchedPage],
     search_warning: Option<&str>,
 ) -> Result<String, serde_json::Error> {
-    // Strip saved_plan before serializing so outdated or erroneous form values
-    // never anchor the model's fresh current-version recommendation.
     let mut clean_snapshot = snapshot.clone();
     clean_snapshot.saved_plan = None;
     let snapshot_json = serde_json::to_string_pretty(&clean_snapshot)?;
     let version = current_game_version();
 
     let mut body = format!("请综合以下材料，生成崩坏：星穹铁道 v{version} 的配装建议 JSON。\n\n");
-    body.push_str("## 角色机制与硬约束（最高优先级事实）\n");
-    body.push_str(&format!("- 当前客户端数据版本：v{version}\n"));
-    body.push_str(&format!("- 角色：{}\n", snapshot.display_name));
-    if !profile.element.is_empty() {
-        body.push_str(&format!("- 属性：{}\n", profile.element));
-    }
-    if let Some(speed) = profile.base_speed {
+    body.push_str("## 角色机制与硬约束（v");
+    body.push_str(version);
+    body.push_str(" 客户端实装数据，最高优先级事实）\n");
+    body.push_str(&format!(
+        "- 角色：{}（命途：{} / 属性：{}）\n",
+        snapshot.display_name,
+        if !snapshot.path_zh.is_empty() {
+            snapshot.path_zh.as_str()
+        } else {
+            profile.path_zh.as_str()
+        },
+        profile.element
+    ));
+    if let (Some(hp), Some(atk), Some(def), Some(speed)) = (
+        profile.base_hp,
+        profile.base_atk,
+        profile.base_def,
+        profile.base_speed,
+    ) {
+        body.push_str(&format!(
+            "- 80 级基础面板：生命 {:.0} / 攻击 {:.0} / 防御 {:.0} / 速度 {:.0}\n",
+            hp, atk, def, speed
+        ));
+    } else if let Some(speed) = profile.base_speed {
         body.push_str(&format!("- 80 级基础速度：{speed:.0}\n"));
+    }
+    if !profile.minor_trace_summary.is_empty() {
+        body.push_str(&format!(
+            "- 小行迹自带属性加成：{}\n",
+            profile.minor_trace_summary.join("、")
+        ));
     }
     body.push_str(&format!(
         "- 伤害/倍率特征：{}\n",
@@ -55,7 +76,7 @@ pub fn user_prompt(
         body.push_str(&format!("- 机制说明：{note}\n"));
     }
     if !profile.skill_summary.is_empty() {
-        body.push_str("- 当前版本核心技能摘录：\n");
+        body.push_str("- 当前版本核心大行迹与技能实装数值：\n");
         for line in &profile.skill_summary {
             body.push_str(&format!("  * {line}\n"));
         }
@@ -64,7 +85,7 @@ pub fn user_prompt(
     body.push_str("\n## 本地角色与装备（不含旧方案，避免锚定偏差）\n");
     body.push_str(&snapshot_json);
 
-    body.push_str("\n\n## 检索结果（如含发布日期，优先采信较新攻略）\n");
+    body.push_str("\n\n## 检索结果（中英文攻略，优先采信最新与权威图文攻略）\n");
     if hits.is_empty() {
         body.push_str("（无检索结果）\n");
     } else {
@@ -75,7 +96,7 @@ pub fn user_prompt(
                 .map(|date| format!("[{date}] "))
                 .unwrap_or_default();
             body.push_str(&format!(
-                "{}. {date_tag}{} | {} | {}\n",
+                "{}. {date_tag}{} | {}\n   摘要：{}\n",
                 index + 1,
                 hit.title,
                 hit.url,
@@ -84,9 +105,9 @@ pub fn user_prompt(
         }
     }
 
-    body.push_str("\n## 页面摘录\n");
+    body.push_str("\n## 攻略核心正文摘录\n");
     if pages.is_empty() {
-        body.push_str("（未能抓取页面正文）\n");
+        body.push_str("（无额外正文摘录）\n");
     } else {
         for page in pages {
             body.push_str(&format!(
@@ -96,7 +117,7 @@ pub fn user_prompt(
         }
     }
     if let Some(warning) = search_warning {
-        body.push_str("\n## 检索提示\n");
+        body.push_str("\n## 检索状态\n");
         body.push_str(warning);
         body.push('\n');
     }
@@ -105,7 +126,7 @@ pub fn user_prompt(
         r#"
 ## 输出 JSON
 {
-  "summary": "一两句说明当前版本为什么这样配",
+  "summary": "一两句简明说明当前版本角色核心机制、为何选此套装与词条",
   "plan": {
     "cavernMode": "fourPiece 或 twoPlusTwo",
     "cavernSetA": 101,
@@ -122,17 +143,20 @@ pub fn user_prompt(
     "substatWeights": { "ATK%": 1, "SPD": 1, "Effect Hit Rate": 1 },
     "minPotentialPct": 40,
     "spdTarget": 0,
-    "note": ""
+    "note": "简短实操备注（如速度阈值、主词条取舍或配队提示，不超过100字）"
   },
   "sources": [{ "title": "", "url": "" }],
   "warnings": []
 }
-关键表单规则（必须遵守）：
-1. 套装必须用上面清单里的 id；优先采用最新且契合角色机制的毕业套装，避免旧版过渡套。
-2. 权重只能是 0/0.25/0.5/0.75/1，非零最多 5 个；effectiveSubstats 必须等于 substatWeights 里非零键，按权重从高到低。
-3. 评分器已按对应百分比权重的 40% 自动折算小生命/小攻击/小防御，因此不要给 HP / ATK / DEF 小词条单独设权重。
-4. spdTarget 表示「最低达标速度门槛」（如 134/143/160），不是速度上限！低速角色、反击角色或穿「哀歌覆国的诗人」4 件套时，spdTarget 必须填 0，且不要给 SPD 设权重或穿速度鞋。
-5. 纯生命/纯防御倍率角色不得给 ATK / ATK% 设权重或主词条；持续伤害角色用攻击%、速度、效果命中，不要给暴击/暴伤/击破；超击破角色不要给双暴。
+关键规则（必须严格遵守）：
+1. 套装必须用系统提示清单里的 id，并核对其真实 2 件/4 件效果；英文攻略中的套装名请按效果准确对应到清单中的中文套装 id，优先采用当前版本实装且最契合机制的毕业套装，绝不沿用被新套装明显取代的旧套装（例如护盾辅助优先对比 128 自匿星芒的隐士 与 103 净庭教宗的圣骑士）。
+2. 4 个主词条槽位（Body / Feet / PlanarSphere / LinkRope）每一项都必须至少填写 1 个可选主词条，严禁留空数组 []！充能绳请严格写 "Energy Regeneration Rate"，治疗衣请严格写 "Outgoing Healing Boost"，属性球请严格写 "<Element> DMG Boost"；若某部位攻略说「任意词条」，请填最通用的 2～3 个稳妥选项（如 ["HP%", "DEF%"]）。
+3. 严格保持自洽：summary 和 note 中推荐的套装、主词条、速度门槛必须与 plan 字段完全一致（例如 note 写了优先治疗衣，Body 就必须包含 Outgoing Healing Boost）。
+4. 权重只能是 0/0.25/0.5/0.75/1，非零最多 5 个；effectiveSubstats 必须等于 substatWeights 的非零键并按权重降序。
+5. 评分器已按百分比权重的 40% 自动折算小生命/小攻击/小防御，因此 substatWeights 严禁出现裸 HP / ATK / DEF，请使用 HP% / ATK% / DEF%（若不需要生存副词条则不要硬塞）。
+6. spdTarget 表示「最低达标速度门槛」（如 134/143/160），不是速度上限！低速角色、反击角色或穿「哀歌覆国的诗人」4 件套时，spdTarget 必须填 0，且不要给 SPD 设权重或穿速度鞋；反之若大行迹要求堆速度（如 125/150/160），必须按实装门槛设置速度鞋与 spdTarget。
+7. 纯生命/纯防御倍率角色不得给 ATK / ATK% 设权重或主词条；持续伤害角色用攻击%、速度、效果命中，不给双暴/击破；超击破角色不给双暴。
+8. sources 仅填写上方实际参考的 1～4 条真实攻略标题与 URL，不得编造链接；warnings 只写 0～2 条面向玩家的流派备选或关键注意点。
 "#,
     );
     Ok(body)
@@ -185,5 +209,6 @@ mod tests {
         assert!(rendered.contains("纯生命上限倍率"));
         assert!(rendered.contains("禁止写入权重与有效词条的无效属性：ATK, ATK%"));
         assert!(rendered.contains("[2026-05-20] 遐蝶最新毕业攻略"));
+        assert!(rendered.contains("小行迹自带属性加成"));
     }
 }

@@ -145,4 +145,28 @@ describe("plan advice comparison", () => {
     expect(planDraft.effectiveSubstats).not.toContain("CRIT DMG");
     expect(planDraft.effectiveSubstats).not.toContain("Break Effect");
   });
+
+  it("normalizes English shorthand main stat aliases and compares recommendation notes", () => {
+    const sanitized = sanitizeAdvicePlan({
+      mainStats: {
+        Body: ["Outgoing Healing"],
+        Feet: ["Speed"],
+        PlanarSphere: ["Quantum DMG"],
+        LinkRope: ["Energy Regen Rate"],
+      },
+      note: "优先堆到 160 速并保证充能循环。",
+    });
+    expect(sanitized.mainStats.Body).toEqual(["Outgoing Healing Boost"]);
+    expect(sanitized.mainStats.Feet).toEqual(["SPD"]);
+    expect(sanitized.mainStats.PlanarSphere).toEqual(["Quantum DMG Boost"]);
+    expect(sanitized.mainStats.LinkRope).toEqual(["Energy Regeneration Rate"]);
+
+    const current = plan({ note: "" });
+    const rows = buildAdviceCompareRows(current, sanitized);
+    const noteRow = rows.find((row) => row.key === "note");
+    expect(noteRow?.equal).toBe(false);
+    expect(noteRow?.aiLabel).toContain("160 速");
+    applyAdviceField(current, sanitized, "note");
+    expect(current.note).toBe("优先堆到 160 速并保证充能循环。");
+  });
 });

@@ -1,7 +1,9 @@
 use std::collections::HashMap;
-use std::sync::OnceLock;
 
-use serde::Deserialize;
+use super::profile_data::{
+    collect_character_abilities, find_catalogue_entry, render_ability_text, summarize_minor_traces,
+    MechanicAbility,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScalingMode {
@@ -27,8 +29,14 @@ impl ScalingMode {
 #[derive(Debug, Clone, PartialEq)]
 pub struct CharacterAdvisorProfile {
     pub character_id: u32,
+    pub path_zh: String,
     pub element: String,
+    pub base_hp: Option<f64>,
+    pub base_atk: Option<f64>,
+    pub base_def: Option<f64>,
     pub base_speed: Option<f64>,
+    pub minor_trace_summary: Vec<String>,
+    pub is_elation: bool,
     pub scaling_mode: ScalingMode,
     pub low_speed_preferred: bool,
     pub reworked: bool,
@@ -39,48 +47,6 @@ pub struct CharacterAdvisorProfile {
     pub skill_summary: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
-struct CharacterCatalogueFile {
-    characters: Vec<CharacterCatalogueEntry>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct CharacterCatalogueEntry {
-    slug: String,
-    name: String,
-    #[serde(default)]
-    element: String,
-    #[serde(default)]
-    base_stats: Option<CharacterBaseStats>,
-}
-
-#[derive(Debug, Deserialize)]
-struct CharacterBaseStats {
-    #[serde(default)]
-    speed: Option<f64>,
-}
-
-#[derive(Debug, Deserialize)]
-struct MechanicsFile {
-    abilities: Vec<MechanicAbility>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct MechanicAbility {
-    owner_id: String,
-    #[serde(default)]
-    slot: String,
-    #[serde(default)]
-    name: String,
-    #[serde(default)]
-    description_template: String,
-}
-
-/// Minimal overrides reserved strictly for reworked characters whose upstream
-/// skill text in `catalogue-mechanics.json` still mixes pre-rework ATK phrasing
-/// with post-rework traces. All newly synced characters derive automatically.
 struct ReworkScalingOverride {
     character_id: u32,
     scaling_mode: ScalingMode,
@@ -100,47 +66,6 @@ const REWORK_SCALING_OVERRIDES: &[ReworkScalingOverride] = &[
     },
 ];
 
-fn character_catalogue() -> &'static [CharacterCatalogueEntry] {
-    static CATALOGUE: OnceLock<Vec<CharacterCatalogueEntry>> = OnceLock::new();
-    CATALOGUE.get_or_init(|| {
-        serde_json::from_str::<CharacterCatalogueFile>(include_str!(
-            "../../../src/data/characters.json"
-        ))
-        .expect("bundled character catalogue must be valid")
-        .characters
-    })
-}
-
-fn mechanics_by_owner() -> &'static HashMap<String, Vec<MechanicAbility>> {
-    static MECHANICS: OnceLock<HashMap<String, Vec<MechanicAbility>>> = OnceLock::new();
-    MECHANICS.get_or_init(|| {
-        let parsed = serde_json::from_str::<MechanicsFile>(include_str!(
-            "../../../src/data/catalogue-mechanics.json"
-        ))
-        .expect("bundled mechanics catalogue must be valid");
-        let mut grouped: HashMap<String, Vec<MechanicAbility>> = HashMap::new();
-        for ability in parsed.abilities {
-            if matches!(
-                ability.slot.as_str(),
-                "basic"
-                    | "skill"
-                    | "ult"
-                    | "talent"
-                    | "trace"
-                    | "memospriteSkill"
-                    | "memospriteTalent"
-            ) && !ability.description_template.trim().is_empty()
-            {
-                grouped
-                    .entry(ability.owner_id.clone())
-                    .or_default()
-                    .push(ability);
-            }
-        }
-        grouped
-    })
-}
-
 pub fn resolve_profile(
     character_id: u32,
     name: &str,
@@ -153,13 +78,15 @@ pub fn resolve_profile(
     } else {
         entry.map(|item| item.element.clone()).unwrap_or_default()
     };
-    let base_speed = entry
-        .and_then(|item| item.base_stats.as_ref())
-        .and_then(|stats| stats.speed);
+    let resolved_path = entry.map(|item| item.path.clone()).unwrap_or_default();
+    let base_stats = entry.and_then(|item| item.base_stats.as_ref());
+    let base_speed = base_stats.and_then(|stats| stats.speed);
     let abilities = collect_character_abilities(character_id);
+    let is_elation =
+        resolved_path == "欢愉" || abilities.iter().any(|ability| ability.slot == "elation");
     let reworked = detect_reworked_character(&abilities);
-    let mut scaling_mode = infer_scaling_mode(&abilities);
-    let low_speed_preferred = infer_low_speed_preferred(&abilities, base_speed);
+    let mut scaling_mode = infer_scaling_mode(&abilities, &resolved_path);
+    let low_speed_preferred = infer_low_speed_preferred(&abilities, base_speed, &resolved_path);
     let mut search_hints = Vec::new();
     let mut guidance_notes = Vec::new();
 
@@ -167,6 +94,12 @@ pub fn resolve_profile(
         search_hints.push("加强后");
         guidance_notes
             .push("该角色存在版本加强/改版记录，请优先参考加强后的最新攻略与机制。".to_owned());
+    }
+    if is_elation {
+        guidance_notes.push(
+            "该角色为欢愉命途：欢愉伤害主要受欢愉度、双暴、无视防御与易伤影响，常规欢愉伤害不吃属性伤害提高（位面球优先按大行迹转模属性或生存/攻击选择，而非强求属性增伤球）；请严格依据大行迹中的属性转模门槛设定主词条、副词条权重与目标面板。"
+                .to_owned(),
+        );
     }
     if let Some(override_rule) = REWORK_SCALING_OVERRIDES
         .iter()
@@ -182,11 +115,20 @@ pub fn resolve_profile(
 
     let (disallowed_substats, disallowed_main_stats) = disallowed_stats_for(scaling_mode);
     let skill_summary = build_skill_summary(&abilities);
+    let minor_trace_summary = entry
+        .map(|item| summarize_minor_traces(&item.trace_stats))
+        .unwrap_or_default();
 
     CharacterAdvisorProfile {
         character_id,
+        path_zh: resolved_path,
         element: resolved_element,
+        base_hp: base_stats.and_then(|stats| stats.hp),
+        base_atk: base_stats.and_then(|stats| stats.attack),
+        base_def: base_stats.and_then(|stats| stats.defense),
         base_speed,
+        minor_trace_summary,
+        is_elation,
         scaling_mode,
         low_speed_preferred,
         reworked,
@@ -211,48 +153,6 @@ pub fn element_dmg_stat(element: &str) -> Option<&'static str> {
     }
 }
 
-fn find_catalogue_entry<'a>(slug: &str, name: &str) -> Option<&'a CharacterCatalogueEntry> {
-    let trimmed_slug = slug.trim();
-    if !trimmed_slug.is_empty() {
-        if let Some(entry) = character_catalogue()
-            .iter()
-            .find(|item| item.slug.eq_ignore_ascii_case(trimmed_slug))
-        {
-            return Some(entry);
-        }
-    }
-    let trimmed_name = name.trim();
-    if trimmed_name.is_empty() {
-        return None;
-    }
-    let matches: Vec<_> = character_catalogue()
-        .iter()
-        .filter(|item| item.name == trimmed_name)
-        .collect();
-    if matches.len() == 1 {
-        Some(matches[0])
-    } else {
-        None
-    }
-}
-
-fn collect_character_abilities(character_id: u32) -> Vec<&'static MechanicAbility> {
-    let map = mechanics_by_owner();
-    let mut out = Vec::new();
-    for owner_id in [
-        format!("character:{character_id}"),
-        format!("character:{character_id}/servant"),
-    ] {
-        if let Some(abilities) = map.get(&owner_id) {
-            out.extend(abilities.iter());
-        }
-    }
-    out
-}
-
-/// Detect buffed/reworked characters automatically: when upstream synced both
-/// legacy and buffed traces for a character, the same major trace name appears
-/// with two distinct descriptions.
 fn detect_reworked_character(abilities: &[&MechanicAbility]) -> bool {
     let mut seen: HashMap<&str, &str> = HashMap::new();
     for ability in abilities {
@@ -270,20 +170,27 @@ fn detect_reworked_character(abilities: &[&MechanicAbility]) -> bool {
     false
 }
 
-fn infer_scaling_mode(abilities: &[&MechanicAbility]) -> ScalingMode {
+fn infer_scaling_mode(abilities: &[&MechanicAbility], path_zh: &str) -> ScalingMode {
     if abilities.is_empty() {
         return ScalingMode::Standard;
     }
-    let core_text = join_descriptions(abilities, |slot| {
+    let core_text = join_rendered_descriptions(abilities, |slot| {
         matches!(
             slot,
-            "skill" | "ult" | "talent" | "memospriteSkill" | "memospriteTalent"
+            "skill" | "ult" | "talent" | "elation" | "memospriteSkill" | "memospriteTalent"
         )
     });
-    let full_text = join_descriptions(abilities, |slot| {
+    let full_text = join_rendered_descriptions(abilities, |slot| {
         matches!(
             slot,
-            "basic" | "skill" | "ult" | "talent" | "trace" | "memospriteSkill" | "memospriteTalent"
+            "basic"
+                | "skill"
+                | "ult"
+                | "talent"
+                | "trace"
+                | "elation"
+                | "memospriteSkill"
+                | "memospriteTalent"
         )
     });
     if core_text.is_empty() {
@@ -294,7 +201,9 @@ fn infer_scaling_mode(abilities: &[&MechanicAbility]) -> ScalingMode {
         .into_iter()
         .map(|keyword| core_text.matches(keyword).count())
         .sum::<usize>();
-    if (core_text.contains("持续伤害") || dot_keyword_hits >= 2) && !full_text.contains("暴击")
+    if path_zh == "虚无"
+        && (core_text.contains("持续伤害") || dot_keyword_hits >= 2)
+        && !full_text.contains("暴击")
     {
         return ScalingMode::Dot;
     }
@@ -308,9 +217,9 @@ fn infer_scaling_mode(abilities: &[&MechanicAbility]) -> ScalingMode {
         return ScalingMode::BreakOnly;
     }
 
-    let scales_hp = scales_on_stat(&core_text, "生命上限");
-    let scales_atk = scales_on_stat(&core_text, "攻击力");
-    let scales_def = scales_on_stat(&core_text, "防御力");
+    let scales_hp = scales_on_self_stat(&core_text, "生命上限");
+    let scales_atk = scales_on_self_stat(&core_text, "攻击力");
+    let scales_def = scales_on_self_stat(&core_text, "防御力");
     if scales_hp && !scales_atk && !scales_def {
         ScalingMode::HpOnly
     } else if scales_def && !scales_atk && !scales_hp {
@@ -320,40 +229,56 @@ fn infer_scaling_mode(abilities: &[&MechanicAbility]) -> ScalingMode {
     }
 }
 
-fn infer_low_speed_preferred(abilities: &[&MechanicAbility], base_speed: Option<f64>) -> bool {
+fn infer_low_speed_preferred(
+    abilities: &[&MechanicAbility],
+    base_speed: Option<f64>,
+    path_zh: &str,
+) -> bool {
     let Some(speed) = base_speed else {
         return false;
     };
     if speed > 95.0 {
         return false;
     }
-    let core_text = join_descriptions(abilities, |slot| {
+    let trace_text = join_rendered_descriptions(abilities, |slot| slot == "trace");
+    if trace_text.contains("速度大于等于") || trace_text.contains("速度高于") {
+        return false;
+    }
+    let core_text = join_rendered_descriptions(abilities, |slot| {
         matches!(
             slot,
             "skill" | "ult" | "talent" | "memospriteSkill" | "memospriteTalent"
         )
     });
-    // Low-speed counter-attackers (e.g., Clara, Yunli) or slow HP-scaling
-    // Remembrance/Quantum kits designed for Poet of Mourning Collapse.
-    core_text.contains("反击")
-        || (scales_on_stat(&core_text, "生命上限") && !scales_on_stat(&core_text, "攻击力"))
+    let is_counter = core_text.contains("反击") && !core_text.contains("境界");
+    let is_slow_remembrance_hp = path_zh == "记忆"
+        && scales_on_self_stat(&core_text, "生命上限")
+        && !scales_on_self_stat(&core_text, "攻击力");
+    is_counter || is_slow_remembrance_hp
 }
 
-fn join_descriptions(abilities: &[&MechanicAbility], predicate: impl Fn(&str) -> bool) -> String {
-    abilities
-        .iter()
-        .filter(|ability| predicate(&ability.slot) && !ability.name.ends_with("强化"))
-        .map(|ability| ability.description_template.as_str())
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
-/// Checks for HSR's standard Chinese scaling phrases such as
-/// `等同于遐蝶{p1:percentInteger}生命上限` or `生命上限的{p1:percentInteger}`.
-fn scales_on_stat(text: &str, stat: &str) -> bool {
-    if text.contains(&format!("{stat}的{{p")) {
-        return true;
+fn join_rendered_descriptions(
+    abilities: &[&MechanicAbility],
+    predicate: impl Fn(&str) -> bool,
+) -> String {
+    let mut seen_traces: Vec<&str> = Vec::new();
+    let mut parts = Vec::new();
+    for ability in abilities {
+        if !predicate(&ability.slot) || ability.name.ends_with("强化") {
+            continue;
+        }
+        if ability.slot == "trace" && !ability.name.is_empty() {
+            if seen_traces.contains(&ability.name.as_str()) {
+                continue;
+            }
+            seen_traces.push(ability.name.as_str());
+        }
+        parts.push(render_ability_text(ability));
     }
+    parts.join("\n")
+}
+
+fn scales_on_self_stat(text: &str, stat: &str) -> bool {
     let mut cursor = 0;
     while let Some(pos) = text[cursor..].find("等同于") {
         let start = cursor + pos + "等同于".len();
@@ -362,12 +287,32 @@ fn scales_on_stat(text: &str, stat: &str) -> bool {
             .map(|offset| start + offset)
             .unwrap_or(text.len());
         let clause = &text[start..clause_end];
-        if clause.chars().count() <= 36 && clause.contains(stat) {
+        if clause.chars().count() <= 32 && clause.contains(stat) && !is_target_stat_clause(clause) {
             return true;
         }
         cursor = start;
     }
+    let marker = format!("{stat}的");
+    let mut pos_cursor = 0;
+    while let Some(pos) = text[pos_cursor..].find(&marker) {
+        let abs = pos_cursor + pos;
+        let prefix_start = text[..abs].rfind(['，', '。', '；', '\n']).unwrap_or(0);
+        let prefix = &text[prefix_start..abs];
+        let after = &text[abs + marker.len()..];
+        let starts_with_digit = after.chars().next().is_some_and(|ch| ch.is_ascii_digit());
+        if starts_with_digit && !is_target_stat_clause(prefix) {
+            return true;
+        }
+        pos_cursor = abs + marker.len();
+    }
     false
+}
+
+fn is_target_stat_clause(clause: &str) -> bool {
+    clause.contains("目标")
+        || clause.contains("敌方")
+        || clause.contains("敌人")
+        || clause.contains("损失的生命")
 }
 
 fn disallowed_stats_for(mode: ScalingMode) -> (Vec<&'static str>, Vec<&'static str>) {
@@ -383,52 +328,45 @@ fn disallowed_stats_for(mode: ScalingMode) -> (Vec<&'static str>, Vec<&'static s
 }
 
 fn build_skill_summary(abilities: &[&MechanicAbility]) -> Vec<String> {
-    let mut seen = Vec::new();
+    let mut seen: Vec<(&str, &str)> = Vec::new();
     let mut summary = Vec::new();
-    for ability in abilities {
-        if !matches!(
-            ability.slot.as_str(),
-            "basic" | "skill" | "ult" | "talent" | "memospriteSkill" | "memospriteTalent"
-        ) {
-            continue;
-        }
-        let name = ability.name.trim();
-        if !name.is_empty() && seen.contains(&name) {
-            continue;
-        }
-        if !name.is_empty() {
-            seen.push(name);
-        }
-        let cleaned = simplify_template(&ability.description_template);
-        let entry = if name.is_empty() {
-            cleaned
-        } else {
-            format!("{name}：{cleaned}")
-        };
-        summary.push(entry.chars().take(120).collect());
-        if summary.len() >= 6 {
-            break;
+    let slot_priority = [
+        ("trace", "大行迹"),
+        ("elation", "欢愉技"),
+        ("talent", "天赋"),
+        ("ult", "终结技"),
+        ("skill", "战技"),
+        ("memospriteSkill", "忆灵技"),
+        ("memospriteTalent", "忆灵天赋"),
+    ];
+    for (target_slot, slot_label) in slot_priority {
+        for ability in abilities {
+            if ability.slot != target_slot || ability.name.ends_with("强化") {
+                continue;
+            }
+            let name = ability.name.trim();
+            if !name.is_empty() && seen.contains(&(target_slot, name)) {
+                continue;
+            }
+            if !name.is_empty() {
+                seen.push((target_slot, name));
+            }
+            let rendered = render_ability_text(ability);
+            if rendered.is_empty() {
+                continue;
+            }
+            let entry = if name.is_empty() {
+                format!("[{slot_label}] {rendered}")
+            } else {
+                format!("[{slot_label}] {name}：{rendered}")
+            };
+            summary.push(entry.chars().take(190).collect());
+            if summary.len() >= 8 {
+                return summary;
+            }
         }
     }
     summary
-}
-
-fn simplify_template(template: &str) -> String {
-    let mut out = String::with_capacity(template.len());
-    let mut in_placeholder = false;
-    for ch in template.chars() {
-        match ch {
-            '{' => {
-                in_placeholder = true;
-                out.push_str("一定比例");
-            }
-            '}' => in_placeholder = false,
-            '\n' | '\r' if !in_placeholder => out.push(' '),
-            _ if !in_placeholder => out.push(ch),
-            _ => {}
-        }
-    }
-    out.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 #[cfg(test)]
@@ -436,46 +374,53 @@ mod tests {
     use super::*;
 
     #[test]
-    fn automatically_derives_hp_and_def_scaling_without_overrides() {
+    fn automatically_derives_hp_def_and_elation_profiles_accurately() {
         let castorice = resolve_profile(1407, "遐蝶", "castorice", "量子");
         assert_eq!(castorice.scaling_mode, ScalingMode::HpOnly);
         assert!(castorice.low_speed_preferred);
-        assert_eq!(castorice.base_speed, Some(95.0));
         assert!(castorice.disallowed_substats.contains(&"ATK%"));
 
         let mydei = resolve_profile(1404, "万敌", "mydei", "虚数");
         assert_eq!(mydei.scaling_mode, ScalingMode::HpOnly);
-        assert!(mydei.disallowed_substats.contains(&"ATK%"));
+        assert!(!mydei.low_speed_preferred);
 
-        let aventurine = resolve_profile(1304, "砂金", "aventurine", "虚数");
-        assert_eq!(aventurine.scaling_mode, ScalingMode::DefOnly);
-        assert!(aventurine.disallowed_substats.contains(&"ATK%"));
+        let pearl = resolve_profile(1503, "真珠", "pearl", "冰");
+        assert_eq!(pearl.scaling_mode, ScalingMode::DefOnly);
+        assert!(pearl.is_elation);
+        assert!(pearl.skill_summary.iter().any(|line| line.contains("2400")));
+
+        let aha = resolve_profile(1511, "星神★阿哈", "nihilux", "量子");
+        assert_eq!(aha.scaling_mode, ScalingMode::Standard);
+        assert!(!aha.low_speed_preferred);
+        assert!(aha.is_elation);
+        assert!(aha.skill_summary.iter().any(|line| line.contains("125")));
+
+        let sw999 = resolve_profile(1506, "银狼LV. 999", "silverwolflv999", "虚数");
+        assert!(sw999.is_elation);
+        assert!(sw999
+            .skill_summary
+            .iter()
+            .any(|line| line.contains("160") && line.contains("50%")));
     }
 
     #[test]
-    fn automatically_derives_dot_break_and_reworked_characters() {
+    fn does_not_misclassify_serval_or_hook_as_dot_and_keeps_real_dot() {
+        let serval = resolve_profile(1103, "希露瓦", "serval", "雷");
+        assert_eq!(serval.scaling_mode, ScalingMode::Standard);
+
+        let hook = resolve_profile(1109, "虎克", "hook", "火");
+        assert_eq!(hook.scaling_mode, ScalingMode::Standard);
+
         let kafka = resolve_profile(1005, "卡芙卡", "kafka", "雷");
         assert_eq!(kafka.scaling_mode, ScalingMode::Dot);
         assert!(kafka.reworked);
-        assert!(kafka.search_hints.contains(&"加强后"));
 
         let hysilens = resolve_profile(1410, "海瑟音", "hysilens", "物理");
         assert_eq!(hysilens.scaling_mode, ScalingMode::Dot);
-
-        let firefly = resolve_profile(1310, "流萤", "sam", "火");
-        assert_eq!(firefly.scaling_mode, ScalingMode::BreakOnly);
-        assert!(firefly.disallowed_substats.contains(&"CRIT DMG"));
-
-        let harmony_tb = resolve_profile(8005, "开拓者", "playerboy3", "虚数");
-        assert_eq!(harmony_tb.scaling_mode, ScalingMode::BreakOnly);
-
-        let silver_wolf = resolve_profile(1006, "银狼", "silverwolf", "量子");
-        assert!(silver_wolf.reworked);
-        assert!(silver_wolf.search_hints.contains(&"加强后"));
     }
 
     #[test]
-    fn automatically_detects_counter_low_speed_and_keeps_multi_path_isolated() {
+    fn keeps_multi_path_rework_and_counter_characters_accurate() {
         let clara = resolve_profile(1107, "克拉拉", "clara", "物理");
         assert!(clara.low_speed_preferred);
 

@@ -78,4 +78,43 @@ describe("BuildPlanAdvicePanel", () => {
     await query.trigger("click");
     expect(wrapper.emitted("query")).toBeUndefined();
   });
+
+  it("renders structured warnings, version badge, and safe external sources", () => {
+    const rows = buildAdviceCompareRows(current, recommended);
+    const wrapper = mount(BuildPlanAdvicePanel, {
+      props: {
+        disabled: false,
+        loading: false,
+        error: "",
+        gameVersion: "4.7",
+        advice: {
+          characterId: 1506,
+          displayName: "银狼LV. 999",
+          summary: "优先堆速度至 160 触发转模。",
+          plan: recommended,
+          sources: [
+            {
+              title: "Silver Wolf • Lv. 999 Best Build Guide",
+              url: "https://www.prydwen.gg/star-rail/characters/silver-wolf-lv-999",
+            },
+            {
+              title: "Blocked Scheme",
+              url: "javascript:alert(1)",
+            },
+          ],
+          warnings: ["外圈魔法少女 4 件套为首选。", "内圈朋克洛德 2 件套为当前共识。"],
+          searchedAt: 1,
+        },
+        rows,
+        selections: defaultAdviceSelections(rows),
+        pendingCount: 2,
+      },
+    });
+
+    expect(wrapper.text()).toContain("v4.7");
+    expect(wrapper.findAll(".advisor-warning")).toHaveLength(2);
+    expect(wrapper.findAll(".advice-source-link")).toHaveLength(1);
+    expect(wrapper.text()).toContain("prydwen.gg");
+    expect(wrapper.text()).not.toContain("Blocked Scheme");
+  });
 });

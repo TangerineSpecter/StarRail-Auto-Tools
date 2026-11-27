@@ -15,7 +15,7 @@ pub fn validate_and_correct_plan(
     apply_scaling_constraints(plan, profile, &mut notes);
     filter_cross_element_spheres(plan, profile, &mut notes);
     enforce_speed_and_low_speed_set_rules(plan, profile, &mut notes);
-    deduplicate_flat_weights(plan);
+    normalize_flat_substat_weights(plan, profile);
     align_effective_substats(plan);
     notes
 }
@@ -183,11 +183,19 @@ fn enforce_speed_and_low_speed_set_rules(
     }
 }
 
-fn deduplicate_flat_weights(plan: &mut AdvicePlanDraft) {
+/// The relic scorer automatically credits flat HP/ATK/DEF substats at 40% of
+/// their corresponding percentage stat weight, so flat substat keys should never
+/// remain in `substat_weights`. Promote stray flat weights to their percentage
+/// counterpart when missing (unless disallowed), or drop them when redundant.
+fn normalize_flat_substat_weights(plan: &mut AdvicePlanDraft, profile: &CharacterAdvisorProfile) {
     for (flat, percent) in [("HP", "HP%"), ("ATK", "ATK%"), ("DEF", "DEF%")] {
+        let Some(flat_weight) = plan.substat_weights.remove(flat) else {
+            continue;
+        };
         let has_percent = plan.substat_weights.get(percent).copied().unwrap_or(0.0) > 0.0;
-        if has_percent {
-            plan.substat_weights.remove(flat);
+        let disallowed = profile.disallowed_substats.contains(&percent);
+        if !has_percent && !disallowed && flat_weight > 0.0 {
+            plan.substat_weights.insert(percent.to_owned(), flat_weight);
         }
     }
 }
@@ -253,6 +261,20 @@ mod tests {
         assert_eq!(crit_target.target, 68.0);
         assert!(!plan.targets.iter().any(|item| item.stat_key == "SPD"));
         assert!(!notes.is_empty());
+    }
+
+    #[test]
+    fn promotes_stray_flat_weights_to_percentage_and_never_leaves_flat_keys() {
+        let profile = resolve_profile(8010, "开拓者", "playergirl5", "雷");
+        let mut plan = sanitize_plan(&json!({
+            "substatWeights": { "SPD": 1, "CRIT Rate": 0.75, "ATK": 0.5, "HP": 0.25 }
+        }));
+
+        validate_and_correct_plan(&mut plan, &profile);
+        assert!(!plan.substat_weights.contains_key("ATK"));
+        assert!(!plan.substat_weights.contains_key("HP"));
+        assert_eq!(plan.substat_weights.get("ATK%"), Some(&0.5));
+        assert_eq!(plan.substat_weights.get("HP%"), Some(&0.25));
     }
 
     #[test]

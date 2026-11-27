@@ -18,7 +18,8 @@ pub async fn complete_json<C: AdvisorHttp>(
         ],
         "response_format": { "type": "json_object" },
         "thinking": { "type": "disabled" },
-        "temperature": 0.3,
+        "temperature": 0.2,
+        "max_tokens": 2048,
     });
     let url = format!(
         "{}/chat/completions",

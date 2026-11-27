@@ -4,6 +4,7 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use super::parse::{AdvicePlanDraft, AdviceTarget};
+use super::stat_aliases::{resolve_stat, slot_alias, MAIN_SLOTS, SUBSTAT_KEYS, TARGET_KEYS};
 
 #[derive(Debug, Clone, Deserialize)]
 struct RelicSetFile {
@@ -13,6 +14,8 @@ struct RelicSetFile {
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RelicSetEffects {
+    #[serde(default)]
+    two_piece: String,
     #[serde(default)]
     four_piece: String,
 }
@@ -26,72 +29,6 @@ struct RelicSetEntry {
     effects: RelicSetEffects,
 }
 
-const SUBSTAT_KEYS: &[&str] = &[
-    "HP",
-    "ATK",
-    "DEF",
-    "HP%",
-    "ATK%",
-    "DEF%",
-    "SPD",
-    "CRIT Rate",
-    "CRIT DMG",
-    "Effect Hit Rate",
-    "Effect RES",
-    "Break Effect",
-];
-const TARGET_KEYS: &[&str] = &[
-    "HP",
-    "ATK",
-    "DEF",
-    "SPD",
-    "CRIT Rate",
-    "CRIT DMG",
-    "Effect Hit Rate",
-    "Effect RES",
-    "Break Effect",
-];
-const MAIN_SLOTS: &[(&str, &[&str])] = &[
-    (
-        "Body",
-        &[
-            "HP%",
-            "ATK%",
-            "DEF%",
-            "CRIT Rate",
-            "CRIT DMG",
-            "Outgoing Healing Boost",
-            "Effect Hit Rate",
-        ],
-    ),
-    ("Feet", &["HP%", "ATK%", "DEF%", "SPD"]),
-    (
-        "PlanarSphere",
-        &[
-            "HP%",
-            "ATK%",
-            "DEF%",
-            "Physical DMG Boost",
-            "Fire DMG Boost",
-            "Ice DMG Boost",
-            "Lightning DMG Boost",
-            "Wind DMG Boost",
-            "Quantum DMG Boost",
-            "Imaginary DMG Boost",
-        ],
-    ),
-    (
-        "LinkRope",
-        &[
-            "HP%",
-            "ATK%",
-            "DEF%",
-            "Break Effect",
-            "Energy Regeneration Rate",
-        ],
-    ),
-];
-
 fn relic_sets() -> &'static [RelicSetEntry] {
     static SETS: OnceLock<Vec<RelicSetEntry>> = OnceLock::new();
     SETS.get_or_init(|| {
@@ -101,20 +38,33 @@ fn relic_sets() -> &'static [RelicSetEntry] {
     })
 }
 
+fn compact_effect(text: &str) -> String {
+    text.replace(" %", "%")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join("")
+}
+
 pub fn form_contract_text() -> String {
-    let mut text = String::from("允许的洞窟套装 cavern（填 id 或中文全名）：\n");
+    let mut text = String::from("允许的洞窟套装 cavern（填 id，以下为当前版本实装效果）：\n");
     for set in relic_sets().iter().filter(|set| set.kind == "cavern") {
-        text.push_str(&format!("{} {}\n", set.id, set.name));
+        let two = compact_effect(&set.effects.two_piece);
+        let four = compact_effect(&set.effects.four_piece);
+        text.push_str(&format!(
+            "{} {} | 2件:{two} | 4件:{four}\n",
+            set.id, set.name
+        ));
     }
-    text.push_str("允许的位面套装 planar：\n");
+    text.push_str("允许的位面套装 planar（填 id，以下为当前版本实装效果）：\n");
     for set in relic_sets().iter().filter(|set| set.kind == "planar") {
-        text.push_str(&format!("{} {}\n", set.id, set.name));
+        let two = compact_effect(&set.effects.two_piece);
+        text.push_str(&format!("{} {} | 2件:{two}\n", set.id, set.name));
     }
     text.push_str(
         "cavernMode 只能是 fourPiece 或 twoPlusTwo。\n\
-主词条键只能是 Body / Feet / PlanarSphere / LinkRope，值为英文键数组。\n\
+主词条键只能是 Body / Feet / PlanarSphere / LinkRope，值为英文键数组，4 个部位均至少填写 1 个可选主词条。\n\
 targets.statKey 只能用：HP ATK DEF SPD CRIT Rate CRIT DMG Effect Hit Rate Effect RES Break Effect。\n\
-substatWeights 键只能是副词条英文键，值只能是 0 / 0.25 / 0.5 / 0.75 / 1，非零最多 5 个。\n\
+substatWeights 键只能用百分比/功能副词条（HP% ATK% DEF% SPD CRIT Rate CRIT DMG Effect Hit Rate Effect RES Break Effect），值只能是 0 / 0.25 / 0.5 / 0.75 / 1，非零最多 5 个。\n\
 effectiveSubstats 最多 5 个。targets 最多 3 条，minimum 不能高于 target。\n",
     );
     text
@@ -161,58 +111,6 @@ fn resolve_set(raw: &Value, kind: &str) -> u32 {
     } else {
         0
     }
-}
-
-fn resolve_stat<'a>(raw: &str, allowed: &'a [&str]) -> Option<&'a str> {
-    let trimmed = raw.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-    allowed
-        .iter()
-        .copied()
-        .find(|item| item.eq_ignore_ascii_case(trimmed))
-        .or_else(|| {
-            stat_alias(trimmed)
-                .and_then(|alias| allowed.iter().copied().find(|item| *item == alias))
-        })
-}
-
-fn stat_alias(raw: &str) -> Option<&'static str> {
-    Some(match raw {
-        "生命值" | "生命" => "HP",
-        "生命百分比" | "生命%" => "HP%",
-        "攻击力" | "攻击" => "ATK",
-        "攻击百分比" | "攻击%" => "ATK%",
-        "防御力" | "防御" => "DEF",
-        "防御百分比" | "防御%" => "DEF%",
-        "速度" => "SPD",
-        "暴击率" | "暴击" => "CRIT Rate",
-        "暴击伤害" | "暴伤" => "CRIT DMG",
-        "效果命中" | "命中" => "Effect Hit Rate",
-        "效果抵抗" | "抵抗" => "Effect RES",
-        "击破特攻" | "击破" => "Break Effect",
-        "治疗量加成" | "治疗" => "Outgoing Healing Boost",
-        "能量恢复效率" | "充能" => "Energy Regeneration Rate",
-        "风伤" | "风属性伤害提高" => "Wind DMG Boost",
-        "火伤" | "火属性伤害提高" => "Fire DMG Boost",
-        "冰伤" | "冰属性伤害提高" => "Ice DMG Boost",
-        "雷伤" | "雷属性伤害提高" => "Lightning DMG Boost",
-        "量子伤害" | "量子伤害提高" => "Quantum DMG Boost",
-        "虚数伤害" | "虚数伤害提高" => "Imaginary DMG Boost",
-        "物理伤害" | "物理伤害提高" => "Physical DMG Boost",
-        _ => return None,
-    })
-}
-
-fn slot_alias(raw: &str) -> Option<&'static str> {
-    Some(match raw {
-        "Body" | "body" | "躯干" | "衣服" => "Body",
-        "Feet" | "feet" | "脚部" | "鞋子" => "Feet",
-        "PlanarSphere" | "sphere" | "位面球" | "球" => "PlanarSphere",
-        "LinkRope" | "rope" | "连结绳" | "绳子" => "LinkRope",
-        _ => return None,
-    })
 }
 
 pub fn sanitize_plan(raw: &Value) -> AdvicePlanDraft {
@@ -266,7 +164,7 @@ pub fn sanitize_plan(raw: &Value) -> AdvicePlanDraft {
         ),
         main_stats: sanitize_main_stats(&get("mainStats")),
         targets: sanitize_targets(&get("targets")),
-        effective_substats: unique_stats(&get("effectiveSubstats"), SUBSTAT_KEYS, 5),
+        effective_substats: unique_stats(&get("effectiveSubstats"), SUBSTAT_KEYS, 5, true),
         substat_weights: sanitize_weights(&get("substatWeights")),
         min_potential_pct: {
             let value = get("minPotentialPct").as_f64().unwrap_or(40.0);
@@ -342,7 +240,7 @@ fn sanitize_main_stats(raw: &Value) -> HashMap<String, Vec<String>> {
         };
         result.insert(
             slot.to_owned(),
-            unique_stat_list(&values, allowed, allowed.len()),
+            unique_stat_list(&values, allowed, allowed.len(), true),
         );
     }
     result
@@ -361,7 +259,7 @@ fn sanitize_targets(raw: &Value) -> Vec<AdviceTarget> {
             .get("statKey")
             .or_else(|| item.get("stat"))
             .and_then(Value::as_str)
-            .and_then(|value| resolve_stat(value, TARGET_KEYS));
+            .and_then(|value| resolve_stat(value, TARGET_KEYS, false));
         let Some(stat_key) = stat_key else {
             continue;
         };
@@ -393,7 +291,7 @@ fn sanitize_weights(raw: &Value) -> HashMap<String, f64> {
     let mut weights = Vec::new();
     if let Some(object) = raw.as_object() {
         for (raw_key, raw_value) in object {
-            let Some(key) = resolve_stat(raw_key, SUBSTAT_KEYS) else {
+            let Some(key) = resolve_stat(raw_key, SUBSTAT_KEYS, true) else {
                 continue;
             };
             let value = snap_weight(raw_value.as_f64().unwrap_or(0.0));
@@ -414,7 +312,7 @@ fn sanitize_weights(raw: &Value) -> HashMap<String, f64> {
     weights.into_iter().collect()
 }
 
-fn unique_stats(raw: &Value, allowed: &[&str], limit: usize) -> Vec<String> {
+fn unique_stats(raw: &Value, allowed: &[&str], limit: usize, prefer_percent: bool) -> Vec<String> {
     let values = match raw {
         Value::Array(items) => items
             .iter()
@@ -423,13 +321,18 @@ fn unique_stats(raw: &Value, allowed: &[&str], limit: usize) -> Vec<String> {
             .collect(),
         _ => Vec::new(),
     };
-    unique_stat_list(&values, allowed, limit)
+    unique_stat_list(&values, allowed, limit, prefer_percent)
 }
 
-fn unique_stat_list(values: &[String], allowed: &[&str], limit: usize) -> Vec<String> {
+fn unique_stat_list(
+    values: &[String],
+    allowed: &[&str],
+    limit: usize,
+    prefer_percent: bool,
+) -> Vec<String> {
     let mut next = Vec::new();
     for value in values {
-        let Some(key) = resolve_stat(value, allowed) else {
+        let Some(key) = resolve_stat(value, allowed, prefer_percent) else {
             continue;
         };
         if next.iter().any(|item| item == key) {
@@ -454,9 +357,9 @@ mod tests {
             "cavernMode": "fourPiece",
             "cavern": "云无留迹的过客",
             "planar": "太空封印站",
-            "mainStats": { "躯干": "暴击率", "Feet": ["SPD"] },
-            "substatWeights": { "暴击率": 0.3, "暴击伤害": 0.4, "SPD": 1 },
-            "targets": [{ "statKey": "速度", "target": 134, "minimum": 200 }]
+            "mainStats": { "躯干": "暴击率", "Feet": ["SPD"], "PlanarSphere": ["生命"] },
+            "substatWeights": { "暴击率": 0.3, "暴击伤害": 0.4, "SPD": 1, "攻击": 0.5 },
+            "targets": [{ "statKey": "速度", "target": 134, "minimum": 200 }, { "statKey": "攻击力", "target": 3000, "minimum": 2600 }]
         }));
         assert_eq!(plan.cavern_set_a, 101);
         assert_eq!(plan.planar_set_id, 301);
@@ -464,10 +367,53 @@ mod tests {
             plan.main_stats.get("Body").unwrap(),
             &vec!["CRIT Rate".to_owned()]
         );
+        assert_eq!(
+            plan.main_stats.get("PlanarSphere").unwrap(),
+            &vec!["HP%".to_owned()]
+        );
         assert_eq!(plan.substat_weights.get("CRIT Rate"), Some(&0.25));
         assert_eq!(plan.substat_weights.get("CRIT DMG"), Some(&0.5));
+        assert_eq!(plan.substat_weights.get("ATK%"), Some(&0.5));
         assert_eq!(plan.targets[0].stat_key, "SPD");
         assert_eq!(plan.targets[0].minimum, 134.0);
+        assert_eq!(plan.targets[1].stat_key, "ATK");
         assert_eq!(plan.effective_substats[0], "SPD");
+    }
+
+    #[test]
+    fn maps_english_shorthand_aliases_for_link_rope_and_body() {
+        let plan = sanitize_plan(&json!({
+            "mainStats": {
+                "Body": ["Outgoing Healing", "CRIT Rate"],
+                "Feet": ["Speed"],
+                "PlanarSphere": ["Quantum DMG", "HP%"],
+                "LinkRope": ["Energy Regen Rate", "ERR"]
+            }
+        }));
+        assert_eq!(
+            plan.main_stats.get("Body").unwrap(),
+            &vec!["Outgoing Healing Boost".to_owned(), "CRIT Rate".to_owned()]
+        );
+        assert_eq!(
+            plan.main_stats.get("Feet").unwrap(),
+            &vec!["SPD".to_owned()]
+        );
+        assert_eq!(
+            plan.main_stats.get("PlanarSphere").unwrap(),
+            &vec!["Quantum DMG Boost".to_owned(), "HP%".to_owned()]
+        );
+        assert_eq!(
+            plan.main_stats.get("LinkRope").unwrap(),
+            &vec!["Energy Regeneration Rate".to_owned()]
+        );
+    }
+
+    #[test]
+    fn contract_text_includes_relic_effects_for_latest_sets() {
+        let contract = form_contract_text();
+        assert!(contract.contains("129 闪耀功勋的魔法少女"));
+        assert!(contract.contains("欢愉伤害无视目标"));
+        assert!(contract.contains("325 零号关卡朋克洛德"));
+        assert!(contract.contains("127 再创天地的救世主"));
     }
 }

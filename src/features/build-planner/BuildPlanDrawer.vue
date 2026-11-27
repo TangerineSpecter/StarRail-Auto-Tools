@@ -95,6 +95,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         :rows="planAdvice.rows.value"
         :selections="planAdvice.selections"
         :pending-count="planAdvice.pendingCount.value"
+        :game-version="currentGameVersion"
         @query="planAdvice.query"
         @choose="planAdvice.choose"
         @apply="planAdvice.applySelected"

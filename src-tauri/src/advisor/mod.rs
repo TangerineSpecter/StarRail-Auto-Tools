@@ -4,9 +4,12 @@ mod fetch;
 mod http;
 mod parse;
 mod profile;
+mod profile_data;
 mod prompt;
 mod sanitize;
 mod search;
+mod search_rank;
+mod stat_aliases;
 mod validate;
 
 use std::collections::HashSet;
@@ -23,9 +26,10 @@ pub use parse::CharacterBuildAdvice;
 
 use fetch::{fetch_page, reference_urls, FetchedPage};
 use http::{AdvisorHttp, ReqwestAdvisorHttp};
-use search::{search_web, SearchHit};
+use search::{search_web, SearchContext, SearchHit};
 
 const ADVICE_TIMEOUT: Duration = Duration::from_secs(45);
+const MAX_PROMPT_PAGES: usize = 4;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -77,58 +81,37 @@ async fn advise_with_client<C: AdvisorHttp>(
         &snapshot.slug,
         &snapshot.element,
     );
-    let query = context::search_query(&snapshot.display_name, &profile.search_hints);
-    let mut warnings = Vec::new();
-    let hits = match search_web(client, settings, &query).await {
+    let search_ctx = SearchContext {
+        display_name: &snapshot.display_name,
+        slug: &snapshot.slug,
+        path_zh: if !snapshot.path_zh.is_empty() {
+            &snapshot.path_zh
+        } else {
+            &profile.path_zh
+        },
+        hints: &profile.search_hints,
+    };
+
+    let mut search_error_note = None;
+    let hits = match search_web(client, settings, &search_ctx).await {
         Ok(hits) => hits,
         Err(error) => {
-            warnings.push(advisor_warning(&error));
+            search_error_note = Some(advisor_warning(&error));
             Vec::new()
         }
     };
 
-    let mut pages = Vec::new();
-    let mut seen = HashSet::new();
-    for (title, url) in reference_urls(&snapshot.name, &snapshot.slug) {
-        if !seen.insert(url.clone()) {
-            continue;
-        }
-        match fetch_page(client, &title, &url).await {
-            Ok(page) => pages.push(page),
-            Err(error) => warnings.push(format!(
-                "参考页面《{title}》抓取失败：{}",
-                advisor_warning(&error)
-            )),
-        }
-    }
-    for hit in hits.iter().take(3) {
-        if !seen.insert(hit.url.clone()) {
-            continue;
-        }
-        if pages.len() >= 4 {
-            break;
-        }
-        if let Some(content) = &hit.content {
-            pages.push(FetchedPage {
-                title: hit.title.clone(),
-                url: hit.url.clone(),
-                text: content.clone(),
-            });
-            continue;
-        }
-        match fetch_page(client, &hit.title, &hit.url).await {
-            Ok(page) => pages.push(page),
-            Err(error) => warnings.push(format!(
-                "攻略页面《{}》抓取失败：{}",
-                hit.title,
-                advisor_warning(&error)
-            )),
-        }
-    }
+    let pages = collect_pages(client, &snapshot, &hits).await;
 
+    let mut warnings = Vec::new();
     if hits.is_empty() && pages.is_empty() {
-        warnings
-            .push("未能检索到公开攻略，建议将根据模型既有知识作答，结论请自行核对。".to_owned());
+        warnings.push(match search_error_note.as_deref() {
+            Some(detail) => format!(
+                "未能检索到公开攻略（{detail}），本次建议主要基于当前版本角色实装数据生成，请结合实战核对。"
+            ),
+            None => "未能检索到公开攻略，本次建议主要基于当前版本角色实装数据生成，请结合实战核对。"
+                .to_owned(),
+        });
     }
 
     let user = prompt::user_prompt(
@@ -136,12 +119,19 @@ async fn advise_with_client<C: AdvisorHttp>(
         &profile,
         &hits,
         &pages,
-        warnings.first().map(String::as_str),
+        search_error_note.as_deref(),
     )
     .map_err(|error| AppError::Advisor(error.to_string()))?;
-    let content =
-        deepseek::complete_json(client, settings, &prompt::system_prompt(), &user).await?;
-    let mut advice = parse::parse_model_advice(&content)?;
+    let system = prompt::system_prompt();
+    let content = deepseek::complete_json(client, settings, &system, &user).await?;
+    let mut advice = match parse::parse_model_advice(&content) {
+        Ok(parsed) => parsed,
+        Err(_) => {
+            // Retry once if the model output truncated/malformed JSON.
+            let retry = deepseek::complete_json(client, settings, &system, &user).await?;
+            parse::parse_model_advice(&retry)?
+        }
+    };
     let validation_notes = validate::validate_and_correct_plan(&mut advice.plan, &profile);
     advice.character_id = snapshot.character_id;
     advice.display_name = snapshot.display_name;
@@ -157,19 +147,98 @@ async fn advise_with_client<C: AdvisorHttp>(
     Ok(advice)
 }
 
-fn default_sources(hits: &[SearchHit], pages: &[FetchedPage]) -> Vec<parse::AdviceSource> {
+async fn collect_pages<C: AdvisorHttp>(
+    client: &C,
+    snapshot: &context::CharacterAdviceSnapshot,
+    hits: &[SearchHit],
+) -> Vec<FetchedPage> {
+    let mut pages = Vec::new();
+    let mut seen = HashSet::new();
+    let mut fetch_targets: Vec<(String, String)> = Vec::new();
+
+    // 1. Prefer inline extracted full text already returned by Tavily / DeepSeek search.
+    for hit in hits {
+        if pages.len() >= MAX_PROMPT_PAGES {
+            break;
+        }
+        if let Some(content) = &hit.content {
+            if seen.insert(hit.url.clone()) {
+                pages.push(FetchedPage {
+                    title: hit.title.clone(),
+                    url: hit.url.clone(),
+                    text: content.clone(),
+                });
+            }
+        }
+    }
+
+    // 2. Only fetch supplemental pages directly when inline results are scarce.
+    if pages.len() < 3 {
+        for hit in hits {
+            if fetch_targets.len() >= 2 {
+                break;
+            }
+            if hit.content.is_none() && seen.insert(hit.url.clone()) {
+                fetch_targets.push((hit.title.clone(), hit.url.clone()));
+            }
+        }
+        for (title, url) in reference_urls(&snapshot.name, &snapshot.display_name) {
+            if fetch_targets.len() >= 2 {
+                break;
+            }
+            if seen.insert(url.clone()) {
+                fetch_targets.push((title, url));
+            }
+        }
+    }
+
+    // Fetch supplemental pages concurrently (at most 2) and drop failures silently
+    // so transient wiki/network errors never pollute user-facing build advice warnings.
+    match fetch_targets.as_slice() {
+        [(t1, u1), (t2, u2)] => {
+            let (r1, r2) = tokio::join!(fetch_page(client, t1, u1), fetch_page(client, t2, u2));
+            for page in [r1, r2].into_iter().flatten() {
+                if pages.len() < MAX_PROMPT_PAGES {
+                    pages.push(page);
+                }
+            }
+        }
+        [(t1, u1)] => {
+            if let Ok(page) = fetch_page(client, t1, u1).await {
+                if pages.len() < MAX_PROMPT_PAGES {
+                    pages.push(page);
+                }
+            }
+        }
+        _ => {}
+    }
+
     pages
+}
+
+fn default_sources(hits: &[SearchHit], pages: &[FetchedPage]) -> Vec<parse::AdviceSource> {
+    let mut seen = HashSet::new();
+    let mut out = Vec::new();
+    for (title, url) in pages
         .iter()
-        .map(|page| parse::AdviceSource {
-            title: page.title.clone(),
-            url: page.url.clone(),
-        })
-        .chain(hits.iter().map(|hit| parse::AdviceSource {
-            title: hit.title.clone(),
-            url: hit.url.clone(),
-        }))
-        .take(6)
-        .collect()
+        .map(|page| (page.title.as_str(), page.url.as_str()))
+        .chain(
+            hits.iter()
+                .map(|hit| (hit.title.as_str(), hit.url.as_str())),
+        )
+    {
+        if url.trim().is_empty() || !seen.insert(url.to_owned()) {
+            continue;
+        }
+        out.push(parse::AdviceSource {
+            title: title.to_owned(),
+            url: url.to_owned(),
+        });
+        if out.len() >= 5 {
+            break;
+        }
+    }
+    out
 }
 
 fn advisor_warning(error: &AppError) -> String {
@@ -252,23 +321,14 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn combines_search_pages_and_model_json() {
+    async fn combines_search_pages_and_model_json_without_leaking_fetch_errors() {
         let search_json = r#"{"results":[{"title":"飞霄配装","url":"https://www.miyoushe.com/sr/article/1","snippet":"4奔狼"}]}"#;
-        let model = r#"{"choices":[{"message":{"content":"{\"summary\":\"穿过客\",\"plan\":{\"cavernMode\":\"fourPiece\",\"cavernSetA\":101,\"planarSetId\":301,\"substatWeights\":{\"CRIT Rate\":1}},\"sources\":[{\"title\":\"飞霄配装\",\"url\":\"https://www.miyoushe.com/sr/article/1\"}]}"}}]}"#;
+        let model = r#"{"choices":[{"message":{"content":"{\"summary\":\"穿风举云飞\",\"plan\":{\"cavernMode\":\"fourPiece\",\"cavernSetA\":120,\"planarSetId\":315,\"substatWeights\":{\"CRIT Rate\":1}},\"sources\":[{\"title\":\"飞霄配装\",\"url\":\"https://www.miyoushe.com/sr/article/1\"}]}"}}]}"#;
         let client = MockHttp {
             get: Mutex::new(vec![
                 (
-                    "wiki.biligame.com".into(),
-                    "飞霄 遗器 奔狼的功勋 四件套推荐。正文足够长用于通过最小长度检查。".into(),
-                ),
-                (
-                    "starrailstation.com".into(),
-                    "Feixiao relics Pioneer Diver of Dead Waters. 正文足够长用于通过最小长度检查。"
-                        .into(),
-                ),
-                (
                     "miyoushe.com".into(),
-                    "米游社攻略：飞霄主流四件套奔狼。正文足够长用于通过最小长度检查。".into(),
+                    "米游社攻略：飞霄主流四件套风举云飞的勇烈，位面饰品奔狼的都蓝王朝。正文足够长用于通过最小长度检查。".into(),
                 ),
             ]),
             post: Mutex::new(vec![
@@ -284,8 +344,12 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(advice.display_name, "飞霄");
-        assert_eq!(advice.plan.cavern_set_a, 101);
+        assert_eq!(advice.plan.cavern_set_a, 120);
         assert_eq!(advice.character_id, 1220);
         assert!(!advice.sources.is_empty());
+        assert!(advice
+            .warnings
+            .iter()
+            .all(|w| !w.contains("抓取失败") && !w.contains("<html")));
     }
 }
