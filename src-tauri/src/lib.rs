@@ -164,6 +164,7 @@ pub fn run() {
             commands::get_model_provider_settings,
             commands::save_model_provider_settings,
             commands::advise_character_build,
+            commands::get_cached_character_build_advice,
             commands::get_game_launch_settings,
             commands::save_game_launch_settings,
             commands::detect_game_launcher,

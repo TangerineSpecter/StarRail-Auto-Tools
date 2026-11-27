@@ -11,6 +11,7 @@ use rusqlite::{
 use super::models::*;
 use crate::error::AppError;
 
+mod build_advice;
 mod build_plans;
 mod export;
 mod migration;

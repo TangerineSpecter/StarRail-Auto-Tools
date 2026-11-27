@@ -1,4 +1,4 @@
-import { computed, reactive, ref, watch, type Ref } from "vue";
+import { computed, onScopeDispose, reactive, ref, watch, type Ref } from "vue";
 import { advisorApi } from "@/shared/api/advisor";
 import { characterById } from "@/shared/catalogue";
 import type { AdvicePlanDraft, CharacterBuildAdvice, CharacterBuildPlan } from "@/types";
@@ -40,17 +40,39 @@ export function useBuildPlanAdvice(options: {
   });
   const pendingCount = computed(() => rows.value.filter((row) => !row.equal).length);
 
+  function clearSelections() {
+    for (const key of Object.keys(selections)) delete selections[key];
+  }
+
   watch(
-    () => options.characterId.value,
+    options.characterId,
     () => {
       requestId += 1;
       advice.value = null;
       baseline.value = null;
       error.value = "";
       loading.value = false;
-      for (const key of Object.keys(selections)) delete selections[key];
+      clearSelections();
     },
+    { flush: "sync" },
   );
+
+  watch(
+    [options.characterId, options.planLoading],
+    async ([characterId, planLoading]) => {
+      if (!characterId || planLoading) return;
+      const currentRequestId = requestId;
+      const cached = await advisorApi.cachedCharacterAdvice(characterId).catch(() => null);
+      if (cached?.characterId !== characterId || currentRequestId !== requestId) return;
+      baseline.value = clonePlan(options.plan);
+      advice.value = cached;
+      clearSelections();
+    },
+    { immediate: true },
+  );
+  onScopeDispose(() => {
+    requestId += 1;
+  });
 
   watch(
     rows,
@@ -67,30 +89,26 @@ export function useBuildPlanAdvice(options: {
   );
 
   async function query() {
-    if (options.planLoading.value) return;
+    if (options.planLoading.value || loading.value) return;
     const currentRequestId = ++requestId;
+    const characterId = options.characterId.value;
     loading.value = true;
     error.value = "";
     try {
-      const catalogue = characterById.get(options.characterId.value);
+      const catalogue = characterById.get(characterId);
       const snapshot = clonePlan(options.plan);
       const result = await advisorApi.adviseCharacter({
-        characterId: options.characterId.value,
+        characterId,
         slug: catalogue?.slug ?? "",
         element: catalogue?.element ?? "",
         currentPlan: snapshot,
       });
       if (currentRequestId !== requestId) return;
-      result.plan = sanitizeAdvicePlan(result.plan, {
-        name: catalogue?.name,
-        path: catalogue?.path,
-      });
       baseline.value = snapshot;
       advice.value = result;
-      for (const key of Object.keys(selections)) delete selections[key];
+      clearSelections();
     } catch (cause) {
       if (currentRequestId !== requestId) return;
-      advice.value = null;
       error.value = String(cause);
       options.setError(String(cause));
     } finally {

@@ -130,11 +130,11 @@ function openSource(source: AdviceSource) {
         label="正在检索当前版本配装…"
         hint="综合客户端实装技能与最新公开攻略，生成符合表单约束的套装、主词条、目标和权重。"
       />
-      <p v-else-if="error" class="advisor-error">{{ error }}</p>
-      <p v-else-if="!advice" class="score-hint">
-        查询后会对照查询时的表单和 AI 推荐。点「使用推荐」立即写入该项。
+      <p v-if="!loading && error" class="advisor-error">{{ error }}</p>
+      <p v-if="!loading && !error && !advice" class="score-hint">
+        查询后会在本机保留最近一次 AI 推荐。点「使用推荐」可写入对应项。
       </p>
-      <template v-else>
+      <template v-if="!loading && advice">
         <div v-if="advice.summary" class="advisor-summary-card">
           <p class="advisor-summary">
             <template v-for="(seg, idx) in tokenizeAdviceHighlights(advice.summary)" :key="idx">

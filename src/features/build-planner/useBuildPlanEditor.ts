@@ -55,6 +55,7 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
   });
   let targetDragPreview: HTMLElement | undefined;
   let targetDragCleanup: (() => void) | undefined;
+  let loadRequestId = 0;
   const setOptions = relicCatalogue.sets.map((set) => ({
     setId: set.id,
     name: set.name,
@@ -78,12 +79,15 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
   }
 
   async function load(characterId: number) {
+    const requestId = ++loadRequestId;
     loading.value = true;
     optimizer.result.value = null;
     optimizer.resultOpen.value = false;
     deleteArmed.value = false;
     try {
-      Object.assign(plan, emptyPlan(characterId), (await buildPlanApi.get(characterId)) ?? {});
+      const stored = await buildPlanApi.get(characterId);
+      if (requestId !== loadRequestId || characterId !== options.characterId.value) return;
+      Object.assign(plan, emptyPlan(characterId), stored ?? {});
       if (typeof plan.note !== "string") plan.note = "";
       if (!plan.substatWeights || typeof plan.substatWeights !== "object") plan.substatWeights = {};
       // Keep empty weights empty in the model so Save does not silently persist inferred
@@ -96,9 +100,9 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
       if (typeof plan.updatedAt !== "number" || !Number.isFinite(plan.updatedAt))
         plan.updatedAt = 0;
     } catch (cause) {
-      options.setError(String(cause));
+      if (requestId === loadRequestId) options.setError(String(cause));
     } finally {
-      loading.value = false;
+      if (requestId === loadRequestId) loading.value = false;
     }
   }
   function addTarget() {
@@ -202,7 +206,6 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
         plan: savedPlan,
       }).catch(() => undefined);
       options.setNotice("培养方案已保存");
-      // Close immediately after a successful save; recommendation can be recomputed later.
       options.onSaved?.();
     } catch (cause) {
       options.setError(String(cause));
@@ -234,7 +237,10 @@ export function useBuildPlanEditor(options: BuildEditorOptions) {
     },
     { immediate: true },
   );
-  onBeforeUnmount(() => targetDragCleanup?.());
+  onBeforeUnmount(() => {
+    loadRequestId += 1;
+    targetDragCleanup?.();
+  });
   return {
     loading,
     saving,

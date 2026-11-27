@@ -21,7 +21,7 @@ use crate::error::AppError;
 use crate::inventory::{CharacterBuildPlan, InventoryStore};
 use crate::model_provider::ModelProviderSettings;
 
-pub use context::load_snapshot;
+use context::load_snapshot;
 pub use parse::CharacterBuildAdvice;
 
 use fetch::{fetch_page, reference_urls, FetchedPage};
@@ -43,31 +43,40 @@ pub struct AdviseCharacterRequest {
     pub current_plan: Option<CharacterBuildPlan>,
 }
 
-pub fn character_snapshot(
-    store: &InventoryStore,
-    request: &AdviseCharacterRequest,
-) -> Result<context::CharacterAdviceSnapshot, AppError> {
-    load_snapshot(
-        store,
-        request.character_id,
-        &request.slug,
-        &request.element,
-        request.current_plan.as_ref(),
-    )
-}
-
 pub async fn advise_character_build(
     settings: ModelProviderSettings,
-    snapshot: context::CharacterAdviceSnapshot,
+    store: InventoryStore,
+    request: AdviseCharacterRequest,
 ) -> Result<CharacterBuildAdvice, AppError> {
     settings.require_ready()?;
+    let snapshot_store = store.clone();
+    let (account_uid, snapshot) = tokio::task::spawn_blocking(move || {
+        let uid = snapshot_store.current_uid()?;
+        let snapshot = load_snapshot(
+            &snapshot_store,
+            request.character_id,
+            &request.slug,
+            &request.element,
+            request.current_plan.as_ref(),
+        )?;
+        Ok::<_, AppError>((uid, snapshot))
+    })
+    .await
+    .map_err(|error| AppError::Advisor(format!("读取角色数据失败：{error}")))??;
     let client = ReqwestAdvisorHttp::new()?;
-    tokio::time::timeout(
+    let mut advice = tokio::time::timeout(
         ADVICE_TIMEOUT,
         advise_with_client(&client, &settings, snapshot),
     )
     .await
-    .map_err(|_| AppError::Advisor("检索和生成耗时过长，请稍后重试。".to_owned()))?
+    .map_err(|_| AppError::Advisor("检索和生成耗时过长，请稍后重试。".to_owned()))??;
+    let cached = advice.clone();
+    let saved =
+        tokio::task::spawn_blocking(move || store.save_build_advice(account_uid, &cached)).await;
+    if !matches!(saved, Ok(Ok(()))) {
+        advice.warnings.push("本次推荐未能保存到本地。".to_owned());
+    }
+    Ok(advice)
 }
 
 async fn advise_with_client<C: AdvisorHttp>(

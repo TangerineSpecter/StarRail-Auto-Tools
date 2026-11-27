@@ -529,13 +529,17 @@ pub async fn advise_character_build(
     model: State<'_, ModelProviderStore>,
 ) -> Result<CharacterBuildAdvice, AppError> {
     let settings = model.load()?;
-    settings.require_ready()?;
     let store = store.inner().clone();
-    let snapshot =
-        tauri::async_runtime::spawn_blocking(move || advisor::character_snapshot(&store, &request))
-            .await
-            .map_err(|error| AppError::Advisor(format!("读取角色数据失败：{error}")))??;
-    advisor::advise_character_build(settings, snapshot).await
+    advisor::advise_character_build(settings, store, request).await
+}
+
+#[tauri::command]
+pub async fn get_cached_character_build_advice(
+    character_id: u32,
+    store: State<'_, InventoryStore>,
+) -> Result<Option<CharacterBuildAdvice>, AppError> {
+    let store = store.inner().clone();
+    run_db_blocking(move || store.build_advice(character_id)).await
 }
 
 #[tauri::command]
