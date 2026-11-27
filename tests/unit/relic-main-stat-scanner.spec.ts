@@ -43,6 +43,12 @@ describe("RelicMainStatScanner", () => {
     listRelics.mockReset();
     dashboard.mockReset();
     dashboard.mockResolvedValue([]);
+    scanRelicsByMainStatGrouped.mockResolvedValue({
+      groups: [],
+      total: 0,
+      planCount: 0,
+      allowedMainStats: {},
+    });
     listRelics.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 200 });
   });
 
@@ -53,11 +59,8 @@ describe("RelicMainStatScanner", () => {
       global: { provide: { [mobileViewKey as symbol]: true }, stubs: { Button: buttonStub } },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("遗器分析");
     expect(wrapper.text()).toContain("电脑端保存培养方案");
-    expect(
-      wrapper.findAll("button").every((button) => button.attributes("disabled") !== undefined),
-    ).toBe(true);
+    expect(wrapper.find(".scanner-desktop-actions").exists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -119,9 +122,8 @@ describe("RelicMainStatScanner", () => {
       global: { stubs: { Button: buttonStub } },
     });
     await flushPromises();
-    await wrapper.find("button").trigger("click");
-    await flushPromises();
 
+    expect(scanRelicsByMainStatGrouped).toHaveBeenCalledTimes(1);
     expect(wrapper.text()).toContain("件待复核");
     expect(wrapper.text()).toContain("密林卧雪的猎人");
     expect(wrapper.text()).toContain("躯干");
@@ -162,8 +164,6 @@ describe("RelicMainStatScanner", () => {
       global: { stubs: { Button: buttonStub } },
     });
     await flushPromises();
-    await wrapper.find("button").trigger("click");
-    await flushPromises();
 
     expect(wrapper.text()).toContain("密林卧雪的猎人");
     expect(wrapper.text()).toContain("繁星璀璨的天才");
@@ -179,6 +179,12 @@ describe("RelicMainStatScanner", () => {
 
   it("renders redesigned upgrade recommendation cards with main stat, target character and roll increase", async () => {
     relicMainStatScanPlanCount.mockResolvedValue(1);
+    scanRelicsByMainStatGrouped.mockResolvedValue({
+      groups: [],
+      total: 0,
+      planCount: 1,
+      allowedMainStats: {},
+    });
     dashboard.mockResolvedValue([
       {
         plan: {
@@ -256,5 +262,85 @@ describe("RelicMainStatScanner", () => {
     expect(wrapper.text()).not.toContain("Effect RES");
     expect(wrapper.text()).toContain("三月七");
     expect(wrapper.text()).toContain("rolls");
+    expect(usefulnessBtn!.classes()).toContain("active");
+    expect(usefulnessBtn!.attributes("aria-pressed")).toBe("true");
+  });
+
+  it("syncs active mode state, reuses cached scan results on tab switch, and rescans via action button", async () => {
+    relicMainStatScanPlanCount.mockResolvedValue(1);
+    dashboard.mockResolvedValue([
+      {
+        plan: {
+          characterId: 1,
+          cavernMode: "fourPiece",
+          cavernSetA: 101,
+          cavernSetB: null,
+          planarSetId: 301,
+          mainStats: {},
+          targets: [],
+          effectiveSubstats: [],
+          note: "",
+          substatWeights: {},
+          minPotentialPct: 40,
+          spdTarget: 0,
+        },
+        character: { characterId: 1, name: "测试", level: 80, ascension: 6, equippedRelics: [] },
+        displayOrder: 0,
+        pinned: false,
+      },
+    ]);
+    scanRelicsByMainStatGrouped.mockResolvedValue({
+      groups: [
+        {
+          setId: 101,
+          setName: "密林卧雪的猎人",
+          parts: [{ slot: "Body", stats: [{ mainStat: "HP%", count: 2 }] }],
+        },
+      ],
+      total: 2,
+      planCount: 1,
+      allowedMainStats: {},
+    });
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const wrapper = mount(RelicMainStatScanner, {
+      props: { imageFor: () => undefined, desktopToolbarHost: host },
+      global: { stubs: { Button: buttonStub } },
+    });
+    await flushPromises();
+
+    const submodeButtons = host.querySelectorAll<HTMLButtonElement>(".submode-btn");
+    const mainStatBtn = submodeButtons[0];
+    const upgradeBtn = submodeButtons[1];
+    const rescanBtn = host.querySelector<HTMLButtonElement>(".scanner-rescan-btn");
+    expect(mainStatBtn).toBeDefined();
+    expect(upgradeBtn).toBeDefined();
+    expect(rescanBtn).toBeDefined();
+    expect(mainStatBtn.classList.contains("active")).toBe(true);
+    expect(upgradeBtn.classList.contains("active")).toBe(false);
+    expect(scanRelicsByMainStatGrouped).toHaveBeenCalledTimes(1);
+    expect(rescanBtn!.textContent).toContain("重新扫描");
+
+    upgradeBtn.click();
+    await flushPromises();
+    expect(upgradeBtn.classList.contains("active")).toBe(true);
+    expect(upgradeBtn.getAttribute("aria-pressed")).toBe("true");
+    expect(mainStatBtn.classList.contains("active")).toBe(false);
+    expect(listRelics).toHaveBeenCalledTimes(1);
+
+    // Switching back to mainStat reuses cached results instead of triggering a redundant scan.
+    mainStatBtn.click();
+    await flushPromises();
+    expect(mainStatBtn.classList.contains("active")).toBe(true);
+    expect(scanRelicsByMainStatGrouped).toHaveBeenCalledTimes(1);
+
+    // Explicit rescan button triggers a fresh scan.
+    rescanBtn!.click();
+    await flushPromises();
+    expect(scanRelicsByMainStatGrouped).toHaveBeenCalledTimes(2);
+
+    wrapper.unmount();
+    host.remove();
   });
 });

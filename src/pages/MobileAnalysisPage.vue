@@ -50,13 +50,6 @@ onDeactivated(detail.close);
   padding: 0;
   overflow: visible;
 }
-.mobile-analysis :deep(.scanner-hero) {
-  display: none;
-}
-.mobile-analysis :deep(.cleaning-header-compact .compact-left > small),
-.mobile-analysis :deep(.scanner-result-heading small) {
-  display: none;
-}
 .mobile-analysis :deep(.cleaning-header-compact) {
   display: flex;
   align-items: center;

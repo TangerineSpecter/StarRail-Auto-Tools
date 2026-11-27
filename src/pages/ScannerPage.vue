@@ -15,6 +15,7 @@ const inventoryDetail = useInventoryDetail((message) => (error.value = message))
 const imageFor = (item: { setId: number; slot: string }) => relicImage(item.setId, item.slot);
 const mode = ref<"mainStat" | "cleanup">("cleanup");
 const panelReady = ref(false);
+const desktopToolbarHost = ref<HTMLElement | null>(null);
 const RelicCleanupPanel = defineAsyncComponent({
   loader: loadRelicCleanupPanel,
   loadingComponent: AsyncViewLoading,
@@ -49,32 +50,32 @@ onBeforeUnmount(() => {
 <template>
   <section class="scanner-page">
     <nav class="scanner-mode-bar" aria-label="背包扫描模式">
-      <div class="scanner-mode-context">
+      <div class="scanner-mode-left">
         <span class="scanner-mode-mark" aria-hidden="true">◇</span>
-        <div>
-          <small>INVENTORY SCAN</small>
-          <strong>遗器工作台</strong>
+        <div class="scanner-mode-switch">
+          <button
+            type="button"
+            :class="{ active: mode === 'cleanup' }"
+            @pointerenter="loadRelicCleanupPanel()"
+            @focus="loadRelicCleanupPanel()"
+            @click="selectMode('cleanup')"
+          >
+            <small>01</small><span>安全清理</span>
+          </button>
+          <button
+            type="button"
+            :class="{ active: mode === 'mainStat' }"
+            @pointerenter="loadRelicMainStatScanner()"
+            @focus="loadRelicMainStatScanner()"
+            @click="selectMode('mainStat')"
+          >
+            <small>02</small><span>主词条扫描</span>
+          </button>
         </div>
       </div>
-      <div class="scanner-mode-switch">
-        <button
-          type="button"
-          :class="{ active: mode === 'cleanup' }"
-          @pointerenter="loadRelicCleanupPanel()"
-          @focus="loadRelicCleanupPanel()"
-          @click="selectMode('cleanup')"
-        >
-          <small>01</small><span>安全清理</span>
-        </button>
-        <button
-          type="button"
-          :class="{ active: mode === 'mainStat' }"
-          @pointerenter="loadRelicMainStatScanner()"
-          @focus="loadRelicMainStatScanner()"
-          @click="selectMode('mainStat')"
-        >
-          <small>02</small><span>主词条扫描</span>
-        </button>
+      <div class="scanner-mode-right">
+        <span v-if="mode === 'cleanup'" class="scanner-mode-kicker">SAFE SALVAGE WORKBENCH</span>
+        <div ref="desktopToolbarHost" class="scanner-mode-actions" />
       </div>
     </nav>
     <div class="scanner-page-content">
@@ -83,6 +84,7 @@ onBeforeUnmount(() => {
       <RelicMainStatScanner
         v-else
         :image-for="imageFor"
+        :desktop-toolbar-host="desktopToolbarHost"
         @open-relic="inventoryDetail.open('relic', $event.itemId)"
       />
     </div>
@@ -99,10 +101,10 @@ onBeforeUnmount(() => {
 .scanner-page {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 12px;
+  gap: 8px;
   height: 100%;
   min-height: 0;
-  padding: 16px 28px 12px;
+  padding: 10px 24px 10px;
   overflow: hidden;
 }
 .scanner-page-content {
@@ -115,61 +117,65 @@ onBeforeUnmount(() => {
 }
 .scanner-mode-bar {
   display: flex;
-  min-height: 46px;
+  min-height: 40px;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 5px 6px 5px 15px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 4px 8px 4px 12px;
   border: 1px solid rgba(46, 79, 126, 0.15);
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(246, 249, 253, 0.78)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(246, 249, 253, 0.8)),
     linear-gradient(135deg, rgba(199, 165, 90, 0.08), transparent 52%);
-  box-shadow: 0 8px 24px rgba(39, 72, 117, 0.05);
+  box-shadow: 0 6px 18px rgba(39, 72, 117, 0.04);
 }
-.scanner-mode-context,
+.scanner-mode-left,
+.scanner-mode-right,
+.scanner-mode-actions,
 .scanner-mode-switch,
 .scanner-mode-switch button {
   display: flex;
   align-items: center;
 }
-.scanner-mode-context {
-  gap: 9px;
+.scanner-mode-left {
+  gap: 10px;
+  min-width: 0;
 }
-.scanner-mode-context > div {
-  display: grid;
-  gap: 2px;
+.scanner-mode-right {
+  gap: 10px;
+  margin-left: auto;
+  min-width: 0;
 }
-.scanner-mode-context small {
+.scanner-mode-kicker {
+  padding-right: 6px;
   color: var(--muted);
   font:
-    700 7px/1 "Bahnschrift",
+    700 9px/1 "Bahnschrift",
     sans-serif;
-  letter-spacing: 0.18em;
-}
-.scanner-mode-context strong {
-  color: var(--ink);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
 }
 .scanner-mode-mark {
   color: var(--gold);
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1;
 }
 .scanner-mode-switch {
-  align-self: stretch;
   gap: 2px;
   padding: 2px;
   background: rgba(224, 230, 238, 0.64);
 }
 .scanner-mode-switch button {
-  min-width: 122px;
+  min-width: 112px;
   justify-content: center;
-  gap: 8px;
-  padding: 7px 14px;
+  gap: 6px;
+  padding: 5px 12px;
   border: 1px solid transparent;
   color: var(--ink-soft);
   background: transparent;
   font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
   transition:
     color 150ms ease,
     background 150ms ease,
@@ -178,7 +184,7 @@ onBeforeUnmount(() => {
 .scanner-mode-switch button small {
   color: var(--muted);
   font:
-    700 7px/1 "Bahnschrift",
+    700 8px/1 "Bahnschrift",
     sans-serif;
   letter-spacing: 0.08em;
 }
@@ -186,7 +192,7 @@ onBeforeUnmount(() => {
   border-color: rgba(34, 79, 148, 0.18);
   color: var(--blue-deep);
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 3px 10px rgba(38, 70, 112, 0.1);
+  box-shadow: 0 2px 8px rgba(38, 70, 112, 0.1);
 }
 .scanner-mode-switch button.active small {
   color: var(--gold);
@@ -195,7 +201,11 @@ onBeforeUnmount(() => {
   .scanner-page {
     padding-inline: 14px;
   }
-  .scanner-mode-context {
+  .scanner-mode-left {
+    width: 100%;
+  }
+  .scanner-mode-mark,
+  .scanner-mode-kicker {
     display: none;
   }
   .scanner-mode-switch {
@@ -204,6 +214,11 @@ onBeforeUnmount(() => {
   .scanner-mode-switch button {
     min-width: 0;
     flex: 1;
+  }
+  .scanner-mode-right {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
   }
 }
 </style>

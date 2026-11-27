@@ -35,7 +35,10 @@ import {
 } from "./scanner-grouping";
 import ScannerFilterButton from "./ScannerFilterButton.vue";
 
-const props = defineProps<{ imageFor: (relic: RelicListItem) => string | undefined }>();
+const props = defineProps<{
+  imageFor: (relic: RelicListItem) => string | undefined;
+  desktopToolbarHost?: HTMLElement | null;
+}>();
 const emit = defineEmits<{ "open-relic": [relic: RelicListItem] }>();
 const mobile = useMobileView();
 let disposed = false;
@@ -62,6 +65,13 @@ const canAnalyze = computed(
 
 const activeMode = ref<"mainStat" | "upgrade">("mainStat");
 const transitionDirection = ref<"next" | "prev">("next");
+const hasCurrentResult = computed(() =>
+  activeMode.value === "mainStat" ? result.value !== null : usefulnessDone.value,
+);
+const isCurrentLoading = computed(() =>
+  activeMode.value === "mainStat" ? loading.value : usefulnessLoading.value,
+);
+const scannerDescription = "比对已保存的培养方案，定位无去向闲置件，或优于当前穿戴的替换候选。";
 
 const subMode = useMobileSubMode();
 const pageActive = ref(true);
@@ -121,6 +131,16 @@ function refreshCurrentMode() {
     void analyze();
   } else {
     void analyzeUsefulness();
+  }
+}
+
+function selectDesktopMode(mode: "mainStat" | "upgrade") {
+  if (activeMode.value !== mode) {
+    goToMode(mode);
+    return;
+  }
+  if (!hasCurrentResult.value) {
+    refreshCurrentMode();
   }
 }
 
@@ -277,7 +297,7 @@ onMounted(async () => {
     if (disposed) return;
     plans.value = dashboard;
     planCount.value = Math.max(count ?? 0, dashboard.length);
-    if (mobile && canAnalyze.value && !result.value && !loading.value) {
+    if (canAnalyze.value && !result.value && !loading.value) {
       void analyze();
     }
   } catch (cause) {
@@ -321,42 +341,75 @@ onBeforeUnmount(() => {
       </nav>
     </Teleport>
 
-    <header v-if="!mobile" class="scanner-hero">
-      <div class="scanner-title">
-        <p class="eyebrow">INVENTORY // REVIEW PROTOCOL</p>
-        <div class="scanner-title-line">
-          <span class="scanner-sigil" aria-hidden="true">◇</span>
-          <h2>{{ mobile ? "遗器分析" : "背包扫描" }}</h2>
-        </div>
-        <p>比对已保存的培养方案，定位无去向闲置件，或优于当前穿戴的替换候选。</p>
-      </div>
-      <div class="scanner-command">
-        <small>MAIN-STAT ANALYZER</small>
-        <div class="scanner-command-buttons">
-          <Button
+    <!-- Desktop Compact Action Bar (teleported into ScannerPage mode bar when available) -->
+    <Teleport
+      v-if="!mobile"
+      :to="props.desktopToolbarHost ?? 'body'"
+      :disabled="!props.desktopToolbarHost"
+    >
+      <div class="scanner-desktop-actions">
+        <div class="scanner-submode-switch" role="group" aria-label="扫描分析视图">
+          <button
+            type="button"
+            :class="['submode-btn', { active: activeMode === 'mainStat' }]"
+            :aria-pressed="activeMode === 'mainStat'"
             :disabled="!canAnalyze"
-            :loading="loading"
-            :class="{ 'is-active-tab': activeMode === 'mainStat' }"
-            @click="
-              goToMode('mainStat');
-              analyze();
-            "
-            ><span class="command-marker" aria-hidden="true">✦</span> 主属性扫描</Button
+            @click="selectDesktopMode('mainStat')"
           >
-          <Button
+            <span class="submode-marker" aria-hidden="true">✦</span>
+            主属性扫描
+          </button>
+          <button
+            type="button"
+            :class="['submode-btn', { active: activeMode === 'upgrade' }]"
+            :aria-pressed="activeMode === 'upgrade'"
             :disabled="!canAnalyze"
-            :loading="usefulnessLoading"
-            outlined
-            :class="{ 'is-active-tab': activeMode === 'upgrade' }"
-            @click="
-              goToMode('upgrade');
-              analyzeUsefulness();
-            "
-            >替换推荐扫描</Button
+            @click="selectDesktopMode('upgrade')"
           >
+            替换推荐扫描
+          </button>
         </div>
+
+        <Button
+          type="button"
+          class="scanner-rescan-btn"
+          :disabled="!canAnalyze"
+          :loading="isCurrentLoading"
+          :outlined="hasCurrentResult"
+          @click="refreshCurrentMode()"
+        >
+          <svg
+            v-if="hasCurrentResult && !isCurrentLoading"
+            class="rescan-icon"
+            viewBox="0 0 24 24"
+            width="13"
+            height="13"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <polyline points="21 3 21 9 15 9" />
+          </svg>
+          <span v-else-if="!isCurrentLoading" class="rescan-marker" aria-hidden="true">✦</span>
+          <span>{{ hasCurrentResult ? "重新扫描" : "开始扫描" }}</span>
+        </Button>
+
+        <span
+          class="scanner-help-tip"
+          tabindex="0"
+          role="note"
+          :aria-label="scannerDescription"
+          :data-tooltip="scannerDescription"
+          :title="scannerDescription"
+        >
+          ?
+        </span>
       </div>
-    </header>
+    </Teleport>
 
     <!-- Content Viewport with Directional Slide Transition -->
     <div class="scanner-mode-viewport">
@@ -372,15 +425,18 @@ onBeforeUnmount(() => {
           />
           <div v-else-if="usefulnessRows.length" class="scanner-usefulness">
             <div class="scanner-result-heading">
-              <div>
-                <small>UPGRADE / BETTER THAN EQUIPPED</small>
-                <p>
-                  <b>{{ usefulnessRows.length }}</b> 件可替换推荐（主属性 + 套装匹配且词条分更高）
+              <div class="result-heading-left">
+                <p class="result-heading-summary">
+                  <b>{{ usefulnessRows.length }}</b> 件可替换推荐
+                  <span class="result-heading-criteria">（主属性 + 套装匹配且词条分更高）</span>
                 </p>
-                <p v-if="usefulnessTruncated" class="scanner-result-note">
-                  仅分析前 {{ usefulnessScanned }} /
-                  {{ usefulnessTotal }} 件未装备遗器（性能上限），结果可能不完整。
-                </p>
+                <span
+                  v-if="usefulnessTruncated"
+                  class="scanner-truncated-badge"
+                  :title="`仅分析前 ${usefulnessScanned} / ${usefulnessTotal} 件未装备遗器（性能上限），结果可能不完整。`"
+                >
+                  仅分析前 {{ usefulnessScanned }} / {{ usefulnessTotal }} 件
+                </span>
               </div>
               <p class="scanner-result-note">按相对当前穿戴的加权分增量排序</p>
             </div>
@@ -502,7 +558,9 @@ onBeforeUnmount(() => {
             <div class="scanner-radar" aria-hidden="true"><i /><b>◈</b></div>
             <div>
               <p>准备就绪</p>
-              <strong>轻触下方胶囊开始检索替换推荐</strong>
+              <strong>{{
+                mobile ? "轻触下方胶囊开始检索替换推荐" : "准备检索可替换的更优遗器"
+              }}</strong>
               <small>比对已保存的培养方案，分析未装备遗器加权分增量。</small>
             </div>
           </div>
@@ -542,15 +600,14 @@ onBeforeUnmount(() => {
             未发现无目标主词条的未装备遗器。
           </div>
           <template v-else>
-            <!-- Next-Gen Station Terminal Control Header -->
+            <!-- Compact Single-Row Control Toolbar -->
             <div class="cleaning-header-compact">
               <div class="compact-left">
-                <small>SCAN RESULT // UNASSIGNED RELIC MATRIX</small>
                 <div class="compact-title-row">
                   <span class="compact-total"
                     ><b>{{ result.total }}</b> 件待复核</span
                   >
-                  <span v-if="summaryStats" class="compact-sub-info">
+                  <span v-if="mobile && summaryStats" class="compact-sub-info">
                     (隧洞 <b>{{ summaryStats.cavernCount }}</b> 件 / 位面
                     <b>{{ summaryStats.planarCount }}</b> 件)
                   </span>
