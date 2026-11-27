@@ -22,6 +22,29 @@ export interface ScannerUsefulnessRow {
   weightedRolls: number;
   equippedWeightedRolls: number | null;
   deltaWeightedRolls: number;
+  effectiveSubstatWeights: Record<string, number>;
+}
+
+export type SubstatEffectiveTier = "core" | "minor" | "none";
+
+export function substatEffectiveTier(
+  weights: Record<string, number> | undefined,
+  statKey: string,
+): SubstatEffectiveTier {
+  const weight = weights?.[statKey] ?? 0;
+  if (weight >= 0.5) return "core";
+  if (weight > 0) return "minor";
+  return "none";
+}
+
+export function formatSubstatWeightHint(
+  weights: Record<string, number> | undefined,
+  statKey: string,
+): string {
+  const weight = weights?.[statKey] ?? 0;
+  if (weight <= 0) return "非目标词条";
+  const rounded = Number(weight.toFixed(2));
+  return weight >= 0.5 ? `有效词条 · 权重 ${rounded}` : `次要有效 · 权重 ${rounded}`;
 }
 
 export function gradeClass(grade: string | null): string {
@@ -213,6 +236,12 @@ export function buildUsefulnessRows(
         characterId: row.characterId,
         name: row.planLabel ?? "—",
       });
+      const effectiveSubstatWeights: Record<string, number> = {};
+      for (const entry of row.candidateScore.breakdown) {
+        if (entry.weight > 0) {
+          effectiveSubstatWeights[entry.key] = entry.weight;
+        }
+      }
       return {
         item,
         bestCharacterId: row.characterId,
@@ -224,6 +253,7 @@ export function buildUsefulnessRows(
         weightedRolls: row.candidateScore.weightedRolls,
         equippedWeightedRolls: row.equippedScore?.weightedRolls ?? null,
         deltaWeightedRolls: row.deltaWeightedRolls,
+        effectiveSubstatWeights,
       };
     })
     .filter((row): row is NonNullable<typeof row> => row != null);

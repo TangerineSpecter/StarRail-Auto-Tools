@@ -264,6 +264,15 @@ describe("RelicMainStatScanner", () => {
     expect(wrapper.text()).toContain("rolls");
     expect(usefulnessBtn!.classes()).toContain("active");
     expect(usefulnessBtn!.attributes("aria-pressed")).toBe("true");
+
+    const chips = wrapper.findAll(".substat-chip");
+    expect(chips).toHaveLength(2);
+    expect(chips[0].classes()).toContain("is-core");
+    expect(chips[0].text()).toContain("暴击率");
+    expect(chips[0].attributes("title")).toContain("有效词条");
+    expect(chips[1].classes()).toContain("is-none");
+    expect(chips[1].text()).toContain("效果抵抗");
+    expect(chips[1].attributes("title")).toContain("非目标词条");
   });
 
   it("syncs active mode state, reuses cached scan results on tab switch, and rescans via action button", async () => {

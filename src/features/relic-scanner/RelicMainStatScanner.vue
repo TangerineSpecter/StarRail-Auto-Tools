@@ -25,11 +25,13 @@ import type { ScanReviewFilters } from "./scan-review";
 import {
   buildUsefulnessRows,
   filterMainStatGroups,
+  formatSubstatWeightHint,
   getSetHeaderIcon,
   getStatThemeClass,
   gradeClass,
   groupFilteredSetsBySlot,
   SCANNER_SLOTS as allSlots,
+  substatEffectiveTier,
   summarizeMainStatGroups,
   type ScannerUsefulnessRow,
 } from "./scanner-grouping";
@@ -658,10 +660,28 @@ onBeforeUnmount(() => {
                   <span
                     v-for="(sub, idx) in row.item.substats.slice(0, 4)"
                     :key="idx"
-                    class="substat-chip"
-                    :title="`${statLabel(sub.key)} +${formatStatValue(sub.key, sub.value)}`"
+                    :class="[
+                      'substat-chip',
+                      `is-${substatEffectiveTier(row.effectiveSubstatWeights, sub.key)}`,
+                    ]"
+                    :title="`${statLabel(sub.key)} +${formatStatValue(sub.key, sub.value)}（${formatSubstatWeightHint(row.effectiveSubstatWeights, sub.key)}）`"
                   >
-                    <span class="substat-label">{{ statLabel(sub.key) }}</span>
+                    <span class="substat-label">
+                      <i
+                        v-if="substatEffectiveTier(row.effectiveSubstatWeights, sub.key) === 'core'"
+                        class="substat-eff-mark"
+                        aria-hidden="true"
+                        >✦</i
+                      >
+                      <i
+                        v-else-if="
+                          substatEffectiveTier(row.effectiveSubstatWeights, sub.key) === 'minor'
+                        "
+                        class="substat-eff-dot"
+                        aria-hidden="true"
+                      />
+                      <span class="substat-label-text">{{ statLabel(sub.key) }}</span>
+                    </span>
                     <em>+{{ formatStatValue(sub.key, sub.value) }}</em>
                   </span>
                 </div>
