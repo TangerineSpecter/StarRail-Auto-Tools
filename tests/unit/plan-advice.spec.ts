@@ -6,6 +6,7 @@ import {
   defaultAdviceSelections,
   sanitizeAdvicePlan,
   snapWeight,
+  tokenizeAdviceHighlights,
 } from "@/features/build-planner/plan-advice";
 import type { CharacterBuildPlan } from "@/types";
 
@@ -168,5 +169,22 @@ describe("plan advice comparison", () => {
     expect(noteRow?.aiLabel).toContain("160 速");
     applyAdviceField(current, sanitized, "note");
     expect(current.note).toBe("优先堆到 160 速并保证充能循环。");
+  });
+
+  it("highlights numeric thresholds and stat breakpoints without breaking LV.999 or version tags", () => {
+    const aha = tokenizeAdviceHighlights(
+      "大行迹要求速度≥125/150分别提升120%/150%欢愉度，务必堆到150；银狼LV.999在v4.7需2-4号位或2魂。",
+    );
+    const highlighted = aha.filter((seg) => seg.highlight).map((seg) => seg.text);
+    expect(highlighted).toContain("≥125/150");
+    expect(highlighted).toContain("120%/150%");
+    expect(highlighted).toContain("150");
+    expect(highlighted).toContain("2-4号位");
+    expect(highlighted).toContain("2魂");
+    expect(highlighted.some((text) => text.includes("999"))).toBe(false);
+    expect(highlighted.some((text) => text.includes("4.7"))).toBe(false);
+    expect(aha.map((seg) => seg.text).join("")).toBe(
+      "大行迹要求速度≥125/150分别提升120%/150%欢愉度，务必堆到150；银狼LV.999在v4.7需2-4号位或2魂。",
+    );
   });
 });

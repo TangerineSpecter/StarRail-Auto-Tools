@@ -4,7 +4,7 @@ import { openerApi } from "@/shared/api/opener";
 import InlineSpinner from "@/shared/ui/InlineSpinner.vue";
 import LoadingState from "@/shared/ui/LoadingState.vue";
 import type { AdviceSource, CharacterBuildAdvice } from "@/types";
-import type { AdviceChoice, AdviceCompareRow } from "./plan-advice";
+import { tokenizeAdviceHighlights, type AdviceChoice, type AdviceCompareRow } from "./plan-advice";
 
 const GROUP_LABELS: Record<AdviceCompareRow["group"], string> = {
   set: "套装",
@@ -48,6 +48,18 @@ const groupedRows = computed(() => {
 const safeSources = computed(() =>
   (props.advice?.sources ?? []).filter((source) => isSafeHttpUrl(source.url)),
 );
+
+const insights = computed(() =>
+  (props.advice?.insights ?? []).filter((item) => item.detail.trim().length > 0),
+);
+
+function insightTone(tag: string): string {
+  if (tag.includes("配队")) return "is-team";
+  if (tag.includes("配速") || tag.includes("站位")) return "is-speed";
+  if (tag.includes("溢出")) return "is-warn";
+  if (tag.includes("套装") || tag.includes("流派")) return "is-alt";
+  return "is-threshold";
+}
 
 function isSafeHttpUrl(url: string): boolean {
   try {
@@ -124,8 +136,31 @@ function openSource(source: AdviceSource) {
       </p>
       <template v-else>
         <div v-if="advice.summary" class="advisor-summary-card">
-          <p class="advisor-summary">{{ advice.summary }}</p>
+          <p class="advisor-summary">
+            <template v-for="(seg, idx) in tokenizeAdviceHighlights(advice.summary)" :key="idx">
+              <mark v-if="seg.highlight" class="advice-metric">{{ seg.text }}</mark>
+              <template v-else>{{ seg.text }}</template>
+            </template>
+          </p>
         </div>
+        <section v-if="insights.length" class="advisor-insights" aria-label="关键阈值与配队洞察">
+          <h4>关键阈值与配队洞察</h4>
+          <ul class="advisor-insight-list">
+            <li
+              v-for="(item, index) in insights"
+              :key="index"
+              :class="['advisor-insight-item', insightTone(item.tag)]"
+            >
+              <span :class="['insight-tag', insightTone(item.tag)]">{{ item.tag }}</span>
+              <span class="insight-detail">
+                <template v-for="(seg, idx) in tokenizeAdviceHighlights(item.detail)" :key="idx">
+                  <mark v-if="seg.highlight" class="advice-metric">{{ seg.text }}</mark>
+                  <template v-else>{{ seg.text }}</template>
+                </template>
+              </span>
+            </li>
+          </ul>
+        </section>
         <ul v-if="advice.warnings.length" class="advisor-warning-list" aria-label="流派与机制提示">
           <li v-for="(warning, index) in advice.warnings" :key="index" class="advisor-warning">
             {{ warning }}
@@ -314,6 +349,89 @@ function openSource(source: AdviceSource) {
   color: var(--ink);
   font-size: 12px;
   line-height: 1.55;
+}
+.advisor-insights {
+  margin: 8px 0 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(42, 72, 113, 0.14);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.84);
+}
+.advisor-insights h4 {
+  margin: 0 0 6px;
+  color: var(--blue);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.advisor-insight-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.advisor-insight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.insight-tag {
+  flex: none;
+  margin-top: 1px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.insight-tag.is-threshold {
+  background: rgba(23, 61, 122, 0.12);
+  color: #173d7a;
+}
+.insight-tag.is-team {
+  background: rgba(24, 115, 92, 0.12);
+  color: #16614d;
+}
+.insight-tag.is-speed {
+  background: rgba(91, 68, 150, 0.12);
+  color: #4f3a87;
+}
+.insight-tag.is-warn {
+  background: rgba(178, 102, 42, 0.14);
+  color: #8c4c1b;
+}
+.insight-tag.is-alt {
+  background: rgba(70, 90, 115, 0.12);
+  color: #384c66;
+}
+.insight-detail {
+  min-width: 0;
+  word-break: break-word;
+}
+.advice-metric {
+  display: inline;
+  margin: 0 1px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgba(23, 61, 122, 0.1);
+  color: #123c82;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.advisor-insight-item.is-team .advice-metric {
+  background: rgba(24, 115, 92, 0.11);
+  color: #135c49;
+}
+.advisor-insight-item.is-speed .advice-metric {
+  background: rgba(91, 68, 150, 0.11);
+  color: #4a3582;
+}
+.advisor-insight-item.is-warn .advice-metric {
+  background: rgba(178, 102, 42, 0.14);
+  color: #8f4614;
 }
 .advisor-error {
   margin: 8px 0;

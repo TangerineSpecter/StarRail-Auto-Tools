@@ -118,6 +118,49 @@ const SLOT_ALIASES: Record<string, string> = {
 
 export type AdviceChoice = "current" | "ai";
 
+export interface AdviceTextSegment {
+  text: string;
+  highlight: boolean;
+}
+
+const PROTECTED_TOKEN_PATTERN = /(?:LV\.\s*\d+|Lv\.\s*\d+|v\d+(?:\.\d+)+)/g;
+const METRIC_HIGHLIGHT_PATTERN =
+  /(?:[≥≤><]=?\s*\d+(?:\.\d+)?%?(?:\s*[/~～-]\s*\d+(?:\.\d+)?%?)*\+?|\d+(?:\.\d+)?%(?:\s*[/~～-]\s*\d+(?:\.\d+)?%)*|\d+(?:\.\d+)?(?:\s*[/~～-]\s*\d+(?:\.\d+)?)+(?:\s*(?:速|速度|防|防御|攻|攻击|生命|暴率|暴击|暴伤|命中|抵抗|号位|件套|名|人|层|点|回合))?|\d+(?:\.\d+)?\+?\s*(?:速|速度|防|防御力?|攻|攻击力?|生命(?:上限)?|暴率|暴击率?|暴伤|效果命中|命中|效果抵抗|抵抗|击破(?:特攻)?|欢愉度|能量|笑点|愿力|号位|件套|魂|命|T|层|名|点)|(?<=(?:堆到|达到|降至|控制在|低于|高于|大于|小于|超过|不超过|至少|满|约|编号|为|至|速度|攻击力?|防御力?|生命|效果命中|命中|效果抵抗|抵抗|暴率|暴击率?|暴伤)\s*)\d+(?:\.\d+)?\+?|[+-]\d+(?:\.\d+)?%?(?:速|暴率|暴伤|攻击|防御|生命)?)/g;
+
+/**
+ * Splits prose into plain and numeric-threshold segments for safe template
+ * rendering without `v-html`, while keeping character names like `LV.999`
+ * and version tags like `v4.7` intact.
+ */
+export function tokenizeAdviceHighlights(text: string): AdviceTextSegment[] {
+  if (!text) return [];
+  const protectedRanges: Array<[number, number]> = [];
+  for (const match of text.matchAll(PROTECTED_TOKEN_PATTERN)) {
+    if (match.index == null) continue;
+    protectedRanges.push([match.index, match.index + match[0].length]);
+  }
+  const overlapsProtected = (start: number, end: number) =>
+    protectedRanges.some(([pStart, pEnd]) => start < pEnd && end > pStart);
+
+  const segments: AdviceTextSegment[] = [];
+  let cursor = 0;
+  for (const match of text.matchAll(METRIC_HIGHLIGHT_PATTERN)) {
+    if (match.index == null) continue;
+    const start = match.index;
+    const end = start + match[0].length;
+    if (start < cursor || overlapsProtected(start, end)) continue;
+    if (start > cursor) {
+      segments.push({ text: text.slice(cursor, start), highlight: false });
+    }
+    segments.push({ text: match[0], highlight: true });
+    cursor = end;
+  }
+  if (cursor < text.length) {
+    segments.push({ text: text.slice(cursor), highlight: false });
+  }
+  return segments;
+}
+
 export interface AdviceCompareRow {
   key: string;
   group: "set" | "mainStat" | "targets" | "substats" | "weight" | "misc";

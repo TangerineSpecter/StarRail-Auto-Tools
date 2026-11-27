@@ -163,6 +163,11 @@ export interface AdviceSource {
   url: string;
 }
 
+export interface AdviceInsight {
+  tag: string;
+  detail: string;
+}
+
 /** Model-proposed graduation plan, already snapped to form constraints. */
 export interface AdvicePlanDraft {
   cavernMode: "fourPiece" | "twoPlusTwo";
@@ -183,6 +188,7 @@ export interface CharacterBuildAdvice {
   displayName: string;
   summary: string;
   plan: AdvicePlanDraft;
+  insights?: AdviceInsight[];
   sources: AdviceSource[];
   warnings: string[];
   searchedAt: number;

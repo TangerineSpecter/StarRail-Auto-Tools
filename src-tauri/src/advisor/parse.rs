@@ -63,6 +63,15 @@ pub struct AdviceSource {
     pub url: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AdviceInsight {
+    #[serde(default)]
+    pub tag: String,
+    #[serde(default)]
+    pub detail: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CharacterBuildAdvice {
@@ -74,6 +83,8 @@ pub struct CharacterBuildAdvice {
     pub summary: String,
     #[serde(default)]
     pub plan: AdvicePlanDraft,
+    #[serde(default)]
+    pub insights: Vec<AdviceInsight>,
     #[serde(default)]
     pub sources: Vec<AdviceSource>,
     #[serde(default)]
@@ -88,10 +99,38 @@ pub fn parse_model_advice(content: &str) -> Result<CharacterBuildAdvice, AppErro
         serde_json::from_value(value.clone()).unwrap_or_default();
     let plan_value = value.get("plan").cloned().unwrap_or(value);
     advice.plan = sanitize_plan(&plan_value);
+    advice.insights = sanitize_insights(advice.insights);
     advice
         .sources
         .retain(|item| !item.url.trim().is_empty() || !item.title.trim().is_empty());
     Ok(advice)
+}
+
+fn sanitize_insights(items: Vec<AdviceInsight>) -> Vec<AdviceInsight> {
+    let mut cleaned = Vec::new();
+    for item in items {
+        let detail: String = item.detail.trim().chars().take(160).collect();
+        if detail.is_empty() {
+            continue;
+        }
+        let raw_tag = item.tag.trim();
+        let tag: String = if raw_tag.is_empty() {
+            "关键提示".to_owned()
+        } else {
+            raw_tag.chars().take(12).collect()
+        };
+        if cleaned
+            .iter()
+            .any(|existing: &AdviceInsight| existing.detail == detail)
+        {
+            continue;
+        }
+        cleaned.push(AdviceInsight { tag, detail });
+        if cleaned.len() >= 4 {
+            break;
+        }
+    }
+    cleaned
 }
 
 pub fn extract_json_object(content: &str) -> Result<Value, AppError> {
@@ -125,12 +164,15 @@ mod tests {
     fn extracts_and_sanitizes_plan_json() {
         let advice = parse_model_advice(
             r#"```json
-{"summary":"穿过客","plan":{"cavernMode":"fourPiece","cavern":"云无留迹的过客","substatWeights":{"暴击率":0.3}}}
+{"summary":"穿过客","insights":[{"tag":"配队联动","detail":"进卡芙卡队堆 75% 命中吃 100% 攻击加成"},{"tag":"","detail":" "}],"plan":{"cavernMode":"fourPiece","cavern":"云无留迹的过客","substatWeights":{"暴击率":0.3}}}
 ```"#,
         )
         .unwrap();
         assert_eq!(advice.summary, "穿过客");
         assert_eq!(advice.plan.cavern_set_a, 101);
         assert_eq!(advice.plan.substat_weights.get("CRIT Rate"), Some(&0.25));
+        assert_eq!(advice.insights.len(), 1);
+        assert_eq!(advice.insights[0].tag, "配队联动");
+        assert!(advice.insights[0].detail.contains("75%"));
     }
 }

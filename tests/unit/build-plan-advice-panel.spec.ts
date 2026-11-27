@@ -92,6 +92,10 @@ describe("BuildPlanAdvicePanel", () => {
           displayName: "银狼LV. 999",
           summary: "优先堆速度至 160 触发转模。",
           plan: recommended,
+          insights: [
+            { tag: "技能阈值", detail: "速度 160 起步，260 速吃满欢愉度转模。" },
+            { tag: "配队联动", detail: "与高耗点队友同队可更频繁触发盲盒。" },
+          ],
           sources: [
             {
               title: "Silver Wolf • Lv. 999 Best Build Guide",
@@ -112,6 +116,13 @@ describe("BuildPlanAdvicePanel", () => {
     });
 
     expect(wrapper.text()).toContain("v4.7");
+    expect(wrapper.findAll(".advisor-insight-item")).toHaveLength(2);
+    expect(wrapper.findAll("mark.advice-metric").map((node) => node.text())).toEqual(
+      expect.arrayContaining(["160", "260 速"]),
+    );
+    expect(wrapper.text()).toContain("关键阈值与配队洞察");
+    expect(wrapper.text()).toContain("技能阈值");
+    expect(wrapper.text()).toContain("配队联动");
     expect(wrapper.findAll(".advisor-warning")).toHaveLength(2);
     expect(wrapper.findAll(".advice-source-link")).toHaveLength(1);
     expect(wrapper.text()).toContain("prydwen.gg");

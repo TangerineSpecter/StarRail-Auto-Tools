@@ -36,6 +36,7 @@ pub fn build_zh_query(display_name: &str, hints: &[&str]) -> String {
         "开拓者·毁灭" => "开拓者 毁灭主",
         "三月七·巡猎" => "巡猎三月七",
         "三月七·存护" => "存护三月七",
+        "丹恒•腾荒" => "丹恒腾荒 盾丹",
         other => other,
     };
     let mut parts = vec!["崩坏星穹铁道", alias];
@@ -76,6 +77,9 @@ fn english_character_name(slug: &str, display_name: &str) -> Option<String> {
         "sam" => "Firefly",
         "danhengil" => "Dan Heng Imbibitor Lunae",
         "danhengpt" => "Dan Heng Permansor Terrae",
+        "evanescia" => "Evanescia",
+        "mortenaxblade" => "Blade Mortena",
+        "himekonova" => "Himeko Nova",
         "theherta" => "The Herta",
         "drratio" => "Dr Ratio",
         "topaz" => "Topaz Numby",

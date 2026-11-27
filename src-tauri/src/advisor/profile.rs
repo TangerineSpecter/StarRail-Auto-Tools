@@ -414,6 +414,10 @@ mod tests {
         let kafka = resolve_profile(1005, "卡芙卡", "kafka", "雷");
         assert_eq!(kafka.scaling_mode, ScalingMode::Dot);
         assert!(kafka.reworked);
+        assert!(kafka
+            .skill_summary
+            .iter()
+            .any(|line| line.contains("75%") && line.contains("100%")));
 
         let hysilens = resolve_profile(1410, "海瑟音", "hysilens", "物理");
         assert_eq!(hysilens.scaling_mode, ScalingMode::Dot);

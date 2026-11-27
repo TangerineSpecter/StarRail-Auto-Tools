@@ -59,6 +59,8 @@ struct MechanicsFile {
 pub(crate) struct MechanicAbility {
     pub(crate) owner_id: String,
     #[serde(default)]
+    pub(crate) source_node_id: String,
+    #[serde(default)]
     pub(crate) slot: String,
     #[serde(default)]
     pub(crate) name: String,
@@ -161,6 +163,19 @@ pub(crate) fn collect_character_abilities(character_id: u32) -> Vec<&'static Mec
             out.extend(abilities.iter());
         }
     }
+    // Sort traces by descending numeric source_node_id (keeping non-traces intact)
+    // so newer 8-digit buffed trace IDs (e.g. 11005101) always precede legacy 7-digit
+    // IDs (e.g. 1005101) even when they are not adjacent in the JSON array.
+    out.sort_by_key(|ability| {
+        if ability.slot == "trace" {
+            (
+                0u8,
+                std::cmp::Reverse(ability.source_node_id.parse::<u64>().unwrap_or(0)),
+            )
+        } else {
+            (1u8, std::cmp::Reverse(0))
+        }
+    });
     out
 }
 
