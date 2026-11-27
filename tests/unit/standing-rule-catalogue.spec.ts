@@ -9,7 +9,7 @@ import { calculateStandingStats } from "@/shared/utils/standing-stats";
 describe("reviewed standing ID reader", () => {
   it("approves all reviewed equipment IDs with exact protected provenance", () => {
     expect(Object.keys(definitions.lightCones)).toHaveLength(170);
-    expect(Object.keys(definitions.relics)).toHaveLength(62);
+    expect(Object.keys(definitions.relics)).toHaveLength(63);
     let bindingCount = Object.keys(bindings.lightCones).length;
     const pendingCones: number[] = [];
     for (const cone of lightCones.lightCones) {
@@ -34,16 +34,14 @@ describe("reviewed standing ID reader", () => {
         expect(item).toEqual(expect.objectContaining(binding));
     }
     expect(pendingCones).toEqual([22009, 23065]);
-    for (const setId of [329, 330]) {
-      const result = reviewedStandingRules({
-        lightConeId: 0,
-        superimposition: 1,
-        sets: [{ setId, count: 2 }],
-      });
-      expect(result.unreviewedSources).toEqual([`relic/${setId}/2`]);
-      expect(result.contributions).toEqual([]);
-      expect(result.conversions).toEqual([]);
-    }
+    const pendingSet = reviewedStandingRules({
+      lightConeId: 0,
+      superimposition: 1,
+      sets: [{ setId: 330, count: 2 }],
+    });
+    expect(pendingSet.unreviewedSources).toEqual(["relic/330/2"]);
+    expect(pendingSet.contributions).toEqual([]);
+    expect(pendingSet.conversions).toEqual([]);
     for (const [id, parts] of Object.entries(bindings.relics)) {
       bindingCount += Object.keys(parts).length;
       const result = reviewedStandingRules({
@@ -58,7 +56,7 @@ describe("reviewed standing ID reader", () => {
           sourceHash: item.sourceHash,
         });
     }
-    expect(bindingCount).toBe(266);
+    expect(bindingCount).toBe(267);
   });
 
   it("accepts normalized matching paths and excludes mismatched or unknown equipped paths", () => {

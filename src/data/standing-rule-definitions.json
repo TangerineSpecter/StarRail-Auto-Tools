@@ -6045,6 +6045,40 @@
         "bonuses": [],
         "conversions": []
       }
+    },
+    "329": {
+      "twoPiece": {
+        "reviewedEffects": [
+          "使装备者的速度提高 6 % 。当装备者的欢愉度大于等于 40 % 时，进入战斗时立刻使行动提前 40 % 。"
+        ],
+        "reviewedEffectsHash": "b4160d7d3aa3835484310b88007a16fa744640c62aeb52c87bf95bc77e465124",
+        "review": {
+          "standing": "reviewed",
+          "combat": "incomplete",
+          "scope": "standing-panel"
+        },
+        "bonuses": [
+          {
+            "key": "SPD%",
+            "curve": {
+              "kind": "constant",
+              "value": 0.06
+            }
+          }
+        ],
+        "conversions": []
+      },
+      "fourPiece": {
+        "reviewedEffects": [""],
+        "reviewedEffectsHash": "055539df4a0b804c58caf46c0cd2941af10d64c1395ddd8e50b5f55d945841e6",
+        "review": {
+          "standing": "reviewed",
+          "combat": "incomplete",
+          "scope": "standing-panel"
+        },
+        "bonuses": [],
+        "conversions": []
+      }
     }
   }
 }

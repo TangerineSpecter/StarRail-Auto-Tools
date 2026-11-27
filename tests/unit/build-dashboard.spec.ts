@@ -53,6 +53,44 @@ const entry: BuildDashboardEntry = {
 describe("BuildDashboard", () => {
   afterEach(() => vi.clearAllMocks());
 
+  it("shows Aha's speed progress with the reviewed planar two-piece bonus", async () => {
+    dashboard.mockResolvedValue([
+      {
+        ...entry,
+        plan: {
+          ...entry.plan,
+          characterId: 1511,
+          planarSetId: 329,
+          targets: [{ statKey: "SPD", target: 104, minimum: 100, priority: 1 }],
+        },
+        character: {
+          ...entry.character,
+          characterId: 1511,
+          name: "星神★阿哈",
+          equippedLightCone: { templateId: 21064, level: 80, ascension: 6, superimposition: 1 },
+          equippedRelics: [
+            { setId: 329, slot: "PlanarSphere", mainStat: "HP%", mainStatValue: 0.432 },
+            { setId: 329, slot: "LinkRope", mainStat: "ATK%", mainStatValue: 0.432 },
+          ],
+        },
+      },
+    ]);
+    const wrapper = mount(BuildDashboard, {
+      global: {
+        provide: { [runtimeContextKey as symbol]: { notice: ref("") } },
+        stubs: { InputText: true, Select: true },
+      },
+    });
+    await flushPromises();
+
+    expect(wrapper.find(".build-standing-warnings").exists()).toBe(false);
+    const card = wrapper.get('.build-progress-row[data-character-id="1511"]');
+    expect(card.text()).toContain("星神★阿哈");
+    expect(card.get(".target-progress-label").text()).toContain("104 / 104");
+    expect(card.get(".target-progress-row small").text()).toBe("达标");
+    wrapper.unmount();
+  });
+
   it("opens mobile graduation evidence from the card in a bottom drawer without an accordion", async () => {
     dashboard.mockResolvedValue([entry]);
     const wrapper = mount(BuildDashboard, {

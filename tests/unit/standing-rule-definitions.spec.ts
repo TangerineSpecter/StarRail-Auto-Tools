@@ -16,9 +16,9 @@ import {
 } from "../../scripts/lib/standing-rule-definitions.mjs";
 
 describe("curated standing review", () => {
-  it("ties all 266 protected bindings to exact all-level evidence and the same fingerprint batch", () => {
+  it("ties protected bindings to exact all-level evidence and the same fingerprint batch", () => {
     expect(Object.keys(bindings.lightCones)).toHaveLength(170);
-    expect(Object.keys(bindings.relics)).toHaveLength(62);
+    expect(Object.keys(bindings.relics)).toHaveLength(63);
     const sources = new Map(rawCatalogue.abilities.map((ability) => [ability.id, ability]));
     let count = 0;
     const check = (binding: { sourceRef: string; sourceHash: string }, definition: unknown) => {
@@ -38,7 +38,7 @@ describe("curated standing review", () => {
             slot as "twoPiece" | "fourPiece"
           ],
         );
-    expect(count).toBe(266);
+    expect(count).toBe(267);
   });
   it("preserves source integer rounding at negative half ties and explicit percent precision", () => {
     expect(
@@ -88,7 +88,7 @@ describe("curated standing review", () => {
   });
   it("covers reviewed IDs at every rank and keeps new sources pending review", () => {
     expect(Object.keys(definitions.lightCones)).toHaveLength(170);
-    expect(Object.keys(definitions.relics)).toHaveLength(62);
+    expect(Object.keys(definitions.relics)).toHaveLength(63);
     const pendingCones: number[] = [];
     for (const cone of lightCones.lightCones) {
       const block = definitions.lightCones[String(cone.id) as keyof typeof definitions.lightCones];
@@ -118,7 +118,7 @@ describe("curated standing review", () => {
       }
     }
     expect(pendingCones).toEqual([22009, 23065]);
-    expect(pendingSets).toEqual([329, 330]);
+    expect(pendingSets).toEqual([330]);
   });
 
   it("excludes triggered and team gains but retains permanent penalties and resist wording", () => {
