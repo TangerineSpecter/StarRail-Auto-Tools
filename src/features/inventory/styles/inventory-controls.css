@@ -178,10 +178,12 @@
 }
 
 .result-count {
+  flex-shrink: 0;
   margin-left: auto;
   padding-right: 5px;
   color: var(--muted);
   font-size: 8px;
+  white-space: nowrap;
 }
 
 .filter-drawer.p-drawer {

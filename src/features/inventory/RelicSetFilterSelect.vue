@@ -154,6 +154,7 @@ const selectTitle = computed(() =>
   height: 12px;
 }
 .relic-set-filter-select.is-active :deep(.p-select-label) {
+  padding-right: 18px;
   color: var(--blue);
 }
 .relic-set-filter-value {
